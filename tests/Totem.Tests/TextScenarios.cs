@@ -165,7 +165,7 @@ namespace Totem
 		}
 
 		//
-		// Concatentation
+		// Writes
 		//
 
 		void WriteChar()
@@ -206,7 +206,7 @@ namespace Totem
 		}
 
 		//
-		// Concatenation operators
+		// Write operators
 		//
 
 		void AddChar()
@@ -247,7 +247,7 @@ namespace Totem
 		}
 
 		//
-		// Concatentation to none
+		// Write to none
 		//
 
 		void NoneWriteChar()
