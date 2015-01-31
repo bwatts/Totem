@@ -38,6 +38,9 @@
     <Compile Include="..\..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Expect.cs" />
+    <Compile Include="ExpectException.cs" />
+    <Compile Include="IExpect.cs" />
     <Compile Include="IFluent.cs" />
     <Compile Include="IWritable.cs">
       <SubType>Code</SubType>

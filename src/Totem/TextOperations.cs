@@ -8,7 +8,7 @@ using System.Text;
 namespace Totem
 {
 	/// <summary>
-	/// Extends <see cref="System.Text"/> with core operations
+	/// Extends <see cref="Totem.Text"/> with core operations
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class TextOperations
@@ -306,6 +306,15 @@ namespace Totem
 		public static Text WriteSeparatedBy<T>(this Text text, Text separator, params T[] values)
 		{
 			return text + values.ToTextSeparatedBy(separator);
+		}
+
+		//
+		// WriteInParentheses
+		//
+
+		public static Text WriteInParentheses(this Text text, Text value)
+		{
+			return text + Text.InParentheses(value);
 		}
 
 		//
