@@ -257,7 +257,7 @@ namespace Totem
 
 		public static implicit operator string(Text text)
 		{
-			return text.ToString();
+			return text == null ? "" : text.ToString();
 		}
 
 		public static implicit operator Text(char value)
@@ -596,6 +596,11 @@ namespace Totem
 					value.ToWriter(writer);
 				}
 			});
+		}
+
+		public static Text InParentheses(Text value)
+		{
+			return "(" + value + ")";
 		}
 
 		/// <summary>
