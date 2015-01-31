@@ -13,6 +13,41 @@ namespace Totem
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class TextOperations
 	{
+		public static Text If(this Text text, bool condition, Text whenFalse)
+		{
+			return Text.If(condition, text, whenFalse);
+		}
+
+		public static Text If(this Text text, Func<bool> condition, Text whenFalse)
+		{
+			return Text.If(condition, text, whenFalse);
+		}
+
+		public static Text Repeat(this Text text, int count)
+		{
+			return Text.Repeat(text, count);
+		}
+
+		public static Text InParentheses(this Text text)
+		{
+			return Text.InParentheses(text);
+		}
+
+		public static Text InBraces(this Text text)
+		{
+			return Text.InBraces(text);
+		}
+
+		public static Text InBrackets(this Text text)
+		{
+			return Text.InBrackets(text);
+		}
+
+		public static Text InAngleBrackets(this Text text)
+		{
+			return Text.InAngleBrackets(text);
+		}
+
 		//
 		// Write
 		//
@@ -309,12 +344,27 @@ namespace Totem
 		}
 
 		//
-		// WriteInParentheses
+		// In
 		//
 
 		public static Text WriteInParentheses(this Text text, Text value)
 		{
 			return text + Text.InParentheses(value);
+		}
+
+		public static Text WriteInBraces(this Text text, Text value)
+		{
+			return text + Text.InBraces(value);
+		}
+
+		public static Text WriteInBrackets(this Text text, Text value)
+		{
+			return text + Text.InBrackets(value);
+		}
+
+		public static Text WriteInAngleBrackets(this Text text, Text value)
+		{
+			return text + Text.InAngleBrackets(value);
 		}
 
 		//

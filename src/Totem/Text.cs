@@ -276,7 +276,7 @@ namespace Totem
 		}
 
 		//
-		// Concatenation
+		// Writes
 		//
 
 		public Text Write(char value)
@@ -309,11 +309,6 @@ namespace Totem
 		public Text Write(Text value)
 		{
 			return _isNone ? value : new Text(this, value);
-		}
-
-		public Text Repeat(int count)
-		{
-			return Repeated(this, count);
 		}
 
 		public static Text operator +(Text text, char value)
@@ -587,7 +582,7 @@ namespace Totem
 			return Text.Of(typeof(T));
 		}
 
-		public static Text Repeated(Text value, int count)
+		public static Text Repeat(Text value, int count)
 		{
 			return value._isNone ? value : Text.Of(writer =>
 			{
@@ -600,7 +595,22 @@ namespace Totem
 
 		public static Text InParentheses(Text value)
 		{
-			return "(" + value + ")";
+			return Text.Of("({0})", value);
+		}
+
+		public static Text InBraces(Text value)
+		{
+			return Text.Of("{{{0}}}", value);
+		}
+
+		public static Text InBrackets(Text value)
+		{
+			return Text.Of("[{0}]", value);
+		}
+
+		public static Text InAngleBrackets(Text value)
+		{
+			return Text.Of("<{0}>", value);
 		}
 
 		/// <summary>
