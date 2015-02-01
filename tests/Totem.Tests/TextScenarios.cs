@@ -11,7 +11,7 @@ namespace Totem
 	/// Scenarios involving the <see cref="Totem.Text"/> class
 	/// </summary>
 	/// <remarks>
-	/// Written with native xUnit assertions, instead Totem's expectations, because they use <see cref="Totem.Text"/>
+	/// Totem's expectations are written in terms of <see cref="Totem.Text"/>; use native xUnit assertions here
 	/// </remarks>
 	public class TextScenarios : Scenarios
 	{
