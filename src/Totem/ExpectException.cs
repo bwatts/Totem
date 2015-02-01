@@ -1,67 +1,88 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace Totem
 {
 	/// <summary>
 	/// Indicates a value failed to meet an expectation
 	/// </summary>
-	public class ExpectException : Exception
+	/// <remarks>
+	/// http://stackoverflow.com/questions/94488/what-is-the-correct-way-to-make-a-custom-net-exception-serializable
+	/// </remarks>
+	[Serializable]
+	public sealed class ExpectException : Exception
 	{
-		public ExpectException(object value, string expected, string actual, string because)
-			: base(GetMessage(value, expected, actual, because))
+		internal ExpectException(string issue, string expected, string actual)
+			: base(GetMessage(issue, expected, actual))
 		{
-			Value = value;
+			Issue = issue;
 			Expected = expected;
 			Actual = actual;
-			Because = because;
 		}
 
-		public ExpectException(Exception inner, object value, string expected, string actual, string because)
-			: base(GetMessage(value, expected, actual, because), inner)
+		internal ExpectException(Exception inner, string issue, string expected, string actual)
+			: base(GetMessage(issue, expected, actual), inner)
 		{
-			Value = value;
+			Issue = issue;
 			Expected = expected;
 			Actual = actual;
-			Because = because;
 		}
 
-		public object Value { get; private set; }
+		[SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+		private ExpectException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
+			Issue = info.GetString("Issue");
+			Expected = info.GetString("Expected");
+			Actual = info.GetString("Actual");
+    }
+
+		public string Issue { get; private set; }
 		public string Expected { get; private set; }
 		public string Actual { get; private set; }
-		public string Because { get; private set; }
 
-		private static string GetMessage(object value, string expected, string actual, string because)
+		[SecurityPermissionAttribute(SecurityAction.Demand, SerializationFormatter = true)]
+		public override void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
-			var message = Text.None;
+			info.AddValue("Issue", Issue);
+			info.AddValue("Expected", Expected);
+			info.AddValue("Actual", Actual);
 
-			if(!String.IsNullOrEmpty(because))
+			base.GetObjectData(info, context);
+		}
+
+		private static string GetMessage(string issue, string expected, string actual)
+		{
+			// TODO: Indent after line breaks
+
+			var message = Text.If(
+				issue.Length == 1,
+				issue.ToUpper(),
+				Char.ToUpper(issue[0]) + issue.Substring(1));
+
+			if(expected != "" && actual != "")
 			{
-				if(because.StartsWith("because", StringComparison.OrdinalIgnoreCase))
+				message = message
+					.WriteTwoLines()
+					.Write("Expected | ")
+					.WriteLine(expected)
+					.Write("Actual   | ")
+					.Write(actual);
+			}
+			else
+			{
+				if(actual != "")
 				{
-					because = because.Substring("because".Length).TrimStart();
+					message = message
+						.WriteTwoLines()
+						.Write("Value | ")
+						.Write(actual);
 				}
-
-				message = message.WriteIf(
-					because.Length == 1,
-					because.ToUpper(),
-					Char.ToUpper(because[0]) + because.Substring(1));
 			}
 
-
-
-			// TODO: Indent expected/actual if they contain line breaks
-
-
-
-			return message
-				.WriteTwoLines()
-				.Write("Expected | ")
-				.Write(expected)
-				.WriteLine()
-				.Write("Actual   | ")
-				.WriteLine(actual);
+			return message.WriteLine();
 		}
 	}
 }

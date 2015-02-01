@@ -18,30 +18,30 @@ namespace Totem
 
 		void IsNull()
 		{
-			Expect.That<string>(null).IsNull();
+			Expect<string>(null).IsNull();
 
-			Assert.Throws<ExpectException>(() => Expect.That("").IsNull());
+			Assert.Throws<ExpectException>(() => Expect("").IsNull());
 		}
 
 		void IsNotNull()
 		{
-			Expect.That("").IsNotNull();
+			Expect("").IsNotNull();
 
-			Assert.Throws<ExpectException>(() => Expect.That<string>(null).IsNotNull());
+			Assert.Throws<ExpectException>(() => Expect<string>(null).IsNotNull());
 		}
 
 		void IsNullNullable()
 		{
-			Expect.That<int?>(null).IsNull();
+			Expect<int?>(null).IsNull();
 
-			Assert.Throws<ExpectException>(() => Expect.That<int?>(0).IsNull());
+			Assert.Throws<ExpectException>(() => Expect<int?>(0).IsNull());
 		}
 
 		void IsNotNullNullable()
 		{
-			Expect.That("").IsNotNull();
+			Expect("").IsNotNull();
 
-			Assert.Throws<ExpectException>(() => Expect.That<int?>(null).IsNotNull());
+			Assert.Throws<ExpectException>(() => Expect<int?>(null).IsNotNull());
 		}
 
 		//
@@ -50,30 +50,30 @@ namespace Totem
 
 		void Is()
 		{
-			Expect.That(1).Is(1);
+			Expect(1).Is(1);
 
-			Assert.Throws<ExpectException>(() => Expect.That(1).Is(2));
+			Assert.Throws<ExpectException>(() => Expect(1).Is(2));
 		}
 
 		void IsWithComparer()
 		{
-			Expect.That(1).Is(1, new IsComparer { Result = true });
+			Expect(1).Is(1, new IsComparer { Result = true });
 
-			Assert.Throws<ExpectException>(() => Expect.That(1).Is(2, new IsComparer { Result = false }));
+			Assert.Throws<ExpectException>(() => Expect(1).Is(2, new IsComparer { Result = false }));
 		}
 
 		void IsNot()
 		{
-			Expect.That(1).IsNot(2);
+			Expect(1).IsNot(2);
 
-			Assert.Throws<ExpectException>(() => Expect.That(1).IsNot(1));
+			Assert.Throws<ExpectException>(() => Expect(1).IsNot(1));
 		}
 
 		void IsNotWithComparer()
 		{
-			Expect.That(1).IsNot(2, new IsComparer { Result = false });
+			Expect(1).IsNot(2, new IsComparer { Result = false });
 
-			Assert.Throws<ExpectException>(() => Expect.That(1).IsNot(1, new IsComparer { Result = true }));
+			Assert.Throws<ExpectException>(() => Expect(1).IsNot(1, new IsComparer { Result = true }));
 		}
 
 		class IsComparer : IEqualityComparer<int>
@@ -97,16 +97,16 @@ namespace Totem
 
 		void IsTrue()
 		{
-			Expect.That(true).IsTrue();
+			Expect(true).IsTrue();
 
-			Assert.Throws<ExpectException>(() => Expect.That(false).IsTrue());
+			Assert.Throws<ExpectException>(() => Expect(false).IsTrue());
 		}
 
 		void IsFalse()
 		{
-			Expect.That(false).IsFalse();
+			Expect(false).IsFalse();
 
-			Assert.Throws<ExpectException>(() => Expect.That(true).IsFalse());
+			Assert.Throws<ExpectException>(() => Expect(true).IsFalse());
 		}
 
 		//
@@ -115,16 +115,16 @@ namespace Totem
 
 		void IsEmpty()
 		{
-			Expect.That("").IsEmpty();
+			Expect("").IsEmpty();
 
-			Assert.Throws<ExpectException>(() => Expect.That(" ").IsEmpty());
+			Assert.Throws<ExpectException>(() => Expect(" ").IsEmpty());
 		}
 
 		void IsNotEmpty()
 		{
-			Expect.That(" ").IsNotEmpty();
+			Expect(" ").IsNotEmpty();
 
-			Assert.Throws<ExpectException>(() => Expect.That("").IsNotEmpty());
+			Assert.Throws<ExpectException>(() => Expect("").IsNotEmpty());
 		}
 	}
 }

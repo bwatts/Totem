@@ -10,13 +10,43 @@ namespace Totem
 	/// A suite of scenario-focused facts with low-ceremony definitions
 	/// </summary>
 	/// <remarks>
-	/// Scenarios require less ceremony than traditional unit test definitions - they allow omission of the "public" modifier from classes and methods.
+	/// Scenarios require less ceremony than traditional unit test definitions - they allow omission of
+	/// the "public" modifier from classes and methods, as well as [Fact] annotations.
 	/// 
 	/// Adapted from http://patrick.lioi.net/2012/09/13/low-ceremony-xunit/
 	/// </remarks>
 	[Scenarios.FactsAttribute]
 	public abstract class Scenarios
 	{
+		protected IExpect<T> Expect<T>(T value)
+		{
+			return Totem.Expect.That(value);
+		}
+
+		protected void ExpectTrue(bool condition, Text issue = null, Text expected = null, Text actual = null)
+		{
+			Totem.Expect.True(condition, issue, expected, actual);
+		}
+
+		protected void ExpectFalse(bool condition, Text issue = null, Text expected = null, Text actual = null)
+		{
+			Totem.Expect.False(condition, issue, expected, actual);
+		}
+
+		protected void ExpectThrows<TException>(Action action, Text issue = null) where TException : Exception
+		{
+			Totem.Expect.Throws<TException>(action, issue);
+		}
+
+		protected void ExpectThrows<TException>(Func<object> func, Text issue = null) where TException : Exception
+		{
+			Totem.Expect.Throws<TException>(func, issue);
+		}
+
+		//
+		// xUnit smoothing
+		//
+
 		[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 		private sealed class FactsAttribute : RunWithAttribute
 		{
