@@ -4,6 +4,21 @@ Totem is a set of development techniques lovingly prepared in C# and spiced with
 
 Totem has been brewing for a long time, in various [projects](https://github.com/bwatts/Grasp), [utility libraries](https://github.com/bwatts/Cloak), [gists](https://gist.github.com/bwatts/762afe2f884cb787044b), and other places you might find attempts to smooth the development experience. The concepts are battle-hardened and ready to move beyond the proving grounds.
 
+# Documentation
+
+Head over to the [wiki](https://github.com/bwatts/Totem/wiki) to learn more about Totem and its nifty tricks.
+
+Some highlights:
+
+* [Text](https://github.com/bwatts/Totem/wiki/Text): A unified medium for working with strings
+* [Expectations](https://github.com/bwatts/Totem/wiki/Expectations): State exactly what is expected of runtime values
+
+# Community
+
+At the moment, I ([Bryan](https://twitter.com/deftcode)) am the founder and sole contributor. I am always looking for like-minded individuals who share my enthusiasm for collaboration.
+
+I can usually be found in the [DDD/CQRS/ES](https://jabbr.net/#/rooms/DDD-CQRS-ES) room on [JabbR](https://jabbr.net/) and am always up for a discussion.
+
 # Influences
 
 Totem draws influence from a wide range of knowledge work concepts. The dynamics of [collaboration](https://twitter.com/deftcode/status/522233594186829824), [decisions](https://twitter.com/deftcode/status/496708216034963456), [time](https://twitter.com/deftcode/status/503890347848916993), and [intent](http://www.executableintent.com/about/) form the core of its worldview.
