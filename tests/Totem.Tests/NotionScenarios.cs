@@ -9,16 +9,21 @@ namespace Totem
 	/// </summary>
 	public class NotionScenarios : Scenarios
 	{
-		private sealed class TestNotion : Notion
+		class TestNotion : Notion
 		{
 			internal DateTime Now { get { return Clock.Now; } }
 		}
 
-		void DefaultTags()
+		void Create()
 		{
-			var tags = (new TestNotion() as ITaggable).Tags;
+			var notion = new TestNotion();
+
+			Expect(notion.Now.Kind).Is(DateTimeKind.Utc);
+
+			var tags = (notion as ITaggable).Tags;
 
 			Expect(tags.Count).Is(0);
+			Expect(tags.Get(Notion.Traits.Clock)).IsAssignableTo(typeof(IClock));
 		}
 
 		void SetTag()
@@ -29,19 +34,6 @@ namespace Totem
 
 			Expect(tags.Count).Is(1);
 			Expect(tags.Get(Notion.Traits.Clock)).IsNull();
-		}
-
-		void DefaultClock()
-		{
-			var notion = new TestNotion();
-
-			var tags = (notion as ITaggable).Tags;
-
-			var now = new TestNotion().Now;
-
-			Expect(now.Kind).Is(DateTimeKind.Utc);
-			Expect(tags.Count).Is(0);
-			Expect(tags.Get(Notion.Traits.Clock)).IsAssignableTo(typeof(IClock));
 		}
 	}
 }

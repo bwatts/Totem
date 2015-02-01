@@ -9,10 +9,10 @@ namespace Totem
 	/// </summary>
 	public class TagScenarios : Scenarios
 	{
-		public static readonly Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
-		public static readonly Tag<int> TagWithoutDefault = Tag.Declare(() => TagWithoutDefault);
-		public static readonly Tag<int> TagWithDefault = Tag.Declare(() => TagWithDefault, 1);
-		public static readonly Tag<int> TagWithDefaultResolved = Tag.Declare(() => TagWithDefaultResolved, () => 1);
+		static Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
+		static Tag<int> TagWithoutDefault = Tag.Declare(() => TagWithoutDefault);
+		static Tag<int> TagWithDefault = Tag.Declare(() => TagWithDefault, 1);
+		static Tag<int> TagWithDefaultResolved = Tag.Declare(() => TagWithDefaultResolved, () => 1);
 
 		void Declare()
 		{
@@ -28,24 +28,24 @@ namespace Totem
 			Expect(TagWithoutDefault.Field.Name).Is("TagWithoutDefault");
 		}
 
-		void WithoutValue()
+		void DeclareWithoutValue()
 		{
 			Expect(TagWithoutValue.Field.Name).Is("TagWithoutValue");
 		}
 
-		void WithoutDefault()
+		void DeclareWithoutDefault()
 		{
 			Expect(TagWithoutDefault.Field.Name).Is("TagWithoutDefault");
 			Expect(TagWithoutDefault.ResolveDefaultValue()).Is(0);
 		}
 
-		void WithDefault()
+		void DeclareWithDefault()
 		{
 			Expect(TagWithDefault.Field.Name).Is("TagWithDefault");
 			Expect(TagWithDefault.ResolveDefaultValue()).Is(1);
 		}
 
-		void WithDefaultResolved()
+		void DeclareWithDefaultResolved()
 		{
 			Expect(TagWithDefaultResolved.Field.Name).Is("TagWithDefaultResolved");
 			Expect(TagWithDefaultResolved.ResolveDefaultValue()).Is(1);

@@ -38,9 +38,16 @@
     <Compile Include="..\..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Connection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ConnectionState.cs" />
+    <Compile Include="ConnectionPhase.cs" />
+    <Compile Include="Disposal.cs" />
     <Compile Include="Expect.cs" />
     <Compile Include="ExpectException.cs" />
     <Compile Include="IClock.cs" />
+    <Compile Include="IConnectable.cs" />
     <Compile Include="IExpect.cs" />
     <Compile Include="IFluent.cs" />
     <Compile Include="ITaggable.cs" />

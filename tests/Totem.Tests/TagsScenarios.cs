@@ -9,10 +9,10 @@ namespace Totem
 	/// </summary>
 	public class TagsScenarios : Scenarios
 	{
-		public static readonly Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
-		public static readonly Tag<int> TagWithValue = Tag.Declare(() => TagWithValue);
+		static Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
+		static Tag<int> TagWithValue = Tag.Declare(() => TagWithValue);
 
-		void Empty()
+		void Create()
 		{
 			var tags = new Tags();
 

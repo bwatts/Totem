@@ -9,8 +9,8 @@ namespace Totem
 	/// </summary>
 	public class TagValueScenarios : Scenarios
 	{
-		public static readonly Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
-		public static readonly Tag<int> TagWithValue = Tag.Declare(() => TagWithValue, 1);
+		static Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
+		static Tag<int> TagWithValue = Tag.Declare(() => TagWithValue, 1);
 
 		void WithoutValue()
 		{
