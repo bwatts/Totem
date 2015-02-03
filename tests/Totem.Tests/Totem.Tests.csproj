@@ -41,6 +41,7 @@
     <Compile Include="..\..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="EqualityScenarios.cs" />
     <Compile Include="Reflection\LambdaBodiesScenarios.cs" />
     <Compile Include="NotionScenarios.cs" />
     <Compile Include="TagValueScenarios.cs" />
