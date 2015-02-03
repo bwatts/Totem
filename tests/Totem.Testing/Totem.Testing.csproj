@@ -42,6 +42,7 @@
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScenarioException.cs" />
     <Compile Include="Scenarios.cs" />
   </ItemGroup>
   <ItemGroup>

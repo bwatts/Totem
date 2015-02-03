@@ -72,10 +72,10 @@ namespace Totem
 			{
 				return;
 			}
-			catch(Exception exception)
+			catch(Exception error)
 			{
 				throw new ExpectException(
-					exception,
+					error,
 					issue,
 					expected: "An exception of type " + Text.OfType<TException>(),
 					actual: "An unexpected exception");

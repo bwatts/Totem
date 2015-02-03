@@ -16,13 +16,19 @@ namespace Totem
 
 		void Create()
 		{
+			var tags = (new TestNotion() as ITaggable).Tags;
+
+			Expect(tags.Count).Is(0);
+		}
+
+		void GetTagDefault()
+		{
 			var notion = new TestNotion();
+			var tags = (notion as ITaggable).Tags;
 
 			Expect(notion.Now.Kind).Is(DateTimeKind.Utc);
 
-			var tags = (notion as ITaggable).Tags;
-
-			Expect(tags.Count).Is(0);
+			Expect(tags.Count).Is(1);
 			Expect(tags.Get(Notion.Traits.Clock)).IsAssignableTo(typeof(IClock));
 		}
 

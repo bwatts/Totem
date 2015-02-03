@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Xunit;
 using Xunit.Sdk;
 
@@ -18,29 +19,117 @@ namespace Totem
 	[Scenarios.FactsAttribute]
 	public abstract class Scenarios
 	{
-		protected IExpect<T> Expect<T>(T value)
+		//
+		// Expectations
+		//
+
+		protected IExpect<T> Expect<T>(
+			T value,
+			[CallerMemberName] string caller = "",
+			[CallerFilePath] string callerFile = "",
+			[CallerLineNumber] int callerLine = 0)
 		{
-			return Totem.Expect.That(value);
+			return new ScenarioExpect<T>(value, caller, callerFile, callerLine);
 		}
 
-		protected void ExpectTrue(bool condition, Text issue = null, Text expected = null, Text actual = null)
+		protected void ExpectTrue(
+			bool condition,
+			Text issue = null,
+			Text expected = null,
+			Text actual = null,
+			[CallerMemberName] string caller = "",
+			[CallerFilePath] string callerFile = "",
+			[CallerLineNumber] int callerLine = 0)
 		{
-			Totem.Expect.True(condition, issue, expected, actual);
+			Expect(condition, caller, callerFile, callerLine).IsTrue(t => t, issue, expected, t => actual ?? Text.None);
 		}
 
-		protected void ExpectFalse(bool condition, Text issue = null, Text expected = null, Text actual = null)
+		protected void ExpectFalse(
+			bool condition,
+			Text issue = null,
+			Text expected = null,
+			Text actual = null,
+			[CallerMemberName] string caller = "",
+			[CallerFilePath] string callerFile = "",
+			[CallerLineNumber] int callerLine = 0)
 		{
-			Totem.Expect.False(condition, issue, expected, actual);
+			Expect(condition, caller, callerFile, callerLine).IsFalse(t => t, issue, expected, t => actual ?? Text.None);
 		}
 
-		protected void ExpectThrows<TException>(Action action, Text issue = null) where TException : Exception
+		protected void ExpectThrows<TException>(
+			Action action,
+			Text issue = null,
+			[CallerMemberName] string caller = "",
+			[CallerFilePath] string callerFile = "",
+			[CallerLineNumber] int callerLine = 0)
+			where TException : Exception
 		{
-			Totem.Expect.Throws<TException>(action, issue);
+			try
+			{
+				Totem.Expect.Throws<TException>(action, issue);
+			}
+			catch(ExpectException error)
+			{
+				throw new ScenarioException(error, caller, callerFile, callerLine);
+			}
 		}
 
-		protected void ExpectThrows<TException>(Func<object> func, Text issue = null) where TException : Exception
+		protected void ExpectThrows<TException>(
+			Func<object> func,
+			Text issue = null,
+			[CallerMemberName] string caller = "",
+			[CallerFilePath] string callerFile = "",
+			[CallerLineNumber] int callerLine = 0)
+			where TException : Exception
 		{
-			Totem.Expect.Throws<TException>(func, issue);
+			try
+			{
+				Totem.Expect.Throws<TException>(func, issue);
+			}
+			catch(ExpectException error)
+			{
+				throw new ScenarioException(error, caller, callerFile, callerLine);
+			}
+		}
+
+		private sealed class ScenarioExpect<T> : IExpect<T>
+		{
+			private readonly IExpect<T> _that;
+			private readonly string _caller;
+			private readonly string _callerFile;
+			private readonly int _callerLine;
+
+			internal ScenarioExpect(T value, string caller, string callerFile, int callerLine)
+			{
+				_that = Totem.Expect.That(value);
+				_caller = caller;
+				_callerFile = callerFile;
+				_callerLine = callerLine;
+			}
+
+			public IExpect<T> IsTrue(Func<T, bool> check, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+			{
+				return Apply(() => _that.IsTrue(check, issue, expected, actual));
+			}
+
+			public IExpect<T> IsFalse(Func<T, bool> check, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+			{
+				return Apply(() => _that.IsFalse(check, issue, expected, actual));
+			}
+
+			private IExpect<T> Apply(Action expect)
+			{
+				try
+				{
+					expect();
+
+					return this;
+				}
+				catch(ExpectException error)
+				{
+					throw new ScenarioException(error, _caller, _callerFile, _callerLine);
+				}
+			}
 		}
 
 		//

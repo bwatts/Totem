@@ -82,7 +82,7 @@ namespace Totem
 				}
 			}
 
-			return message.WriteLine();
+			return message;
 		}
 	}
 }
