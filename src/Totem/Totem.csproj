@@ -52,6 +52,14 @@
     <Compile Include="IConnectable.cs" />
     <Compile Include="IExpect.cs" />
     <Compile Include="IFluent.cs" />
+    <Compile Include="IO\FileExtension.cs" />
+    <Compile Include="IO\FileLink.cs" />
+    <Compile Include="IO\FileName.cs" />
+    <Compile Include="IO\FileResource.cs" />
+    <Compile Include="IO\FolderLink.cs" />
+    <Compile Include="IO\FolderResource.cs" />
+    <Compile Include="IO\IOLink.cs" />
+    <Compile Include="IO\IOResource.cs" />
     <Compile Include="IO\TextConverter.cs" />
     <Compile Include="IO\TextValue.cs" />
     <Compile Include="ITaggable.cs" />

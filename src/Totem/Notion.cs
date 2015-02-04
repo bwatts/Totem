@@ -30,7 +30,7 @@ namespace Totem
 			return base.ToString();
 		}
 
-		protected IExpect<T> Expect<T>(T value)
+		protected static IExpect<T> Expect<T>(T value)
 		{
 			return Totem.Expect.That(value);
 		}
