@@ -41,6 +41,8 @@
     <Compile Include="..\..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="LinkPathScenarios.cs" />
+    <Compile Include="LinkTextScenarios.cs" />
     <Compile Include="EqualityScenarios.cs" />
     <Compile Include="IO\TextConverterScenarios.cs" />
     <Compile Include="Reflection\LambdaBodiesScenarios.cs" />
