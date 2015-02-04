@@ -57,32 +57,16 @@ namespace Totem
 		{
 			// TODO: Indent after line breaks
 
-			var message = Text.If(
-				issue.Length == 1,
-				issue.ToUpper(),
-				Char.ToUpper(issue[0]) + issue.Substring(1));
-
-			if(expected != "" && actual != "")
-			{
-				message = message
-					.WriteTwoLines()
-					.Write("Expected | ")
-					.WriteLine(expected)
-					.Write("Actual   | ")
-					.Write(actual);
-			}
-			else
-			{
-				if(actual != "")
-				{
-					message = message
-						.WriteTwoLines()
-						.Write("Value | ")
-						.Write(actual);
-				}
-			}
-
-			return message;
+			return Text.None
+				.WriteIf(
+					issue.Length == 1,
+					issue.ToUpper(),
+					Char.ToUpper(issue[0]) + issue.Substring(1))
+				.WriteTwoLines()
+				.Write("Expected | ")
+				.WriteLine(expected)
+				.Write("Actual   | ")
+				.Write(actual);
 		}
 	}
 }

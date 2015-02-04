@@ -19,11 +19,10 @@ namespace Totem.Reflection
 
 			var member = memberExpression == null ? null : memberExpression.Member;
 
-			Expect.False(
-				strict && member == null,
+			Expect.That(strict && member == null).IsFalse(
 				issue: Text.Of("Lambda does not access a field or property"),
 				expected: "Lambda body of type " + Text.OfType<MemberExpression>(),
-				actual: lambda.ToText());
+				actual: t => lambda.ToText());
 
 			return member;
 		}
@@ -32,11 +31,10 @@ namespace Totem.Reflection
 		{
 			var field = lambda.GetMemberInfo(strict: false) as FieldInfo;
 
-			Expect.False(
-				strict && field == null,
+			Expect.That(strict && field == null).IsFalse(
 				issue: Text.Of("Lambda does not access a field"),
 				expected: "Lambda body accessing a " + Text.OfType<FieldInfo>(),
-				actual: lambda.ToText());
+				actual: t => lambda.ToText());
 
 			return field;
 		}
@@ -45,11 +43,10 @@ namespace Totem.Reflection
 		{
 			var property = lambda.GetMemberInfo(strict: false) as PropertyInfo;
 
-			Expect.False(
-				strict && property == null,
+			Expect.That(strict && property == null).IsFalse(
 				issue: Text.Of("Lambda does not access a property"),
 				expected: "Lambda body accessing a " + Text.OfType<PropertyInfo>(),
-				actual: lambda.ToText());
+				actual: t => lambda.ToText());
 
 			return property;
 		}
@@ -60,11 +57,10 @@ namespace Totem.Reflection
 
 			var method = callExpression == null ? null : callExpression.Method;
 
-			Expect.False(
-				strict && method == null,
+			Expect.That(strict && method == null).IsFalse(
 				issue: Text.Of("Lambda does not call a method"),
 				expected: "Lambda body of type " + Text.OfType<MethodCallExpression>(),
-				actual: lambda.ToText());
+				actual: t => lambda.ToText());
 
 			return method;
 		}

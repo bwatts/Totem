@@ -14,9 +14,9 @@ namespace Totem
 			var text = new LinkText("");
 
 			Expect(text.ToString()).Is("");
-			ExpectTrue(text.IsEmpty);
-			ExpectFalse(text.IsNotEmpty);
-			ExpectFalse(text.IsTemplate);
+			Expect(text.IsEmpty).IsTrue();
+			Expect(text.IsNotEmpty).IsFalse();
+			Expect(text.IsTemplate).IsFalse();
 		}
 
 		void CreateNonEmpty()
@@ -24,9 +24,9 @@ namespace Totem
 			var text = new LinkText("x");
 
 			Expect(text.ToString()).Is("x");
-			ExpectFalse(text.IsEmpty);
-			ExpectTrue(text.IsNotEmpty);
-			ExpectFalse(text.IsTemplate);
+			Expect(text.IsEmpty).IsFalse();
+			Expect(text.IsNotEmpty).IsTrue();
+			Expect(text.IsTemplate).IsFalse();
 		}
 
 		void CreateTemplate()
@@ -34,9 +34,9 @@ namespace Totem
 			var text = new LinkText("{x}");
 
 			Expect(text.ToString()).Is("{x}");
-			ExpectFalse(text.IsEmpty);
-			ExpectTrue(text.IsNotEmpty);
-			ExpectTrue(text.IsTemplate);
+			Expect(text.IsEmpty).IsFalse();
+			Expect(text.IsNotEmpty).IsTrue();
+			Expect(text.IsTemplate).IsTrue();
 		}
 
 		void CreateTemplateHalf()
@@ -44,9 +44,9 @@ namespace Totem
 			var text = new LinkText("{x");
 
 			Expect(text.ToString()).Is("{x");
-			ExpectFalse(text.IsEmpty);
-			ExpectTrue(text.IsNotEmpty);
-			ExpectFalse(text.IsTemplate);
+			Expect(text.IsEmpty).IsFalse();
+			Expect(text.IsNotEmpty).IsTrue();
+			Expect(text.IsTemplate).IsFalse();
 		}
 
 		void Equal()

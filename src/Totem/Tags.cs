@@ -58,10 +58,10 @@ namespace Totem
 				_pairs[tag] = value;
 			}
 
-			Expect.False(
-				throwIfUnset && value.IsUnset,
+			Expect.That(throwIfUnset && value.IsUnset).IsFalse(
+				issue: "Get is strict and tag is not set",
 				expected: "Tag is set: " + tag.ToText(),
-				actual: "Tag is unset");
+				actual: t => "Tag is unset");
 
 			return value.Content;
 		}

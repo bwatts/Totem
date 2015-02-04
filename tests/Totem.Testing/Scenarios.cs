@@ -32,30 +32,6 @@ namespace Totem
 			return new ScenarioExpect<T>(value, caller, callerFile, callerLine);
 		}
 
-		protected void ExpectTrue(
-			bool condition,
-			Text issue = null,
-			Text expected = null,
-			Text actual = null,
-			[CallerMemberName] string caller = "",
-			[CallerFilePath] string callerFile = "",
-			[CallerLineNumber] int callerLine = 0)
-		{
-			Expect(condition, caller, callerFile, callerLine).IsTrue(t => t, issue, expected, t => actual ?? Text.None);
-		}
-
-		protected void ExpectFalse(
-			bool condition,
-			Text issue = null,
-			Text expected = null,
-			Text actual = null,
-			[CallerMemberName] string caller = "",
-			[CallerFilePath] string callerFile = "",
-			[CallerLineNumber] int callerLine = 0)
-		{
-			Expect(condition, caller, callerFile, callerLine).IsFalse(t => t, issue, expected, t => actual ?? Text.None);
-		}
-
 		protected void ExpectThrows<TException>(
 			Action action,
 			Text issue = null,

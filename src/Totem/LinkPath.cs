@@ -65,7 +65,7 @@ namespace Totem
 		{
 			if(Segments.Count < count)
 			{
-				ExpectFalse(strict, "Cannot move up from root");
+				Expect(strict).IsFalse("Cannot move up from root");
 
 				return Root;
 			}

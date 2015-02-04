@@ -35,16 +35,6 @@ namespace Totem
 			return Totem.Expect.That(value);
 		}
 
-		protected void ExpectTrue(bool condition, Text issue = null, Text expected = null, Text actual = null)
-		{
-			Totem.Expect.True(condition, issue, expected, actual);
-		}
-
-		protected void ExpectFalse(bool condition, Text issue = null, Text expected = null, Text actual = null)
-		{
-			Totem.Expect.False(condition, issue, expected, actual);
-		}
-
 		public static class Traits
 		{
 			public static readonly Tag<IClock> Clock = Tag.Declare(() => Clock, new PlatformClock());

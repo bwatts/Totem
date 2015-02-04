@@ -17,23 +17,25 @@ namespace Totem.IO
 			}
 		}
 
+		TestTextConverter converter = new TestTextConverter();
+
 		//
 		// CanConvertFrom
 		//
 
 		void CanConvertFromString()
 		{
-			ExpectTrue(new TestTextConverter().CanConvertFrom(typeof(string)));
+			Expect(converter.CanConvertFrom(typeof(string))).IsTrue();
 		}
 
 		void CanConvertFromText()
 		{
-			ExpectTrue(new TestTextConverter().CanConvertFrom(typeof(Text)));
+			Expect(converter.CanConvertFrom(typeof(Text))).IsTrue();
 		}
 
 		void CanConvertFromInt32()
 		{
-			ExpectTrue(new TestTextConverter().CanConvertFrom(typeof(int)));
+			Expect(converter.CanConvertFrom(typeof(int))).IsTrue();
 		}
 
 		//
@@ -42,17 +44,17 @@ namespace Totem.IO
 
 		void CanConvertToString()
 		{
-			ExpectTrue(new TestTextConverter().CanConvertTo(typeof(string)));
+			Expect(converter.CanConvertTo(typeof(string))).IsTrue();
 		}
 
 		void CanConvertToText()
 		{
-			ExpectTrue(new TestTextConverter().CanConvertTo(typeof(Text)));
+			Expect(converter.CanConvertTo(typeof(Text))).IsTrue();
 		}
 
 		void CanConvertToInt32()
 		{
-			ExpectFalse(new TestTextConverter().CanConvertTo(typeof(int)));
+			Expect(converter.CanConvertTo(typeof(int))).IsFalse();
 		}
 
 		//
@@ -61,22 +63,22 @@ namespace Totem.IO
 
 		void ConvertToString()
 		{
-			var value = new TestTextConverter().ConvertTo(1, typeof(string));
+			var value = converter.ConvertTo(1, typeof(string));
 
 			Expect(value).Is("1");
 		}
 
 		void ConvertToText()
 		{
-			var value = new TestTextConverter().ConvertTo(1, typeof(Text));
+			var value = converter.ConvertTo(1, typeof(Text));
 
-			ExpectTrue(value is Text);
+			Expect(value is Text).IsTrue();
 			Expect(value.ToString()).Is("1");
 		}
 
 		void ConvertToInt32()
 		{
-			ExpectThrows<NotSupportedException>(() => new TestTextConverter().ConvertTo("1", typeof(int)));
+			ExpectThrows<NotSupportedException>(() => converter.ConvertTo("1", typeof(int)));
 		}
 	}
 }
