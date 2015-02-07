@@ -34,7 +34,7 @@
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="xunit">
-      <HintPath>..\..\src\Totem\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+      <HintPath>..\..\..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -57,7 +57,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Totem\Totem.csproj">
       <Project>{7fa55c94-884e-42b1-83a3-3c4611549789}</Project>
-      <Name>Totem</Name>
+      <Name>Totem %28Totem\Totem%29</Name>
     </ProjectReference>
     <ProjectReference Include="..\Totem.Testing\Totem.Testing.csproj">
       <Project>{1286d14d-086e-4782-b56b-84527fa75149}</Project>

@@ -120,7 +120,7 @@ namespace Totem
 	/// <typeparam name="T">The type of attached metadata</typeparam>
 	public sealed class Tag<T> : Tag
 	{
-		private readonly Func<T> _resolveDefaultValue;
+		private Func<T> _resolveDefaultValue;
 
 		internal Tag(FieldInfo field, Func<T> resolveDefaultValue) : base(field)
 		{
@@ -148,6 +148,16 @@ namespace Totem
 		public new T Get(ITaggable target)
 		{
 			return target.Tags.Get(this);
+		}
+
+		public void SetDefaultValue(Func<T> resolve)
+		{
+			_resolveDefaultValue = resolve;
+		}
+
+		public void SetDefaultValue(T value)
+		{
+			_resolveDefaultValue = () => value;
 		}
 	}
 }

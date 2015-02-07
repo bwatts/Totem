@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
@@ -38,6 +39,7 @@
     <Compile Include="..\..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ConnectionDependencies.cs" />
     <Compile Include="Equality.cs" />
     <Compile Include="Connection.cs">
       <SubType>Code</SubType>
@@ -73,7 +75,18 @@
     <Compile Include="LinkText.cs" />
     <Compile Include="Notion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\AssemblyDirectories.cs" />
     <Compile Include="Reflection\LambdaBodies.cs" />
+    <Compile Include="Runtime\AreaType.cs" />
+    <Compile Include="Runtime\AreaTypeSet.cs" />
+    <Compile Include="Runtime\RuntimeDeployment.cs" />
+    <Compile Include="Runtime\RuntimeMap.cs" />
+    <Compile Include="Runtime\RuntimePackage.cs" />
+    <Compile Include="Runtime\RuntimeRegion.cs" />
+    <Compile Include="Runtime\RuntimePackageAttribute.cs" />
+    <Compile Include="Runtime\RuntimeRegionKey.cs" />
+    <Compile Include="Runtime\RuntimeType.cs" />
+    <Compile Include="Runtime\RuntimeTypeKey.cs" />
     <Compile Include="Tag.cs" />
     <Compile Include="Tags.cs" />
     <Compile Include="TagValue.cs" />
