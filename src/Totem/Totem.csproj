@@ -90,6 +90,7 @@
     <Compile Include="Tag.cs" />
     <Compile Include="Tags.cs" />
     <Compile Include="TagValue.cs" />
+    <Compile Include="Terms.cs" />
     <Compile Include="Text.cs">
       <SubType>Code</SubType>
     </Compile>

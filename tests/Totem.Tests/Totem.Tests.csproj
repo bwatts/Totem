@@ -52,6 +52,7 @@
     <Compile Include="TagScenarios.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ExpectScenarios.cs" />
+    <Compile Include="TermsScenarios.cs" />
     <Compile Include="TextScenarios.cs" />
   </ItemGroup>
   <ItemGroup>
