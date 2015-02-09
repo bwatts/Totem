@@ -99,7 +99,7 @@ namespace Totem
 
 		public static bool operator ==(LinkPath x, LinkPath y)
 		{
-			return Equality.Check(x, y);
+			return Equality.CheckOp(x, y);
 		}
 
 		public static bool operator !=(LinkPath x, LinkPath y)

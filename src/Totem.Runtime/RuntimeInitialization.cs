@@ -3,15 +3,22 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Reflection;
+using Serilog;
+using Serilog.Events;
+using Serilog.Parsing;
 using Totem.IO;
 
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// Reflects the elements of the Totem domain
+	/// Initializes the map and log of the Totem runtime
 	/// </summary>
-	internal static class DomainReflection
+	internal static class RuntimeInitialization
 	{
+		//
+		// Map
+		//
+
 		internal static RuntimeMap ReadMap(this RuntimeDeployment deployment)
 		{
 			var map = new RuntimeMap(deployment, deployment.ReadRegions().ToList());
@@ -32,17 +39,25 @@ namespace Totem.Runtime
 
 		private static RuntimePackage ReadPackage(this RuntimeDeployment deployment, string name)
 		{
-			var folderLink = deployment.Expand(FolderResource.From(name));
+			var folder = deployment.Expand(FolderResource.From(name));
 
-			var assemblyLink = folderLink.Then(FileName.From(name, "dll"));
+			var catalog = deployment.ReadPackageCatalog(name, folder);
 
-			var catalog = new AssemblyCatalog(assemblyLink.ToString());
-
-			var package = new RuntimePackage(folderLink, catalog.ReadRegionKey(), catalog);
+			var package = new RuntimePackage(folder, catalog.ReadRegionKey(), catalog);
 
 			package.RegisterAreas();
 
 			return package;
+		}
+
+		private static AssemblyCatalog ReadPackageCatalog(this RuntimeDeployment deployment, string name, FolderLink folder)
+		{
+			if(deployment.InSolution)
+			{
+				folder = folder.Then(FolderResource.From("bin/" + RuntimeDeployment.BuildType.ToString()));
+			}
+
+			return new AssemblyCatalog(folder.Then(FileName.From(name, "dll")).ToString());
 		}
 
 		private static RuntimeRegionKey ReadRegionKey(this AssemblyCatalog catalog)
@@ -97,6 +112,63 @@ namespace Totem.Runtime
 			var attribute = areaType.GetCustomAttribute<ConfigurationSectionAttribute>();
 
 			return attribute == null ? "" : attribute.Name;
+		}
+
+		//
+		// Log
+		//
+
+		internal static ILog ReadLog(this RuntimeDeployment deployment)
+		{
+			var level = (LogEventLevel) (deployment.Log.Level - 1);
+
+			var configuration = new LoggerConfiguration().WriteTo.RollingFile(
+				deployment.Log.Folder.Link.Then(FileResource.From("runtime-{Date}.txt")).ToString(),
+				level);
+
+			if(deployment.Mode == RuntimeMode.Console)
+			{
+				configuration = configuration.WriteTo.ColoredConsole(level, outputTemplate: "{Timestamp:h:mm:ss.fff tt} [{Level}] {Message}{NewLine}{Exception}");
+			}
+
+			if(deployment.Log.ServerUrl != "")
+			{
+				configuration = configuration.WriteTo.Seq(deployment.Log.ServerUrl, level);
+			}
+				
+			return new SerilogAdapter(configuration.CreateLogger());
+		}
+
+		private sealed class SerilogAdapter : ILog
+		{
+			private readonly ILogger _logger;
+
+			internal SerilogAdapter(ILogger logger)
+			{
+				_logger = logger;
+			}
+
+			public LogLevel Level { get; private set; }
+
+			public void Write(LogMessage message)
+			{
+				var level = (LogEventLevel) (message.Level - 1);
+
+				if(_logger.IsEnabled(level))
+				{
+					// TODO: Details
+					// TODO: Terms
+
+					var template = new MessageTemplate(new[] { new TextToken(message.Description.ToText()) });
+
+					_logger.Write(new LogEvent(
+						new DateTimeOffset(message.When.ToLocalTime()),
+						level,
+						message.Error ?? message.Details as Exception,
+						template,
+						Enumerable.Empty<LogEventProperty>()));
+				}
+			}
 		}
 	}
 }

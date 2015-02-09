@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Totem.Runtime.Configuration;
 
 namespace Totem.Runtime
@@ -10,59 +11,76 @@ namespace Totem.Runtime
 	/// <summary>
 	/// A composed instance of the Totem runtime
 	/// </summary>
-	internal sealed class RuntimeInstance
+	internal sealed class RuntimeInstance : Notion
 	{
 		private IDisposable _composition;
 
-		internal Exception Error { get; private set; }
-		internal bool Debugging { get { return Debugger.IsAttached; } }
-
 		internal bool TryStart(RuntimeSection settings)
 		{
-			return TryTransition(() => ComposeInstance(settings));
-		}
-
-		internal bool TryStop()
-		{
-			return TryTransition(DisposeInstance);
-		}
-
-		private bool TryTransition(Action transition)
-		{
-			if(Debugging)
+			if(Debugger.IsAttached)
 			{
-				transition();
+				Start(settings);
 
 				return true;
 			}
 			else
 			{
-				Error = null;
-
 				try
 				{
-					transition();
+					Start(settings);
+
+					return true;
 				}
 				catch(Exception error)
 				{
-					Error = error;
+					Log.Error("Runtime failed to start", error);
+
+					return false;
 				}
-
-				return Error == null;
 			}
 		}
 
-		private void ComposeInstance(RuntimeSection settings)
+		internal bool TryStop()
 		{
-			_composition = new InstanceComposition(settings).Connect();
-		}
-
-		private void DisposeInstance()
-		{
-			if(_composition != null)
+			if(Debugger.IsAttached)
 			{
-				_composition.Dispose();
+				Stop();
+
+				return true;
 			}
+			else
+			{
+				try
+				{
+					Stop();
+
+					return true;
+				}
+				catch(Exception error)
+				{
+					Log.Error("Runtime failed to stop", error);
+
+					return false;
+				}
+			}
+		}
+
+		private void Start(RuntimeSection settings)
+		{
+			Log.Info("Runtime starting", new { Runtime.Deployment.Mode, Folder = Runtime.Deployment.Folder.Link });
+
+			_composition = new InstanceComposition(settings).Connect();
+
+			Log.Info("Runtime started");
+		}
+
+		private void Stop()
+		{
+			Log.Info("Runtime stopping");
+
+			_composition.Dispose();
+
+			Log.Info("Runtime stopped");
 		}
 
 		private sealed class InstanceComposition : Connection
@@ -76,25 +94,22 @@ namespace Totem.Runtime
 
 			protected override void Open()
 			{
-				SetRuntimeTrait();
-
-				Compose();
-			}
-
-			private void SetRuntimeTrait()
-			{
-				Notion.Traits.Runtime.SetDefaultValue(_settings.ReadMap());
-			}
-
-			private void Compose()
-			{
-				var container = new CompositionContainer(Runtime.Catalog, CompositionOptions.DisableSilentRejection);
+				var container = CreateContainer();
 
 				Track(container);
 
 				var root = container.GetExportedValue<CompositionRoot>();
 
 				Track(root.Connect(this));
+			}
+
+			private CompositionContainer CreateContainer()
+			{
+				var catalog = new AggregateCatalog(
+					new AssemblyCatalog(Assembly.GetExecutingAssembly()),
+					Runtime.Catalog);
+				
+				return new CompositionContainer(catalog, CompositionOptions.DisableSilentRejection);
 			}
 		}
 	}

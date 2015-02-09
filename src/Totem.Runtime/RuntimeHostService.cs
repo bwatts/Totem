@@ -11,7 +11,7 @@ namespace Totem.Runtime
 	/// <summary>
 	/// A Windows Service that hosts the Totem runtime
 	/// </summary>
-	internal sealed class RuntimeHostService : ServiceBase
+	internal sealed class RuntimeHostService : ServiceBase, ITaggable
 	{
 		private readonly RuntimeInstance _instance = new RuntimeInstance();
 		private readonly RuntimeSection _settings;
@@ -21,13 +21,18 @@ namespace Totem.Runtime
 			_settings = settings;
 
 			_settings.Service.Configure(this);
+
+			Tags = new Tags();
 		}
+
+		public Tags Tags { get; private set; }
+		private ILog Log { get { return Notion.Traits.Log.Get(this); } }
 
 		protected override void OnStart(string[] args)
 		{
 			if(!_instance.TryStart(_settings))
 			{
-				ThrowHostException("Runtime failed to start");
+				ExitCode = -1;
 			}
 
 			base.OnStart(args);
@@ -37,44 +42,61 @@ namespace Totem.Runtime
 		{
 			if(!_instance.TryStop())
 			{
-				ThrowHostException("Runtime failed to stop");
+				ExitCode = -1;
 			}
 
 			base.OnStop();
-		}
-
-		private void ThrowHostException(Text header)
-		{
-			ExitCode = -1;
-
-			// Put the whole exception in the event log, whose details are normally culled
-
-			throw new Exception(header
-				.WriteTwoLines()
-				.Write("Exception:")
-				.WriteTwoLines()
-				.Write(_instance.Error));
 		}
 
 		//
 		// Installation
 		//
 
-		public static void Install()
+		public int Install()
 		{
-			var installer = new AssemblyInstaller(typeof(RuntimeHost).Assembly, null);
-			var savedState = new Hashtable();
+			try
+			{
+				Log.Info("Installing the runtime as a Windows service");
 
-			installer.Install(savedState);
-			installer.Commit(savedState);
+				var installer = new AssemblyInstaller(typeof(RuntimeHost).Assembly, null);
+				var savedState = new Hashtable();
+
+				installer.Install(savedState);
+				installer.Commit(savedState);
+
+				Log.Info("Installation succeeded");
+
+				return 0;
+			}
+			catch(Exception error)
+			{
+				Log.Error("Installation failed", error);
+
+				return -1;
+			}
 		}
 
-		public static void Uninstall()
+		public int Uninstall()
 		{
-			var installer = new AssemblyInstaller(typeof(RuntimeHost).Assembly, null);
-			var savedState = new Hashtable();
+			try
+			{
+				Log.Info("Uninstalling the runtime Windows service");
 
-			installer.Uninstall(savedState);
+				var installer = new AssemblyInstaller(typeof(RuntimeHost).Assembly, null);
+				var savedState = new Hashtable();
+
+				installer.Uninstall(savedState);
+
+				Log.Info("Uninstallation succeeded");
+
+				return 0;
+			}
+			catch(Exception error)
+			{
+				Log.Error("Uninstallation failed", error);
+
+				return -1;
+			}
 		}
 	}
 }

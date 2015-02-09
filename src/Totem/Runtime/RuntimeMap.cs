@@ -16,14 +16,10 @@ namespace Totem.Runtime
 			Deployment = deployment;
 			Regions = regions;
 
-			var packageCatalogs =
+			Catalog = new AggregateCatalog(
 				from region in Regions
 				from package in region.Packages
-				select package.Catalog;
-
-			var runtimeCatalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
-
-			Catalog = new AggregateCatalog(packageCatalogs.Concat(new[] { runtimeCatalog }));
+				select package.Catalog);
 		}
 
 		public RuntimeDeployment Deployment { get; private set; }

@@ -21,11 +21,9 @@ namespace Totem.Runtime
 
 		public AreaType Type { get; private set; }
 
-		public virtual bool TryResolveConnection(ILifetimeScope scope, out IConnectable connection)
+		public virtual IConnectable ResolveConnectionOrNull(ILifetimeScope scope)
 		{
-			connection = null;
-
-			return false;
+			return null;
 		}
 
 		public sealed override string ToString()

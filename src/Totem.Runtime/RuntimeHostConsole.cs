@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Totem.Runtime.Configuration;
 
@@ -22,16 +23,7 @@ namespace Totem.Runtime
 		{
 			InitializeConsole();
 
-			if(!TryStartHost())
-			{
-				return -1;
-			}
-			else
-			{
-				ReadKey();
-
-				return TryStopHost() ? 0 : -1;
-			}
+			return _instance.TryStart(_settings) ? RunConsole() : FailConsole();
 		}
 
 		private void InitializeConsole()
@@ -39,52 +31,41 @@ namespace Totem.Runtime
 			Console.Title = _settings.Service.Name;
 		}
 
-		private bool TryStartHost()
+		private int RunConsole()
 		{
-			//Console.WriteInfo("Runtime starting");
+			ReadKey("Press any key to stop . . .");
 
-			if(_instance.TryStart(_settings))
+			var exitCode = _instance.TryStop() ? 0 : -1;
+
+			if(Debugger.IsAttached)
 			{
-				//Console.WriteInfo("Runtime started. Press any key to stop...");
-
-				return true;
+				ReadKey("Press any key to continue . . .");
 			}
 			else
 			{
-				//Console.WriteError(Text
-				//	.Of("Runtime failed to start")
-				//	.WriteTwoLines()
-				//	.Write(_instance.Error)
-				//	.WriteTwoLines()
-				//	.Write("Press any key to stop..."));
-
-				ReadKey();
-
-				return false;
+				Console.WriteLine();
 			}
+
+			return exitCode;
 		}
 
-		private void ReadKey()
+		private int FailConsole()
 		{
+			if(Debugger.IsAttached)
+			{
+				ReadKey("Press any key to continue . . .");
+			}
+
+			return -1;
+		}
+
+		private static void ReadKey(string prompt)
+		{
+			Console.WriteLine();
+			Console.WriteLine(prompt);
+			Console.WriteLine();
+
 			System.Console.ReadKey(intercept: true);
-		}
-
-		private bool TryStopHost()
-		{
-			//Console.WriteInfo("Runtime stopping");
-
-			if(_instance.TryStop())
-			{
-				//Console.WriteInfo("Runtime stopped");
-
-				return true;
-			}
-			else
-			{
-				//Console.WriteError("Runtime failed to stop", _instance.Error);
-
-				return false;
-			}
 		}
 	}
 }

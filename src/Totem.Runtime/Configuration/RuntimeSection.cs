@@ -28,6 +28,13 @@ namespace Totem.Runtime.Configuration
 			set { this["dataFolder"] = value; }
 		}
 
+		[ConfigurationProperty("log", IsRequired = true)]
+		public LogElement Log
+		{
+			get { return (LogElement) this["log"]; }
+			set { this["log"] = value; }
+		}
+
 		[ConfigurationProperty("service", IsRequired = true)]
 		public ServiceElement Service
 		{
@@ -46,12 +53,7 @@ namespace Totem.Runtime.Configuration
 		// Map
 		//
 
-		public RuntimeMap ReadMap()
-		{
-			return ReadDeployment().ReadMap();
-		}
-
-		private RuntimeDeployment ReadDeployment()
+		public RuntimeDeployment ReadDeployment()
 		{
 			var hostFolder = GetHostFolder();
 
@@ -61,7 +63,9 @@ namespace Totem.Runtime.Configuration
 
 			var dataFolder = GetDataFolder(deploymentFolder);
 
-			return new RuntimeDeployment(inSolution, deploymentFolder, dataFolder, Deployment.Packages.GetNames());
+			var log = GetLog(dataFolder);
+
+			return new RuntimeDeployment(Mode, inSolution, deploymentFolder, dataFolder, log, Deployment.Packages.GetNames());
 		}
 
 		private static IFolder GetHostFolder()
@@ -94,13 +98,24 @@ namespace Totem.Runtime.Configuration
 			return new LocalFolder(FolderLink.From(dataFolder));
 		}
 
+		private RuntimeDeploymentLog GetLog(IFolder dataFolder)
+		{
+			var dataFolderLink = dataFolder.Link.Then(FolderResource.From(Log.DataFolder));
+
+			return new RuntimeDeploymentLog(Log.Level, new LocalFolder(dataFolderLink), Log.ServerUrl);
+		}
+
 		//
 		// Factory
 		//
 
 		public static RuntimeSection Read()
 		{
-			return (RuntimeSection) ConfigurationManager.GetSection("totem.runtime");
+			var instance = (RuntimeSection) ConfigurationManager.GetSection("totem.runtime");
+
+			Expect.That(instance).IsNotNull("Runtime is not configured - specify the 'totem.runtime' section in the configuration file");
+
+			return instance;
 		}
 	}
 }

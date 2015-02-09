@@ -47,6 +47,7 @@
     <Compile Include="ConnectionState.cs" />
     <Compile Include="ConnectionPhase.cs" />
     <Compile Include="Disposal.cs" />
+    <Compile Include="Event.cs" />
     <Compile Include="Expect.cs" />
     <Compile Include="ExpectException.cs" />
     <Compile Include="HashCode.cs" />
@@ -73,6 +74,11 @@
     <Compile Include="LinkPart.cs" />
     <Compile Include="LinkPath.cs" />
     <Compile Include="LinkText.cs" />
+    <Compile Include="LogOperations.cs" />
+    <Compile Include="Runtime\ILog.cs" />
+    <Compile Include="Runtime\LogMessage.cs" />
+    <Compile Include="LogLevel.cs" />
+    <Compile Include="Message.cs" />
     <Compile Include="Notion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflection\AssemblyDirectories.cs" />
@@ -80,7 +86,9 @@
     <Compile Include="Runtime\AreaType.cs" />
     <Compile Include="Runtime\AreaTypeSet.cs" />
     <Compile Include="Runtime\RuntimeDeployment.cs" />
+    <Compile Include="Runtime\RuntimeDeploymentLog.cs" />
     <Compile Include="Runtime\RuntimeMap.cs" />
+    <Compile Include="Runtime\RuntimeMode.cs" />
     <Compile Include="Runtime\RuntimePackage.cs" />
     <Compile Include="Runtime\RuntimeRegion.cs" />
     <Compile Include="Runtime\RuntimePackageAttribute.cs" />

@@ -15,6 +15,6 @@ namespace Totem.Runtime
 	{
 		AreaType Type { get; }
 
-		bool TryResolveConnection(ILifetimeScope scope, out IConnectable connection);
+		IConnectable ResolveConnectionOrNull(ILifetimeScope scope);
 	}
 }

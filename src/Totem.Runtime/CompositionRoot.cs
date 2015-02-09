@@ -28,6 +28,8 @@ namespace Totem.Runtime
 			{
 				ComposeScope();
 
+				Log.Info("Composed root lifetime scope");
+
 				Track(ComposeAreas());
 			}
 			finally
@@ -39,6 +41,8 @@ namespace Totem.Runtime
 		protected override void Close()
 		{
 			Scope = null;
+
+			Log.Info("Disposed root lifetime scope");
 		}
 
 		//
@@ -55,12 +59,17 @@ namespace Totem.Runtime
 			{
 				module.RegisterModule(area);
 
-				_areasByType.Add(area.Type, new AreaComposition(this, area));
+				AddArea(area);
 			}
 
 			Scope = module.Build();
 
 			Track(Scope);
+		}
+
+		private void AddArea(IRuntimeArea area)
+		{
+			_areasByType.Add(area.Type, new AreaComposition(this, area));
 		}
 
 		private IDisposable ComposeAreas()
@@ -86,12 +95,19 @@ namespace Totem.Runtime
 
 			protected override void Open()
 			{
-				IConnectable connection;
+				var connection = _area.ResolveConnectionOrNull(_root.Scope);
 
-				if(_area.TryResolveConnection(_root.Scope, out connection))
+				if(connection != null)
 				{
 					Track(connection.Connect(this));
 				}
+
+				Log.Info("Started " + _area.Type.Key.ToText());
+			}
+
+			protected override void Close()
+			{
+				Log.Info("Stopped " + _area.Type.Key.ToText());
 			}
 		}
 	}

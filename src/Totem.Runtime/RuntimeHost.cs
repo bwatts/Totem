@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
@@ -12,7 +13,7 @@ namespace Totem.Runtime
 	/// <summary>
 	/// Hosts an instance of the Totem runtime
 	/// </summary>
-	public class RuntimeHost
+	public class RuntimeHost : Notion
 	{
 		private readonly string[] _args;
 
@@ -23,44 +24,57 @@ namespace Totem.Runtime
 
 		public int Run()
 		{
-			try
+			if(Debugger.IsAttached)
 			{
-				var settings = RuntimeSection.Read();
+				RunHost();
 
-				return _args.Length > 0 ? RunInstaller(settings) : RunMode(settings);
+				return 0;
 			}
-			catch(Exception error)
+			else
 			{
-				//Console.WriteLine("Failed to start runtime host: " + Text.Of(error));
+				try
+				{
+					return RunHost();
+				}
+				catch(Exception error)
+				{
+					Console.WriteLine(error);
 
-				return -1;
+					return -1;
+				}
 			}
+		}
+
+		private int RunHost()
+		{
+			var settings = RuntimeSection.Read();
+
+			InitializeRuntimeAndLogTraits(settings);
+
+			return _args.Length > 0 ? RunInstaller(settings) : RunMode(settings);
+		}
+
+		private void InitializeRuntimeAndLogTraits(RuntimeSection settings)
+		{
+			var deployment = settings.ReadDeployment();
+
+			Notion.Traits.Runtime.SetDefaultValue(deployment.ReadMap());
+			Notion.Traits.Log.SetDefaultValue(deployment.ReadLog());
 		}
 
 		private int RunInstaller(RuntimeSection settings)
 		{
-			try
+			if(FirstArgIs("/install"))
 			{
-				if(FirstArgIs("/install"))
-				{
-					RuntimeHostService.Install();
-				}
-				else if(FirstArgIs("/uninstall"))
-				{
-					RuntimeHostService.Uninstall();
-				}
-				else
-				{
-					throw new Exception(Text.Of("Unrecognized arguments: ").WriteSeparatedBy(" ", _args));
-				}
-
-				return 0;
+				return new RuntimeHostService(settings).Install();
 			}
-			catch(Exception error)
+			else if(FirstArgIs("/uninstall"))
 			{
-				//Console.WriteLine("Failed to run installer: " + Text.Of(error));
-
-				return -1;
+				return new RuntimeHostService(settings).Uninstall();
+			}
+			else
+			{
+				throw new Exception(Text.Of("Unrecognized arguments: ").WriteSeparatedBy(" ", _args));
 			}
 		}
 
@@ -69,7 +83,7 @@ namespace Totem.Runtime
 			return _args[0].Equals(name, StringComparison.OrdinalIgnoreCase);
 		}
 
-		private static int RunMode(RuntimeSection settings)
+		private int RunMode(RuntimeSection settings)
 		{
 			switch(settings.Mode)
 			{
@@ -82,12 +96,12 @@ namespace Totem.Runtime
 			}
 		}
 
-		private static int RunConsole(RuntimeSection settings)
+		private int RunConsole(RuntimeSection settings)
 		{
 			return new RuntimeHostConsole(settings).Run();
 		}
 
-		private static int RunService(RuntimeSection settings)
+		private int RunService(RuntimeSection settings)
 		{
 			Directory.SetCurrentDirectory(Assembly.GetEntryAssembly().GetDirectoryName());
 

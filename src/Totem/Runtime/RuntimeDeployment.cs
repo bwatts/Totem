@@ -8,22 +8,26 @@ namespace Totem.Runtime
 	/// <summary>
 	/// The current deployment of the Totem runtime
 	/// </summary>
-	public sealed class RuntimeDeployment : Notion
+	public sealed class RuntimeDeployment
 	{
-		public RuntimeDeployment(bool inSolution, IFolder folder, IFolder dataFolder, IReadOnlyList<string> packageNames)
+		public RuntimeDeployment(RuntimeMode mode, bool inSolution, IFolder folder, IFolder dataFolder, RuntimeDeploymentLog log, IReadOnlyList<string> packageNames)
 		{
+			Mode = mode;
 			InSolution = inSolution;
 			Folder = folder;
 			DataFolder = dataFolder;
+			Log = log;
 			PackageNames = packageNames;
 		}
 
+		public RuntimeMode Mode { get; private set; }
 		public bool InSolution { get; private set; }
 		public IFolder Folder { get; private set; }
 		public IFolder DataFolder { get; private set; }
+		public RuntimeDeploymentLog Log { get; private set; }
 		public IReadOnlyList<string> PackageNames { get; private set; }
 
-		public override Text ToText()
+		public override string ToString()
 		{
 			return Folder.ToText();
 		}

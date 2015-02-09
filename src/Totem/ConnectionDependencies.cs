@@ -150,7 +150,7 @@ namespace Totem
 			private readonly IConnectable _item;
 			private readonly List<ConnectionNode> _dependencies;
 			private readonly CancellationToken _cancellationToken;
-			private bool _disconnected;
+			private bool _disconnected = true;
 
 			internal ConnectionNode(IConnectable item, IEnumerable<ConnectionNode> dependencies, CancellationToken cancellationToken)
 			{
