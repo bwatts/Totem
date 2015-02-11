@@ -28,8 +28,6 @@ namespace Totem.Runtime
 			{
 				ComposeScope();
 
-				Log.Info("Composed root lifetime scope");
-
 				Track(ComposeAreas());
 			}
 			finally
@@ -42,7 +40,7 @@ namespace Totem.Runtime
 		{
 			Scope = null;
 
-			Log.Info("Disposed root lifetime scope");
+			Log.Info("Closed runtime scope");
 		}
 
 		//
@@ -65,6 +63,8 @@ namespace Totem.Runtime
 			Scope = module.Build();
 
 			Track(Scope);
+
+			Log.Info("Opened runtime scope");
 		}
 
 		private void AddArea(IRuntimeArea area)
@@ -102,12 +102,12 @@ namespace Totem.Runtime
 					Track(connection.Connect(this));
 				}
 
-				Log.Info("Started " + _area.Type.Key.ToText());
+				Log.Info("Started | " + _area.Type.Key.ToText().InBrackets());
 			}
 
 			protected override void Close()
 			{
-				Log.Info("Stopped " + _area.Type.Key.ToText());
+				Log.Info("Stopped | " + _area.Type.Key.ToText().InBrackets());
 			}
 		}
 	}

@@ -131,7 +131,7 @@ namespace Totem.Runtime
 				return null;
 			}
 
-			var section = ConfigurationManager.GetSection(name);
+			var section = ReadSection(name, area.Type.Package);
 
 			Expect(section).IsNotNull(
 				issue: Text
@@ -152,6 +152,27 @@ namespace Totem.Runtime
 				actual: t => Text.OfType(section));
 
 			return typedSection;
+		}
+
+		private static object ReadSection(string name, RuntimePackage package)
+		{
+			// http://stackoverflow.com/a/1682968/37815
+
+			ResolveEventHandler resolver = (sender, e) =>
+			{
+				return e.Name == package.Name ? package.Assembly : null;
+			};
+
+			AppDomain.CurrentDomain.AssemblyResolve += resolver;
+
+			try
+			{
+				return ConfigurationManager.GetSection(name);
+			}
+			finally
+			{
+				AppDomain.CurrentDomain.AssemblyResolve -= resolver;
+			}
 		}
 	}
 }

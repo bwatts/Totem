@@ -42,12 +42,22 @@ namespace Totem.Runtime
 			return Folder.Link.Then(file);
 		}
 
+		public FileLink Expand(FileName file)
+		{
+			return Folder.Link.Then(file);
+		}
+
 		public FolderLink ExpandInData(FolderResource folder)
 		{
 			return DataFolder.Link.Then(folder);
 		}
 
 		public FileLink ExpandInData(FileResource file)
+		{
+			return DataFolder.Link.Then(file);
+		}
+
+		public FileLink ExpandInData(FileName file)
 		{
 			return DataFolder.Link.Then(file);
 		}

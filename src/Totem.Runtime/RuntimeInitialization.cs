@@ -43,7 +43,7 @@ namespace Totem.Runtime
 
 			var catalog = deployment.ReadPackageCatalog(name, folder);
 
-			var package = new RuntimePackage(folder, catalog.ReadRegionKey(), catalog);
+			var package = new RuntimePackage(name, folder, catalog.ReadRegionKey(), catalog);
 
 			package.RegisterAreas();
 
@@ -128,7 +128,7 @@ namespace Totem.Runtime
 
 			if(deployment.Mode == RuntimeMode.Console)
 			{
-				configuration = configuration.WriteTo.ColoredConsole(level, outputTemplate: "{Timestamp:h:mm:ss.fff tt} [{Level}] {Message}{NewLine}{Exception}");
+				configuration = configuration.WriteTo.ColoredConsole(level, outputTemplate: "{Timestamp:h:mm:ss.fff tt} | {Message}{NewLine}{Exception}");
 			}
 
 			if(deployment.Log.ServerUrl != "")

@@ -141,7 +141,7 @@ namespace Totem
 
 			private IDisposable GetDisposal()
 			{
-				return Disposal.OfMany(Nodes.Select(node => node.Connection));
+				return Disposal.OfMany(Nodes.Select(node => node.Connection).Reverse());
 			}
 		}
 
