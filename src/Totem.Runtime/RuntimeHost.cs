@@ -59,7 +59,8 @@ namespace Totem.Runtime
 			var deployment = settings.ReadDeployment();
 
 			Notion.Traits.Runtime.SetDefaultValue(deployment.ReadMap());
-			Notion.Traits.Log.SetDefaultValue(deployment.ReadLog());
+
+			Notion.Traits.InitializeLog(deployment.ReadLog());
 		}
 
 		private int RunInstaller(RuntimeSection settings)
@@ -83,25 +84,17 @@ namespace Totem.Runtime
 			return _args[0].Equals(name, StringComparison.OrdinalIgnoreCase);
 		}
 
-		private int RunMode(RuntimeSection settings)
+		private static int RunMode(RuntimeSection settings)
 		{
-			switch(settings.Mode)
-			{
-				case RuntimeMode.Console:
-					return RunConsole(settings);
-				case RuntimeMode.Service:
-					return RunService(settings);
-				default:
-					throw new ConfigurationErrorsException(Text.Of("Unsupported mode: ") + settings.Mode);
-			}
+			return settings.Service.Name != "" ? RunService(settings) : RunConsole(settings);
 		}
 
-		private int RunConsole(RuntimeSection settings)
+		private static int RunConsole(RuntimeSection settings)
 		{
 			return new RuntimeHostConsole(settings).Run();
 		}
 
-		private int RunService(RuntimeSection settings)
+		private static int RunService(RuntimeSection settings)
 		{
 			Directory.SetCurrentDirectory(Assembly.GetEntryAssembly().GetDirectoryName());
 

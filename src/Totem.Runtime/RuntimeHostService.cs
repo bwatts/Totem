@@ -70,7 +70,7 @@ namespace Totem.Runtime
 			}
 			catch(Exception error)
 			{
-				Log.Error("Installation failed", error);
+				Log.Error(error, "Installation failed");
 
 				return -1;
 			}
@@ -93,7 +93,7 @@ namespace Totem.Runtime
 			}
 			catch(Exception error)
 			{
-				Log.Error("Uninstallation failed", error);
+				Log.Error(error, "Uninstallation failed");
 
 				return -1;
 			}

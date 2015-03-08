@@ -344,6 +344,11 @@ namespace Totem
 		public static readonly Text Line = Environment.NewLine;
 		public static readonly Text TwoLines = Line.Repeat(2);
 
+		public const string TabIndent = "\t";
+		public const string TwoSpaceIndent = "  ";
+		public const string FourSpaceIndent = "    ";
+		public const string Ellipsis = "…";
+
 		//
 		// Of
 		//
@@ -493,6 +498,20 @@ namespace Totem
 		}
 
 		//
+		// OfType
+		//
+
+		public static Text OfType(object instance)
+		{
+			return instance == null ? Text.None : Text.Of(instance.GetType());
+		}
+
+		public static Text OfType<T>()
+		{
+			return Text.Of(typeof(T));
+		}
+
+		//
 		// If
 		//
 
@@ -514,6 +533,54 @@ namespace Totem
 		public static Text If(Func<bool> condition, Text whenTrue)
 		{
 			return If(condition, whenTrue, Text.None);
+		}
+
+		//
+		// Counts (int)
+		//
+
+		public static Text SingularOrPlural(int count, Text singular, Text plural)
+		{
+			return If(count == 1, singular, plural);
+		}
+
+		public static Text SingularOrPlural(int count, Text singular)
+		{
+			return If(count == 1, singular, singular + "s");
+		}
+
+		public static Text Count(int count, Text singular, Text plural)
+		{
+			return Of(count).Write(" ").WriteSingularOrPlural(count, singular, plural);
+		}
+
+		public static Text Count(int count, Text singular)
+		{
+			return Of(count).Write(" ").WriteSingularOrPlural(count, singular);
+		}
+
+		//
+		// Counts (long)
+		//
+
+		public static Text SingularOrPlural(long count, Text singular, Text plural)
+		{
+			return If(count == 1, singular, plural);
+		}
+
+		public static Text SingularOrPlural(long count, Text singular)
+		{
+			return If(count == 1, singular, singular + "s");
+		}
+
+		public static Text Count(long count, Text singular, Text plural)
+		{
+			return Of(count).Write(" ").WriteSingularOrPlural(count, singular, plural);
+		}
+
+		public static Text Count(long count, Text singular)
+		{
+			return Of(count).Write(" ").WriteSingularOrPlural(count, singular);
 		}
 
 		//
@@ -566,51 +633,6 @@ namespace Totem
 		public static Text SeparatedBy<T>(Text separator, IEnumerable<T> values)
 		{
 			return Text.SeparatedBy(separator, values.Select(value => Text.Of(value)));
-		}
-
-		//
-		// Misc
-		//
-
-		public static Text OfType(object instance)
-		{
-			return instance == null ? Text.None : Text.Of(instance.GetType());
-		}
-
-		public static Text OfType<T>()
-		{
-			return Text.Of(typeof(T));
-		}
-
-		public static Text Repeat(Text value, int count)
-		{
-			return value._isNone ? value : Text.Of(writer =>
-			{
-				for(var i = 0; i < count; i++)
-				{
-					value.ToWriter(writer);
-				}
-			});
-		}
-
-		public static Text InParentheses(Text value)
-		{
-			return Text.Of("({0})", value);
-		}
-
-		public static Text InBraces(Text value)
-		{
-			return Text.Of("{{{0}}}", value);
-		}
-
-		public static Text InBrackets(Text value)
-		{
-			return Text.Of("[{0}]", value);
-		}
-
-		public static Text InAngleBrackets(Text value)
-		{
-			return Text.Of("<{0}>", value);
 		}
 
 		/// <summary>

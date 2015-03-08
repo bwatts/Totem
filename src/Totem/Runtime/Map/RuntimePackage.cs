@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Totem.IO;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Map
 {
 	/// <summary>
 	/// A set of related aseemblies in a region of a Totem runtime
@@ -30,17 +30,7 @@ namespace Totem.Runtime
 
 		public override Text ToText()
 		{
-			return Assembly.GetName().Name;
-		}
-
-		public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
-		{
-			return Areas.Get(key, strict);
-		}
-
-		public AreaType GetArea(Type declaredType, bool strict = true)
-		{
-			return Areas.Get(declaredType, strict);
+			return Name;
 		}
 	}
 }

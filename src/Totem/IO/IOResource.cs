@@ -22,14 +22,14 @@ namespace Totem.IO
 
 		public abstract Text ToText(bool altSlash = false, bool leading = false);
 
-		public static IOResource From(string text, bool strict = true)
+		public static IOResource From(string value, bool strict = true)
 		{
-			var resource = FileResource.From(text, strict: false) ?? FolderResource.From(text, strict: false) as IOResource;
+			var resource = FileResource.From(value, strict: false) ?? FolderResource.From(value, strict: false) as IOResource;
 
 			Expect(strict && resource == null).IsFalse(
 				issue: "Value is not an I/O resource",
 				expected: "File or folder resource",
-				actual: t => text);
+				actual: t => value);
 
 			return resource;
 		}

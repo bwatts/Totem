@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Totem.IO;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Map
 {
 	/// <summary>
 	/// The log associated with the current deployment of the Totem runtime

@@ -48,7 +48,7 @@ namespace Totem
 		}
 
 		//
-		// Conditions
+		// Throws
 		//
 
 		public static void Throws<TException>(Action action, Text issue = null) where TException : Exception

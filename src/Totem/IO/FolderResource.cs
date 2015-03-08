@@ -94,9 +94,9 @@ namespace Totem.IO
 			return new FolderResource(path);
 		}
 
-		public new static FolderResource From(string text, bool strict = true)
+		public new static FolderResource From(string value, bool strict = true)
 		{
-			return new FolderResource(LinkPath.From(text, _separators));
+			return new FolderResource(LinkPath.From(value, _separators));
 		}
 
 		public static FolderResource FromRandom()

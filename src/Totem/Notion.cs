@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Totem.Runtime;
+using Totem.Runtime.Map;
 
 namespace Totem
 {
@@ -37,6 +38,11 @@ namespace Totem
 		protected static IExpect<T> Expect<T>(T value)
 		{
 			return Totem.Expect.That(value);
+		}
+
+		public static string NewId()
+		{
+			return Guid.NewGuid().ToString();
 		}
 
 		public static class Traits

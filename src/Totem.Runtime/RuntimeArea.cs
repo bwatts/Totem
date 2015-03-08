@@ -6,6 +6,7 @@ using System.Linq;
 using Autofac;
 using Autofac.Core;
 using Totem.IO;
+using Totem.Runtime.Map;
 
 namespace Totem.Runtime
 {
@@ -98,6 +99,19 @@ namespace Totem.Runtime
 		public FileLink ExpandInData(FileResource file)
 		{
 			return Runtime.Deployment.ExpandInData(file);
+		}
+
+		//
+		// Connection strings
+		//
+
+		protected string ReadConnectionString(string name, bool strict = true)
+		{
+			var configuration = ConfigurationManager.ConnectionStrings[name];
+
+			Expect(configuration == null && strict).IsFalse("Unknown connection string name: " + name);
+
+			return configuration.ConnectionString;
 		}
 	}
 

@@ -60,12 +60,16 @@
     <Compile Include="BuilderModule.cs" />
     <Compile Include="CompositionRoot.cs" />
     <Compile Include="ConfigurationSectionAttribute.cs" />
+    <Compile Include="Configuration\Console\ConsoleElement.cs" />
+    <Compile Include="Configuration\Console\ColumnsElement.cs" />
+    <Compile Include="Configuration\Console\RowsElement.cs" />
     <Compile Include="Configuration\Deployment\CopiedResourcesElement.cs" />
     <Compile Include="Configuration\Deployment\CopyElement.cs" />
     <Compile Include="Configuration\Deployment\DeploymentElement.cs" />
     <Compile Include="Configuration\Deployment\PackageElement.cs" />
     <Compile Include="Configuration\Deployment\PackagesElement.cs" />
     <Compile Include="Configuration\LogElement.cs" />
+    <Compile Include="Configuration\SerilogAdapter.cs" />
     <Compile Include="Configuration\Service\LifecycleElement.cs" />
     <Compile Include="Configuration\Service\ProcessElement.cs" />
     <Compile Include="Configuration\Service\StartElement.cs" />

@@ -9,19 +9,29 @@ namespace Totem.Runtime
 	/// </summary>
 	public class LogMessage : Message
 	{
-		public LogMessage(Text description, object details = null, LogLevel level = LogLevel.Inherit, Terms terms = null, Exception error = null)
+		public LogMessage(LogLevel level, Text template, params object[] propertyValues)
 		{
-			Description = description;
-			Details = details;
 			Level = level;
-			Terms = terms ?? Terms.None;
+			Template = template;
+			PropertyValues = propertyValues;
+		}
+
+		public LogMessage(LogLevel level, Exception error, Text template, params object[] propertyValues)
+		{
+			Level = level;
+			Template = template;
+			PropertyValues = propertyValues;
 			Error = error;
 		}
 
-		public Text Description { get; private set; }
-		public object Details { get; private set; }
 		public LogLevel Level { get; private set; }
-		public Terms Terms { get; private set; }
+		public Text Template { get; private set; }
+		public object[] PropertyValues { get; private set; }
 		public Exception Error { get; private set; }
+
+		public override Text ToText()
+		{
+			return Template;
+		}
 	}
 }

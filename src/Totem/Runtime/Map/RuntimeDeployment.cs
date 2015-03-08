@@ -3,25 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using Totem.IO;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Map
 {
 	/// <summary>
 	/// The current deployment of the Totem runtime
 	/// </summary>
 	public sealed class RuntimeDeployment
 	{
-		public RuntimeDeployment(RuntimeMode mode, bool inSolution, IFolder folder, IFolder dataFolder, RuntimeDeploymentLog log, IReadOnlyList<string> packageNames)
+		public RuntimeDeployment(bool inSolution, bool inConsole, IFolder folder, IFolder dataFolder, RuntimeDeploymentLog log, IReadOnlyList<string> packageNames)
 		{
-			Mode = mode;
 			InSolution = inSolution;
+			InConsole = inConsole;
 			Folder = folder;
 			DataFolder = dataFolder;
 			Log = log;
 			PackageNames = packageNames;
 		}
 
-		public RuntimeMode Mode { get; private set; }
 		public bool InSolution { get; private set; }
+		public bool InConsole { get; private set; }
 		public IFolder Folder { get; private set; }
 		public IFolder DataFolder { get; private set; }
 		public RuntimeDeploymentLog Log { get; private set; }

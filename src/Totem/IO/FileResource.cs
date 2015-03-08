@@ -100,9 +100,9 @@ namespace Totem.IO
 			return parsedFolder == null ? null : From(parsedFolder, name, strict);
 		}
 
-		public new static FileResource From(string text, bool strict = true)
+		public new static FileResource From(string value, bool strict = true)
 		{
-			var parsedFolder = FolderResource.From(text, strict);
+			var parsedFolder = FolderResource.From(value, strict);
 
 			if(parsedFolder != null)
 			{
@@ -119,7 +119,7 @@ namespace Totem.IO
 				}
 			}
 
-			Expect(strict).IsFalse(issue: "Cannot parse file resource", actual: t => text);
+			Expect(strict).IsFalse(issue: "Cannot parse file resource", actual: t => value);
 
 			return null;
 		}

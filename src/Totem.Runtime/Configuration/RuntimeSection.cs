@@ -4,8 +4,10 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using Totem.IO;
+using Totem.Runtime.Configuration.Console;
 using Totem.Runtime.Configuration.Deployment;
 using Totem.Runtime.Configuration.Service;
+using Totem.Runtime.Map;
 
 namespace Totem.Runtime.Configuration
 {
@@ -14,13 +16,6 @@ namespace Totem.Runtime.Configuration
 	/// </summary>
 	public class RuntimeSection : ConfigurationSection
 	{
-		[ConfigurationProperty("mode", DefaultValue = RuntimeMode.Console)]
-		public RuntimeMode Mode
-		{
-			get { return (RuntimeMode) this["mode"]; }
-			set { this["mode"] = value; }
-		}
-
 		[ConfigurationProperty("dataFolder", IsRequired = true)]
 		public string DataFolder
 		{
@@ -35,7 +30,14 @@ namespace Totem.Runtime.Configuration
 			set { this["log"] = value; }
 		}
 
-		[ConfigurationProperty("service", IsRequired = true)]
+		[ConfigurationProperty("console")]
+		public ConsoleElement Console
+		{
+			get { return (ConsoleElement) this["console"]; }
+			set { this["console"] = value; }
+		}
+
+		[ConfigurationProperty("service")]
 		public ServiceElement Service
 		{
 			get { return (ServiceElement) this["service"]; }
@@ -48,6 +50,9 @@ namespace Totem.Runtime.Configuration
 			get { return (DeploymentElement) this["deployment"]; }
 			set { this["deployment"] = value; }
 		}
+
+		public bool InService { get { return Service.Name != ""; } }
+		public bool InConsole { get { return Service.Name == ""; } }
 
 		//
 		// Map
@@ -65,7 +70,7 @@ namespace Totem.Runtime.Configuration
 
 			var log = GetLog(dataFolder);
 
-			return new RuntimeDeployment(Mode, inSolution, deploymentFolder, dataFolder, log, Deployment.Packages.GetNames());
+			return new RuntimeDeployment(inSolution, InConsole, deploymentFolder, dataFolder, log, Deployment.Packages.GetNames());
 		}
 
 		private static IFolder GetHostFolder()

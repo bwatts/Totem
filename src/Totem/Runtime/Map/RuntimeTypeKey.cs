@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Totem.IO;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Map
 {
 	/// <summary>
 	/// Identifies a runtime type within the region of its declaring assembly
@@ -95,7 +95,7 @@ namespace Totem.Runtime
 
 			if(!match.Success)
 			{
-				Expect(strict).IsFalse("Failed to parse runtime type key", value);
+				Expect(strict).IsFalse("Failed to parse runtime type key: " + value);
 
 				return null;
 			}

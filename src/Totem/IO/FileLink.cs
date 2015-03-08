@@ -95,9 +95,9 @@ namespace Totem.IO
 			return parsedFolder == null ? null : From(parsedFolder, file, strict);
 		}
 
-		public new static FileLink From(string text, bool strict = true)
+		public new static FileLink From(string value, bool strict = true)
 		{
-			var parsedFolder = FolderLink.From(text, strict);
+			var parsedFolder = FolderLink.From(value, strict);
 
 			if(parsedFolder != null)
 			{
@@ -114,7 +114,7 @@ namespace Totem.IO
 				}
 			}
 
-			Expect(strict).IsFalse(issue: "Cannot parse file link", actual: t => text);
+			Expect(strict).IsFalse(issue: "Cannot parse file link", actual: t => value);
 
 			return null;
 		}

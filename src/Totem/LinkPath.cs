@@ -136,9 +136,9 @@ namespace Totem
 			return From(segments as IEnumerable<string>);
 		}
 
-		public static LinkPath From(string text, string[] separators)
+		public static LinkPath From(string value, string[] separators)
 		{
-			var segments = text.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+			var segments = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
 			var lastSegment = segments.LastOrDefault();
 

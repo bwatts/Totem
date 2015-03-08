@@ -75,9 +75,9 @@ namespace Totem
 			return new LinkText(text.ToString());
 		}
 
-		public static implicit operator LinkText(string text)
+		public static implicit operator LinkText(string value)
 		{
-			return new LinkText(text);
+			return new LinkText(value);
 		}
 
 		public static implicit operator LinkText(Text text)

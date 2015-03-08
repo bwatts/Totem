@@ -21,14 +21,14 @@ namespace Totem.IO
 
 		public abstract Text ToText(bool altSlash = false);
 
-		public static IOLink From(string text, bool strict = true)
+		public static IOLink From(string value, bool strict = true)
 		{
-			var link = FileLink.From(text, strict: false) ?? FolderLink.From(text, strict: false) as IOLink;
+			var link = FileLink.From(value, strict: false) ?? FolderLink.From(value, strict: false) as IOLink;
 
 			Expect(strict && link == null).IsFalse(
 				issue: "Value is not an I/O link",
 				expected: "File or folder link",
-				actual: t => text);
+				actual: t => value);
 
 			return link;
 		}

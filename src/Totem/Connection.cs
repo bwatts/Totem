@@ -134,6 +134,19 @@ namespace Totem
 			Track(Disposal.OfMany(connections));
 		}
 
+		protected void Track(IConnectable connection)
+		{
+			Track(connection.Connect(this));
+		}
+
+		protected void Track(IEnumerable<IConnectable> connections)
+		{
+			foreach(var connection in connections)
+			{
+				Track(connection);
+			}
+		}
+
 		private void CloseTrackedConnections()
 		{
 			// Close in the opposite order as opened (the most dependent connections track last)

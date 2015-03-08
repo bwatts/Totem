@@ -20,8 +20,8 @@ namespace Totem
 			_terms = terms;
 		}
 
-		public bool IsEmpty { get { return _terms.Length == 0; } }
-		public bool IsNotEmpty { get { return _terms.Length != 0; } }
+		public bool IsNone { get { return _terms.Length == 0; } }
+		public bool IsNotNone { get { return _terms.Length != 0; } }
 		public int Count { get { return _terms.Length; } }
 		public string this[int index] { get { return _terms[index]; } }
 
@@ -191,7 +191,7 @@ namespace Totem
 
 		public static Terms From(IEnumerable<string> terms)
 		{
-			return new Terms(terms.Select(Escape).ToArray());
+			return new Terms(terms.Where(term => term != "").Select(Escape).ToArray());
 		}
 
 		public static Terms From(params string[] terms)

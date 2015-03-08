@@ -33,7 +33,7 @@ namespace Totem.Runtime
 				}
 				catch(Exception error)
 				{
-					Log.Error("Runtime failed to start", error);
+					Log.Error(error, "[runtime] Failed to start");
 
 					return false;
 				}
@@ -58,7 +58,7 @@ namespace Totem.Runtime
 				}
 				catch(Exception error)
 				{
-					Log.Error("Runtime failed to stop", error);
+					Log.Error(error, "[runtime] Failed to stop");
 
 					return false;
 				}
@@ -67,20 +67,22 @@ namespace Totem.Runtime
 
 		private void Start(RuntimeSection settings)
 		{
-			Log.Info("Runtime starting", new { Runtime.Deployment.Mode, Folder = Runtime.Deployment.Folder.Link });
+			Log.Info(
+				"[runtime] Composing instance " + Text.If(Runtime.Deployment.InSolution, "in solution", "deployed") + " at {Folder}",
+				Runtime.Deployment.Folder.Link);
 
 			_composition = new InstanceComposition(settings).Connect();
 
-			Log.Info("Runtime started");
+			Log.Info("[runtime] Instance composed");
 		}
 
 		private void Stop()
 		{
-			Log.Info("Runtime stopping");
+			Log.Info("[runtime] Stopping instance");
 
 			_composition.Dispose();
 
-			Log.Info("Runtime stopped");
+			Log.Info("[runtime] Instance stopped");
 		}
 
 		private sealed class InstanceComposition : Connection
@@ -97,10 +99,7 @@ namespace Totem.Runtime
 				var container = CreateContainer();
 
 				Track(container);
-
-				var root = container.GetExportedValue<CompositionRoot>();
-
-				Track(root.Connect(this));
+				Track(container.GetExportedValue<CompositionRoot>());
 			}
 
 			private CompositionContainer CreateContainer()

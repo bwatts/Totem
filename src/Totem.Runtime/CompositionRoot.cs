@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using Totem.Runtime.Map;
 
 namespace Totem.Runtime
 {
@@ -40,7 +41,7 @@ namespace Totem.Runtime
 		{
 			Scope = null;
 
-			Log.Info("Closed runtime scope");
+			Log.Info("[runtime] Closed root scope");
 		}
 
 		//
@@ -64,7 +65,7 @@ namespace Totem.Runtime
 
 			Track(Scope);
 
-			Log.Info("Opened runtime scope");
+			Log.Info("[runtime] Opened root scope");
 		}
 
 		private void AddArea(IRuntimeArea area)
@@ -90,7 +91,7 @@ namespace Totem.Runtime
 
 			internal IEnumerable<AreaComposition> GetDependencies()
 			{
-				return _area.Type.Dependencies.Select(dependency => _root._areasByType[dependency]);
+				return _area.Type.Dependencies.Values.Select(dependency => _root._areasByType[dependency]);
 			}
 
 			protected override void Open()
@@ -99,15 +100,15 @@ namespace Totem.Runtime
 
 				if(connection != null)
 				{
-					Track(connection.Connect(this));
+					Track(connection);
 				}
 
-				Log.Info("Started | " + _area.Type.Key.ToText().InBrackets());
+				Log.Info("[runtime] Started {Area}", _area.Type);
 			}
 
 			protected override void Close()
 			{
-				Log.Info("Stopped | " + _area.Type.Key.ToText().InBrackets());
+				Log.Info("[runtime] Stopped {Area}", _area.Type);
 			}
 		}
 	}

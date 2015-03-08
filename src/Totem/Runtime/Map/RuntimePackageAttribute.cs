@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Map
 {
 	/// <summary>
 	/// Indicates the decorated assembly defines a package of Totem runtime elements

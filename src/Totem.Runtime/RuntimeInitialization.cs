@@ -5,36 +5,64 @@ using System.Linq;
 using System.Reflection;
 using Serilog;
 using Serilog.Events;
-using Serilog.Parsing;
 using Totem.IO;
+using Totem.Reflection;
+using Totem.Runtime.Configuration;
+using Totem.Runtime.Map;
 
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// Initializes the map and log of the Totem runtime
+	/// Initializes the runtime log and map
 	/// </summary>
 	internal static class RuntimeInitialization
 	{
-		//
-		// Map
-		//
+		internal static ILog ReadLog(this RuntimeDeployment deployment)
+		{
+			var level = (LogEventLevel) (deployment.Log.Level - 1);
+
+			var configuration = new LoggerConfiguration()
+				.MinimumLevel.Is(level)
+				.WriteTo.RollingFile(deployment
+					.Log.Folder.Link
+					.Then(FileResource.From("runtime-{Date}.txt")).ToString(),
+					outputTemplate: "{Timestamp:h:mm:ss.fff tt} {Level,-11} | {Message}{NewLine}{Exception}");
+
+			if(deployment.InConsole)
+			{
+				configuration = configuration.WriteTo.ColoredConsole(level, outputTemplate: "{Timestamp:h:mm:ss.fff tt} | {Message}{NewLine}{Exception}");
+			}
+
+			if(deployment.Log.ServerUrl != "")
+			{
+				configuration = configuration.WriteTo.Seq(deployment.Log.ServerUrl, level);
+			}
+
+			return new SerilogAdapter(configuration.CreateLogger(), deployment.Log.Level);
+		}
 
 		internal static RuntimeMap ReadMap(this RuntimeDeployment deployment)
 		{
-			var map = new RuntimeMap(deployment, deployment.ReadRegions().ToList());
+			var map = new RuntimeMap(deployment, deployment.ReadRegions());
+
+			map.RegisterTypes();
 
 			map.RegisterAreaDependencies();
 
 			return map;
 		}
 
-		private static IEnumerable<RuntimeRegion> ReadRegions(this RuntimeDeployment deployment)
+		//
+		// Regions
+		//
+
+		private static RuntimeRegionSet ReadRegions(this RuntimeDeployment deployment)
 		{
-			return
+			return new RuntimeRegionSet(
 				from packageName in deployment.PackageNames
 				let package = deployment.ReadPackage(packageName)
-				group package by package.RegionKey into packagesByRegionKey
-				select new RuntimeRegion(packagesByRegionKey.Key, packagesByRegionKey.ToList());
+				group package by package.RegionKey into packagesByRegion
+				select new RuntimeRegion(packagesByRegion.Key, new RuntimePackageSet(packagesByRegion)));
 		}
 
 		private static RuntimePackage ReadPackage(this RuntimeDeployment deployment, string name)
@@ -43,11 +71,7 @@ namespace Totem.Runtime
 
 			var catalog = deployment.ReadPackageCatalog(name, folder);
 
-			var package = new RuntimePackage(name, folder, catalog.ReadRegionKey(), catalog);
-
-			package.RegisterAreas();
-
-			return package;
+			return new RuntimePackage(name, folder, catalog.ReadRegionKey(), catalog);
 		}
 
 		private static AssemblyCatalog ReadPackageCatalog(this RuntimeDeployment deployment, string name, FolderLink folder)
@@ -71,39 +95,39 @@ namespace Totem.Runtime
 			return regionKey;
 		}
 
-		private static void RegisterAreas(this RuntimePackage package)
-		{
-			// Principles here are borrowed from those of MEF metadata, the implementation of which proved to be troublesome.
-			//
-			// The friction is due to our exposure of a static runtime map, where MEF promotes a dynamic structure.
-			//
-			// MEF discovers area definitions, creates instances, and fulfills exports; we establish a middle ground with implicit metadata we read directly.
+		//
+		// Types
+		//
 
-			foreach(var area in
-				from type in package.Assembly.GetTypes()
-				where typeof(IRuntimeArea).IsAssignableFrom(type)
-				select new AreaType(package, type, type.ReadSectionName()))
+		private static void RegisterTypes(this RuntimeMap map)
+		{
+			foreach(var type in
+				from region in map.Regions
+				from package in region.Packages
+				from declaredType in package.Assembly.GetTypes()
+				where typeof(IRuntimeArea).IsAssignableFrom(declaredType)
+					&& declaredType.IsPublic
+					&& declaredType.IsClass
+					&& !declaredType.IsAbstract
+					&& !declaredType.IsAnonymous()
+				select new { package, declaredType })
 			{
-				package.Areas.Register(area);
+				map.TryReadArea(type.package, type.declaredType);
 			}
 		}
 
-		private static void RegisterAreaDependencies(this RuntimeMap map)
+		private static RuntimeTypeRef ReadType(this RuntimePackage package, Type declaredType)
 		{
-			var areaDependencies =
-				from region in map.Regions
-				from package in region.Packages
-				from area in package.Areas
-				from dependsOnAttribute in area.DeclaredType.GetCustomAttributes<DependsOnAttribute>(inherit: true)
-				select new
-				{
-					Area = area,
-					Dependency = map.GetArea(dependsOnAttribute.AreaType)
-				};
+			return new RuntimeTypeRef(package, declaredType, new RuntimeState(declaredType));
+		}
 
-			foreach(var areaDependency in areaDependencies)
+		private static void TryReadArea(this RuntimeMap map, RuntimePackage package, Type declaredType)
+		{
+			if(typeof(IRuntimeArea).IsAssignableFrom(declaredType))
 			{
-				areaDependency.Area.Dependencies.Register(areaDependency.Dependency);
+				package.Areas.Register(new AreaType(
+					package.ReadType(declaredType),
+					declaredType.ReadSectionName()));
 			}
 		}
 
@@ -114,60 +138,16 @@ namespace Totem.Runtime
 			return attribute == null ? "" : attribute.Name;
 		}
 
-		//
-		// Log
-		//
-
-		internal static ILog ReadLog(this RuntimeDeployment deployment)
+		private static void RegisterAreaDependencies(this RuntimeMap map)
 		{
-			var level = (LogEventLevel) (deployment.Log.Level - 1);
-
-			var configuration = new LoggerConfiguration().WriteTo.RollingFile(
-				deployment.Log.Folder.Link.Then(FileResource.From("runtime-{Date}.txt")).ToString(),
-				level);
-
-			if(deployment.Mode == RuntimeMode.Console)
+			foreach(var areaDependency in
+				from region in map.Regions
+				from package in region.Packages
+				from area in package.Areas
+				from dependsOnAttribute in area.DeclaredType.GetCustomAttributes<DependsOnAttribute>(inherit: true)
+				select new { area, Dependency = map.GetArea(dependsOnAttribute.AreaType) })
 			{
-				configuration = configuration.WriteTo.ColoredConsole(level, outputTemplate: "{Timestamp:h:mm:ss.fff tt} | {Message}{NewLine}{Exception}");
-			}
-
-			if(deployment.Log.ServerUrl != "")
-			{
-				configuration = configuration.WriteTo.Seq(deployment.Log.ServerUrl, level);
-			}
-				
-			return new SerilogAdapter(configuration.CreateLogger());
-		}
-
-		private sealed class SerilogAdapter : ILog
-		{
-			private readonly ILogger _logger;
-
-			internal SerilogAdapter(ILogger logger)
-			{
-				_logger = logger;
-			}
-
-			public LogLevel Level { get; private set; }
-
-			public void Write(LogMessage message)
-			{
-				var level = (LogEventLevel) (message.Level - 1);
-
-				if(_logger.IsEnabled(level))
-				{
-					// TODO: Details
-					// TODO: Terms
-
-					var template = new MessageTemplate(new[] { new TextToken(message.Description.ToText()) });
-
-					_logger.Write(new LogEvent(
-						new DateTimeOffset(message.When.ToLocalTime()),
-						level,
-						message.Error ?? message.Details as Exception,
-						template,
-						Enumerable.Empty<LogEventProperty>()));
-				}
+				areaDependency.area.Dependencies.Register(areaDependency.Dependency);
 			}
 		}
 	}

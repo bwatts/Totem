@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using Autofac;
 using Autofac.Core;
+using Totem.Runtime.Map;
 
 namespace Totem.Runtime
 {

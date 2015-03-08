@@ -111,9 +111,9 @@ namespace Totem.IO
 			return parsedResource == null ? null : From(root, resource);
 		}
 
-		public new static FolderLink From(string text, bool strict = true)
+		public new static FolderLink From(string value, bool strict = true)
 		{
-			var parsedFolder = FolderResource.From(text, strict);
+			var parsedFolder = FolderResource.From(value, strict);
 
 			if(parsedFolder != null && parsedFolder.Path.Segments.Count > 0)
 			{
@@ -124,7 +124,7 @@ namespace Totem.IO
 				return new FolderLink(parsedFolder.Path.Segments[0], FolderResource.From(path));
 			}
 
-			Expect(strict).IsFalse(issue: "Cannot parse folder link", actual: t => text);
+			Expect(strict).IsFalse(issue: "Cannot parse folder link", actual: t => value);
 
 			return null;
 		}

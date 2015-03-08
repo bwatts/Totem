@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Totem.IO;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Map
 {
 	/// <summary>
 	/// Identifies a region within a runtime, establishing a boundary for areas
@@ -96,7 +96,7 @@ namespace Totem.Runtime
 		{
 			if(!_regex.IsMatch(value))
 			{
-				Expect(strict).IsFalse("Failed to parse region key", value);
+				Expect(strict).IsFalse("Failed to parse region key: " + value);
 
 				return null;
 			}

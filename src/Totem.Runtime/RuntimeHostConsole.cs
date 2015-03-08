@@ -21,14 +21,9 @@ namespace Totem.Runtime
 
 		internal int Run()
 		{
-			InitializeConsole();
+			_settings.Console.Initialize();
 
 			return _instance.TryStart(_settings) ? RunConsole() : FailConsole();
-		}
-
-		private void InitializeConsole()
-		{
-			Console.Title = _settings.Service.Name;
 		}
 
 		private int RunConsole()
