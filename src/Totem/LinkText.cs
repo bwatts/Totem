@@ -26,8 +26,8 @@ namespace Totem
 		}
 
 		public string Value { get; private set; }
-		public bool IsEmpty { get { return Value == ""; } }
-		public bool IsNotEmpty { get { return Value != ""; } }
+		public int Length { get { return Value.Length; } }
+		public bool IsNone { get { return Value.Length == 0; } }
 		public override bool IsTemplate { get { return _isTemplate; } }
 
 		public override Text ToText()
@@ -49,6 +49,8 @@ namespace Totem
 		{
 			return Value.GetHashCode();
 		}
+
+		public static readonly LinkText None = new LinkText("");
 
 		public static bool operator ==(LinkText x, LinkText y)
 		{

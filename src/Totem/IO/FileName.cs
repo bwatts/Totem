@@ -24,7 +24,7 @@ namespace Totem.IO
 
 		public override Text ToText()
 		{
-			return Text.ToText().WriteIf(Extension.IsNotEmpty, FileExtension.WithSeparator(Extension).ToText());
+			return Text.ToText().WriteIf(Extension.Length > 0, FileExtension.WithSeparator(Extension).ToText());
 		}
 
 		//

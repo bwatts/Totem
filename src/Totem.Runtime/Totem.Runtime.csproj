@@ -57,6 +57,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\SolutionAssemblyInfo.cs">
+      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="BuilderModule.cs" />
     <Compile Include="CompositionRoot.cs" />
     <Compile Include="ConfigurationSectionAttribute.cs" />

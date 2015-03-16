@@ -22,9 +22,9 @@ namespace Totem.Runtime.Map
 				select package.Catalog);
 		}
 
-		public RuntimeDeployment Deployment { get; private set; }
-		public RuntimeRegionSet Regions { get; private set; }
-		public AggregateCatalog Catalog { get; private set; }
+		public readonly RuntimeDeployment Deployment;
+		public readonly RuntimeRegionSet Regions;
+		public readonly AggregateCatalog Catalog;
 
 		public RuntimeRegion GetRegion(RuntimeRegionKey key, bool strict = true)
 		{

@@ -68,9 +68,17 @@ namespace Totem.Runtime.Configuration
 
 			var dataFolder = GetDataFolder(deploymentFolder);
 
-			var log = GetLog(dataFolder);
+			var logFolder = GetLogFolder(dataFolder);
 
-			return new RuntimeDeployment(inSolution, InConsole, deploymentFolder, dataFolder, log, Deployment.Packages.GetNames());
+			return new RuntimeDeployment(
+				inSolution,
+				InConsole,
+				deploymentFolder,
+				dataFolder,
+				Deployment.Packages.GetNames(),
+				Log.Level,
+				new LocalFolder(logFolder),
+				Log.ServerUrl);
 		}
 
 		private static IFolder GetHostFolder()
@@ -103,11 +111,9 @@ namespace Totem.Runtime.Configuration
 			return new LocalFolder(FolderLink.From(dataFolder));
 		}
 
-		private RuntimeDeploymentLog GetLog(IFolder dataFolder)
+		private FolderLink GetLogFolder(IFolder dataFolder)
 		{
-			var dataFolderLink = dataFolder.Link.Then(FolderResource.From(Log.DataFolder));
-
-			return new RuntimeDeploymentLog(Log.Level, new LocalFolder(dataFolderLink), Log.ServerUrl);
+			return dataFolder.Link.Then(FolderResource.From(Log.DataFolder));
 		}
 
 		//

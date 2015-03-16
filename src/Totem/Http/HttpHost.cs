@@ -120,9 +120,16 @@ namespace Totem.Http
 				}
 				else
 				{
+					var portText = hostnameParts[1];
+
+					if(portText.EndsWith("/"))
+					{
+						portText = portText.Substring(0, portText.Length - 1);
+					}
+
 					int port;
 
-					if(Int32.TryParse(hostnameParts[1], out port))
+					if(Int32.TryParse(portText, out port))
 					{
 						return From(secure, hostnameParts[0], port);
 					}

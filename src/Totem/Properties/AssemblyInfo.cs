@@ -9,3 +9,4 @@ using System.Runtime.InteropServices;
 
 [assembly: InternalsVisibleTo("Totem.Runtime")]
 [assembly: InternalsVisibleTo("Totem.Tests")]
+[assembly: InternalsVisibleTo("Totem.Web")]

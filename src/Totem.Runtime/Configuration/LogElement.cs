@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using Totem.Http;
 
 namespace Totem.Runtime.Configuration
 {
@@ -24,10 +25,10 @@ namespace Totem.Runtime.Configuration
 			set { this["dataFolder"] = value; }
 		}
 
-		[ConfigurationProperty("serverUrl", IsRequired = true)]
-		public string ServerUrl
+		[ConfigurationProperty("serverUrl")]
+		public Href ServerUrl
 		{
-			get { return (string) this["serverUrl"]; }
+			get { return (Href) this["serverUrl"]; }
 			set { this["serverUrl"] = value; }
 		}
 	}

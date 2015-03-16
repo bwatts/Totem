@@ -55,7 +55,7 @@ namespace Totem.Runtime.Map
 			return type;
 		}
 
-		internal void RegisterIfNotAlready(T type)
+		protected internal void RegisterIfNotAlready(T type)
 		{
 			if(!Contains(type.Key))
 			{
@@ -63,7 +63,7 @@ namespace Totem.Runtime.Map
 			}
 		}
 
-		internal void Register(T type)
+		protected internal void Register(T type)
 		{
 			RegisterByKey(type);
 

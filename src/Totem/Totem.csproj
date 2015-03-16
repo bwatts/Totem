@@ -52,6 +52,7 @@
     <Compile Include="ExpectException.cs" />
     <Compile Include="HashCode.cs" />
     <Compile Include="Http\Href.cs" />
+    <Compile Include="Http\HttpAuthorization.cs" />
     <Compile Include="Http\HttpDomain.cs" />
     <Compile Include="Http\HttpHost.cs" />
     <Compile Include="Http\HttpLink.cs" />
@@ -72,6 +73,8 @@
     <Compile Include="IO\IOLink.cs" />
     <Compile Include="IO\IOResource.cs" />
     <Compile Include="IO\LocalFolder.cs" />
+    <Compile Include="IO\Media.cs" />
+    <Compile Include="IO\MediaType.cs" />
     <Compile Include="IO\TextConverter.cs" />
     <Compile Include="IO\TextValue.cs" />
     <Compile Include="ITaggable.cs" />
