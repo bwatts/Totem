@@ -26,9 +26,9 @@ namespace Totem.Runtime.Configuration
 		}
 
 		[ConfigurationProperty("serverUrl")]
-		public Href ServerUrl
+		public string ServerUrl
 		{
-			get { return (Href) this["serverUrl"]; }
+			get { return (string) this["serverUrl"]; }
 			set { this["serverUrl"] = value; }
 		}
 	}

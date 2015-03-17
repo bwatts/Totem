@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.ServiceProcess;
+using NDesk.Options;
 using Totem.Reflection;
 using Totem.Runtime.Configuration;
 
@@ -51,7 +53,7 @@ namespace Totem.Runtime
 
 			InitializeRuntimeAndLogTraits(settings);
 
-			return _args.Length > 0 ? RunInstaller(settings) : RunMode(settings);
+			return RunMode(settings);
 		}
 
 		private void InitializeRuntimeAndLogTraits(RuntimeSection settings)
@@ -63,46 +65,61 @@ namespace Totem.Runtime
 			Notion.Traits.InitializeLog(deployment.ReadLog());
 		}
 
-		private int RunInstaller(RuntimeSection settings)
+		private int RunMode(RuntimeSection settings)
 		{
-			if(FirstArgIs("/install"))
+			var install = false;
+			var uninstall = false;
+
+			var options = new OptionSet
 			{
-				return new RuntimeHostService(settings).Install();
+				{ "i|install", x => install = true },
+				{ "u|uninstall", x => uninstall = true }
+			};
+
+			var modeArgs = options.Parse(_args).ToArray();
+
+			if(install)
+			{
+				return InstallService(settings, modeArgs);
 			}
-			else if(FirstArgIs("/uninstall"))
+			else if(uninstall)
 			{
-				return new RuntimeHostService(settings).Uninstall();
+				return UninstallService(settings, modeArgs);
+			}
+			else if(settings.Service.IsConfigured)
+			{
+				return RunService(settings, modeArgs);
 			}
 			else
 			{
-				throw new Exception(Text.Of("Unrecognized arguments: ").WriteSeparatedBy(" ", _args));
+				return RunConsole(settings, modeArgs);
 			}
 		}
 
-		private bool FirstArgIs(string name)
+		private int InstallService(RuntimeSection settings, string[] args)
 		{
-			return _args[0].Equals(name, StringComparison.OrdinalIgnoreCase);
+			return new RuntimeHostService(settings, args).Install();
 		}
 
-		private static int RunMode(RuntimeSection settings)
+		private int UninstallService(RuntimeSection settings, string[] args)
 		{
-			return settings.Service.Name != "" ? RunService(settings) : RunConsole(settings);
+			return new RuntimeHostService(settings, args).Uninstall();
 		}
 
-		private static int RunConsole(RuntimeSection settings)
-		{
-			return new RuntimeHostConsole(settings).Run();
-		}
-
-		private static int RunService(RuntimeSection settings)
+		private int RunService(RuntimeSection settings, string[] args)
 		{
 			Directory.SetCurrentDirectory(Assembly.GetEntryAssembly().GetDirectoryName());
 
-			var service = new RuntimeHostService(settings);
+			var service = new RuntimeHostService(settings, args);
 
 			ServiceBase.Run(service);
 
 			return service.ExitCode;
+		}
+
+		private int RunConsole(RuntimeSection settings, string[] args)
+		{
+			return new RuntimeHostConsole(settings).Run();
 		}
 	}
 }

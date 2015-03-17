@@ -26,13 +26,6 @@ namespace Totem.Runtime.Configuration.Service
 			set { this["description"] = value; }
 		}
 
-		[ConfigurationProperty("process", IsRequired = false)]
-		public ProcessElement Process
-		{
-			get { return (ProcessElement) this["process"]; }
-			set { this["process"] = value; }
-		}
-
 		[ConfigurationProperty("start", IsRequired = false)]
 		public StartElement Start
 		{
@@ -47,16 +40,11 @@ namespace Totem.Runtime.Configuration.Service
 			set { this["lifecycle"] = value; }
 		}
 
-		public IEnumerable<Installer> ReadInstallers()
-		{
-			yield return new ServiceProcessInstaller
-			{
-				Account = Process.Account,
-				Username = Process.Username,
-				Password = Process.Password
-			};
+		public bool IsConfigured { get { return Name != ""; } }
 
-			yield return new ServiceInstaller
+		public ServiceInstaller ReadServiceInstaller()
+		{
+			return new ServiceInstaller
 			{
 				ServiceName = Name,
 				StartType = Start.Mode,

@@ -51,8 +51,8 @@ namespace Totem.Runtime.Configuration
 			set { this["deployment"] = value; }
 		}
 
-		public bool InService { get { return Service.Name != ""; } }
-		public bool InConsole { get { return Service.Name == ""; } }
+		public bool InService { get { return Service.IsConfigured; } }
+		public bool InConsole { get { return !Service.IsConfigured; } }
 
 		//
 		// Map
@@ -75,10 +75,8 @@ namespace Totem.Runtime.Configuration
 				InConsole,
 				deploymentFolder,
 				dataFolder,
-				Deployment.Packages.GetNames(),
-				Log.Level,
-				new LocalFolder(logFolder),
-				Log.ServerUrl);
+				new RuntimeDeploymentLog(Log.Level, new LocalFolder(logFolder), Log.ServerUrl),
+				Deployment.Packages.GetNames());
 		}
 
 		private static IFolder GetHostFolder()

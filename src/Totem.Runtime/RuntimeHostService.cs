@@ -15,14 +15,15 @@ namespace Totem.Runtime
 	{
 		private readonly RuntimeInstance _instance = new RuntimeInstance();
 		private readonly RuntimeSection _settings;
+		private readonly string[] _args;
 
-		public RuntimeHostService(RuntimeSection settings)
+		public RuntimeHostService(RuntimeSection settings, string[] args)
 		{
 			_settings = settings;
+			_args = args;
+			Tags = new Tags();
 
 			_settings.Service.Configure(this);
-
-			Tags = new Tags();
 		}
 
 		public Tags Tags { get; private set; }
@@ -58,7 +59,7 @@ namespace Totem.Runtime
 			{
 				Log.Info("Installing the runtime as a Windows service");
 
-				var installer = new AssemblyInstaller(typeof(RuntimeHost).Assembly, null);
+				var installer = new AssemblyInstaller(GetType().Assembly, _args);
 				var savedState = new Hashtable();
 
 				installer.Install(savedState);
@@ -82,7 +83,7 @@ namespace Totem.Runtime
 			{
 				Log.Info("Uninstalling the runtime Windows service");
 
-				var installer = new AssemblyInstaller(typeof(RuntimeHost).Assembly, null);
+				var installer = new AssemblyInstaller(GetType().Assembly, _args);
 				var savedState = new Hashtable();
 
 				installer.Uninstall(savedState);

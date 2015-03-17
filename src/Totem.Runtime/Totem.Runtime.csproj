@@ -35,6 +35,9 @@
     <Reference Include="Autofac">
       <HintPath>..\..\..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
+    <Reference Include="NDesk.Options">
+      <HintPath>..\..\..\..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
+    </Reference>
     <Reference Include="Serilog">
       <HintPath>..\..\..\..\packages\Serilog.1.4.168\lib\net45\Serilog.dll</HintPath>
     </Reference>
@@ -74,7 +77,6 @@
     <Compile Include="Configuration\LogElement.cs" />
     <Compile Include="Configuration\SerilogAdapter.cs" />
     <Compile Include="Configuration\Service\LifecycleElement.cs" />
-    <Compile Include="Configuration\Service\ProcessElement.cs" />
     <Compile Include="Configuration\Service\StartElement.cs" />
     <Compile Include="DependsOnAttribute.cs" />
     <Compile Include="IRuntimeArea.cs" />

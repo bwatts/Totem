@@ -19,12 +19,12 @@ namespace Totem.Runtime
 	{
 		internal static ILog ReadLog(this RuntimeDeployment deployment)
 		{
-			var level = (LogEventLevel) (deployment.LogLevel - 1);
+			var level = (LogEventLevel) (deployment.Log.Level - 1);
 
 			var configuration = new LoggerConfiguration()
 				.MinimumLevel.Is(level)
 				.WriteTo.RollingFile(
-					deployment.LogFolder.Link.Then(FileResource.From("runtime-{Date}.txt")).ToString(),
+					deployment.Log.Folder.Link.Then(FileResource.From("runtime-{Date}.txt")).ToString(),
 					outputTemplate: "{Timestamp:hh:mm:ss.fff tt} {Level,-11} | {Message}{NewLine}{Exception}");
 
 			if(deployment.InConsole)
@@ -32,12 +32,12 @@ namespace Totem.Runtime
 				configuration = configuration.WriteTo.ColoredConsole(level, outputTemplate: "{Timestamp:hh:mm:ss.fff tt} | {Message}{NewLine}{Exception}");
 			}
 
-			if(deployment.LogServerHref != null)
+			if(deployment.Log.ServerUrl != "")
 			{
-				configuration = configuration.WriteTo.Seq(deployment.LogServerHref.ToString(), level);
+				configuration = configuration.WriteTo.Seq(deployment.Log.ServerUrl.ToString(), level);
 			}
 
-			return new SerilogAdapter(configuration.CreateLogger(), deployment.LogLevel);
+			return new SerilogAdapter(configuration.CreateLogger(), deployment.Log.Level);
 		}
 
 		internal static RuntimeMap ReadMap(this RuntimeDeployment deployment)
