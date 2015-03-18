@@ -64,7 +64,10 @@ namespace Totem.Web
 			public bool WriteCore(TraceEventType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
 			{
 				var level = GetLevel(eventType);
-				var canWrite = Log.IsAt(level);
+
+				// OwinHttpListener always seems to throw ObjectDisposedException when shutting down
+
+				var canWrite = Log.IsAt(level) && !(exception is ObjectDisposedException);
 
 				if(canWrite)
 				{
