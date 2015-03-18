@@ -69,6 +69,7 @@ namespace Totem.Runtime
 		{
 			var install = false;
 			var uninstall = false;
+			var deploy = false;
 
 			var options = new OptionSet
 			{
@@ -85,6 +86,10 @@ namespace Totem.Runtime
 			else if(uninstall)
 			{
 				return UninstallService(settings, modeArgs);
+			}
+			else if(deploy)
+			{
+				return Deploy(settings, modeArgs);
 			}
 			else if(settings.Service.IsConfigured)
 			{
@@ -104,6 +109,11 @@ namespace Totem.Runtime
 		private int UninstallService(RuntimeSection settings, string[] args)
 		{
 			return new RuntimeHostService(settings, args).Uninstall();
+		}
+
+		private int Deploy(RuntimeSection settings, string[] args)
+		{
+			return new RuntimeHostDeployment(settings, args).Run();
 		}
 
 		private int RunService(RuntimeSection settings, string[] args)

@@ -52,7 +52,7 @@ namespace Totem.Runtime.Configuration
 		}
 
 		public bool InService { get { return Service.IsConfigured; } }
-		public bool InConsole { get { return !Service.IsConfigured; } }
+		public bool UserInteractive { get { return !Service.IsConfigured; } }
 
 		//
 		// Map
@@ -70,13 +70,14 @@ namespace Totem.Runtime.Configuration
 
 			var logFolder = GetLogFolder(dataFolder);
 
-			return new RuntimeDeployment(
+			return new RuntimeDeployment(new RuntimeContext(
 				inSolution,
-				InConsole,
+				UserInteractive,
 				deploymentFolder,
 				dataFolder,
-				new RuntimeDeploymentLog(Log.Level, new LocalFolder(logFolder), Log.ServerUrl),
-				Deployment.Packages.GetNames());
+				Log.Level,
+				new LocalFolder(logFolder),
+				Deployment.Packages.GetNames()));
 		}
 
 		private static IFolder GetHostFolder()

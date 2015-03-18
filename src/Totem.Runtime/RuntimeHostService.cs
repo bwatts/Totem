@@ -9,7 +9,7 @@ using Totem.Runtime.Configuration;
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// A Windows Service that hosts the Totem runtime
+	/// A Windows Service hosting an instance of the Totem runtime
 	/// </summary>
 	internal sealed class RuntimeHostService : ServiceBase, ITaggable
 	{
@@ -59,11 +59,11 @@ namespace Totem.Runtime
 			{
 				Log.Info("Installing the runtime as a Windows service");
 
-				var installer = new AssemblyInstaller(GetType().Assembly, _args);
-				var savedState = new Hashtable();
-
-				installer.Install(savedState);
-				installer.Commit(savedState);
+				Apply((installer, savedState) =>
+				{
+					installer.Install(savedState);
+					installer.Commit(savedState);
+				});
 
 				Log.Info("Installation succeeded");
 
@@ -83,10 +83,7 @@ namespace Totem.Runtime
 			{
 				Log.Info("Uninstalling the runtime Windows service");
 
-				var installer = new AssemblyInstaller(GetType().Assembly, _args);
-				var savedState = new Hashtable();
-
-				installer.Uninstall(savedState);
+				Apply((installer, savedState) => installer.Uninstall(savedState));
 
 				Log.Info("Uninstallation succeeded");
 
@@ -98,6 +95,14 @@ namespace Totem.Runtime
 
 				return -1;
 			}
+		}
+
+		internal void Apply(Action<AssemblyInstaller, IDictionary> action)
+		{
+			var installer = new AssemblyInstaller(GetType().Assembly, _args);
+			var savedState = new Hashtable();
+
+			action(installer, savedState);
 		}
 	}
 }

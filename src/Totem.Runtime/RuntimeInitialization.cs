@@ -19,25 +19,20 @@ namespace Totem.Runtime
 	{
 		internal static ILog ReadLog(this RuntimeDeployment deployment)
 		{
-			var level = (LogEventLevel) (deployment.Log.Level - 1);
+			var level = (LogEventLevel) (deployment.Context.LogLevel - 1);
 
 			var configuration = new LoggerConfiguration()
 				.MinimumLevel.Is(level)
 				.WriteTo.RollingFile(
-					deployment.Log.Folder.Link.Then(FileResource.From("runtime-{Date}.txt")).ToString(),
+					deployment.Context.LogFolder.Link.Then(FileResource.From("runtime-{Date}.txt")).ToString(),
 					outputTemplate: "{Timestamp:hh:mm:ss.fff tt} {Level,-11} | {Message}{NewLine}{Exception}");
 
-			if(deployment.InConsole)
+			if(deployment.Context.UserInteractive)
 			{
 				configuration = configuration.WriteTo.ColoredConsole(level, outputTemplate: "{Timestamp:hh:mm:ss.fff tt} | {Message}{NewLine}{Exception}");
 			}
 
-			if(deployment.Log.ServerUrl != "")
-			{
-				configuration = configuration.WriteTo.Seq(deployment.Log.ServerUrl.ToString(), level);
-			}
-
-			return new SerilogAdapter(configuration.CreateLogger(), deployment.Log.Level);
+			return new SerilogAdapter(configuration.CreateLogger(), deployment.Context.LogLevel);
 		}
 
 		internal static RuntimeMap ReadMap(this RuntimeDeployment deployment)
@@ -58,7 +53,7 @@ namespace Totem.Runtime
 		private static RuntimeRegionSet ReadRegions(this RuntimeDeployment deployment)
 		{
 			return new RuntimeRegionSet(
-				from packageName in deployment.PackageNames
+				from packageName in deployment.Context.PackageNames
 				let package = deployment.ReadPackage(packageName)
 				group package by package.RegionKey into packagesByRegion
 				select new RuntimeRegion(packagesByRegion.Key, new RuntimePackageSet(packagesByRegion)));
@@ -77,12 +72,12 @@ namespace Totem.Runtime
 		{
 			// TODO: Ensure that Totem.* is a package when deployed
 
-			if(!deployment.InSolution || !name.StartsWith("Totem."))
+			if(!deployment.Context.InSolution || !name.StartsWith("Totem."))
 			{
-				return deployment.Expand(FolderResource.From(name));
+				return deployment.Context.ExpandFolder(FolderResource.From(name));
 			}
 
-			var solutionFolder = deployment.Folder.Link.Up(1);
+			var solutionFolder = deployment.Context.Folder.Link.Up(1);
 
 			var submoduleFolder = FolderResource.From("submodules/Totem/src").Then(FolderResource.From(name));
 
@@ -91,8 +86,10 @@ namespace Totem.Runtime
 
 		private static AssemblyCatalog ReadPackageCatalog(this RuntimeDeployment deployment, string name, FolderLink folder)
 		{
-			if(deployment.InSolution)
+			if(deployment.Context.InSolution)
 			{
+				// TODO: Put .BuildType on RuntimeDeployment?
+
 				folder = folder.Then(FolderResource.From("bin/" + RuntimeDeployment.BuildType.ToString()));
 			}
 

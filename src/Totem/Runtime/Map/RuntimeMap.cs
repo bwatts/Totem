@@ -11,7 +11,7 @@ namespace Totem.Runtime.Map
 	/// </summary>
 	public sealed class RuntimeMap : Notion
 	{
-		public RuntimeMap(RuntimeDeployment deployment, RuntimeRegionSet regions)
+		public RuntimeMap(IRuntimeDeployment deployment, RuntimeRegionSet regions)
 		{
 			Deployment = deployment;
 			Regions = regions;
@@ -22,7 +22,7 @@ namespace Totem.Runtime.Map
 				select package.Catalog);
 		}
 
-		public readonly RuntimeDeployment Deployment;
+		public readonly IRuntimeDeployment Deployment;
 		public readonly RuntimeRegionSet Regions;
 		public readonly AggregateCatalog Catalog;
 

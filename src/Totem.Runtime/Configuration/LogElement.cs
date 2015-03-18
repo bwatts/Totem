@@ -24,12 +24,5 @@ namespace Totem.Runtime.Configuration
 			get { return (string) this["dataFolder"]; }
 			set { this["dataFolder"] = value; }
 		}
-
-		[ConfigurationProperty("serverUrl")]
-		public string ServerUrl
-		{
-			get { return (string) this["serverUrl"]; }
-			set { this["serverUrl"] = value; }
-		}
 	}
 }

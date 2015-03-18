@@ -68,8 +68,8 @@ namespace Totem.Runtime
 		private void Start(RuntimeSection settings)
 		{
 			Log.Info(
-				"[runtime] Composing instance " + Text.If(Runtime.Deployment.InSolution, "in solution", "deployed") + " at {Folder}",
-				Runtime.Deployment.Folder.Link);
+				"[runtime] Composing instance " + Text.If(Runtime.Deployment.Context.InSolution, "in solution", "deployed") + " at {Folder}",
+				Runtime.Deployment.Context.Folder.Link);
 
 			_composition = new InstanceComposition(settings).Connect();
 

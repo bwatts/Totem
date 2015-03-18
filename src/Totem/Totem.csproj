@@ -88,6 +88,7 @@
     <Compile Include="Many.cs" />
     <Compile Include="Reflection\AnonymousTypes.cs" />
     <Compile Include="Reflection\InheritanceChain.cs" />
+    <Compile Include="Runtime\IRuntimeDeployment.cs" />
     <Compile Include="Runtime\Map\RuntimePackageSet.cs" />
     <Compile Include="Runtime\Map\RuntimeRegionSet.cs" />
     <Compile Include="Runtime\Map\RuntimeSet.cs" />
@@ -106,8 +107,6 @@
     <Compile Include="Reflection\LambdaBodies.cs" />
     <Compile Include="Runtime\Map\AreaType.cs" />
     <Compile Include="Runtime\Map\RuntimeTypeSetCore.cs" />
-    <Compile Include="Runtime\Map\RuntimeDeployment.cs" />
-    <Compile Include="Runtime\Map\RuntimeDeploymentLog.cs" />
     <Compile Include="Runtime\Map\RuntimeMap.cs" />
     <Compile Include="Runtime\Map\RuntimePackage.cs" />
     <Compile Include="Runtime\Map\RuntimeRegion.cs" />
@@ -117,6 +116,7 @@
     <Compile Include="Runtime\Map\RuntimeTypeKey.cs" />
     <Compile Include="Runtime\Map\RuntimeTypeSet.cs" />
     <Compile Include="Runtime\Map\RuntimeSetCore.cs" />
+    <Compile Include="Runtime\RuntimeContext.cs" />
     <Compile Include="Tag.cs" />
     <Compile Include="Tags.cs" />
     <Compile Include="TagValue.cs" />
