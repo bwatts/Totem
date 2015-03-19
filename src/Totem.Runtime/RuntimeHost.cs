@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.ServiceProcess;
-using NDesk.Options;
+using Serilog;
+using Serilog.Extras.Topshelf;
+using Topshelf;
+using Topshelf.HostConfigurators;
+using Totem.IO;
 using Totem.Reflection;
 using Totem.Runtime.Configuration;
 
@@ -15,121 +17,56 @@ namespace Totem.Runtime
 	/// <summary>
 	/// Hosts an instance of the Totem runtime
 	/// </summary>
-	public class RuntimeHost : Notion
+	public static class RuntimeHost
 	{
-		private readonly string[] _args;
-
-		public RuntimeHost(string[] args)
+		public static int Run(Action<HostConfigurator> configureHost, string sectionName = "totem.runtime")
 		{
-			_args = args;
-		}
-
-		public int Run()
-		{
-			if(Debugger.IsAttached)
+			return (int) HostFactory.Run(host =>
 			{
-				RunHost();
+				var settings = ReadSettings(sectionName);
 
-				return 0;
-			}
-			else
-			{
-				try
-				{
-					return RunHost();
-				}
-				catch(Exception error)
-				{
-					Console.WriteLine(error);
+				host.UseRuntime(settings);
 
-					return -1;
-				}
-			}
+				configureHost(host);
+			});
 		}
 
-		private int RunHost()
+		private static RuntimeSection ReadSettings(string sectionName)
 		{
-			var settings = RuntimeSection.Read();
+			var settings = ConfigurationManager.GetSection(sectionName) as RuntimeSection;
 
-			InitializeRuntimeAndLogTraits(settings);
+			Expect.That(settings).IsNotNull("Configuration section not found: " + sectionName);
 
-			return RunMode(settings);
+			return settings;
 		}
 
-		private void InitializeRuntimeAndLogTraits(RuntimeSection settings)
+		private static void UseRuntime(this HostConfigurator host, RuntimeSection settings)
+		{
+			SetCurrentDirectory();
+
+			host.Service<RuntimeService>(() => new RuntimeService(settings));
+
+			host.ConfigureRuntime(settings);
+		}
+
+		private static void SetCurrentDirectory()
+		{
+			Directory.SetCurrentDirectory(Assembly.GetEntryAssembly().GetDirectoryName());
+		}
+
+		private static void ConfigureRuntime(this HostConfigurator host, RuntimeSection settings)
 		{
 			var deployment = settings.ReadDeployment();
 
-			Notion.Traits.Runtime.SetDefaultValue(deployment.ReadMap());
+			var map = deployment.ReadMap();
+			var log = deployment.ReadLog();
 
-			Notion.Traits.InitializeLog(deployment.ReadLog());
-		}
+			Notion.Traits.Runtime.SetDefaultValue(map);
+			Notion.Traits.InitializeLog(log);
 
-		private int RunMode(RuntimeSection settings)
-		{
-			var install = false;
-			var uninstall = false;
-			var deploy = false;
+			log.Info(settings.Deployment.DataFolder.ToText());
 
-			var options = new OptionSet
-			{
-				{ "i|install", x => install = true },
-				{ "u|uninstall", x => uninstall = true }
-			};
-
-			var modeArgs = options.Parse(_args).ToArray();
-
-			if(install)
-			{
-				return InstallService(settings, modeArgs);
-			}
-			else if(uninstall)
-			{
-				return UninstallService(settings, modeArgs);
-			}
-			else if(deploy)
-			{
-				return Deploy(settings, modeArgs);
-			}
-			else if(settings.UserInteractive)
-			{
-				return RunConsole(settings, modeArgs);
-			}
-			else
-			{
-				return RunService(settings, modeArgs);
-			}
-		}
-
-		private int InstallService(RuntimeSection settings, string[] args)
-		{
-			return new RuntimeHostService(settings, args).Install();
-		}
-
-		private int UninstallService(RuntimeSection settings, string[] args)
-		{
-			return new RuntimeHostService(settings, args).Uninstall();
-		}
-
-		private int Deploy(RuntimeSection settings, string[] args)
-		{
-			return new RuntimeHostDeployment(settings, args).Run();
-		}
-
-		private int RunService(RuntimeSection settings, string[] args)
-		{
-			Directory.SetCurrentDirectory(Assembly.GetEntryAssembly().GetDirectoryName());
-
-			var service = new RuntimeHostService(settings, args);
-
-			ServiceBase.Run(service);
-
-			return service.ExitCode;
-		}
-
-		private int RunConsole(RuntimeSection settings, string[] args)
-		{
-			return new RuntimeHostConsole(settings).Run();
+			host.UseSerilog(log.Logger);
 		}
 	}
 }

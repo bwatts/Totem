@@ -11,7 +11,7 @@ namespace Totem.Runtime.Configuration
 	/// </summary>
 	public class LogElement : ConfigurationElement
 	{
-		[ConfigurationProperty("level", IsRequired = true)]
+		[ConfigurationProperty("level", DefaultValue = LogLevel.Info)]
 		public LogLevel Level
 		{
 			get { return (LogLevel) this["level"]; }

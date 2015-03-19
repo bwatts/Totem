@@ -12,13 +12,13 @@ namespace Totem.Runtime.Configuration
 	/// </summary>
 	internal sealed class SerilogAdapter : ILog
 	{
-		private readonly ILogger _logger;
-
 		internal SerilogAdapter(ILogger logger, LogLevel level)
 		{
-			_logger = logger;
+			Logger = logger;
 			Level = level;
 		}
+
+		internal readonly ILogger Logger;
 
 		public LogLevel Level { get; private set; }
 
@@ -28,7 +28,7 @@ namespace Totem.Runtime.Configuration
 
 			var level = (LogEventLevel) (effectiveLevel - 1);
 
-			if(_logger.IsEnabled(level))
+			if(Logger.IsEnabled(level))
 			{
 				Write(message, level);
 			}
@@ -38,11 +38,11 @@ namespace Totem.Runtime.Configuration
 		{
 			if(message.Error != null)
 			{
-				_logger.Write(level, message.Error, message.Template, message.PropertyValues);
+				Logger.Write(level, message.Error, message.Template, message.PropertyValues);
 			}
 			else
 			{
-				_logger.Write(level, message.Template, message.PropertyValues);
+				Logger.Write(level, message.Template, message.PropertyValues);
 			}
 		}
 	}

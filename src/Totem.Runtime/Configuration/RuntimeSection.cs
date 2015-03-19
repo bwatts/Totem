@@ -6,7 +6,6 @@ using System.Linq;
 using Totem.IO;
 using Totem.Runtime.Configuration.Console;
 using Totem.Runtime.Configuration.Deployment;
-using Totem.Runtime.Configuration.Service;
 using Totem.Runtime.Map;
 
 namespace Totem.Runtime.Configuration
@@ -37,13 +36,6 @@ namespace Totem.Runtime.Configuration
 			set { this["console"] = value; }
 		}
 
-		[ConfigurationProperty("service")]
-		public ServiceElement Service
-		{
-			get { return (ServiceElement) this["service"]; }
-			set { this["service"] = value; }
-		}
-
 		[ConfigurationProperty("deployment", IsRequired = true)]
 		public DeploymentElement Deployment
 		{
@@ -69,14 +61,14 @@ namespace Totem.Runtime.Configuration
 
 			var logFolder = GetLogFolder(dataFolder);
 
-			return new RuntimeDeployment(new RuntimeContext(
+			return new RuntimeDeployment(
 				inSolution,
 				UserInteractive,
 				deploymentFolder,
 				dataFolder,
 				Log.Level,
 				new LocalFolder(logFolder),
-				Deployment.Packages.GetNames()));
+				Deployment.Packages.GetNames());
 		}
 
 		private static IFolder GetHostFolder()

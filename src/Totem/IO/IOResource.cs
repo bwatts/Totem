@@ -7,7 +7,7 @@ using System.Linq;
 namespace Totem.IO
 {
 	/// <summary>
-	/// A resource targeted by an HTTP link
+	/// A resource targeted by an I/O link
 	/// </summary>
 	[TypeConverter(typeof(IOResource.Converter))]
 	public abstract class IOResource : LinkPart

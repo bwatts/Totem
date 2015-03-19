@@ -83,22 +83,22 @@ namespace Totem.Runtime
 
 		public FolderLink Expand(FolderResource folder)
 		{
-			return Runtime.Deployment.Context.ExpandFolder(folder);
+			return Runtime.Deployment.Expand(folder);
 		}
 
 		public FileLink Expand(FileResource file)
 		{
-			return Runtime.Deployment.Context.ExpandFolder(file);
+			return Runtime.Deployment.Expand(file);
 		}
 
 		public FolderLink ExpandInData(FolderResource folder)
 		{
-			return Runtime.Deployment.Context.ExpandDataFolder(folder);
+			return Runtime.Deployment.ExpandInData(folder);
 		}
 
 		public FileLink ExpandInData(FileResource file)
 		{
-			return Runtime.Deployment.Context.ExpandDataFolder(file);
+			return Runtime.Deployment.ExpandInData(file);
 		}
 
 		//

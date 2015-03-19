@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Totem.Http;
 using Totem.IO;
+using Totem.Runtime.Map;
 
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// The context of a set of artifacts defining the Totem runtime
+	/// A context-bound instance of the Totem runtime
 	/// </summary>
-	public class RuntimeContext
+	public class RuntimeDeployment
 	{
-		public RuntimeContext(
+		public RuntimeDeployment(
 			bool inSolution,
 			bool userInteractive,
 			IFolder folder,
@@ -41,24 +43,38 @@ namespace Totem.Runtime
 			return Folder.ToString();
 		}
 
-		public FolderLink ExpandFolder(FolderResource folder)
+		public FolderLink Expand(FolderResource folder)
 		{
 			return Folder.Link.Then(folder);
 		}
 
-		public FileLink ExpandFolder(FileResource file)
+		public FileLink Expand(FileResource file)
 		{
 			return Folder.Link.Then(file);
 		}
 
-		public FolderLink ExpandDataFolder(FolderResource folder)
+		public FolderLink ExpandInData(FolderResource folder)
 		{
 			return DataFolder.Link.Then(folder);
 		}
 
-		public FileLink ExpandDataFolder(FileResource file)
+		public FileLink ExpandInData(FileResource file)
 		{
 			return DataFolder.Link.Then(file);
+		}
+
+		// TODO: There has to be a better way; other solution configurations would fail.
+
+		public static string BuildType
+		{
+			get
+			{
+#if DEBUG
+				return "Debug";
+#else
+				return "Release";
+#endif
+			}
 		}
 	}
 }
