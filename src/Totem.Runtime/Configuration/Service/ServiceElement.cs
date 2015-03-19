@@ -40,13 +40,12 @@ namespace Totem.Runtime.Configuration.Service
 			set { this["lifecycle"] = value; }
 		}
 
-		public bool IsConfigured { get { return Name != ""; } }
-
 		public ServiceInstaller ReadServiceInstaller()
 		{
 			return new ServiceInstaller
 			{
 				ServiceName = Name,
+				Description = Description,
 				StartType = Start.Mode,
 				DelayedAutoStart = Start.DelayedAutoStart
 			};

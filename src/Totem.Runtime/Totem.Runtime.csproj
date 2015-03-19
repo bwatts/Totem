@@ -84,15 +84,15 @@
     <Compile Include="RuntimeArea.cs" />
     <Compile Include="RuntimeDeployment.cs" />
     <Compile Include="RuntimeHostDeployment.cs" />
-    <Compile Include="RuntimeInstance.cs" />
-    <Compile Include="RuntimeHost.cs" />
-    <Compile Include="RuntimeHostConsole.cs" />
     <Compile Include="RuntimeHostService.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="RuntimeHostServiceInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="RuntimeInstance.cs" />
+    <Compile Include="RuntimeHost.cs" />
+    <Compile Include="RuntimeHostConsole.cs" />
     <Compile Include="Configuration\RuntimeSection.cs" />
     <Compile Include="Configuration\Service\ServiceElement.cs" />
     <Compile Include="RuntimeInitialization.cs" />

@@ -91,13 +91,13 @@ namespace Totem.Runtime
 			{
 				return Deploy(settings, modeArgs);
 			}
-			else if(settings.Service.IsConfigured)
+			else if(settings.UserInteractive)
 			{
-				return RunService(settings, modeArgs);
+				return RunConsole(settings, modeArgs);
 			}
 			else
 			{
-				return RunConsole(settings, modeArgs);
+				return RunService(settings, modeArgs);
 			}
 		}
 

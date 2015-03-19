@@ -51,8 +51,7 @@ namespace Totem.Runtime.Configuration
 			set { this["deployment"] = value; }
 		}
 
-		public bool InService { get { return Service.IsConfigured; } }
-		public bool UserInteractive { get { return !Service.IsConfigured; } }
+		public bool UserInteractive { get { return Environment.UserInteractive; } }
 
 		//
 		// Map
