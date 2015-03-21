@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -23,26 +22,17 @@ namespace Totem.Runtime
 		{
 			return (int) HostFactory.Run(host =>
 			{
-				var settings = ReadSettings(sectionName);
-
-				host.UseRuntime(settings);
+				host.UseRuntime(sectionName);
 
 				configureHost(host);
 			});
 		}
 
-		private static RuntimeSection ReadSettings(string sectionName)
-		{
-			var settings = ConfigurationManager.GetSection(sectionName) as RuntimeSection;
-
-			Expect.That(settings).IsNotNull("Configuration section not found: " + sectionName);
-
-			return settings;
-		}
-
-		private static void UseRuntime(this HostConfigurator host, RuntimeSection settings)
+		private static void UseRuntime(this HostConfigurator host, string sectionName)
 		{
 			SetCurrentDirectory();
+
+			var settings = RuntimeSection.Read(sectionName);
 
 			host.Service<RuntimeService>(() => new RuntimeService(settings));
 
@@ -57,6 +47,11 @@ namespace Totem.Runtime
 		private static void ConfigureRuntime(this HostConfigurator host, RuntimeSection settings)
 		{
 			var deployment = settings.ReadDeployment();
+
+			if(deployment.UserInteractive)
+			{
+				settings.Console.Initialize();
+			}
 
 			var map = deployment.ReadMap();
 			var log = deployment.ReadLog();

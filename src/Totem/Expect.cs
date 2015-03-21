@@ -186,7 +186,7 @@ namespace Totem
 			return expect.IsTrue(
 				t => type.IsAssignableFrom(t.GetType()),
 				issue ?? "Value is not assignable to type",
-				expected ?? Text.OfType(type),
+				expected ?? Text.Of(type),
 				actual);
 		}
 
@@ -195,7 +195,7 @@ namespace Totem
 			return expect.IsTrue(
 				type.IsAssignableFrom,
 				issue ?? "Type is not assignable to type",
-				expected ?? Text.OfType(type),
+				expected ?? Text.Of(type),
 				actual);
 		}
 	}

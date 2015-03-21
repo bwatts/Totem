@@ -26,9 +26,11 @@ namespace Totem.Runtime.Configuration.Console
 
 		public void Initialize()
 		{
-			System.Console.WindowWidth = Display;
+			var maxWidth = System.Console.LargestWindowWidth;
 
-			System.Console.BufferWidth = Buffer;
+			System.Console.WindowWidth = Display <= maxWidth ? Display : maxWidth;
+
+			System.Console.BufferWidth = Buffer >= Display ? Buffer : Display;
 		}
 	}
 }

@@ -110,11 +110,16 @@ namespace Totem.Runtime.Configuration
 		// Factory
 		//
 
-		public static RuntimeSection Read()
+		public static RuntimeSection Read(string sectionName = "totem.runtime")
 		{
-			var instance = (RuntimeSection) ConfigurationManager.GetSection("totem.runtime");
+			var instance = (RuntimeSection) ConfigurationManager.GetSection(sectionName);
 
-			Expect.That(instance).IsNotNull("Runtime is not configured - specify the 'totem.runtime' section in the configuration file");
+			Expect.That(instance).IsNotNull(@"Runtime is not configured. Specify this in the configuration file:
+
+<configSections>
+	<section name=" + Text.Of("\"{0}\"", sectionName) + " type=\"Totem.Runtime.Configuration.RuntimeSection, Totem.Runtime\"" + @" />
+</configSections>
+");
 
 			return instance;
 		}
