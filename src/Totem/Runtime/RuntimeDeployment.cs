@@ -1,42 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Totem.Http;
 using Totem.IO;
-using Totem.Runtime.Map;
 
 namespace Totem.Runtime
 {
 	/// <summary>
 	/// A context-bound instance of the Totem runtime
 	/// </summary>
-	public class RuntimeDeployment
+	public sealed class RuntimeDeployment
 	{
-		public RuntimeDeployment(
-			bool inSolution,
-			bool userInteractive,
-			IFolder folder,
-			IFolder dataFolder,
-			LogLevel logLevel,
-			IFolder logFolder,
-			IReadOnlyList<string> packageNames)
+		public RuntimeDeployment(IFolder folder, IFolder hostFolder, IFolder dataFolder, IFolder logFolder, string solutionConfiguration = "")
 		{
-			InSolution = inSolution;
-			UserInteractive = userInteractive;
 			Folder = folder;
+			HostFolder = hostFolder;
 			DataFolder = dataFolder;
-			LogLevel = logLevel;
 			LogFolder = logFolder;
-			PackageNames = packageNames;
+			SolutionConfiguration = solutionConfiguration;
+			InSolution = solutionConfiguration != "";
 		}
 
-		public readonly bool InSolution;
-		public readonly bool UserInteractive;
 		public readonly IFolder Folder;
+		public readonly IFolder HostFolder;
 		public readonly IFolder DataFolder;
-		public readonly LogLevel LogLevel;
 		public readonly IFolder LogFolder;
-		public readonly IReadOnlyList<string> PackageNames;
+		public readonly string SolutionConfiguration;
+		public readonly bool InSolution;
 
 		public override string ToString()
 		{
@@ -61,20 +50,6 @@ namespace Totem.Runtime
 		public FileLink ExpandInData(FileResource file)
 		{
 			return DataFolder.Link.Then(file);
-		}
-
-		// TODO: There has to be a better way; other solution configurations would fail.
-
-		public static string BuildType
-		{
-			get
-			{
-#if DEBUG
-				return "Debug";
-#else
-				return "Release";
-#endif
-			}
 		}
 	}
 }

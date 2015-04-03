@@ -9,13 +9,28 @@ namespace Totem.Runtime.Map
 	/// </summary>
 	public sealed class AreaType : RuntimeType
 	{
-		public AreaType(RuntimeTypeRef type, string sectionName = "") : base(type)
+		internal AreaType(RuntimeTypeRef type, ViewType settingsView) : base(type)
 		{
-			SectionName = sectionName;
+			HasSettings = settingsView != null;
+			SettingsView = settingsView;
 			Dependencies = new AreaTypeSet();
 		}
 
-		public string SectionName { get; private set; }
-		public AreaTypeSet Dependencies { get; private set; }
+		public readonly bool HasSettings;
+		public readonly ViewType SettingsView;
+		public readonly AreaTypeSet Dependencies;
+
+		public T ReadSettings<T>(IViewStore views, bool strict = false) where T : View
+		{
+			Expect(HasSettings).IsTrue("Area does not have a settings view: " + Key.ToText());
+
+			Expect(SettingsView.Is(typeof(T))).IsTrue(Text.Of(
+				"Cannot read settings type {0} for area {1}; expected {2}",
+				typeof(T),
+				Key,
+				SettingsView.DeclaredType));
+
+			return views.Read<T>(Key.ToString(), strict);
+		}
 	}
 }

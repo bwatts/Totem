@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Totem.Http;
 
-namespace Totem.Web
+namespace Totem.Http
 {
 	/// <summary>
-	/// Describes part of the Totem web API
+	/// Describes an instance of a Totem web API bound to an HTTP request
 	/// </summary>
 	public interface IWebApi : IWritable, ITaggable
 	{
-		WebApiScope Scope { get; }
-
 		HttpLink Link { get; }
 
 		HttpAuthorization Authorization { get; }
 
-		IRequestBody RequestBody { get; }
+		HttpRequestBody RequestBody { get; }
 	}
 }

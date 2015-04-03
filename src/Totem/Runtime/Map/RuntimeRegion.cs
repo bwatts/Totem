@@ -23,10 +23,15 @@ namespace Totem.Runtime.Map
 			return Key.ToText();
 		}
 
+		public RuntimePackage GetPackage(string name, bool strict = true)
+		{
+			return Packages.Get(name, strict);
+		}
+
 		public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
 		{
 			var area = Packages
-				.Select(package => package.Areas.Get(key, strict: false))
+				.Select(package => package.GetArea(key, strict: false))
 				.FirstOrDefault(packageArea => packageArea != null);
 
 			Expect(strict && area == null).IsFalse("Failed to resolve area", key.ToText());
@@ -37,12 +42,56 @@ namespace Totem.Runtime.Map
 		public AreaType GetArea(Type declaredType, bool strict = true)
 		{
 			var area = Packages
-				.Select(package => package.Areas.Get(declaredType, strict: false))
+				.Select(package => package.GetArea(declaredType, strict: false))
 				.FirstOrDefault(packageArea => packageArea != null);
 
 			Expect(strict && area == null).IsFalse("Failed to resolve area", Text.Of(declaredType));
 
 			return area;
+		}
+
+		public ApiType GetApi(RuntimeTypeKey key, bool strict = true)
+		{
+			var api = Packages
+				.Select(package => package.GetApi(key, strict: false))
+				.FirstOrDefault(packageApi => packageApi != null);
+
+			Expect(strict && api == null).IsFalse("Failed to resolve API", key.ToText());
+
+			return api;
+		}
+
+		public ApiType GetApi(Type declaredType, bool strict = true)
+		{
+			var api = Packages
+				.Select(package => package.GetApi(declaredType, strict: false))
+				.FirstOrDefault(packageApi => packageApi != null);
+
+			Expect(strict && api == null).IsFalse("Failed to resolve API", Text.Of(declaredType));
+
+			return api;
+		}
+
+		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
+		{
+			var view = Packages
+				.Select(package => package.GetView(key, strict: false))
+				.FirstOrDefault(packageView => packageView != null);
+
+			Expect(strict && view == null).IsFalse("Failed to resolve view", key.ToText());
+
+			return view;
+		}
+
+		public ViewType GetView(Type declaredType, bool strict = true)
+		{
+			var view = Packages
+				.Select(package => package.GetView(declaredType, strict: false))
+				.FirstOrDefault(packageView => packageView != null);
+
+			Expect(strict && view == null).IsFalse("Failed to resolve view", Text.Of(declaredType));
+
+			return view;
 		}
 	}
 }

@@ -33,31 +33,37 @@ namespace Totem.Runtime.Map
 
 		public RuntimePackage GetPackage(string name, bool strict = true)
 		{
-			var package = Regions
-				.Select(region => region.Packages.Get(name, strict: false))
-				.FirstOrDefault(regionPackage => regionPackage != null);
-
-			Expect(strict && package == null).IsFalse("Failed to resolve package", name);
-
-			return package;
+			return Regions.GetPackage(name, strict);
 		}
 
 		public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
 		{
-			var region = GetRegion(key.Region, strict);
-
-			return region == null ? null : region.GetArea(key, strict);
+			return Regions.GetArea(key, strict);
 		}
 
 		public AreaType GetArea(Type declaredType, bool strict = true)
 		{
-			var area = Regions
-				.Select(region => region.GetArea(declaredType, strict: false))
-				.FirstOrDefault(regionArea => regionArea != null);
+			return Regions.GetArea(declaredType, strict);
+		}
 
-			Expect(strict && area == null).IsFalse("Failed to resolve area", Text.Of(declaredType));
+		public ApiType GetApi(RuntimeTypeKey key, bool strict = true)
+		{
+			return Regions.GetApi(key, strict);
+		}
 
-			return area;
+		public ApiType GetApi(Type declaredType, bool strict = true)
+		{
+			return Regions.GetApi(declaredType, strict);
+		}
+
+		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
+		{
+			return Regions.GetView(key, strict);
+		}
+
+		public ViewType GetView(Type declaredType, bool strict = true)
+		{
+			return Regions.GetView(declaredType, strict);
 		}
 	}
 }

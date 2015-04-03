@@ -12,25 +12,60 @@ namespace Totem.Runtime.Map
 	/// </summary>
 	public sealed class RuntimePackage : Notion
 	{
-		public RuntimePackage(string name, FolderLink folder, RuntimeRegionKey regionKey, AssemblyCatalog catalog)
+		public RuntimePackage(string name, IFolder folder, AssemblyCatalog catalog, RuntimeRegionKey regionKey)
 		{
 			Name = name;
 			Folder = folder;
-			RegionKey = regionKey;
 			Catalog = catalog;
+			RegionKey = regionKey;
+			Assembly = catalog.Assembly;
 			Areas = new AreaTypeSet();
+			Apis = new ApiTypeSet();
+			Views = new ViewTypeSet();
 		}
 
-		public string Name { get; private set; }
-		public FolderLink Folder { get; private set; }
-		public RuntimeRegionKey RegionKey { get; private set; }
-		public AssemblyCatalog Catalog { get; private set; }
-		public Assembly Assembly { get { return Catalog.Assembly; } }
-		public AreaTypeSet Areas { get; private set; }
+		public readonly string Name;
+		public readonly IFolder Folder;
+		public readonly AssemblyCatalog Catalog;
+		public readonly RuntimeRegionKey RegionKey;
+		public readonly Assembly Assembly;
+		public readonly AreaTypeSet Areas;
+		public readonly ApiTypeSet Apis;
+		public readonly ViewTypeSet Views;
 
 		public override Text ToText()
 		{
 			return Name;
+		}
+
+		public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
+		{
+			return Areas.Get(key, strict);
+		}
+
+		public AreaType GetArea(Type declaredType, bool strict = true)
+		{
+			return Areas.Get(declaredType, strict);
+		}
+
+		public ApiType GetApi(RuntimeTypeKey key, bool strict = true)
+		{
+			return Apis.Get(key, strict);
+		}
+
+		public ApiType GetApi(Type declaredType, bool strict = true)
+		{
+			return Apis.Get(declaredType, strict);
+		}
+
+		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
+		{
+			return Views.Get(key, strict);
+		}
+
+		public ViewType GetView(Type declaredType, bool strict = true)
+		{
+			return Views.Get(declaredType, strict);
 		}
 	}
 }

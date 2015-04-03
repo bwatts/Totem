@@ -23,9 +23,14 @@ namespace Totem.IO
 			return Link.ToText();
 		}
 
-		public IFolder Get(FolderResource folder)
+		public IFolder Then(FolderResource folder)
 		{
 			return new LocalFolder(Link.Then(folder));
+		}
+
+		public IFolder Up(int count = 1, bool strict = true)
+		{
+			return new LocalFolder(Link.Up(count, strict));
 		}
 
 		//
@@ -117,10 +122,29 @@ namespace Totem.IO
 		}
 
 		//
+		// Existence
+		//
+
+		public bool FileExists(FileResource file)
+		{
+			return File.Exists(Link.Then(file).ToString());
+		}
+
+		public bool FileExists(FileName file)
+		{
+			return File.Exists(Link.Then(file).ToString());
+		}
+
+		public bool FolderExists(FolderResource folder)
+		{
+			return Directory.Exists(Link.Then(folder).ToString());
+		}
+
+		//
 		// Read files and folders
 		//
 
-		public Stream Read(FileResource file, bool strict = true)
+		public Stream ReadFile(FileResource file, bool strict = true)
 		{
 			Stream data;
 
@@ -141,7 +165,7 @@ namespace Totem.IO
 			return data;
 		}
 
-		public IReadOnlyList<IOResource> Read(FolderResource folder, bool recursive = false)
+		public IReadOnlyList<IOResource> ReadFolder(FolderResource folder, bool recursive = false)
 		{
 			return ReadLinksCore(folder, recursive)
 				.Select(link =>

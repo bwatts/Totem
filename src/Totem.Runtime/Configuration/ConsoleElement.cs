@@ -35,9 +35,9 @@ namespace Totem.Runtime.Configuration.Console
 		{
 			System.Console.Title = Title;
 
-			Rows.Initialize();
+			Rows.InitializeConsole();
 
-			Columns.Initialize();
+			Columns.InitializeConsole();
 		}
 	}
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Owin.Builder;
 using Microsoft.Owin.Hosting;
 using Microsoft.Owin.Logging;
+using Owin;
 using Totem.Http;
 
 namespace Totem.Web
@@ -15,45 +16,55 @@ namespace Totem.Web
 	/// </summary>
 	public sealed class WebHost : Connection
 	{
-		private readonly HttpLink _binding;
-		private readonly IReadOnlyList<IWebApplication> _applications;
+		private readonly IReadOnlyList<IWebApp> _apps;
 
-		public WebHost(HttpLink binding, IReadOnlyList<IWebApplication> applications)
+		public WebHost(IReadOnlyList<IWebApp> apps)
 		{
-			_binding = binding;
-			_applications = applications;
+			_apps = apps;
 		}
 
 		protected override void Open()
 		{
-			foreach(var application in _applications)
+			foreach(var app in _apps)
 			{
-				Start(application);
+				Start(app);
 			}
 		}
 
-		private void Start(IWebApplication application)
+		private void Start(IWebApp app)
 		{
-			Track(WebApp.Start(GetUrl(application), builder =>
-			{
-				builder.SetLoggerFactory(new LogAdapter(application));
-
-				application.Start(builder);
-			}));
+			Track(WebApp.Start(GetStartOptions(app), GetStartup(app)));
 		}
 
-		private string GetUrl(IWebApplication application)
+		private static StartOptions GetStartOptions(IWebApp app)
 		{
-			return _binding.Then(application.Resource).ToString();
+			var options = new StartOptions();
+
+			foreach(var hostBinding in app.HostBindings)
+			{
+				options.Urls.Add(hostBinding.ToString());
+			}
+
+			return options;
+		}
+
+		private static Action<IAppBuilder> GetStartup(IWebApp app)
+		{
+			return builder =>
+			{
+				builder.SetLoggerFactory(new LogAdapter(app));
+
+				app.Start(builder);
+			};
 		}
 
 		private sealed class LogAdapter : Notion, ILoggerFactory, ILogger
 		{
-			private readonly IWebApplication _application;
+			private readonly IWebApp _app;
 
-			internal LogAdapter(IWebApplication application)
+			internal LogAdapter(IWebApp app)
 			{
-				_application = application;
+				_app = app;
 			}
 
 			public ILogger Create(string name)
@@ -65,7 +76,7 @@ namespace Totem.Web
 			{
 				var level = GetLevel(eventType);
 
-				// OwinHttpListener always seems to throw ObjectDisposedException when shutting down
+				// OwinHttpListener seems to always throw ObjectDisposedException when shutting down
 
 				var canWrite = Log.IsAt(level) && !(exception is ObjectDisposedException);
 
@@ -82,7 +93,6 @@ namespace Totem.Web
 				switch(type)
 				{
 					case TraceEventType.Verbose:
-					case TraceEventType.Information:
 						return LogLevel.Verbose;
 					case TraceEventType.Warning:
 						return LogLevel.Warning;
@@ -91,7 +101,7 @@ namespace Totem.Web
 					case TraceEventType.Critical:
 						return LogLevel.Fatal;
 					default:
-						return LogLevel.Info;
+						return LogLevel.Debug;
 				}
 			}
 		}

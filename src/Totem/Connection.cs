@@ -177,5 +177,31 @@ namespace Totem
 				throw new AggregateException(Text.Of("Connection of type {0} failed to close", GetType()), errors);
 			}
 		}
+
+		//
+		// None
+		//
+
+		public static readonly IConnectable None = new NoneConnection();
+
+		private sealed class NoneConnection : IConnectable
+		{
+			internal NoneConnection()
+			{
+				State = new ConnectionState();
+			}
+
+			public ConnectionState State { get; private set; }
+
+			public IDisposable Connect(CancellationToken cancellationToken = default(CancellationToken))
+			{
+				return Disposal.None;
+			}
+
+			public IDisposable Connect(IConnectable context)
+			{
+				return Disposal.None;
+			}
+		}
 	}
 }

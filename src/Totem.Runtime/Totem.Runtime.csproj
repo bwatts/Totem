@@ -77,20 +77,14 @@
     <Compile Include="CompositionRoot.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Configuration\Console\ColumnsElement.cs" />
-    <Compile Include="Configuration\Console\ConsoleElement.cs" />
-    <Compile Include="Configuration\Console\RowsElement.cs" />
-    <Compile Include="Configuration\Deployment\CopiedResourcesElement.cs" />
-    <Compile Include="Configuration\Deployment\CopyElement.cs" />
-    <Compile Include="Configuration\Deployment\DeploymentElement.cs" />
-    <Compile Include="Configuration\Deployment\PackageElement.cs" />
-    <Compile Include="Configuration\Deployment\PackagesElement.cs" />
-    <Compile Include="Configuration\LogElement.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Configuration\RuntimeSection.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="DependsOnAttribute.cs" />
+    <Compile Include="RuntimeReflection.cs" />
+    <Compile Include="Configuration\ColumnsElement.cs" />
+    <Compile Include="Configuration\ConsoleElement.cs" />
+    <Compile Include="Configuration\LogElement.cs" />
+    <Compile Include="Configuration\RowsElement.cs" />
+    <Compile Include="Configuration\RuntimeSection.cs" />
+    <Compile Include="RuntimeService.cs" />
     <Compile Include="IRuntimeArea.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -99,16 +93,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="RuntimeHost.cs" />
-    <Compile Include="RuntimeInitialization.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="RuntimeService.cs" />
-    <Compile Include="ConfigurationSectionAttribute.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DependsOnAttribute.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>

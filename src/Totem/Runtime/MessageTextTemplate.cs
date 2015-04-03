@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
+using Totem.Reflection;
 
 namespace Totem.Runtime
 {
@@ -176,7 +177,7 @@ namespace Totem.Runtime
 			{
 				Name = parameter.Name.ReadFieldName();
 				Variable = parameter.Name;
-				Type = parameter.ParameterType.ReadType();
+				Type = parameter.ParameterType.ToSourceText();
 			}
 
 			internal string Name { get; private set; }
@@ -202,91 +203,6 @@ namespace Totem.Runtime
 		private static string ReadFieldName(this string parameterName)
 		{
 			return Char.ToUpper(parameterName[0]) + parameterName.Substring(1);
-		}
-
-		private static string ReadType(this Type fieldType)
-		{
-			Text unqualifiedType;
-
-			return fieldType.TryReadUnqualifiedType(out unqualifiedType)
-				? unqualifiedType
-				: fieldType.ReadQualifiedType();
-		}
-
-		private static bool TryReadUnqualifiedType(this Type fieldType, out Text unqualifiedType)
-		{
-			unqualifiedType = "";
-
-			if(fieldType.IsEnum)
-			{
-				return false;
-			}
-
-			if(fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(Nullable<>))
-			{
-				unqualifiedType = fieldType.GetGenericArguments().Single().ReadType() + "?";
-
-				return true;
-			}
-
-			var primitiveType = fieldType.ReadPrimitiveType();
-
-			var isPrimitiveType = primitiveType != "";
-
-			if(isPrimitiveType)
-			{
-				unqualifiedType = primitiveType;
-			}
-
-			return isPrimitiveType;
-		}
-
-		private static string ReadPrimitiveType(this Type fieldType)
-		{
-			switch(Type.GetTypeCode(fieldType))
-			{
-				case TypeCode.Boolean:
-					return "bool";
-				case TypeCode.Char:
-					return "char";
-				case TypeCode.Byte:
-					return "byte";
-				case TypeCode.Int16:
-					return "short";
-				case TypeCode.Int32:
-					return "int";
-				case TypeCode.Int64:
-					return "long";
-				case TypeCode.Single:
-					return "float";
-				case TypeCode.Double:
-					return "double";
-				case TypeCode.Decimal:
-					return "decimal";
-				case TypeCode.DateTime:
-					return "DateTime";
-				case TypeCode.String:
-					return "string";
-				default:
-					return "";
-			}
-		}
-
-		private static Text ReadQualifiedType(this Type fieldType)
-		{
-			var backtickIndex = fieldType.Name.IndexOf('`');
-
-			if(backtickIndex == -1)
-			{
-				return fieldType.Name;
-			}
-			else
-			{
-				return Text.Of(
-					"{0}<{1}>",
-					fieldType.Name.Substring(0, backtickIndex),
-					fieldType.GetGenericArguments().ToTextSeparatedBy(", ", arg => arg.ReadType()));
-			}
 		}
 	}
 }

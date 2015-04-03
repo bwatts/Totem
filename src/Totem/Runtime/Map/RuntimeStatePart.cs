@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Totem.Reflection;
 
 namespace Totem.Runtime.Map
 {
@@ -78,7 +79,7 @@ namespace Totem.Runtime.Map
 
 		public override Text ToText()
 		{
-			return Text.Of("{0} {1}", ValueType, Name);
+			return Text.Of("{0} {1}", ValueType.ToSourceText(), Name);
 		}
 	}
 }

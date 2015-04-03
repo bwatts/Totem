@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Totem.Http;
 using Totem.IO;
 
 namespace Totem.Runtime.Map
@@ -19,12 +20,17 @@ namespace Totem.Runtime.Map
 			Name = name;
 		}
 
-		public RuntimeRegionKey Region { get; private set; }
-		public string Name { get; private set; }
+		public readonly RuntimeRegionKey Region;
+		public readonly string Name;
 
 		public override Text ToText()
 		{
-			return Region.ToText() + ":" + Name;
+			return Region.ToText() + ':' + Name;
+		}
+
+		public HttpResource ToResource()
+		{
+			return Region.ToResource().Then(HttpResource.From(Name));
 		}
 
 		//

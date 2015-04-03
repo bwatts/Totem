@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
@@ -20,20 +21,18 @@ namespace Totem.Web
 	/// <summary>
 	/// An HTTP-bound API composed by OWIN and Nancy
 	/// </summary>
-	public class ApiApplication : AutofacNancyBootstrapper, IWebApplication, IWritable, ITaggable
+	public class WebApiApp : AutofacNancyBootstrapper, IWebApp, IWritable, ITaggable
 	{
-		private readonly CompositionRoot _compositionRoot;
-		private readonly NancyOptions _options;
-		private readonly ApiTypeSet _apiTypes;
 		private readonly AreaType _area;
+		private readonly ILifetimeScope _scope;
+		private readonly NancyOptions _options;
 
-		public ApiApplication(CompositionRoot compositionRoot, NancyOptions options, HttpResource resource, ApiTypeSet apiTypes, AreaType area)
+		public WebApiApp(ILifetimeScope scope, NancyOptions options, AreaType area, IReadOnlyList<HttpLink> hostBindings)
 		{
-			_compositionRoot = compositionRoot;
-			_options = options;
-			Resource = resource;
-			_apiTypes = apiTypes;
 			_area = area;
+			_scope = scope;
+			_options = options;
+			HostBindings = hostBindings;
 		}
 
 		Tags ITaggable.Tags { get { return Tags; } }
@@ -42,11 +41,11 @@ namespace Totem.Web
 		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
 		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
-		public HttpResource Resource { get; private set; }
+		public IReadOnlyList<HttpLink> HostBindings { get; private set; }
 
 		public Text ToText()
 		{
-			return Resource.ToText();
+			return HostBindings.ToTextSeparatedBy(Text.Line);
 		}
 
 		public virtual void Start(IAppBuilder builder)
@@ -62,22 +61,28 @@ namespace Totem.Web
 
 		protected override ILifetimeScope GetApplicationContainer()
 		{
-			return _compositionRoot.Scope;
+			return _scope;
 		}
 
 		protected override IEnumerable<INancyModule> GetAllModules(ILifetimeScope container)
 		{
-			return _apiTypes.Select(api => api.Resolve(container));
+			var dependencySource = container.Resolve<IDependencySource>();
+
+			return
+				from region in Runtime.Regions
+				from package in region.Packages
+				from api in package.Apis
+				select (INancyModule) api.Resolve(dependencySource);
 		}
 
 		protected override INancyModule GetModule(ILifetimeScope container, Type moduleType)
 		{
-			return (WebApi) container.Resolve(moduleType);
+			return (INancyModule) container.Resolve(moduleType);
 		}
 
 		protected override ILifetimeScope CreateRequestContainer(NancyContext context)
 		{
-			return _compositionRoot.Scope.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
+			return _scope.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
 		}
 
 		protected override void RegisterRequestContainerModules(ILifetimeScope container, IEnumerable<ModuleRegistration> moduleRegistrationTypes)
@@ -96,9 +101,9 @@ namespace Totem.Web
 			{
 				RegisterInstance(context).ExternallyOwned();
 
-				RegisterType<WebApiScope>().InstancePerRequest();
+				//RegisterType<WebApiScope>().InstancePerRequest();
 
-				RegisterType<RequestBody>().As<IRequestBody>().InstancePerRequest();
+				//RegisterType<RequestBody>().As<IRequestBody>().InstancePerRequest();
 			}
 		}
 
@@ -117,7 +122,7 @@ namespace Totem.Web
 		{
 			NormalizeRequest(context);
 
-			SetScopeItem(container, context);
+			SetContextItems(container, context);
 
 			return context.Response;
 		}
@@ -127,14 +132,11 @@ namespace Totem.Web
 			return container.Resolve<IErrorHandler>().CreateResponse(context, exception);
 		}
 
-		private static void SetScopeItem(ILifetimeScope container, NancyContext context)
+		private static void SetContextItems(ILifetimeScope container, NancyContext context)
 		{
-			WebApiScope scope;
-
-			if(container.TryResolve(out scope))
-			{
-				context.Items[WebApi.ScopeItemKey] = scope;
-			}
+			context.Items[WebApi.LinkItemKey] = HttpLink.From(context.Request.Url.ToString());
+			context.Items[WebApi.AuthorizationItemKey] = HttpAuthorization.From(context.Request.Headers.Authorization);
+			context.Items[WebApi.RequestBodyKey] = HttpRequestBody.From(context.Request.Headers.ContentType, () => context.Request.Body);
 		}
 
 		private void NormalizeRequest(NancyContext context)
@@ -150,8 +152,12 @@ namespace Totem.Web
 
 			var requestPath = HttpResource.From(context.Request.Url.Path);
 
-			context.Request.Url.BasePath = Resource.ToText(leadingSlash: true);
-			context.Request.Url.Path = requestPath.RelativeTo(Resource).ToText(leadingSlash: true);
+
+			// TODO: Still required?
+
+
+			//context.Request.Url.BasePath = Resource.ToText(leadingSlash: true);
+			//context.Request.Url.Path = requestPath.RelativeTo(Resource).ToText(leadingSlash: true);
 		}
 
 		//

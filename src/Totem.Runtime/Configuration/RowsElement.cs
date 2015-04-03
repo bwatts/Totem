@@ -10,21 +10,21 @@ namespace Totem.Runtime.Configuration.Console
 	/// </summary>
 	public class RowsElement : ConfigurationElement
 	{
-		[ConfigurationProperty("display", DefaultValue = 80)]
+		[ConfigurationProperty("display", DefaultValue = 60)]
 		public int Display
 		{
 			get { return (int) this["display"]; }
 			set { this["display"] = value; }
 		}
 
-		[ConfigurationProperty("buffer", DefaultValue = 1000)]
+		[ConfigurationProperty("buffer", DefaultValue = 10000)]
 		public int Buffer
 		{
 			get { return (int) this["buffer"]; }
 			set { this["buffer"] = value; }
 		}
 
-		public void Initialize()
+		public void InitializeConsole()
 		{
 			var maxHeight = System.Console.LargestWindowHeight;
 

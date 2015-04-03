@@ -9,11 +9,13 @@ using Totem.Runtime.Map;
 namespace Totem.Web
 {
 	/// <summary>
-	/// A Nancy module representing part of the Totem web API
+	/// A Nancy module representing an instance of a Totem web API bound to an HTTP request
 	/// </summary>
 	public abstract class WebApi : NancyModule, IWebApi
 	{
-		public static readonly string ScopeItemKey = typeof(WebApi).FullName + ".Scope";
+		public static readonly string LinkItemKey = typeof(WebApi).FullName + ".Link";
+		public static readonly string AuthorizationItemKey = typeof(WebApi).FullName + ".Authorization";
+		public static readonly string RequestBodyKey = typeof(WebApi).FullName + ".RequestBody";
 
 		protected WebApi()
 		{
@@ -26,35 +28,32 @@ namespace Totem.Web
 		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
 		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
-		WebApiScope IWebApi.Scope { get { return Scope; } }
-		HttpLink IWebApi.Link { get { return Link; } }
-		HttpAuthorization IWebApi.Authorization { get { return Authorization; } }
-		IRequestBody IWebApi.RequestBody { get { return RequestBody; } }
-		
-		protected WebApiScope Scope
+		public HttpLink Link { get { return ReadContextItem<HttpLink>(LinkItemKey); } }
+		public HttpAuthorization Authorization { get { return ReadContextItem<HttpAuthorization>(AuthorizationItemKey); } }
+		public HttpRequestBody RequestBody { get { return ReadContextItem<HttpRequestBody>(RequestBodyKey); } }
+
+		protected T ReadContextItem<T>(string key, bool strict = true)
 		{
-			get
+			object item;
+
+			Expect.That(Context.Items.TryGetValue(key, out item)).IsTrue("Missing context item: " + key);
+
+			if(item is T)
 			{
-				object item;
-
-				Expect.That(Context.Items.TryGetValue(ScopeItemKey, out item)).IsTrue("Missing context item: " + ScopeItemKey.ToText());
-
-				var scope = item as WebApiScope;
-
-				Expect.That(scope == null).IsFalse(Totem.Text
-					.Of("Unexpected context item type ")
-					.Write(ScopeItemKey)
-					.Write("; expected ")
-					.Write(typeof(WebApiScope))
-					.Write(", actual is {0}", item.GetType()));
-
-				return scope;
+				return (T) item;
 			}
-		}
 
-		protected HttpLink Link { get { return Scope.Link; } }
-		protected HttpAuthorization Authorization { get { return Scope.Authorization; } }
-		protected IRequestBody RequestBody { get { return Scope.RequestBody; } }
+			if(strict)
+			{
+				throw new Exception(Totem.Text.Of(
+					"Unexpected context item type for key \"{0}\"; expected {1}, actual is {2}",
+					key,
+					typeof(T),
+					item.GetType()));
+			}
+
+			return default(T);
+		}
 
 		public sealed override string ToString()
 		{

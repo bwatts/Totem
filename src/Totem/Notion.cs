@@ -40,11 +40,6 @@ namespace Totem
 			return Totem.Expect.That(value);
 		}
 
-		public static string NewId()
-		{
-			return Guid.NewGuid().ToString();
-		}
-
 		public static class Traits
 		{
 			public static readonly Tag<IClock> Clock = Tag.Declare(() => Clock, new PlatformClock());
@@ -57,6 +52,17 @@ namespace Totem
 				{
 					get { return DateTime.UtcNow; }
 				}
+			}
+
+			//
+			// Runtime
+			//
+
+			public static void InitializeRuntime(RuntimeMap runtime)
+			{
+				Expect(Runtime.ResolveDefaultValue()).IsNull("The runtime trait is already initialized");
+
+				Runtime.SetDefaultValue(runtime);
 			}
 
 			//

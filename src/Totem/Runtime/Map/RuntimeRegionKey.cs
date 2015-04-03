@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Totem.Http;
 using Totem.IO;
 
 namespace Totem.Runtime.Map
@@ -20,11 +22,16 @@ namespace Totem.Runtime.Map
 			Name = name;
 		}
 
-		public string Name { get; private set; }
+		public readonly string Name;
 
 		public override Text ToText()
 		{
 			return Name;
+		}
+
+		public HttpResource ToResource()
+		{
+			return HttpResource.From(Name);
 		}
 
 		//
@@ -102,6 +109,22 @@ namespace Totem.Runtime.Map
 			}
 
 			return new RuntimeRegionKey(value);
+		}
+
+		public static RuntimeRegionKey From(Assembly assembly, bool strict = true)
+		{
+			var attribute = assembly.GetCustomAttribute<RuntimePackageAttribute>();
+
+			var regionKey = attribute == null ? null : attribute.Region;
+
+			Expect(strict && regionKey == null).IsFalse("Assembly is not a runtime package", expected: "Decorated with " + Text.OfType<RuntimePackageAttribute>());
+
+			return regionKey;
+		}
+
+		public static RuntimeRegionKey From(Type type, bool strict = true)
+		{
+			return From(type.Assembly, strict);
 		}
 
 		public sealed class Converter : TextConverter

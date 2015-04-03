@@ -11,6 +11,8 @@ namespace Totem
 	/// </summary>
 	public static class Disposal
 	{
+		public static readonly IDisposable None = Of(() => {});
+
 		public static IDisposable Of(Action disposal)
 		{
 			return new Disposer(disposal);

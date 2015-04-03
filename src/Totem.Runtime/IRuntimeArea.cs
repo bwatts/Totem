@@ -9,13 +9,15 @@ using Totem.Runtime.Map;
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// Describes a set of related objects in a Totem runtime
+	/// Describes a set of related objects composed in a Totem runtime
 	/// </summary>
 	[InheritedExport(typeof(IRuntimeArea))]
 	public interface IRuntimeArea : IModule, IWritable, ITaggable
 	{
-		AreaType Type { get; }
+		AreaType AreaType { get; }
 
-		IConnectable ResolveConnectionOrNull(ILifetimeScope scope);
+		bool HasSettings { get; }
+
+		IConnectable ResolveConnection(ILifetimeScope scope);
 	}
 }

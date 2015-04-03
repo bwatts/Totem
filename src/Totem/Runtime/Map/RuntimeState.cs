@@ -8,17 +8,12 @@ using System.Runtime.CompilerServices;
 namespace Totem.Runtime.Map
 {
 	/// <summary>
-	/// A set of named values written and read by a flow
+	/// A set of named values representing persistent state
 	/// </summary>
 	/// <typeparam name="T">The type of message-bound methods in the set</typeparam>
 	public class RuntimeState : Notion, IReadOnlyDictionary<string, RuntimeStatePart>
 	{
 		private readonly Dictionary<string, RuntimeStatePart> _partsByName;
-
-		public RuntimeState(IEnumerable<RuntimeStatePart> parts)
-		{
-			_partsByName = parts.ToDictionary(part => part.Name);
-		}
 
 		public RuntimeState(Type type)
 		{

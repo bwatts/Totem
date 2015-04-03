@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using Totem.Http;
 
 namespace Totem.Runtime.Configuration
 {

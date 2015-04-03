@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using Totem.Runtime.Configuration;
 using Totem.Runtime.Map;
 
 namespace Totem.Runtime
@@ -70,7 +71,7 @@ namespace Totem.Runtime
 
 		private void AddArea(IRuntimeArea area)
 		{
-			_areasByType.Add(area.Type, new AreaComposition(this, area));
+			_areasByType.Add(area.AreaType, new AreaComposition(this, area));
 		}
 
 		private IDisposable ComposeAreas()
@@ -91,24 +92,19 @@ namespace Totem.Runtime
 
 			internal IEnumerable<AreaComposition> GetDependencies()
 			{
-				return _area.Type.Dependencies.Values.Select(dependency => _root._areasByType[dependency]);
+				return _area.AreaType.Dependencies.Values.Select(dependency => _root._areasByType[dependency]);
 			}
 
 			protected override void Open()
 			{
-				var connection = _area.ResolveConnectionOrNull(_root.Scope);
+				Track(_area.ResolveConnection(_root.Scope));
 
-				if(connection != null)
-				{
-					Track(connection);
-				}
-
-				Log.Info("[runtime] Started {Area}", _area.Type);
+				Log.Info("[runtime] Started {Area}", _area.AreaType);
 			}
 
 			protected override void Close()
 			{
-				Log.Info("[runtime] Stopped {Area}", _area.Type);
+				Log.Info("[runtime] Stopped {Area}", _area.AreaType);
 			}
 		}
 	}

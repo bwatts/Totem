@@ -13,7 +13,9 @@ namespace Totem.IO
 	{
 		FolderLink Link { get; }
 
-		IFolder Get(FolderResource folder);
+		IFolder Up(int count = 1, bool strict = true);
+
+		IFolder Then(FolderResource folder);
 
 		void Write(FileResource file, Stream data, bool overwrite = true);
 
@@ -29,9 +31,15 @@ namespace Totem.IO
 
 		void Move(FolderResource sourceFolder, FolderResource destinationFolder);
 
-		Stream Read(FileResource file, bool strict = true);
+		bool FileExists(FileResource file);
 
-		IReadOnlyList<IOResource> Read(FolderResource folder, bool recursive = false);
+		bool FileExists(FileName file);
+
+		bool FolderExists(FolderResource folder);
+
+		Stream ReadFile(FileResource file, bool strict = true);
+
+		IReadOnlyList<IOResource> ReadFolder(FolderResource folder, bool recursive = false);
 
 		IReadOnlyList<FileResource> ReadFiles(FolderResource folder, bool recursive = false);
 

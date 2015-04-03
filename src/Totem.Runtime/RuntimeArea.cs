@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Configuration;
 using System.Linq;
 using Autofac;
 using Autofac.Core;
@@ -11,7 +10,7 @@ using Totem.Runtime.Map;
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// A set of related objects in a Totem runtime
+	/// A set of related objects available for hosting by a runtime
 	/// </summary>
 	public abstract class RuntimeArea : BuilderModule, IRuntimeArea, IPartImportsSatisfiedNotification
 	{
@@ -20,11 +19,16 @@ namespace Totem.Runtime
 		protected IClock Clock { get { return Notion.Traits.Clock.Get(this); } }
 		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
-		public AreaType Type { get; private set; }
+		[Import]
+		protected IViewStore Views { get; set; }
 
-		public virtual IConnectable ResolveConnectionOrNull(ILifetimeScope scope)
+		public AreaType AreaType { get; private set; }
+
+		public virtual bool HasSettings { get { return false; } }
+
+		public virtual IConnectable ResolveConnection(ILifetimeScope scope)
 		{
-			return null;
+			return Connection.None;
 		}
 
 		public sealed override string ToString()
@@ -43,8 +47,34 @@ namespace Totem.Runtime
 		}
 
 		//
-		// Registration
+		// Initialization
 		//
+
+		void IPartImportsSatisfiedNotification.OnImportsSatisfied()
+		{
+			Tags = new Tags();
+
+			ReadAreaType();
+
+			if(AreaType.HasSettings)
+			{
+				ReadSettings();
+			}
+
+			RegisterArea();
+		}
+
+		private void ReadAreaType()
+		{
+			AreaType = Runtime.GetArea(GetType());
+		}
+
+		protected virtual void ReadSettings()
+		{}
+
+		protected abstract void RegisterArea();
+
+		// Clean up derived API (too much?)
 
 		protected sealed override void Configure(IComponentRegistry componentRegistry)
 		{
@@ -55,27 +85,6 @@ namespace Totem.Runtime
 		{
 			base.RegisterCallback(configurationCallback);
 		}
-
-		void IPartImportsSatisfiedNotification.OnImportsSatisfied()
-		{
-			Tags = new Tags();
-
-			ReadType();
-
-			ReadSection();
-
-			RegisterArea();
-		}
-
-		private void ReadType()
-		{
-			Type = Runtime.GetArea(GetType());
-		}
-
-		protected virtual void ReadSection()
-		{}
-
-		protected abstract void RegisterArea();
 
 		//
 		// Path expansion
@@ -100,93 +109,19 @@ namespace Totem.Runtime
 		{
 			return Runtime.Deployment.ExpandInData(file);
 		}
-
-		//
-		// Connection strings
-		//
-
-		protected string ReadConnectionString(string name, bool strict = true)
-		{
-			var configuration = ConfigurationManager.ConnectionStrings[name];
-
-			Expect(configuration == null && strict).IsFalse("Unknown connection string name: " + name);
-
-			return configuration.ConnectionString;
-		}
 	}
 
 	/// <summary>
 	/// A set of related objects and settings available for hosting by a runtime
 	/// </summary>
-	/// <typeparam name="TSection">The type of configuration section providing settings</typeparam>
-	public abstract class RuntimeArea<TSection> : RuntimeArea where TSection : ConfigurationSection
+	/// <typeparam name="TSettings">The type of view providing the area's settings</typeparam>
+	public abstract class RuntimeArea<TSettings> : RuntimeArea where TSettings : View
 	{
-		protected TSection Section { get; private set; }
+		protected TSettings Settings { get; private set; }
 
-		protected override void ReadSection()
+		protected override void ReadSettings()
 		{
-			Section = ReadSection(this);
-		}
-
-		public static TSection ReadSection(RuntimeArea area, bool strict = true)
-		{
-			var name = area.Type.SectionName;
-			var areaType = area.Type.DeclaredType;
-
-			if(name == "")
-			{
-				Expect(strict).IsFalse(
-					issue: Text
-						.Of("Area does not define a configuration section")
-						.WriteTwoLines()
-						.Write("Add [ConfigurationSection(\"...\")] to " + Text.Of(areaType)),
-					expected: "Area specifies a configuration section");
-
-				return null;
-			}
-
-			var section = ReadSection(name, area.Type.Package);
-
-			Expect(section).IsNotNull(
-				issue: Text
-					.Of("Area '{0}' is not configured. Add the following:", area)
-					.WriteTwoLines()
-					.Write(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile)
-					.WriteTwoLines()
-					.WriteLine("<configSections>")
-					.WriteLine("    <section name=\"{0}\" type=\"{1}, {2}\" />", name, areaType.FullName, areaType.Assembly.FullName)
-					.WriteLine("</configSections>"),
-				expected: "Defined configuration section");
-
-			var typedSection = section as TSection;
-
-			Expect(typedSection).IsNotNull(
-				issue: Text.Of("Area section is not the expected type"),
-				expected: Text.OfType<TSection>(),
-				actual: t => Text.OfType(section));
-
-			return typedSection;
-		}
-
-		private static object ReadSection(string name, RuntimePackage package)
-		{
-			// http://stackoverflow.com/a/1682968/37815
-
-			ResolveEventHandler resolver = (sender, e) =>
-			{
-				return e.Name == package.Name ? package.Assembly : null;
-			};
-
-			AppDomain.CurrentDomain.AssemblyResolve += resolver;
-
-			try
-			{
-				return ConfigurationManager.GetSection(name);
-			}
-			finally
-			{
-				AppDomain.CurrentDomain.AssemblyResolve -= resolver;
-			}
+			Settings = AreaType.ReadSettings<TSettings>(Views, strict: false);
 		}
 	}
 }

@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Totem.IO;
 using Totem.Runtime.Configuration.Console;
-using Totem.Runtime.Configuration.Deployment;
 using Totem.Runtime.Map;
 
 namespace Totem.Runtime.Configuration
@@ -36,14 +35,7 @@ namespace Totem.Runtime.Configuration
 			set { this["console"] = value; }
 		}
 
-		[ConfigurationProperty("deployment", IsRequired = true)]
-		public DeploymentElement Deployment
-		{
-			get { return (DeploymentElement) this["deployment"]; }
-			set { this["deployment"] = value; }
-		}
-
-		public bool UserInteractive { get { return Environment.UserInteractive; } }
+		public bool HasUI { get { return Environment.UserInteractive; } }
 
 		//
 		// Map
@@ -53,22 +45,19 @@ namespace Totem.Runtime.Configuration
 		{
 			var hostFolder = GetHostFolder();
 
-			var inSolution = InSolution(hostFolder);
+			string solutionConfiguration;
 
-			var deploymentFolder = GetDeploymentFolder(hostFolder, inSolution);
+			var inSolution = TryGetSolutionConfiguration(hostFolder, out solutionConfiguration);
 
-			var dataFolder = GetDataFolder(deploymentFolder);
+			// Go up past bin/%solutionConfiguration% when in the solution
+
+			var folder = hostFolder.Up(inSolution ? 3 : 1);
+
+			var dataFolder = GetDataFolder(folder);
 
 			var logFolder = GetLogFolder(dataFolder);
 
-			return new RuntimeDeployment(
-				inSolution,
-				UserInteractive,
-				deploymentFolder,
-				dataFolder,
-				Log.Level,
-				new LocalFolder(logFolder),
-				Deployment.Packages.GetNames());
+			return new RuntimeDeployment(folder, hostFolder, dataFolder, logFolder, solutionConfiguration);
 		}
 
 		private static IFolder GetHostFolder()
@@ -76,20 +65,21 @@ namespace Totem.Runtime.Configuration
 			return new LocalFolder(FolderLink.From(Directory.GetCurrentDirectory()));
 		}
 
-		private static bool InSolution(IFolder hostFolder)
+		private static bool TryGetSolutionConfiguration(IFolder hostFolder, out string solutionConfiguration)
 		{
-			var segments = hostFolder.Link.Resource.Path.Segments;
+			var hostSegments = hostFolder.Link.Resource.Path.Segments;
 
-			return segments.Count > 2
-				&& segments[segments.Count - 1].ToString().Equals(RuntimeDeployment.BuildType, StringComparison.OrdinalIgnoreCase)
-				&& segments[segments.Count - 2].ToString().Equals("bin", StringComparison.OrdinalIgnoreCase);
-		}
+			if(hostSegments.Count > 2
+				&& hostSegments[hostSegments.Count - 2].ToString().Equals("bin", StringComparison.OrdinalIgnoreCase))
+			{
+				solutionConfiguration = hostSegments[hostSegments.Count - 1].ToString();
 
-		private static IFolder GetDeploymentFolder(IFolder hostFolder, bool inSolution)
-		{
-			// Omit bin/%BuildType% if not deployed
+				return true;
+			}
 
-			return new LocalFolder(hostFolder.Link.Up(inSolution ? 3 : 1));
+			solutionConfiguration = "";
+
+			return false;
 		}
 
 		private IFolder GetDataFolder(IFolder deploymentFolder)
@@ -101,27 +91,27 @@ namespace Totem.Runtime.Configuration
 			return new LocalFolder(FolderLink.From(dataFolder));
 		}
 
-		private FolderLink GetLogFolder(IFolder dataFolder)
+		private IFolder GetLogFolder(IFolder dataFolder)
 		{
-			return dataFolder.Link.Then(FolderResource.From(Log.DataFolder));
+			return dataFolder.Then(FolderResource.From(Log.DataFolder));
 		}
 
 		//
 		// Factory
 		//
 
-		public static RuntimeSection Read(string sectionName = "totem.runtime")
+		public static RuntimeSection Read(string name, bool strict = true)
 		{
-			var instance = (RuntimeSection) ConfigurationManager.GetSection(sectionName);
+			var section = (RuntimeSection) ConfigurationManager.GetSection(name);
 
-			Expect.That(instance).IsNotNull(@"Runtime is not configured. Specify this in the configuration file:
+			Expect.That(strict && section == null).IsFalse(@"Runtime is not configured. Specify this in the configuration file:
 
 <configSections>
-	<section name=" + Text.Of("\"{0}\"", sectionName) + " type=\"Totem.Runtime.Configuration.RuntimeSection, Totem.Runtime\"" + @" />
+	<section name=" + "\"" + name + "\" type=\"Totem.Runtime.Configuration.RuntimeSection, Totem.Runtime\"" + @" />
 </configSections>
 ");
 
-			return instance;
+			return section;
 		}
 	}
 }

@@ -15,17 +15,17 @@ namespace Totem.Web
 	/// <summary>
 	/// An HTTP-bound push application composed by OWIN and SignalR
 	/// </summary>
-	public sealed class PushApplication : Notion, IWebApplication
+	public sealed class PushApp : Notion, IWebApp
 	{
 		private readonly ILifetimeScope _scope;
 
-		public PushApplication(HttpResource resource, ILifetimeScope scope)
+		public PushApp(ILifetimeScope scope, IReadOnlyList<HttpLink> hostBindings)
 		{
-			Resource = resource;
 			_scope = scope;
+			HostBindings = hostBindings;
 		}
 
-		public HttpResource Resource { get; private set; }
+		public IReadOnlyList<HttpLink> HostBindings { get; private set; }
 
 		public void Start(IAppBuilder builder)
 		{

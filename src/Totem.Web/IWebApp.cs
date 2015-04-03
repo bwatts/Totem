@@ -9,9 +9,9 @@ namespace Totem.Web
 	/// <summary>
 	/// Describes an HTTP-bound application composed by OWIN
 	/// </summary>
-	public interface IWebApplication
+	public interface IWebApp
 	{
-		HttpResource Resource { get; }
+		IReadOnlyList<HttpLink> HostBindings { get; }
 
 		void Start(IAppBuilder builder);
 	}

@@ -119,11 +119,6 @@ namespace Totem.Http
 			return From(path, HttpQuery.Empty);
 		}
 
-		public static HttpResource From(string path)
-		{
-			return From(path, HttpQuery.Empty);
-		}
-
 		public new static HttpResource From(string value, bool strict = true)
 		{
 			var parts = value.Split(QuerySeparator);
