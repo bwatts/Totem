@@ -20,6 +20,8 @@ namespace Totem
 
 		public static IDisposable OfMany(IEnumerable<IDisposable> items)
 		{
+			items = items.ToList();
+
 			return Of(() =>
 			{
 				foreach(var item in items)

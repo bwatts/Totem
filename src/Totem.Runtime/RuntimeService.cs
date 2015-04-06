@@ -20,16 +20,14 @@ namespace Totem.Runtime
 	internal sealed class RuntimeService : ServiceControl
 	{
 		private readonly Assembly _assembly;
-		private readonly string _sectionName;
 		private RuntimeSection _section;
 		private RuntimeMap _map;
 		private CompositionContainer _container;
 		private IDisposable _instance;
 
-		internal RuntimeService(Assembly assembly, string sectionName)
+		internal RuntimeService(Assembly assembly)
 		{
 			_assembly = assembly;
-			_sectionName = sectionName;
 		}
 
 		internal SerilogAdapter Log { get; private set; }
@@ -56,7 +54,7 @@ namespace Totem.Runtime
 
 		private void ReadSection()
 		{
-			_section = RuntimeSection.Read(_sectionName);
+			_section = RuntimeSection.Read();
 		}
 
 		private void InitializeConsoleIfHasUI()
@@ -143,24 +141,17 @@ namespace Totem.Runtime
 			_container = new CompositionContainer(CreateCatalog(), CompositionOptions.DisableSilentRejection);
 		}
 
-		private AssemblyCatalog CreateCatalog()
+		private AggregateCatalog CreateCatalog()
 		{
-			return new AssemblyCatalog(_assembly);
+			return new AggregateCatalog(
+				new TypeCatalog(typeof(CompositionRoot)),
+				new AssemblyCatalog(_assembly),
+				_map.Catalog);
 		}
 
 		private void LoadInstance()
 		{
-			var loader = ReadLoader();
-
-			if(loader != null)
-			{
-				_instance = loader.Connect();
-			}
-		}
-
-		private IConnectable ReadLoader()
-		{
-			return _container.GetExportedValueOrDefault<IConnectable>(RuntimeHost.LoaderContract);
+			_instance = _container.GetExportedValue<CompositionRoot>().Connect();
 		}
 
 		private void UnloadInstance()

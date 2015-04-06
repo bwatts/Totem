@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using Totem.Http;
 using Totem.IO;
@@ -159,11 +158,13 @@ namespace Totem.Runtime
 			{
 				if(typeof(IRuntimeArea).IsAssignableFrom(declaredType))
 				{
-					var settingsViewType = typeof(RuntimeArea<>).GetAssignableGenericType(declaredType, strict: false);
+					var typeWithSettings = typeof(RuntimeArea<>).GetAssignableGenericType(declaredType, strict: false);
+
+					var settingsType = typeWithSettings == null ? null : typeWithSettings.GetGenericArguments().Single();
 
 					package.Areas.Register(new AreaType(
 						ReadType(package, declaredType),
-						settingsViewType == null ? null : package.GetView(settingsViewType)));
+						settingsType == null ? null : package.GetView(settingsType)));
 
 					return true;
 				}
@@ -185,51 +186,14 @@ namespace Totem.Runtime
 
 			private static ApiType ReadApi(RuntimePackage package, Type declaredType)
 			{
-				var attribute = declaredType.GetCustomAttribute<WebApiAttribute>(inherit: true);
-
-				return new ApiType(
-					ReadType(package, declaredType),
-					ReadResource(attribute),
-					ReadResolve(declaredType, attribute));
+				return new ApiType(ReadType(package, declaredType), ReadRootPath(declaredType));
 			}
 
-			private static HttpResource ReadResource(WebApiAttribute attribute)
+			private static LinkPath ReadRootPath(Type declaredType)
 			{
-				return attribute != null ? attribute.Resource : HttpResource.Root;
-			}
+				var attribute = declaredType.GetCustomAttribute<WebApiRootAttribute>(inherit: true);
 
-			private static Func<IDependencySource, IWebApi> ReadResolve(Type type, WebApiAttribute attribute)
-			{
-				return attribute == null || attribute.ResolveMethod == ""
-					? ResolveByType(type)
-					: ResolveByMethod(type, attribute.ResolveMethod);
-			}
-
-			private static Func<IDependencySource, IWebApi> ResolveByType(Type type)
-			{
-				return source => (IWebApi) source.Resolve(type);
-			}
-
-			private static Func<IDependencySource, IWebApi> ResolveByMethod(Type type, string methodName)
-			{
-				var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
-
-				Expect.That(method).IsNotNull("Missing resolve method: " + methodName);
-
-				var parameters = method.GetParameters();
-
-				Expect.That(parameters.Length != 1
-					|| parameters[0].ParameterType != typeof(IDependencySource)
-					|| method.ReturnType != typeof(IWebApi))
-					.IsTrue("Invalid resolve method signature: " + Text.Of(method));
-
-				var scopeParameter = Expression.Parameter(typeof(IDependencySource), "scope");
-
-				var call = Expression.Call(method, scopeParameter);
-
-				var callLambda = Expression.Lambda<Func<IDependencySource, IWebApi>>(call, scopeParameter);
-
-				return callLambda.Compile();
+				return attribute != null ? attribute.Path : LinkPath.Root;
 			}
 
 			//

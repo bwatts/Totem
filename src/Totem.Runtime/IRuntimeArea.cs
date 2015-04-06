@@ -16,8 +16,6 @@ namespace Totem.Runtime
 	{
 		AreaType AreaType { get; }
 
-		bool HasSettings { get; }
-
-		IConnectable ResolveConnection(ILifetimeScope scope);
+		IConnectable Compose(ILifetimeScope scope);
 	}
 }

@@ -13,11 +13,9 @@ namespace Totem.Runtime
 	/// </summary>
 	public static class RuntimeHost
 	{
-		public const string LoaderContract = "RuntimeHostLoader";
-
-		public static void UseRuntime(this HostConfigurator host, Assembly assembly, string sectionName = "totem.runtime")
+		public static void UseRuntime(this HostConfigurator host, Assembly assembly)
 		{
-			var service = new RuntimeService(assembly, sectionName);
+			var service = new RuntimeService(assembly);
 
 			service.Initialize();
 

@@ -5,10 +5,13 @@ using System.Linq;
 namespace Totem.Web
 {
 	/// <summary>
-	/// Describes a web application hosted by a Totem runtime
+	/// The level of detail reported for web API errors
 	/// </summary>
-	public interface IWebApp
+	public enum ErrorDetail
 	{
-		IDisposable Start();
+		None,
+		Type,
+		Message,
+		StackTrace
 	}
 }

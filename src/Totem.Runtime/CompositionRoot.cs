@@ -97,7 +97,7 @@ namespace Totem.Runtime
 
 			protected override void Open()
 			{
-				Track(_area.ResolveConnection(_root.Scope));
+				Track(_area.Compose(_root.Scope));
 
 				Log.Info("[runtime] Started {Area}", _area.AreaType);
 			}

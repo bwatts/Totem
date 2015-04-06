@@ -28,7 +28,10 @@ namespace Totem.Runtime.Map
 		{
 			TValue value;
 
-			Expect(_set.TryGetValue(key, out value) && strict).IsFalse("Unknown key: " + Text.Of(key));
+			if(!_set.TryGetValue(key, out value) && strict)
+			{
+				throw new KeyNotFoundException("Unknown key: " + Text.Of(key));
+			}
 
 			return value;
 		}

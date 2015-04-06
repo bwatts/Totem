@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Totem.Runtime
+namespace Totem
 {
 	/// <summary>
 	/// The state of a timeline query at a specific point

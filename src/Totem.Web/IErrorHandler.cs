@@ -10,6 +10,6 @@ namespace Totem.Web
 	/// </summary>
 	public interface IErrorHandler
 	{
-		Response CreateResponse(NancyContext context, Exception exception);
+		Response CreateResponse(NancyContext context, Exception error);
 	}
 }

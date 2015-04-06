@@ -59,9 +59,6 @@
     <Compile Include="Http\HttpQuery.cs" />
     <Compile Include="Http\HttpQueryPair.cs" />
     <Compile Include="Http\HttpResource.cs" />
-    <Compile Include="Http\IWebApi.cs" />
-    <Compile Include="Http\HttpRequestBody.cs" />
-    <Compile Include="Http\WebApiAttribute.cs" />
     <Compile Include="IClock.cs" />
     <Compile Include="IConnectable.cs" />
     <Compile Include="IExpect.cs" />
@@ -94,7 +91,8 @@
     <Compile Include="Reflection\TypeSourceText.cs" />
     <Compile Include="Reflection\InheritanceChain.cs" />
     <Compile Include="Runtime\IDependencySource.cs" />
-    <Compile Include="Runtime\IViewStore.cs" />
+    <Compile Include="Runtime\IViewDb.cs" />
+    <Compile Include="Runtime\IWebApi.cs" />
     <Compile Include="Runtime\Map\ApiType.cs" />
     <Compile Include="Runtime\Map\ApiTypeSet.cs" />
     <Compile Include="Runtime\Map\ViewTypeSet.cs" />
@@ -136,7 +134,10 @@
     <Compile Include="Runtime\Timeline\TimelineEventType.cs" />
     <Compile Include="Runtime\Timeline\TimelineOperations.cs" />
     <Compile Include="Runtime\Timeline\TimelinePosition.cs" />
-    <Compile Include="Runtime\View.cs" />
+    <Compile Include="Runtime\WebApiCall.cs" />
+    <Compile Include="View.cs" />
+    <Compile Include="Runtime\WebApiRootAttribute.cs" />
+    <Compile Include="Runtime\WebApiCallBody.cs" />
     <Compile Include="Tag.cs" />
     <Compile Include="Tags.cs" />
     <Compile Include="TagValue.cs" />

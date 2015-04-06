@@ -78,6 +78,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DependsOnAttribute.cs" />
+    <Compile Include="ISettingsDb.cs" />
     <Compile Include="RuntimeReflection.cs" />
     <Compile Include="Configuration\ColumnsElement.cs" />
     <Compile Include="Configuration\ConsoleElement.cs" />

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.Owin.Hosting;
 using Owin;
 using Totem.Http;
 using Totem.Runtime;
@@ -15,26 +16,42 @@ namespace Totem.Web
 	/// <summary>
 	/// An HTTP-bound push application composed by OWIN and SignalR
 	/// </summary>
-	public sealed class PushApp : Notion, IWebApp
+	public class PushApp : Notion, IWebApp
 	{
-		private readonly ILifetimeScope _scope;
-
-		public PushApp(ILifetimeScope scope, IReadOnlyList<HttpLink> hostBindings)
+		public PushApp(WebAppContext context)
 		{
-			_scope = scope;
-			HostBindings = hostBindings;
+			Context = context;
 		}
 
-		public IReadOnlyList<HttpLink> HostBindings { get; private set; }
+		public WebAppContext Context { get; private set; }
 
-		public void Start(IAppBuilder builder)
+		public virtual IDisposable Start()
+		{
+			return WebApp.Start(GetStartOptions(), Startup);
+		}
+
+		protected virtual StartOptions GetStartOptions()
+		{
+			var options = new StartOptions();
+
+			foreach(var binding in Context.Bindings)
+			{
+				options.Urls.Add(binding.ToString());
+			}
+
+			return options;
+		}
+
+		protected virtual void Startup(IAppBuilder builder)
 		{
 			GlobalHost.HubPipeline.AddModule(new LoggingPipelineModule());
 
 			builder.MapHubs(new HubConfiguration
 			{
+				// TODO: Make this a setting
+
 				EnableDetailedErrors = true,
-				Resolver = new PushDependencyResolver(_scope)
+				Resolver = new PushDependencyResolver(Context.Scope)
 			});
 		}
 

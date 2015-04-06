@@ -13,9 +13,7 @@ namespace Totem.Web
 	/// </summary>
 	public abstract class WebApi : NancyModule, IWebApi
 	{
-		public static readonly string LinkItemKey = typeof(WebApi).FullName + ".Link";
-		public static readonly string AuthorizationItemKey = typeof(WebApi).FullName + ".Authorization";
-		public static readonly string RequestBodyKey = typeof(WebApi).FullName + ".RequestBody";
+		public static readonly string CallItemKey = typeof(WebApi).FullName + ".Call";
 
 		protected WebApi()
 		{
@@ -28,9 +26,8 @@ namespace Totem.Web
 		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
 		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
-		public HttpLink Link { get { return ReadContextItem<HttpLink>(LinkItemKey); } }
-		public HttpAuthorization Authorization { get { return ReadContextItem<HttpAuthorization>(AuthorizationItemKey); } }
-		public HttpRequestBody RequestBody { get { return ReadContextItem<HttpRequestBody>(RequestBodyKey); } }
+		public WebApiCall Call { get { return ReadContextItem<WebApiCall>(CallItemKey); } }
+		protected IViewDb Views { get { return Call.Views; } }
 
 		protected T ReadContextItem<T>(string key, bool strict = true)
 		{
@@ -62,7 +59,7 @@ namespace Totem.Web
 
 		public virtual Text ToText()
 		{
-			return Link.ToText();
+			return Call.Link.ToText();
 		}
 	}
 }

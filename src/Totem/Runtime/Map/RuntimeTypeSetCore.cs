@@ -50,7 +50,10 @@ namespace Totem.Runtime.Map
 		{
 			T type;
 
-			Expect(_typesByDeclaredType.TryGetValue(declaredType, out type) && strict).IsFalse("Unknown declared type: " + Text.Of(declaredType));
+			if(!_typesByDeclaredType.TryGetValue(declaredType, out type) && strict)
+			{
+				throw new KeyNotFoundException("Unknown declared type: " + Text.Of(declaredType));
+			}
 
 			return type;
 		}

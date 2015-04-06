@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Totem.Http;
 
 namespace Totem.Runtime.Map
 {
@@ -10,19 +9,11 @@ namespace Totem.Runtime.Map
 	/// </summary>
 	public sealed class ApiType : RuntimeType
 	{
-		private readonly Func<IDependencySource, IWebApi> _resolve;
-
-		internal ApiType(RuntimeTypeRef type, HttpResource resource, Func<IDependencySource, IWebApi> resolve) : base(type)
+		internal ApiType(RuntimeTypeRef type, LinkPath rootPath) : base(type)
 		{
-			Resource = resource;
-			_resolve = resolve;
+			RootPath = rootPath;
 		}
 
-		public readonly HttpResource Resource;
-
-		public IWebApi Resolve(IDependencySource source)
-		{
-			return _resolve(source);
-		}
+		public readonly LinkPath RootPath;
 	}
 }

@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Autofac;
-using Autofac.Core.Lifetime;
+using Microsoft.Owin.Hosting;
+using Microsoft.Owin.Logging;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.Autofac;
-using Nancy.Conventions;
 using Nancy.Owin;
 using Owin;
 using Totem.Http;
-using Totem.IO;
 using Totem.Runtime;
 using Totem.Runtime.Map;
 
@@ -21,18 +19,11 @@ namespace Totem.Web
 	/// <summary>
 	/// An HTTP-bound API composed by OWIN and Nancy
 	/// </summary>
-	public class WebApiApp : AutofacNancyBootstrapper, IWebApp, IWritable, ITaggable
+	public abstract class WebApiApp : AutofacNancyBootstrapper, IWebApp, ITaggable
 	{
-		private readonly AreaType _area;
-		private readonly ILifetimeScope _scope;
-		private readonly NancyOptions _options;
-
-		public WebApiApp(ILifetimeScope scope, NancyOptions options, AreaType area, IReadOnlyList<HttpLink> hostBindings)
+		protected WebApiApp(WebAppContext context)
 		{
-			_area = area;
-			_scope = scope;
-			_options = options;
-			HostBindings = hostBindings;
+			Context = context;
 		}
 
 		Tags ITaggable.Tags { get { return Tags; } }
@@ -41,18 +32,35 @@ namespace Totem.Web
 		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
 		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
-		public IReadOnlyList<HttpLink> HostBindings { get; private set; }
+		public WebAppContext Context { get; private set; }
 
-		public Text ToText()
+		public virtual IDisposable Start()
 		{
-			return HostBindings.ToTextSeparatedBy(Text.Line);
+			return WebApp.Start(GetStartOptions(), Startup);
 		}
 
-		public virtual void Start(IAppBuilder builder)
+		protected virtual StartOptions GetStartOptions()
 		{
-			_options.Bootstrapper = this;
+			var options = new StartOptions();
 
-			builder.UseNancy(_options);
+			foreach(var binding in Context.Bindings)
+			{
+				options.Urls.Add(binding.ToString());
+			}
+
+			return options;
+		}
+
+		protected virtual void Startup(IAppBuilder builder)
+		{
+			builder.UseNancy(GetNancyOptions());
+
+			builder.SetLoggerFactory(new LogAdapter());
+		}
+
+		protected virtual NancyOptions GetNancyOptions()
+		{
+			return new NancyOptions { Bootstrapper = this };
 		}
 
 		//
@@ -61,49 +69,31 @@ namespace Totem.Web
 
 		protected override ILifetimeScope GetApplicationContainer()
 		{
-			return _scope;
+			return Context.Scope;
 		}
-
-		protected override IEnumerable<INancyModule> GetAllModules(ILifetimeScope container)
-		{
-			var dependencySource = container.Resolve<IDependencySource>();
-
-			return
-				from region in Runtime.Regions
-				from package in region.Packages
-				from api in package.Apis
-				select (INancyModule) api.Resolve(dependencySource);
-		}
-
-		protected override INancyModule GetModule(ILifetimeScope container, Type moduleType)
-		{
-			return (INancyModule) container.Resolve(moduleType);
-		}
-
-		protected override ILifetimeScope CreateRequestContainer(NancyContext context)
-		{
-			return _scope.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
-		}
-
-		protected override void RegisterRequestContainerModules(ILifetimeScope container, IEnumerable<ModuleRegistration> moduleRegistrationTypes)
-		{}
 
 		protected override void ConfigureRequestContainer(ILifetimeScope container, NancyContext context)
 		{
-			new RequestModule(context).Update(container.ComponentRegistry);
-
 			base.ConfigureRequestContainer(container, context);
+
+			new RequestModule(Context, context).Update(container.ComponentRegistry);
 		}
+
+		protected override abstract IEnumerable<INancyModule> GetAllModules(ILifetimeScope container);
 
 		private sealed class RequestModule : BuilderModule
 		{
-			public RequestModule(NancyContext context)
+			internal RequestModule(WebAppContext appContext, NancyContext nancyContext)
 			{
-				RegisterInstance(context).ExternallyOwned();
+				RegisterInstance(appContext).ExternallyOwned();
+				RegisterInstance(nancyContext).ExternallyOwned();
 
-				//RegisterType<WebApiScope>().InstancePerRequest();
-
-				//RegisterType<RequestBody>().As<IRequestBody>().InstancePerRequest();
+				Register(c => new WebApiCall(
+					HttpLink.From(nancyContext.Request.Url.ToString()),
+					HttpAuthorization.From(nancyContext.Request.Headers.Authorization),
+					WebApiCallBody.From(nancyContext.Request.Headers.ContentType, () => nancyContext.Request.Body),
+					c.Resolve<IViewDb>()))
+				.InstancePerRequest();
 			}
 		}
 
@@ -120,9 +110,7 @@ namespace Totem.Web
 
 		private Response BeforeRequest(ILifetimeScope container, NancyContext context)
 		{
-			NormalizeRequest(context);
-
-			SetContextItems(container, context);
+			SetCallItem(container, context);
 
 			return context.Response;
 		}
@@ -132,88 +120,49 @@ namespace Totem.Web
 			return container.Resolve<IErrorHandler>().CreateResponse(context, exception);
 		}
 
-		private static void SetContextItems(ILifetimeScope container, NancyContext context)
+		private static void SetCallItem(ILifetimeScope container, NancyContext context)
 		{
-			context.Items[WebApi.LinkItemKey] = HttpLink.From(context.Request.Url.ToString());
-			context.Items[WebApi.AuthorizationItemKey] = HttpAuthorization.From(context.Request.Headers.Authorization);
-			context.Items[WebApi.RequestBodyKey] = HttpRequestBody.From(context.Request.Headers.ContentType, () => context.Request.Body);
+			context.Items[WebApi.CallItemKey] = container.Resolve<WebApiCall>();
 		}
 
-		private void NormalizeRequest(NancyContext context)
+		private sealed class LogAdapter : Notion, ILoggerFactory, ILogger
 		{
-			if(context.Request.Url.BasePath != null)
+			public ILogger Create(string name)
 			{
-				return;
+				return this;
 			}
 
-			// It is unclear why these values are not set properly when we receive the context.
-			//
-			// In any case, this normalization will ensure that the base path is the area resource, and the request path is relative to it.
-
-			var requestPath = HttpResource.From(context.Request.Url.Path);
-
-
-			// TODO: Still required?
-
-
-			//context.Request.Url.BasePath = Resource.ToText(leadingSlash: true);
-			//context.Request.Url.Path = requestPath.RelativeTo(Resource).ToText(leadingSlash: true);
-		}
-
-		//
-		// Conventions
-		//
-
-		protected override void ConfigureConventions(NancyConventions nancyConventions)
-		{
-			base.ConfigureConventions(nancyConventions);
-
-			nancyConventions.ViewLocationConventions.Clear();
-
-			nancyConventions.ViewLocationConventions.Add((viewName, model, context) =>
+			public bool WriteCore(TraceEventType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
 			{
-				return "UI/" + viewName;
-			});
+				var level = GetLevel(eventType);
 
-			nancyConventions.AcceptHeaderCoercionConventions.Add((acceptHeaders, context) =>
-			{
-				return new[]
+				// OwinHttpListener seems to always throw ObjectDisposedException when shutting down
+
+				var canWrite = Log.IsAt(level) && !(exception is ObjectDisposedException);
+
+				if(canWrite)
 				{
-					Tuple.Create("text/html", 1.0m),
-					Tuple.Create("*/*", 0.9m)
-				};
-			});
+					Log.At(level, Text.Of(() => "[web] " + formatter(state, exception)));
+				}
 
-			AddContentFolder(nancyConventions, "css", "UI/css");
-			AddContentFolder(nancyConventions, "images", "UI/images");
-			AddContentFolder(nancyConventions, "js", "UI/js");
-			AddContentFolder(nancyConventions, "references", "UI/references");
-		}
-
-		private void AddContentFolder(NancyConventions nancyConventions, string request, string content)
-		{
-			nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory(
-				request,
-				_area.Package.Folder.Then(FolderResource.From(content)).ToString()));
-		}
-
-		protected override IRootPathProvider RootPathProvider
-		{
-			get { return new UIPathProvider(_area); }
-		}
-
-		private sealed class UIPathProvider : Notion, IRootPathProvider
-		{
-			private readonly AreaType _area;
-
-			internal UIPathProvider(AreaType area)
-			{
-				_area = area;
+				return canWrite;
 			}
 
-			public string GetRootPath()
+			private static LogLevel GetLevel(TraceEventType type)
 			{
-				return _area.Package.Folder.ToString();
+				switch(type)
+				{
+					case TraceEventType.Verbose:
+						return LogLevel.Verbose;
+					case TraceEventType.Warning:
+						return LogLevel.Warning;
+					case TraceEventType.Error:
+						return LogLevel.Error;
+					case TraceEventType.Critical:
+						return LogLevel.Fatal;
+					default:
+						return LogLevel.Debug;
+				}
 			}
 		}
 	}

@@ -17,19 +17,8 @@ namespace Totem.Runtime
 		Tags ITaggable.Tags { get { return Tags; } }
 		protected Tags Tags { get; private set; }
 		protected IClock Clock { get { return Notion.Traits.Clock.Get(this); } }
+		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
 		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
-
-		[Import]
-		protected IViewStore Views { get; set; }
-
-		public AreaType AreaType { get; private set; }
-
-		public virtual bool HasSettings { get { return false; } }
-
-		public virtual IConnectable ResolveConnection(ILifetimeScope scope)
-		{
-			return Connection.None;
-		}
 
 		public sealed override string ToString()
 		{
@@ -47,6 +36,23 @@ namespace Totem.Runtime
 		}
 
 		//
+		// IRuntimeArea
+		//
+
+		public AreaType AreaType { get; private set; }
+		public bool Configured { get; private set; }
+
+		public IConnectable Compose(ILifetimeScope scope)
+		{
+			return !Configured ? Connection.None : ResolveConnection(scope);
+		}
+
+		protected virtual IConnectable ResolveConnection(ILifetimeScope scope)
+		{
+			return Connection.None;
+		}
+
+		//
 		// Initialization
 		//
 
@@ -56,12 +62,7 @@ namespace Totem.Runtime
 
 			ReadAreaType();
 
-			if(AreaType.HasSettings)
-			{
-				ReadSettings();
-			}
-
-			RegisterArea();
+			ConfigureArea();
 		}
 
 		private void ReadAreaType()
@@ -69,8 +70,27 @@ namespace Totem.Runtime
 			AreaType = Runtime.GetArea(GetType());
 		}
 
-		protected virtual void ReadSettings()
-		{}
+		private void ConfigureArea()
+		{
+			Configured = !AreaType.HasSettings || ReadSettings();
+
+			if(Configured)
+			{
+				RegisterArea();
+			}
+			else
+			{
+				Log.Debug(
+					"Ignorning area {Area}: settings view {SettingsView} not found",
+					AreaType.Key,
+					AreaType.SettingsView.Key);
+			}
+		}
+
+		protected virtual bool ReadSettings()
+		{
+			return true;
+		}
 
 		protected abstract void RegisterArea();
 
@@ -117,11 +137,21 @@ namespace Totem.Runtime
 	/// <typeparam name="TSettings">The type of view providing the area's settings</typeparam>
 	public abstract class RuntimeArea<TSettings> : RuntimeArea where TSettings : View
 	{
+		[Import]
+		private ISettingsDb _settingsStore { get; set; }
+
 		protected TSettings Settings { get; private set; }
 
-		protected override void ReadSettings()
+		protected virtual bool AllowNullSettings
 		{
-			Settings = AreaType.ReadSettings<TSettings>(Views, strict: false);
+			get { return false; }
+		}
+
+		protected override bool ReadSettings()
+		{
+			Settings = _settingsStore.Read<TSettings>(AreaType, strict: false);
+
+			return Settings != null || AllowNullSettings;
 		}
 	}
 }
