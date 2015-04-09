@@ -32,7 +32,7 @@ namespace Totem.Web
 		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
 		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
-		public WebAppContext Context { get; private set; }
+		protected readonly WebAppContext Context;
 
 		public virtual IDisposable Start()
 		{
@@ -72,29 +72,27 @@ namespace Totem.Web
 			return Context.Scope;
 		}
 
+		protected override abstract IEnumerable<INancyModule> GetAllModules(ILifetimeScope container);
+
+		protected override INancyModule GetModule(ILifetimeScope container, Type moduleType)
+		{
+			return (INancyModule) container.Resolve(moduleType);
+		}
+
 		protected override void ConfigureRequestContainer(ILifetimeScope container, NancyContext context)
 		{
 			base.ConfigureRequestContainer(container, context);
 
-			new RequestModule(Context, context).Update(container.ComponentRegistry);
-		}
+			var module = new BuilderModule();
 
-		protected override abstract IEnumerable<INancyModule> GetAllModules(ILifetimeScope container);
+			module.Register(c => new WebApiCall(
+				HttpLink.From(context.Request.Url.ToString()),
+				HttpAuthorization.From(context.Request.Headers.Authorization),
+				WebApiCallBody.From(context.Request.Headers.ContentType, () => context.Request.Body),
+				c.Resolve<IViewDb>()))
+			.InstancePerRequest();
 
-		private sealed class RequestModule : BuilderModule
-		{
-			internal RequestModule(WebAppContext appContext, NancyContext nancyContext)
-			{
-				RegisterInstance(appContext).ExternallyOwned();
-				RegisterInstance(nancyContext).ExternallyOwned();
-
-				Register(c => new WebApiCall(
-					HttpLink.From(nancyContext.Request.Url.ToString()),
-					HttpAuthorization.From(nancyContext.Request.Headers.Authorization),
-					WebApiCallBody.From(nancyContext.Request.Headers.ContentType, () => nancyContext.Request.Body),
-					c.Resolve<IViewDb>()))
-				.InstancePerRequest();
-			}
+			module.Update(container.ComponentRegistry);
 		}
 
 		//

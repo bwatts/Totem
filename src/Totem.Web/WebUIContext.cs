@@ -10,9 +10,9 @@ namespace Totem.Web
 	/// <summary>
 	/// The context established for an HTTP-bound API serving a user interface
 	/// </summary>
-	public class WebUIAppContext : WebAppContext
+	public class WebUIContext : WebAppContext
 	{
-		public WebUIAppContext(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope, FolderLink contentFolder) : base(bindings, scope)
+		public WebUIContext(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope, FolderLink contentFolder) : base(bindings, scope)
 		{
 			ContentFolder = contentFolder;
 		}

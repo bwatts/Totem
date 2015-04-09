@@ -10,6 +10,8 @@ namespace Totem.Runtime
 	/// </summary>
 	public interface ISettingsDb
 	{
+		SetupView ReadSetup();
+
 		TView Read<TView>(AreaType area, bool strict = true) where TView : View;
 	}
 }

@@ -63,6 +63,7 @@
     <Compile Include="IConnectable.cs" />
     <Compile Include="IExpect.cs" />
     <Compile Include="IFluent.cs" />
+    <Compile Include="IO\Binary.cs" />
     <Compile Include="IO\FileExtension.cs" />
     <Compile Include="IO\FileLink.cs" />
     <Compile Include="IO\FileName.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="Reflection\GenericAssignability.cs" />
     <Compile Include="Reflection\TypeSourceText.cs" />
     <Compile Include="Reflection\InheritanceChain.cs" />
+    <Compile Include="Runtime\DurableAttribute.cs" />
     <Compile Include="Runtime\IDependencySource.cs" />
     <Compile Include="Runtime\IViewDb.cs" />
     <Compile Include="Runtime\IWebApi.cs" />
@@ -134,6 +136,7 @@
     <Compile Include="Runtime\Timeline\TimelineEventType.cs" />
     <Compile Include="Runtime\Timeline\TimelineOperations.cs" />
     <Compile Include="Runtime\Timeline\TimelinePosition.cs" />
+    <Compile Include="Runtime\TransientAttribute.cs" />
     <Compile Include="Runtime\WebApiCall.cs" />
     <Compile Include="View.cs" />
     <Compile Include="Runtime\WebApiRootAttribute.cs" />

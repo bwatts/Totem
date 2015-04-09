@@ -14,12 +14,12 @@ namespace Totem.Web
 	/// </summary>
 	public abstract class WebUIApp : WebApiApp, IRootPathProvider
 	{
-		protected WebUIApp(WebUIAppContext context) : base(context)
+		protected WebUIApp(WebUIContext context) : base(context)
 		{}
 
-		public new WebUIAppContext Context
+		public new WebUIContext Context
 		{
-			get { return (WebUIAppContext) base.Context; }
+			get { return (WebUIContext) base.Context; }
 		}
 
 		protected override IRootPathProvider RootPathProvider

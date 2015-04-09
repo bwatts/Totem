@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Totem.Runtime;
 
 namespace Totem
 {
 	/// <summary>
 	/// The state of a timeline query at a specific point
 	/// </summary>
+	[Durable]
 	public abstract class View : Notion
 	{
 		protected View(string key)

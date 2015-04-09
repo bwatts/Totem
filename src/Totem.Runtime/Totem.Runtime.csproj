@@ -38,6 +38,9 @@
     <Reference Include="NDesk.Options">
       <HintPath>..\..\..\..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Serilog, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\packages\Serilog.1.4.204\lib\net45\Serilog.dll</HintPath>
@@ -79,6 +82,13 @@
     </Compile>
     <Compile Include="DependsOnAttribute.cs" />
     <Compile Include="ISettingsDb.cs" />
+    <Compile Include="Json\BinaryJsonFormat.cs" />
+    <Compile Include="Json\TextJsonFormat.cs" />
+    <Compile Include="Json\TotemContractResolver.cs" />
+    <Compile Include="Json\TotemJson.cs" />
+    <Compile Include="Json\TotemJsonFormat.cs" />
+    <Compile Include="Json\TotemSerializationBinder.cs" />
+    <Compile Include="Json\TotemSerializerSettings.cs" />
     <Compile Include="RuntimeReflection.cs" />
     <Compile Include="Configuration\ColumnsElement.cs" />
     <Compile Include="Configuration\ConsoleElement.cs" />
@@ -97,6 +107,7 @@
     <Compile Include="SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SetupView.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Totem\Totem.csproj">

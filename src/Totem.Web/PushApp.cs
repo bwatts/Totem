@@ -9,6 +9,7 @@ using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin.Hosting;
 using Owin;
 using Totem.Http;
+using Totem.IO;
 using Totem.Runtime;
 
 namespace Totem.Web
@@ -23,7 +24,12 @@ namespace Totem.Web
 			Context = context;
 		}
 
-		public WebAppContext Context { get; private set; }
+		public PushApp(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope)
+		{
+			Context = new WebAppContext(bindings, scope);
+		}
+
+		public readonly WebAppContext Context;
 
 		public virtual IDisposable Start()
 		{

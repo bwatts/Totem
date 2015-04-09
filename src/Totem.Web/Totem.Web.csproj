@@ -56,6 +56,9 @@
     <Reference Include="Nancy.Owin">
       <HintPath>..\..\..\..\packages\Nancy.Owin.1.1\lib\net40\Nancy.Owin.dll</HintPath>
     </Reference>
+    <Reference Include="Nancy.Serialization.JsonNet">
+      <HintPath>..\..\..\..\packages\Nancy.Serialization.JsonNet.1.1\lib\net40\Nancy.Serialization.JsonNet.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -76,6 +79,7 @@
     <Compile Include="..\..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="WebAppContext.cs" />
     <Compile Include="ErrorDetail.cs" />
     <Compile Include="ErrorHandler.cs" />
     <Compile Include="IErrorHandler.cs" />
@@ -85,13 +89,12 @@
     <Compile Include="WebUIApp.cs" />
     <Compile Include="WebApi.cs" />
     <Compile Include="WebApiApp.cs" />
-    <Compile Include="WebAppContext.cs" />
     <Compile Include="WebAreaView.cs" />
     <Compile Include="WebHost.cs" />
     <Compile Include="WebArea.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="WebUIAppContext.cs" />
+    <Compile Include="WebUIContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj">

@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Autofac;
 using Totem.Http;
-using Totem.IO;
 
 namespace Totem.Web
 {
 	/// <summary>
-	/// The context established for an HTTP-bound API
+	/// The context established for an HTTP-bound application
 	/// </summary>
 	public class WebAppContext
 	{
