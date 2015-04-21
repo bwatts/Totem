@@ -9,6 +9,8 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public interface ITimeline : IFluent
 	{
-		void Observe(TimelineEvent e);
+		void Append(TimelinePosition cause, IReadOnlyList<Event> events);
+
+		TFlow Run<TFlow>(TimelinePosition cause, Event e) where TFlow : Flow;
 	}
 }

@@ -28,7 +28,7 @@ namespace Totem.Web
 			return new Response
 			{
 				StatusCode = codeAndText.Item1,
-				ContentType = MediaType.Plain.ToString(),
+				ContentType = MediaType.Plain.ToTextUtf8(),
 				Contents = body => new StreamWriter(body).Write(codeAndText.Item2)
 			};
 		}

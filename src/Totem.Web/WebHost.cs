@@ -9,7 +9,7 @@ using Totem.IO;
 namespace Totem.Web
 {
 	/// <summary>
-	/// Hosts a set of web applications
+	/// The context of a set of web applications
 	/// </summary>
 	public sealed class WebHost : Connection
 	{

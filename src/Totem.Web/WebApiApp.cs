@@ -13,6 +13,7 @@ using Owin;
 using Totem.Http;
 using Totem.Runtime;
 using Totem.Runtime.Map;
+using Totem.Runtime.Timeline;
 
 namespace Totem.Web
 {
@@ -24,6 +25,7 @@ namespace Totem.Web
 		protected WebApiApp(WebAppContext context)
 		{
 			Context = context;
+			Tags = new Tags();
 		}
 
 		Tags ITaggable.Tags { get { return Tags; } }
@@ -36,7 +38,13 @@ namespace Totem.Web
 
 		public virtual IDisposable Start()
 		{
-			return WebApp.Start(GetStartOptions(), Startup);
+			var startOptions = GetStartOptions();
+
+			var instance = WebApp.Start(startOptions, Startup);
+
+			Log.Info("[web] Started API server at {Bindings}", startOptions.Urls.Count == 1 ? startOptions.Urls[0] : startOptions.Urls as object);
+
+			return instance;
 		}
 
 		protected virtual StartOptions GetStartOptions()
@@ -88,8 +96,7 @@ namespace Totem.Web
 			module.Register(c => new WebApiCall(
 				HttpLink.From(context.Request.Url.ToString()),
 				HttpAuthorization.From(context.Request.Headers.Authorization),
-				WebApiCallBody.From(context.Request.Headers.ContentType, () => context.Request.Body),
-				c.Resolve<IViewDb>()))
+				WebApiCallBody.From(context.Request.Headers.ContentType, () => context.Request.Body)))
 			.InstancePerRequest();
 
 			module.Update(container.ComponentRegistry);
@@ -121,6 +128,8 @@ namespace Totem.Web
 		private static void SetCallItem(ILifetimeScope container, NancyContext context)
 		{
 			context.Items[WebApi.CallItemKey] = container.Resolve<WebApiCall>();
+			context.Items[WebApi.ViewsItemKey] = container.Resolve<IViewDb>();
+			context.Items[WebApi.TimelineItemKey] = container.Resolve<ITimeline>();
 		}
 
 		private sealed class LogAdapter : Notion, ILoggerFactory, ILogger

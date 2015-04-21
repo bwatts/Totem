@@ -43,5 +43,10 @@ namespace Totem.Runtime.Json
 				}
 			}
 		}
+
+		public JsonSerializer CreateSerializer()
+		{
+			return JsonSerializer.Create(this);
+		}
 	}
 }

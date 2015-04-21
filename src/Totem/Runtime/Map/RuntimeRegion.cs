@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Map
 {
@@ -50,28 +51,6 @@ namespace Totem.Runtime.Map
 			return area;
 		}
 
-		public ApiType GetApi(RuntimeTypeKey key, bool strict = true)
-		{
-			var api = Packages
-				.Select(package => package.GetApi(key, strict: false))
-				.FirstOrDefault(packageApi => packageApi != null);
-
-			Expect(strict && api == null).IsFalse("Failed to resolve API", key.ToText());
-
-			return api;
-		}
-
-		public ApiType GetApi(Type declaredType, bool strict = true)
-		{
-			var api = Packages
-				.Select(package => package.GetApi(declaredType, strict: false))
-				.FirstOrDefault(packageApi => packageApi != null);
-
-			Expect(strict && api == null).IsFalse("Failed to resolve API", Text.Of(declaredType));
-
-			return api;
-		}
-
 		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
 		{
 			var view = Packages
@@ -92,6 +71,50 @@ namespace Totem.Runtime.Map
 			Expect(strict && view == null).IsFalse("Failed to resolve view", Text.Of(declaredType));
 
 			return view;
+		}
+
+		public FlowType GetFlow(RuntimeTypeKey key, bool strict = true)
+		{
+			var flow = Packages
+				.Select(package => package.GetFlow(key, strict: false))
+				.FirstOrDefault(packageFlow => packageFlow != null);
+
+			Expect(strict && flow == null).IsFalse("Failed to resolve flow", key.ToText());
+
+			return flow;
+		}
+
+		public FlowType GetFlow(Type declaredType, bool strict = true)
+		{
+			var flow = Packages
+				.Select(package => package.GetFlow(declaredType, strict: false))
+				.FirstOrDefault(packageFlow => packageFlow != null);
+
+			Expect(strict && flow == null).IsFalse("Failed to resolve flow", Text.Of(declaredType));
+
+			return flow;
+		}
+
+		public EventType GetEvent(RuntimeTypeKey key, bool strict = true)
+		{
+			var e = Packages
+				.Select(package => package.GetEvent(key, strict: false))
+				.FirstOrDefault(packageEvent => packageEvent != null);
+
+			Expect(strict && e == null).IsFalse("Failed to resolve event", key.ToText());
+
+			return e;
+		}
+
+		public EventType GetEvent(Type declaredType, bool strict = true)
+		{
+			var e = Packages
+				.Select(package => package.GetEvent(declaredType, strict: false))
+				.FirstOrDefault(packageEvent => packageEvent != null);
+
+			Expect(strict && e == null).IsFalse("Failed to resolve event", Text.Of(declaredType));
+
+			return e;
 		}
 	}
 }

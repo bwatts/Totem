@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Map
 {
@@ -53,20 +54,6 @@ namespace Totem.Runtime.Map
 			return region == null ? null : region.GetArea(declaredType, strict);
 		}
 
-		public ApiType GetApi(RuntimeTypeKey key, bool strict = true)
-		{
-			var region = Get(key.Region, strict);
-
-			return region == null ? null : region.GetApi(key, strict);
-		}
-
-		public ApiType GetApi(Type declaredType, bool strict = true)
-		{
-			var region = _assemblyRegions.GetRegion(declaredType, strict);
-
-			return region == null ? null : region.GetApi(declaredType, strict);
-		}
-
 		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
 		{
 			var region = Get(key.Region, strict);
@@ -79,6 +66,34 @@ namespace Totem.Runtime.Map
 			var region = _assemblyRegions.GetRegion(declaredType, strict);
 
 			return region == null ? null : region.GetView(declaredType, strict);
+		}
+
+		public FlowType GetFlow(RuntimeTypeKey key, bool strict = true)
+		{
+			var region = Get(key.Region, strict);
+
+			return region == null ? null : region.GetFlow(key, strict);
+		}
+
+		public FlowType GetFlow(Type declaredType, bool strict = true)
+		{
+			var region = _assemblyRegions.GetRegion(declaredType, strict);
+
+			return region == null ? null : region.GetFlow(declaredType, strict);
+		}
+
+		public EventType GetEvent(RuntimeTypeKey key, bool strict = true)
+		{
+			var region = Get(key.Region, strict);
+
+			return region == null ? null : region.GetEvent(key, strict);
+		}
+
+		public EventType GetEvent(Type declaredType, bool strict = true)
+		{
+			var region = _assemblyRegions.GetRegion(declaredType, strict);
+
+			return region == null ? null : region.GetEvent(declaredType, strict);
 		}
 
 		private sealed class AssemblyRegionCache

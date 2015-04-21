@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Reflection;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Map
 {
@@ -46,16 +47,6 @@ namespace Totem.Runtime.Map
 			return Regions.GetArea(declaredType, strict);
 		}
 
-		public ApiType GetApi(RuntimeTypeKey key, bool strict = true)
-		{
-			return Regions.GetApi(key, strict);
-		}
-
-		public ApiType GetApi(Type declaredType, bool strict = true)
-		{
-			return Regions.GetApi(declaredType, strict);
-		}
-
 		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
 		{
 			return Regions.GetView(key, strict);
@@ -64,6 +55,26 @@ namespace Totem.Runtime.Map
 		public ViewType GetView(Type declaredType, bool strict = true)
 		{
 			return Regions.GetView(declaredType, strict);
+		}
+
+		public FlowType GetFlow(RuntimeTypeKey key, bool strict = true)
+		{
+			return Regions.GetFlow(key, strict);
+		}
+
+		public FlowType GetFlow(Type declaredType, bool strict = true)
+		{
+			return Regions.GetFlow(declaredType, strict);
+		}
+
+		public EventType GetEvent(RuntimeTypeKey key, bool strict = true)
+		{
+			return Regions.GetEvent(key, strict);
+		}
+
+		public EventType GetEvent(Type declaredType, bool strict = true)
+		{
+			return Regions.GetEvent(declaredType, strict);
 		}
 	}
 }

@@ -30,18 +30,7 @@ namespace Totem.Web
 			Register(c => Settings != null ? Settings.ErrorDetail : ErrorDetail.StackTrace)
 			.SingleInstance();
 
-			// Override all JSON handling in Nancy with our custom settings. For some reason, IBodyDeserializer does not need to be overridden - it just
-			// works when referencing the JSON.NET implementation. Solar flares.
-
-			Register(c =>
-			{
-				var settings = new TotemSerializerSettings
-				{
-					CamelCaseProperties = true
-				};
-
-				return new JsonNetSerializer(JsonSerializer.Create(settings));
-			})
+			Register(c => new JsonNetSerializer(new TotemSerializerSettings().CreateSerializer()))
 			.As<ISerializer>()
 			.SingleInstance();
 		}

@@ -33,7 +33,13 @@ namespace Totem.Web
 
 		public virtual IDisposable Start()
 		{
-			return WebApp.Start(GetStartOptions(), Startup);
+			var startOptions = GetStartOptions();
+
+			var instance = WebApp.Start(startOptions, Startup);
+
+			Log.Info("[web] Started push server at {Bindings}", startOptions.Urls);
+
+			return instance;
 		}
 
 		protected virtual StartOptions GetStartOptions()

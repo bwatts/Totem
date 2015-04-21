@@ -10,18 +10,16 @@ namespace Totem.Runtime
 	/// </summary>
 	public class WebApiCall
 	{
-		public WebApiCall(HttpLink link, HttpAuthorization authorization, WebApiCallBody body, IViewDb views)
+		public WebApiCall(HttpLink link, HttpAuthorization authorization, WebApiCallBody body)
 		{
 			Link = link;
 			Authorization = authorization;
 			Body = body;
-			Views = views;
 		}
 
 		public readonly HttpLink Link;
 		public readonly HttpAuthorization Authorization;
 		public readonly WebApiCallBody Body;
-		public readonly IViewDb Views;
 
 		public override string ToString()
 		{

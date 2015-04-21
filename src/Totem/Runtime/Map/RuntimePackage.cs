@@ -4,6 +4,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Reflection;
 using Totem.IO;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Map
 {
@@ -20,8 +21,9 @@ namespace Totem.Runtime.Map
 			RegionKey = regionKey;
 			Assembly = catalog.Assembly;
 			Areas = new AreaTypeSet();
-			Apis = new ApiTypeSet();
 			Views = new ViewTypeSet();
+			Flows = new FlowTypeSet();
+			Events = new EventTypeSet();
 		}
 
 		public readonly string Name;
@@ -30,8 +32,9 @@ namespace Totem.Runtime.Map
 		public readonly RuntimeRegionKey RegionKey;
 		public readonly Assembly Assembly;
 		public readonly AreaTypeSet Areas;
-		public readonly ApiTypeSet Apis;
 		public readonly ViewTypeSet Views;
+		public readonly FlowTypeSet Flows;
+		public readonly EventTypeSet Events;
 
 		public override Text ToText()
 		{
@@ -48,16 +51,6 @@ namespace Totem.Runtime.Map
 			return Areas.Get(declaredType, strict);
 		}
 
-		public ApiType GetApi(RuntimeTypeKey key, bool strict = true)
-		{
-			return Apis.Get(key, strict);
-		}
-
-		public ApiType GetApi(Type declaredType, bool strict = true)
-		{
-			return Apis.Get(declaredType, strict);
-		}
-
 		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
 		{
 			return Views.Get(key, strict);
@@ -66,6 +59,26 @@ namespace Totem.Runtime.Map
 		public ViewType GetView(Type declaredType, bool strict = true)
 		{
 			return Views.Get(declaredType, strict);
+		}
+
+		public FlowType GetFlow(RuntimeTypeKey key, bool strict = true)
+		{
+			return Flows.Get(key, strict);
+		}
+
+		public FlowType GetFlow(Type declaredType, bool strict = true)
+		{
+			return Flows.Get(declaredType, strict);
+		}
+
+		public EventType GetEvent(RuntimeTypeKey key, bool strict = true)
+		{
+			return Events.Get(key, strict);
+		}
+
+		public EventType GetEvent(Type declaredType, bool strict = true)
+		{
+			return Events.Get(declaredType, strict);
 		}
 	}
 }

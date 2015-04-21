@@ -10,22 +10,30 @@ namespace Totem.Runtime
 	/// </summary>
 	public sealed class RuntimeDeployment
 	{
-		public RuntimeDeployment(IFolder folder, IFolder hostFolder, IFolder dataFolder, IFolder logFolder, string solutionConfiguration = "")
+		public RuntimeDeployment(
+			IFolder folder,
+			IFolder hostFolder,
+			IFolder dataFolder,
+			IFolder logFolder,
+			FileLink hostExe,
+			string solutionConfiguration = "")
 		{
 			Folder = folder;
 			HostFolder = hostFolder;
 			DataFolder = dataFolder;
 			LogFolder = logFolder;
-			SolutionConfiguration = solutionConfiguration;
+			HostExe = hostExe;
 			InSolution = solutionConfiguration != "";
+			SolutionConfiguration = solutionConfiguration;
 		}
 
 		public readonly IFolder Folder;
 		public readonly IFolder HostFolder;
 		public readonly IFolder DataFolder;
 		public readonly IFolder LogFolder;
-		public readonly string SolutionConfiguration;
+		public readonly FileLink HostExe;
 		public readonly bool InSolution;
+		public readonly string SolutionConfiguration;
 
 		public override string ToString()
 		{

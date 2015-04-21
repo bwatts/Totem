@@ -17,21 +17,21 @@ namespace Totem.Runtime.Map
 	[TypeConverter(typeof(RuntimeRegionKey.Converter))]
 	public sealed class RuntimeRegionKey : Notion, IEquatable<RuntimeRegionKey>, IComparable<RuntimeRegionKey>
 	{
+		private readonly string _name;
+
 		private RuntimeRegionKey(string name)
 		{
-			Name = name;
+			_name = name;
 		}
-
-		public readonly string Name;
 
 		public override Text ToText()
 		{
-			return Name;
+			return _name;
 		}
 
 		public HttpResource ToResource()
 		{
-			return HttpResource.From(Name);
+			return HttpResource.From(_name);
 		}
 
 		//
@@ -45,17 +45,17 @@ namespace Totem.Runtime.Map
 
 		public bool Equals(RuntimeRegionKey other)
 		{
-			return Equality.Check(this, other).Check(x => x.Name);
+			return Equality.Check(this, other).Check(x => x._name);
 		}
 
 		public override int GetHashCode()
 		{
-			return Name.GetHashCode();
+			return _name.GetHashCode();
 		}
 
 		public int CompareTo(RuntimeRegionKey other)
 		{
-			return Equality.Compare(this, other).Check(x => x.Name);
+			return Equality.Compare(this, other).Check(x => x._name);
 		}
 
 		//
@@ -96,7 +96,7 @@ namespace Totem.Runtime.Map
 		// Factory
 		//
 
-		// Start of string, a identifier with C# rules, end of string
+		// Start of string, an identifier with C# rules, end of string
 		private static readonly Regex _regex = new Regex(@"^[A-Za-z_]\w*$", RegexOptions.Compiled);
 
 		public static RuntimeRegionKey From(string value, bool strict = true)
@@ -113,11 +113,27 @@ namespace Totem.Runtime.Map
 
 		public static RuntimeRegionKey From(Assembly assembly, bool strict = true)
 		{
+			var name = assembly.GetName().Name;
+
+			if(name == "Totem" || name == "Totem.Runtime")
+			{
+				return new RuntimeRegionKey("runtime");
+			}
+
 			var attribute = assembly.GetCustomAttribute<RuntimePackageAttribute>();
 
 			var regionKey = attribute == null ? null : attribute.Region;
 
-			Expect(strict && regionKey == null).IsFalse("Assembly is not a runtime package", expected: "Decorated with " + Text.OfType<RuntimePackageAttribute>());
+			Expect(strict && regionKey == null).IsFalse(Text
+				.Of("Assembly is not a runtime package: ")
+				.WriteTwoLines()
+				.Write(assembly.FullName)
+				.WriteTwoLines()
+				.Write("Add to AssemblyInfo.cs: ")
+				.WriteTwoLines()
+				.Write("using {0};", typeof(RuntimePackageAttribute).Namespace)
+				.WriteTwoLines()
+				.Write("[assembly: RuntimePackage(region: \"...\")]"));
 
 			return regionKey;
 		}

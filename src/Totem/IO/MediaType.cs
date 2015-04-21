@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 
 namespace Totem.IO
 {
@@ -20,12 +21,24 @@ namespace Totem.IO
 
 		public override Text ToText()
 		{
-			return Name;
+			return ToText();
 		}
 
-		public Text ToTextEscaped()
+		public Text ToText(bool escaped = false, Encoding encoding = null)
 		{
-			return Uri.EscapeDataString(Name);
+			var text = escaped ? Uri.EscapeDataString(Name) : Name;
+
+			if(encoding != null)
+			{
+				text += "; charset=" + encoding.WebName;
+			}
+
+			return text;
+		}
+
+		public Text ToTextUtf8(bool escaped = false)
+		{
+			return ToText(escaped, Encoding.UTF8);
 		}
 
 		//

@@ -2,48 +2,34 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Timeline
 {
 	/// <summary>
 	/// A distinct point on the domain timeline
 	/// </summary>
-	public sealed class TimelinePosition : Notion, IEquatable<TimelinePosition>, IComparable<TimelinePosition>
+	public struct TimelinePosition : IEquatable<TimelinePosition>, IComparable<TimelinePosition>
 	{
-		public static readonly TimelinePosition Start = new TimelinePosition(-1);
-		public static readonly TimelinePosition External = new TimelinePosition(-2);
+		public static readonly TimelinePosition None = new TimelinePosition();
 
-		private readonly long _point;
+		private readonly long? _point;
 
 		public TimelinePosition(long point)
 		{
 			_point = point;
 		}
 
-		public bool IsStart { get { return _point == -1; } }
-		public bool IsExternal { get { return _point == -2; } }
+		public bool IsNone { get { return _point == null; } }
 
-		public override Text ToText()
+		public override string ToString()
 		{
-			if(IsStart)
-			{
-				return "<start>";
-			}
-			else if(IsExternal)
-			{
-				return "<external>";
-			}
-			else
-			{
-				return Text.Of(_point);
-			}
+			return "#" + (IsNone ? "--" : _point.ToString());
 		}
 
 		public long ToInt64()
 		{
-			Expect(IsStart).IsFalse("Start position has no Int64 value");
-			Expect(IsExternal).IsFalse("External position has no Int64 value");
+			Expect.That(IsNone).IsFalse("Position has no Int64 value");
 
-			return _point;
+			return _point.Value;
 		}
 
 		//
@@ -52,7 +38,7 @@ namespace Totem.Runtime
 
 		public override bool Equals(object obj)
 		{
-			return Equals(obj as TimelinePosition);
+			return obj is TimelinePosition && Equals((TimelinePosition) obj);
 		}
 
 		public bool Equals(TimelinePosition other)
@@ -62,7 +48,7 @@ namespace Totem.Runtime
 
 		public override int GetHashCode()
 		{
-			return _point.GetHashCode();
+			return _point == null ? 0 : _point.GetHashCode();
 		}
 
 		public static bool operator ==(TimelinePosition x, TimelinePosition y)

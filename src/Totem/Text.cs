@@ -635,6 +635,15 @@ namespace Totem
 			return Text.SeparatedBy(separator, values.Select(value => Text.Of(value)));
 		}
 
+		//
+		// EditDistance
+		//
+
+		public static int EditDistance(Text x, Text y, int substitutionCost = 1)
+		{
+			return CalculateEditDistance(x, y, substitutionCost);
+		}
+
 		/// <summary>
 		/// Converts instances of <see cref="Text"/> to/from <see cref="System.String"/>
 		/// </summary>
@@ -750,6 +759,124 @@ namespace Totem
 			public override void WriteLine(char[] buffer, int index, int count) { _text = _text.WriteLine(buffer, index, count); }
 			public override void WriteLine(string format, object arg0, object arg1) { _text = _text.WriteLine(format, arg0, arg1); }
 			public override void WriteLine(string format, object arg0, object arg1, object arg2) { _text = _text.WriteLine(format, arg0, arg1, arg2); }
+		}
+
+		//
+		// Edit distance (Levenshtein distance)
+		//
+
+		// https://github.com/NoelKennedy/MinimumEditDistance/blob/master/MinimumEditDistance/Levenshtein.cs
+
+		private static int CalculateEditDistance(string x, string y, int substitutionCost = 1)
+		{
+			if(String.IsNullOrEmpty(x) || String.IsNullOrEmpty(y))
+			{
+				// Short-circuit
+
+				return CalculateEditDistance(x, y, substitutionCost, new RectangularArray(0, 0));
+			}
+			else if(x.Length * y.Length > _maxStringProductLength)
+			{
+				// Large strings, use large data structure
+
+				return CalculateEditDistance(x, y, substitutionCost, new JaggedArray(x.Length + 1, y.Length + 1));
+			}
+			else
+			{
+				// Small strings, can use rectangular array
+
+				return CalculateEditDistance(x, y, substitutionCost, new RectangularArray(x.Length + 1, y.Length + 1));
+			}
+		}
+
+		private static int CalculateEditDistance(string x, string y, int substitutionCost, MemoryStructure memory)
+		{
+			if(String.IsNullOrEmpty(x))
+			{
+				return String.IsNullOrEmpty(y) ? 0 : y.Length;
+			}
+
+			var m = x.Length + 1;
+			var n = y.Length + 1;
+
+			// Map empties to each other
+
+			for(int i = 0; i < m; i++)
+			{
+				memory[i, 0] = i;
+			}
+
+			for(int i = 0; i < n; i++)
+			{
+				memory[0, i] = i;
+			}
+
+			for(int i = 1; i < m; i++)
+			{
+				for(int j = 1; j < n; j++)
+				{
+					if(x[i - 1] == y[j - 1])
+					{
+						// No cost, letters are the same
+
+						memory[i, j] = memory[i - 1, j - 1];
+					}
+					else
+					{
+						var delete = memory[i - 1, j] + 1;
+						var insert = memory[i, j - 1] + 1;
+						var substitution = memory[i - 1, j - 1] + substitutionCost;
+
+						memory[i, j] = Math.Min(delete, Math.Min(insert, substitution));
+					}
+				}
+			}
+
+			return memory[m - 1, n - 1];
+		}
+
+		private const int _maxStringProductLength = 536848900;
+
+		private abstract class MemoryStructure
+		{
+			internal abstract int this[int i, int j] { get; set; }
+		}
+
+		private sealed class RectangularArray : MemoryStructure
+		{
+			private readonly int[,] _value;
+
+			internal RectangularArray(int m, int n)
+			{
+				_value = new int[m, n];
+			}
+
+			internal override int this[int i, int j]
+			{
+				get { return _value[i, j]; }
+				set { _value[i, j] = value; }
+			}
+		}
+
+		private sealed class JaggedArray : MemoryStructure
+		{
+			private int[][] _value;
+
+			internal JaggedArray(int m, int n)
+			{
+				_value = new int[m][];
+
+				for(int i = 0; i < m; i++)
+				{
+					_value[i] = new int[n];
+				}
+			}
+
+			internal override int this[int i, int j]
+			{
+				get { return _value[i][j]; }
+				set { _value[i][j] = value; }
+			}
 		}
 	}
 }

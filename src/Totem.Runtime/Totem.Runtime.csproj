@@ -95,6 +95,7 @@
     <Compile Include="Configuration\LogElement.cs" />
     <Compile Include="Configuration\RowsElement.cs" />
     <Compile Include="Configuration\RuntimeSection.cs" />
+    <Compile Include="FlowCallScope.cs" />
     <Compile Include="RuntimeService.cs" />
     <Compile Include="IRuntimeArea.cs">
       <SubType>Code</SubType>
@@ -107,7 +108,6 @@
     <Compile Include="SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SetupView.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Totem\Totem.csproj">

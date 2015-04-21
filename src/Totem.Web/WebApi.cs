@@ -5,6 +5,7 @@ using Nancy;
 using Totem.Http;
 using Totem.Runtime;
 using Totem.Runtime.Map;
+using Totem.Runtime.Timeline;
 
 namespace Totem.Web
 {
@@ -14,6 +15,8 @@ namespace Totem.Web
 	public abstract class WebApi : NancyModule, IWebApi
 	{
 		public static readonly string CallItemKey = typeof(WebApi).FullName + ".Call";
+		public static readonly string ViewsItemKey = typeof(WebApi).FullName + ".Views";
+		public static readonly string TimelineItemKey = typeof(WebApi).FullName + ".Timeline";
 
 		protected WebApi()
 		{
@@ -27,7 +30,18 @@ namespace Totem.Web
 		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
 		public WebApiCall Call { get { return ReadContextItem<WebApiCall>(CallItemKey); } }
-		protected IViewDb Views { get { return Call.Views; } }
+		protected IViewDb Views { get { return ReadContextItem<IViewDb>(ViewsItemKey); } }
+		protected ITimeline Timeline { get { return ReadContextItem<ITimeline>(TimelineItemKey); } }
+
+		public sealed override string ToString()
+		{
+			return ToText();
+		}
+
+		public virtual Text ToText()
+		{
+			return Call.Link.ToText();
+		}
 
 		protected T ReadContextItem<T>(string key, bool strict = true)
 		{
@@ -52,14 +66,29 @@ namespace Totem.Web
 			return default(T);
 		}
 
-		public sealed override string ToString()
+		protected View ReadView(Type viewType, string key, bool strict = true)
 		{
-			return ToText();
+			return Views.Read(viewType, key, strict);
 		}
 
-		public virtual Text ToText()
+		protected IEnumerable<View> ReadViews(Type viewType, IEnumerable<string> keys, bool strict = true)
 		{
-			return Call.Link.ToText();
+			return Views.Read(viewType, keys, strict);
+		}
+
+		protected T ReadView<T>(string key, bool strict = true) where T : View
+		{
+			return Views.Read<T>(key, strict);
+		}
+
+		protected IEnumerable<T> ReadViews<T>(IEnumerable<string> keys, bool strict = true) where T : View
+		{
+			return Views.Read<T>(keys, strict);
+		}
+
+		protected virtual Response Run<TFlow>(Event e) where TFlow : WebApiFlow
+		{
+			return Timeline.Run<TFlow>(TimelinePosition.None, e).ToResponse();
 		}
 	}
 }

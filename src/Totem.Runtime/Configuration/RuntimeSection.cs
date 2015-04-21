@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Totem.IO;
 using Totem.Runtime.Configuration.Console;
 using Totem.Runtime.Map;
@@ -57,7 +58,9 @@ namespace Totem.Runtime.Configuration
 
 			var logFolder = GetLogFolder(dataFolder);
 
-			return new RuntimeDeployment(folder, hostFolder, dataFolder, logFolder, solutionConfiguration);
+			var hostExe = FileLink.From(Assembly.GetEntryAssembly().Location);
+
+			return new RuntimeDeployment(folder, hostFolder, dataFolder, logFolder, hostExe, solutionConfiguration);
 		}
 
 		private static IFolder GetHostFolder()

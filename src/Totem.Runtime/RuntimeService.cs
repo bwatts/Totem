@@ -138,15 +138,7 @@ namespace Totem.Runtime
 
 		private void CreateContainer()
 		{
-			_container = new CompositionContainer(CreateCatalog(), CompositionOptions.DisableSilentRejection);
-		}
-
-		private AggregateCatalog CreateCatalog()
-		{
-			return new AggregateCatalog(
-				new TypeCatalog(typeof(CompositionRoot)),
-				new AssemblyCatalog(_assembly),
-				_map.Catalog);
+			_container = new CompositionContainer(_map.Catalog, CompositionOptions.DisableSilentRejection);
 		}
 
 		private void LoadInstance()

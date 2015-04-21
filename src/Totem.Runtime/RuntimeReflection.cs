@@ -8,6 +8,8 @@ using Totem.IO;
 using Totem.Reflection;
 using Totem.Runtime.Configuration;
 using Totem.Runtime.Map;
+using Totem.Runtime.Map.Timeline;
+using Totem.Runtime.Timeline;
 
 namespace Totem.Runtime
 {
@@ -21,7 +23,7 @@ namespace Totem.Runtime
 			return new MapReader(section.ReadDeployment()).ReadMap();
 		}
 
-		private sealed class MapReader
+		private sealed class MapReader : Notion
 		{
 			private readonly RuntimeDeployment _deployment;
 			private RuntimeMap _map;
@@ -56,32 +58,46 @@ namespace Totem.Runtime
 
 			private IEnumerable<RuntimePackage> ReadPackages()
 			{
-				var packages = ReadRuntimePackages();
+				var packages = Many.Of(ReadRuntimePackage(), ReadDeploymentPackages());
 
 				if(_deployment.InSolution)
 				{
-					packages = packages.Concat(ReadTotemPackages());
+					packages.AddRange(ReadTotemSubmodulePackages());
 				}
 
 				return packages;
 			}
 
-			private IEnumerable<RuntimePackage> ReadRuntimePackages()
+			private RuntimePackage ReadRuntimePackage()
 			{
-				return ReadPackages(_deployment.Folder);
+				return new RuntimePackage(
+					"Totem.Runtime",
+					_deployment.HostFolder,
+					new AssemblyCatalog(Assembly.GetExecutingAssembly()),
+					RuntimeRegionKey.From("runtime"));
 			}
 
-			private IEnumerable<RuntimePackage> ReadTotemPackages()
+			private IEnumerable<RuntimePackage> ReadDeploymentPackages()
+			{
+				return ReadPackages(_deployment.Folder, _deployment.Folder.ReadFolders(FolderResource.Root));
+			}
+
+			private IEnumerable<RuntimePackage> ReadTotemSubmodulePackages()
 			{
 				var submoduleFolder = _deployment.Folder.Up(1).Then(FolderResource.From("submodules/Totem/src"));
 
-				return ReadPackages(submoduleFolder);
+				var subfolders = submoduleFolder
+					.ReadFolders(FolderResource.Root)
+					.Where(subfolder => subfolder.Path.ToString() != "Totem.Runtime")
+					.ToList();
+
+				return ReadPackages(submoduleFolder, subfolders);
 			}
 
-			private IEnumerable<RuntimePackage> ReadPackages(IFolder folder)
+			private IEnumerable<RuntimePackage> ReadPackages(IFolder folder, IReadOnlyList<FolderResource> subfolders)
 			{
 				return
-					from subfolder in folder.ReadFolders(FolderResource.Root)
+					from subfolder in subfolders
 					let name = subfolder.Path.ToString()
 					let dllFile = ReadDllFile(subfolder, name)
 					where folder.FileExists(dllFile)
@@ -107,7 +123,7 @@ namespace Totem.Runtime
 
 			private void RegisterTypes()
 			{
-				var areaReads = new List<Action>();
+				var deferredReads = new List<Action>();
 
 				foreach(var type in
 					from region in _map.Regions
@@ -119,19 +135,19 @@ namespace Totem.Runtime
 						&& !declaredType.IsAnonymous()
 					select new { package, declaredType })
 				{
-					if(!TryReadView(type.package, type.declaredType))
+					if(!TryReadView(type.package, type.declaredType) && !TryReadEvent(type.package, type.declaredType))
 					{
-						areaReads.Add(() =>
+						deferredReads.Add(() =>
 						{
 							if(!TryReadArea(type.package, type.declaredType))
 							{
-								TryReadApi(type.package, type.declaredType);
+								TryReadFlow(type.package, type.declaredType);
 							}
 						});
 					}
 				}
 
-				foreach(var deferredRead in areaReads)
+				foreach(var deferredRead in deferredReads)
 				{
 					deferredRead();
 				}
@@ -140,6 +156,18 @@ namespace Totem.Runtime
 			private static RuntimeTypeRef ReadType(RuntimePackage package, Type declaredType)
 			{
 				return new RuntimeTypeRef(package, declaredType, new RuntimeState(declaredType));
+			}
+
+			private static bool TryReadEvent(RuntimePackage package, Type declaredType)
+			{
+				if(typeof(Event).IsAssignableFrom(declaredType))
+				{
+					package.Events.Register(new EventType(ReadType(package, declaredType)));
+
+					return true;
+				}
+
+				return false;
 			}
 
 			private static bool TryReadView(RuntimePackage package, Type declaredType)
@@ -173,27 +201,85 @@ namespace Totem.Runtime
 			}
 
 			//
-			// APIs
+			// Flows
 			//
 
-			private static void TryReadApi(RuntimePackage package, Type declaredType)
+			private void TryReadFlow(RuntimePackage package, Type declaredType)
 			{
-				if(typeof(IWebApi).IsAssignableFrom(declaredType))
+				if(typeof(Flow).IsAssignableFrom(declaredType))
 				{
-					package.Apis.Register(ReadApi(package, declaredType));
+					package.Flows.Register(ReadFlow(package, declaredType));
 				}
 			}
 
-			private static ApiType ReadApi(RuntimePackage package, Type declaredType)
+			private FlowType ReadFlow(RuntimePackage package, Type declaredType)
 			{
-				return new ApiType(ReadType(package, declaredType), ReadRootPath(declaredType));
+				var methodsByName = ReadFlowMethods(declaredType).ToLookup(method => method.Info.Name);
+
+				return new FlowType(
+					ReadType(package, declaredType),
+					new FlowMethodSet(methodsByName["Before"].ToList()),
+					new FlowMethodSet(methodsByName["When"].ToList()));
 			}
 
-			private static LinkPath ReadRootPath(Type declaredType)
+			private IEnumerable<FlowMethod> ReadFlowMethods(Type declaredType)
 			{
-				var attribute = declaredType.GetCustomAttribute<WebApiRootAttribute>(inherit: true);
+				foreach(var method in
+					from sourceType in declaredType.GetInheritanceChainTo<Flow>(includeType: true, includeTargetType: true)
+					from method in sourceType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+					where method.IsPrivate
+					select method)
+				{
+					FlowMethod flowMethod;
 
-				return attribute != null ? attribute.Path : LinkPath.Root;
+					if(TryReadFlowMethod(method, out flowMethod))
+					{
+						yield return flowMethod;
+					}
+				}
+			}
+
+			private bool TryReadFlowMethod(MethodInfo method, out FlowMethod flowMethod)
+			{
+				flowMethod = null;
+
+				if(!TryReadBeforeOrWhenMethod(method, out flowMethod))
+				{
+					if(Text.EditDistance(method.Name, "Before") <= 3)
+					{
+						Log.Warning("[runtime] Flow method 'Before' possibly misspelled: {0}.{1}", method.DeclaringType.FullName, method.Name);
+					}
+					else
+					{
+						if(Text.EditDistance(method.Name, "When") <= 3)
+						{
+							Log.Warning("[runtime] Flow method 'When' possibly misspelled: {0}.{1}", method.DeclaringType.FullName, method.Name);
+						}
+					}
+				}
+
+				return flowMethod != null;
+			}
+
+			private bool TryReadBeforeOrWhenMethod(MethodInfo method, out FlowMethod flowMethod)
+			{
+				flowMethod = null;
+
+				if(method.Name == "Before" || method.Name == "When")
+				{
+					var parameters = method.GetParameters();
+
+					if(parameters.Length == 1 && typeof(Event).IsAssignableFrom(parameters[0].ParameterType))
+					{
+						flowMethod = new FlowMethod(method, parameters[0], _map.GetEvent(parameters[0].ParameterType));
+					}
+					else
+					{
+						Log.Warning("[runtime] Flow method {0}.{1} does not have the expected signature of a single event parameter", method.DeclaringType.FullName, method.Name);
+					}
+				}
+
+				return flowMethod != null;
 			}
 
 			//
