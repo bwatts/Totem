@@ -11,7 +11,7 @@ namespace Totem.Web
 	/// <summary>
 	/// An process observing and publishing to the timeline in order to make an API call
 	/// </summary>
-	public abstract class WebApiFlow : Flow
+	public abstract class WebApiFlow : RequestFlow
 	{
 		private Response _response;
 

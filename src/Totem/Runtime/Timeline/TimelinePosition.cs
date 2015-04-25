@@ -22,7 +22,7 @@ namespace Totem.Runtime.Timeline
 
 		public override string ToString()
 		{
-			return "#" + (IsNone ? "--" : _point.ToString());
+			return "#" + (IsNone ? "-" : _point.ToString());
 		}
 
 		public long ToInt64()

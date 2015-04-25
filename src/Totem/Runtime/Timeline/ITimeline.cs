@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
@@ -11,6 +12,6 @@ namespace Totem.Runtime.Timeline
 	{
 		void Append(TimelinePosition cause, IReadOnlyList<Event> events);
 
-		TFlow Run<TFlow>(TimelinePosition cause, Event e) where TFlow : Flow;
+		Task<TFlow> MakeRequest<TFlow>(TimelinePosition cause, Event e) where TFlow : RequestFlow;
 	}
 }

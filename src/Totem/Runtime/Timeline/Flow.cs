@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
+using System.Threading.Tasks;
 using Totem;
 using Totem.Runtime.Map;
 using Totem.Runtime.Map.Timeline;
@@ -13,27 +14,28 @@ namespace Totem.Runtime.Timeline
 	/// A process observing and publishing to the timeline
 	/// </summary>
 	[Durable]
-	public abstract class Flow : Connection
+	public abstract class Flow : Notion
 	{
 		[Transient] protected FlowCall Call { get; private set; }
 		[Transient] protected FlowType FlowType { get; private set; }
 		[Transient] protected Id Id { get; private set; }
-		[Transient] protected Id RuntimeId { get; private set; }
-		[Transient] protected Id EnvironmentId { get; private set; }
 		[Transient] protected IViewDb Views { get; private set; }
+		[Transient] protected IDependencySource Dependencies { get; private set; }
 		[Transient] protected Event Event { get; private set; }
 		[Transient] protected EventType EventType { get; private set; }
 		[Transient] protected TimelinePosition Cause { get; private set; }
 		[Transient] protected ClaimsPrincipal Principal { get; private set; }
 		[Transient] protected CancellationToken CancellationToken { get; private set; }
 
-		public void MakeCall(FlowCall call)
+		public async Task<IReadOnlyList<Event>> MakeCall(FlowCall call)
 		{
 			StartCall(call);
 
 			try
 			{
-				FlowType.CallWhen(this, Event);
+				await MakeCall();
+
+				return call.NewEvents;
 			}
 			finally
 			{
@@ -43,13 +45,12 @@ namespace Totem.Runtime.Timeline
 
 		private void StartCall(FlowCall call)
 		{
-			Expect(FlowType).IsNull(Text.Of("Flow {0} is already making a call", Id));
+			Expect(Call).IsNull(Text.Of("Flow {0} is already making a call", Id));
 
 			Call = call;
 			FlowType = call.FlowType;
 			Id = call.FlowId;
-			RuntimeId = call.RuntimeId;
-			EnvironmentId = call.EnvironmentId;
+			Dependencies = call.Dependencies;
 			Views = call.Views;
 			Cause = call.Cause;
 			Event = call.Event;
@@ -58,13 +59,19 @@ namespace Totem.Runtime.Timeline
 			CancellationToken = call.CancellationToken;
 		}
 
+		private Task MakeCall()
+		{
+			var context = new FlowEventContext(this, Event, EventType, Dependencies);
+
+			return Call.IsFirst ? FlowType.CallWhenFirst(context) : FlowType.CallWhen(context);
+		}
+
 		private void EndCall()
 		{
 			Call = null;
 			FlowType = null;
 			Id = default(Id);
-			RuntimeId = default(Id);
-			EnvironmentId = default(Id);
+			Dependencies = null;
 			Views = null;
 			Cause = default(TimelinePosition);
 			Event = null;

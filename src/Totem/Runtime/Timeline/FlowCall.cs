@@ -13,14 +13,13 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public class FlowCall : Notion
 	{
-		private readonly ITimeline _timeline;
+		private readonly List<Event> _newEvents = new List<Event>();
 
 		public FlowCall(
-			ITimeline timeline,
 			FlowType flowType,
 			Id flowId,
-			Id runtimeId,
-			Id environmentId,
+			bool isFirst,
+			IDependencySource dependencies,
 			IViewDb views,
 			Event e,
 			EventType eventType,
@@ -28,11 +27,10 @@ namespace Totem.Runtime.Timeline
 			ClaimsPrincipal principal,
 			CancellationToken cancellationToken)
 		{
-			_timeline = timeline;
 			FlowType = flowType;
 			FlowId = flowId;
-			RuntimeId = runtimeId;
-			EnvironmentId = environmentId;
+			IsFirst = isFirst;
+			Dependencies = dependencies;
 			Views = views;
 			Event = e;
 			EventType = eventType;
@@ -43,8 +41,8 @@ namespace Totem.Runtime.Timeline
 
 		public readonly FlowType FlowType;
 		public readonly Id FlowId;
-		public readonly Id RuntimeId;
-		public readonly Id EnvironmentId;
+		public readonly bool IsFirst;
+		public readonly IDependencySource Dependencies;
 		public readonly IViewDb Views;
 		public readonly Event Event;
 		public readonly EventType EventType;
@@ -52,6 +50,7 @@ namespace Totem.Runtime.Timeline
 		public readonly ClaimsPrincipal Principal;
 		public readonly CancellationToken CancellationToken;
 
+		public IReadOnlyList<Event> NewEvents { get { return _newEvents; } }
 		public bool IsDone { get; private set; }
 
 		//
@@ -62,19 +61,17 @@ namespace Totem.Runtime.Timeline
 		{
 			Flow.Traits.FlowId.Set(e, FlowId);
 
-			_timeline.Append(Cause, Many.Of(e));
+			_newEvents.Add(e);
 		}
 
 		public void Publish(Flow flow, IEnumerable<Event> events)
 		{
-			var eventList = events.ToList();
-
-			foreach(var e in eventList)
+			foreach(var e in events)
 			{
 				Flow.Traits.FlowId.Set(e, FlowId);
-			}
 
-			_timeline.Append(Cause, eventList);
+				_newEvents.Add(e);
+			}
 		}
 
 		public void Publish(Flow flow, params Event[] events)

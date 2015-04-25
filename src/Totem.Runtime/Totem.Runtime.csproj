@@ -80,6 +80,7 @@
     <Compile Include="CompositionRoot.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DependencySource.cs" />
     <Compile Include="DependsOnAttribute.cs" />
     <Compile Include="ISettingsDb.cs" />
     <Compile Include="Json\BinaryJsonFormat.cs" />
@@ -89,7 +90,9 @@
     <Compile Include="Json\TotemJsonFormat.cs" />
     <Compile Include="Json\TotemSerializationBinder.cs" />
     <Compile Include="Json\TotemSerializerSettings.cs" />
-    <Compile Include="RuntimeReflection.cs" />
+    <Compile Include="Reflection\FlowEventReader.cs" />
+    <Compile Include="Reflection\MapReader.cs" />
+    <Compile Include="Reflection\RuntimeReflection.cs" />
     <Compile Include="Configuration\ColumnsElement.cs" />
     <Compile Include="Configuration\ConsoleElement.cs" />
     <Compile Include="Configuration\LogElement.cs" />

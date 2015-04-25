@@ -86,9 +86,13 @@ namespace Totem.Web
 			return Views.Read<T>(keys, strict);
 		}
 
-		protected virtual Response Run<TFlow>(Event e) where TFlow : WebApiFlow
+		protected virtual Response MakeRequest<TFlow>(Event e) where TFlow : WebApiFlow
 		{
-			return Timeline.Run<TFlow>(TimelinePosition.None, e).ToResponse();
+			// This could be async all the way back to the API classes...but it doesn't read nearly as well :-)
+
+			var flow = Timeline.MakeRequest<TFlow>(TimelinePosition.None, e).Result;
+
+			return flow.ToResponse();
 		}
 	}
 }

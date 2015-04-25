@@ -9,9 +9,11 @@ namespace Totem.Runtime.Map.Timeline
 	/// </summary>
 	public sealed class EventType : RuntimeType
 	{
-		internal EventType(RuntimeTypeRef type) : base(type)
+		public EventType(RuntimeTypeRef type) : base(type)
 		{
-			
+			FlowEvents = new FlowEventSet();
 		}
+
+		public readonly FlowEventSet FlowEvents;
 	}
 }

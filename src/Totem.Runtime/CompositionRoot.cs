@@ -99,12 +99,12 @@ namespace Totem.Runtime
 			{
 				Track(_area.Compose(_root.Scope));
 
-				Log.Info("[runtime] Started {Area}", _area.AreaType);
+				Log.Info("[runtime] Started {Area:l}", _area.AreaType);
 			}
 
 			protected override void Close()
 			{
-				Log.Info("[runtime] Stopped {Area}", _area.AreaType);
+				Log.Info("[runtime] Stopped {Area:l}", _area.AreaType);
 			}
 		}
 	}

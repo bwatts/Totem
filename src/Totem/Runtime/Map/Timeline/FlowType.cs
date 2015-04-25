@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Totem.Runtime.Timeline;
 
 namespace Totem.Runtime.Map.Timeline
@@ -10,20 +11,30 @@ namespace Totem.Runtime.Map.Timeline
 	/// </summary>
 	public sealed class FlowType : RuntimeType
 	{
-		internal FlowType(RuntimeTypeRef type, FlowMethodSet beforeMethods, FlowMethodSet whenMethods) : base(type)
+		internal FlowType(RuntimeTypeRef type, bool isRequest, FlowConstructor constructor) : base(type)
 		{
-			BeforeMethods = beforeMethods;
-			WhenMethods = whenMethods;
+			IsRequest = isRequest;
+			Constructor = constructor;
+			Events = new FlowEventSet();
 		}
 
-		public readonly FlowMethodSet BeforeMethods;
-		public readonly FlowMethodSet WhenMethods;
+		public readonly bool IsRequest;
+		public readonly FlowConstructor Constructor;
+		public readonly FlowEventSet Events;
 
-		public void CallWhen(Flow flow, Event e)
+		public Flow New()
 		{
-			BeforeMethods.Call(flow, e);
+			return Constructor.Call();
+		}
 
-			WhenMethods.Call(flow, e);
+		public Task CallWhenFirst(FlowEventContext context)
+		{
+			return Events.CallWhenFirst(context);
+		}
+
+		public Task CallWhen(FlowEventContext context)
+		{
+			return Events.CallWhen(context);
 		}
 	}
 }

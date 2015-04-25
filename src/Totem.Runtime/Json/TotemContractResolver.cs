@@ -85,16 +85,9 @@ namespace Totem.Runtime.Json
 				return true;
 			}
 
-			if(member.IsDefined(typeof(TransientAttribute))
-				|| member.IsDefined(typeof(CompilerGeneratedAttribute))
-				|| member.DeclaringType == typeof(Notion))
-			{
-				return false;
-			}
-
-			var field = member as FieldInfo;
-
-			return field == null || !(field.IsPrivate && field.IsInitOnly);
+			return !member.IsDefined(typeof(TransientAttribute))
+				&& !member.IsDefined(typeof(CompilerGeneratedAttribute))
+				&& member.DeclaringType != typeof(Notion);
 		}
 
 		private static bool CanSet(MemberInfo member)

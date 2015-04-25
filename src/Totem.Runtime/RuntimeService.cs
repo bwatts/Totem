@@ -11,6 +11,7 @@ using Totem.IO;
 using Totem.Reflection;
 using Totem.Runtime.Configuration;
 using Totem.Runtime.Map;
+using Totem.Runtime.Reflection;
 
 namespace Totem.Runtime
 {

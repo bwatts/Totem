@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Autofac;
@@ -42,7 +43,14 @@ namespace Totem.Web
 
 			var instance = WebApp.Start(startOptions, Startup);
 
-			Log.Info("[web] Started API server at {Bindings}", startOptions.Urls.Count == 1 ? startOptions.Urls[0] : startOptions.Urls as object);
+			if(startOptions.Urls.Count == 1)
+			{
+				 Log.Info("[web] Started API server at {Binding:l}", startOptions.Urls[0]);
+			}
+			else
+			{
+				Log.Info("[web] Started API server at {Bindings}", startOptions.Urls);
+			}
 
 			return instance;
 		}
@@ -143,9 +151,11 @@ namespace Totem.Web
 			{
 				var level = GetLevel(eventType);
 
-				// OwinHttpListener seems to always throw ObjectDisposedException when shutting down
+				// Reduce noise - OwinHttpListener throws exceptions when shutting down
 
-				var canWrite = Log.IsAt(level) && !(exception is ObjectDisposedException);
+				var canWrite = Log.IsAt(level)
+					&& !(exception is ObjectDisposedException)
+					&& !(exception is Win32Exception);
 
 				if(canWrite)
 				{

@@ -45,9 +45,9 @@ namespace Totem
 			target.Tags.Set(this);
 		}
 
-		public object Get(ITaggable target)
+		public object Get(ITaggable target, bool throwIfUnset = false)
 		{
-			return target.Tags.Get(this);
+			return target.Tags.Get(this, throwIfUnset);
 		}
 
 		public void Clear(ITaggable target)
@@ -145,9 +145,9 @@ namespace Totem
 			target.Tags.Set(this, value);
 		}
 
-		public new T Get(ITaggable target)
+		public new T Get(ITaggable target, bool throwIfUnset = false)
 		{
-			return target.Tags.Get(this);
+			return target.Tags.Get(this, throwIfUnset);
 		}
 
 		public void SetDefaultValue(Func<T> resolve)

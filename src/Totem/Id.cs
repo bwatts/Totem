@@ -20,6 +20,7 @@ namespace Totem
 			_value = value;
 		}
 
+		public bool IsAssigned { get { return !String.IsNullOrEmpty(_value); } }
 		public bool IsUnassigned { get { return String.IsNullOrEmpty(_value); } }
 
 		public override string ToString()

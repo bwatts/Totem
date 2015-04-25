@@ -15,12 +15,12 @@ namespace Totem.Runtime
 	{
 		private static readonly string _tag = typeof(FlowCallScope).FullName + ".FlowCall";
 
-		public static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> InstancePerService<TLimit, TActivatorData, TRegistrationStyle>(this IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> registration)
+		public static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> InstancePerCall<TLimit, TActivatorData, TRegistrationStyle>(this IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> registration)
 		{
 			return registration.InstancePerMatchingLifetimeScope(_tag);
 		}
 
-		public static ILifetimeScope BegiCallScope(this ILifetimeScope baseScope)
+		public static ILifetimeScope BeginCallScope(this ILifetimeScope baseScope)
 		{
 			return baseScope.BeginLifetimeScope(_tag);
 		}
