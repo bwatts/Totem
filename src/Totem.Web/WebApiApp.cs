@@ -130,6 +130,8 @@ namespace Totem.Web
 
 		private Response OnRequestError(ILifetimeScope container, NancyContext context, Exception exception)
 		{
+			Log.Error(exception, "[web] Request error in {Url:l}", context.Request.Url);
+
 			return container.Resolve<IErrorHandler>().CreateResponse(context, exception);
 		}
 

@@ -31,30 +31,34 @@ namespace Totem.Web
 			Done();
 		}
 
-		protected void RespondOK(string reasonPhrase)
+		protected void RespondOK(string reason)
 		{
-			Respond(new Response { StatusCode = HttpStatusCode.OK, ReasonPhrase = reasonPhrase });
+			Respond(new Response { StatusCode = HttpStatusCode.OK, ReasonPhrase = reason });
 		}
 
-		protected void RespondError(string reasonPhrase)
+		protected void RespondError(string reason)
 		{
-			Respond(new Response { StatusCode = HttpStatusCode.InternalServerError, ReasonPhrase = reasonPhrase });
+			Respond(new Response { StatusCode = HttpStatusCode.InternalServerError, ReasonPhrase = reason });
 		}
 
-		protected void RespondError(string reasonPhrase, string error)
+		protected void RespondError(string reason, string error)
 		{
+			Log.Error("[web] Internal server error: {Reason:l} {Error}", reason, error);
+
 			Respond(new Response
 			{
 				StatusCode = HttpStatusCode.InternalServerError,
-				ReasonPhrase = reasonPhrase,
+				ReasonPhrase = reason,
 				ContentType = MediaType.Plain.ToTextUtf8(),
 				Contents = content => new StreamWriter(content).Write(error)
 			});
 		}
 
-		protected void RespondBadRequest(string reasonPhrase)
+		protected void RespondUnprocessableEntity(string reasonPhrase)
 		{
-			Respond(new Response { StatusCode = HttpStatusCode.BadRequest, ReasonPhrase = reasonPhrase });
+			Log.Error("[web] Unprocessable entity: {Reason:l}", reasonPhrase);
+
+			Respond(new Response { StatusCode = HttpStatusCode.UnprocessableEntity, ReasonPhrase = reasonPhrase });
 		}
 	}
 }
