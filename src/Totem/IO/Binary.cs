@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -61,6 +62,11 @@ namespace Totem.IO
 		public string ToBase64()
 		{
 			return Convert.ToBase64String(_data);
+		}
+
+		public MemoryStream ToStream()
+		{
+			return new MemoryStream(_data);
 		}
 
 		public Binary Append(Binary other)

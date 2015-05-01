@@ -19,17 +19,20 @@ namespace Totem.Web
 	/// </summary>
 	public class PushApp : Notion, IWebApp
 	{
-		public PushApp(WebAppContext context)
+		private readonly WebAppContext _context;
+		private readonly bool _enableDetailedErrors;
+
+		public PushApp(WebAppContext context, bool enableDetailedErrors = false)
 		{
-			Context = context;
+			_context = context;
+			_enableDetailedErrors = enableDetailedErrors;
 		}
 
-		public PushApp(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope)
+		public PushApp(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope, bool enableDetailedErrors = false)
 		{
-			Context = new WebAppContext(bindings, scope);
+			_context = new WebAppContext(bindings, scope);
+			_enableDetailedErrors = enableDetailedErrors;
 		}
-
-		public readonly WebAppContext Context;
 
 		public virtual IDisposable Start()
 		{
@@ -37,7 +40,14 @@ namespace Totem.Web
 
 			var instance = WebApp.Start(startOptions, Startup);
 
-			Log.Info("[web] Started push server at {Bindings}", startOptions.Urls);
+			if(startOptions.Urls.Count == 1)
+			{
+				Log.Info("[web] Started push server at {Binding:l}", startOptions.Urls[0]);
+			}
+			else
+			{
+				Log.Info("[web] Started push server at {Bindings}", startOptions.Urls);
+			}
 
 			return instance;
 		}
@@ -46,7 +56,7 @@ namespace Totem.Web
 		{
 			var options = new StartOptions();
 
-			foreach(var binding in Context.Bindings)
+			foreach(var binding in _context.Bindings)
 			{
 				options.Urls.Add(binding.ToString());
 			}
@@ -60,10 +70,8 @@ namespace Totem.Web
 
 			builder.MapHubs(new HubConfiguration
 			{
-				// TODO: Make this a setting
-
-				EnableDetailedErrors = true,
-				Resolver = new PushDependencyResolver(Context.Scope)
+				EnableDetailedErrors = _enableDetailedErrors,
+				Resolver = new PushDependencyResolver(_context.Scope)
 			});
 		}
 

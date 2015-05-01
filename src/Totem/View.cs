@@ -11,25 +11,25 @@ namespace Totem
 	[Durable]
 	public abstract class View : Notion
 	{
-		protected View(string key)
+		protected View(ViewKey key)
 		{
 			Key = key;
 			WhenCreated = Clock.Now;
-			WhenUpdated = WhenCreated;
+			WhenModified = WhenCreated;
 		}
 
-		public readonly string Key;
+		public readonly ViewKey Key;
 		public readonly DateTime WhenCreated;
-		public DateTime WhenUpdated { get; private set; }
+		public DateTime WhenModified { get; private set; }
 
 		public override Text ToText()
 		{
-			return Key;
+			return Key.ToString();
 		}
 
-		public void OnUpdated()
+		public void OnModified()
 		{
-			WhenUpdated = Clock.Now;
+			WhenModified = Clock.Now;
 		}
 	}
 }

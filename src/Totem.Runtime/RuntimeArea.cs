@@ -138,7 +138,7 @@ namespace Totem.Runtime
 	public abstract class RuntimeArea<TSettings> : RuntimeArea where TSettings : View
 	{
 		[Import]
-		private ISettingsDb _settingsStore { get; set; }
+		public ISettingsDb SettingsDb { get; set; }
 
 		protected TSettings Settings { get; private set; }
 
@@ -149,7 +149,7 @@ namespace Totem.Runtime
 
 		protected override bool ReadSettings()
 		{
-			Settings = _settingsStore.Read<TSettings>(AreaType, strict: false);
+			Settings = SettingsDb.ReadViewOrNull<TSettings>();
 
 			return Settings != null || AllowNullSettings;
 		}

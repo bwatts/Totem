@@ -6,10 +6,10 @@ using Totem.Runtime.Map;
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// Describes a persistent set of settings for runtime areas
+	/// Describes a persistent set of settings for areas of a runtime
 	/// </summary>
 	public interface ISettingsDb
 	{
-		TView Read<TView>(AreaType area, bool strict = true) where TView : View;
+		TView ReadViewOrNull<TView>() where TView : View;
 	}
 }

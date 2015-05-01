@@ -17,20 +17,20 @@ namespace Totem.Runtime
 
 		void Delete(IEnumerable<View> views);
 
-		void Delete(Type viewType, string key);
+		void Delete(Type viewType, ViewKey key);
 
-		void Delete(Type viewType, IEnumerable<string> keys);
+		void Delete(Type viewType, IEnumerable<ViewKey> keys);
 
-		void Delete<TView>(string key) where TView : View;
+		void Delete<TView>(ViewKey key) where TView : View;
 
-		void Delete<TView>(IEnumerable<string> keys) where TView : View;
+		void Delete<TView>(IEnumerable<ViewKey> keys) where TView : View;
 
-		View Read(Type viewType, string key, bool strict = true);
+		View Read(Type viewType, ViewKey key, bool strict = true);
 
-		IEnumerable<View> Read(Type viewType, IEnumerable<string> keys, bool strict = true);
+		IEnumerable<View> Read(Type viewType, IEnumerable<ViewKey> keys, bool strict = true);
 
-		TView Read<TView>(string key, bool strict = true) where TView : View;
+		TView Read<TView>(ViewKey key, bool strict = true) where TView : View;
 
-		IEnumerable<TView> Read<TView>(IEnumerable<string> keys, bool strict = true) where TView : View;
+		IEnumerable<TView> Read<TView>(IEnumerable<ViewKey> keys, bool strict = true) where TView : View;
 	}
 }

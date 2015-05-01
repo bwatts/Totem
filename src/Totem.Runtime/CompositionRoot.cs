@@ -54,6 +54,7 @@ namespace Totem.Runtime
 			var module = new BuilderModule();
 
 			module.RegisterInstance(this).ExternallyOwned();
+			module.RegisterType<DependencySource>().As<IDependencySource>().InstancePerDependency();
 
 			foreach(var area in Areas)
 			{

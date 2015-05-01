@@ -164,6 +164,7 @@
     <Compile Include="TextOperations.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ViewKey.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

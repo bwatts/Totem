@@ -66,12 +66,12 @@ namespace Totem.Web
 			return default(T);
 		}
 
-		protected View ReadView(Type viewType, string key, bool strict = true)
+		protected View ReadView(Type viewType, ViewKey key, bool strict = true)
 		{
 			return Views.Read(viewType, key, strict);
 		}
 
-		protected IEnumerable<View> ReadViews(Type viewType, IEnumerable<string> keys, bool strict = true)
+		protected IEnumerable<View> ReadViews(Type viewType, IEnumerable<ViewKey> keys, bool strict = true)
 		{
 			return Views.Read(viewType, keys, strict);
 		}
@@ -81,7 +81,7 @@ namespace Totem.Web
 			return Views.Read<T>(key, strict);
 		}
 
-		protected IEnumerable<T> ReadViews<T>(IEnumerable<string> keys, bool strict = true) where T : View
+		protected IEnumerable<T> ReadViews<T>(IEnumerable<ViewKey> keys, bool strict = true) where T : View
 		{
 			return Views.Read<T>(keys, strict);
 		}

@@ -138,8 +138,19 @@ namespace Totem.Web
 		private static void SetCallItem(ILifetimeScope container, NancyContext context)
 		{
 			context.Items[WebApi.CallItemKey] = container.Resolve<WebApiCall>();
-			context.Items[WebApi.ViewsItemKey] = container.Resolve<IViewDb>();
-			context.Items[WebApi.TimelineItemKey] = container.Resolve<ITimeline>();
+
+			IViewDb views;
+			ITimeline timeline;
+
+			if(container.TryResolve<IViewDb>(out views))
+			{
+				context.Items[WebApi.ViewsItemKey] = views;
+			}
+
+			if(container.TryResolve<ITimeline>(out timeline))
+			{
+				context.Items[WebApi.TimelineItemKey] = timeline;
+			}
 		}
 
 		private sealed class LogAdapter : Notion, ILoggerFactory, ILogger
