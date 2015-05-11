@@ -79,7 +79,7 @@
     <Compile Include="..\..\SolutionAssemblyInfo.cs">
       <Link>Properties\SolutionAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="WebApiFlow.cs" />
+    <Compile Include="WebRequestFlow.cs" />
     <Compile Include="WebAppContext.cs" />
     <Compile Include="ErrorDetail.cs" />
     <Compile Include="ErrorHandler.cs" />

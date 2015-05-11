@@ -9,9 +9,9 @@ using Totem.Runtime.Timeline;
 namespace Totem.Web
 {
 	/// <summary>
-	/// An process observing and publishing to the timeline in order to make an API call
+	/// An process observing and publishing to the timeline in order to make a web request
 	/// </summary>
-	public abstract class WebApiFlow : RequestFlow
+	public abstract class WebRequestFlow : RequestFlow
 	{
 		private Response _response;
 
@@ -28,7 +28,7 @@ namespace Totem.Web
 
 			_response = response;
 
-			Done();
+			ThenDone();
 		}
 
 		protected void RespondOK(string reason)
@@ -59,6 +59,11 @@ namespace Totem.Web
 			Log.Error("[web] Unprocessable entity: {Reason:l}", reasonPhrase);
 
 			Respond(new Response { StatusCode = HttpStatusCode.UnprocessableEntity, ReasonPhrase = reasonPhrase });
+		}
+
+		void When(FlowFaulted e)
+		{
+			RespondError("[web] Flow faulted: " + Text.Of(e.Type), e.Fault);
 		}
 	}
 }

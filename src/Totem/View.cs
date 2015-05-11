@@ -18,8 +18,8 @@ namespace Totem
 			WhenModified = WhenCreated;
 		}
 
-		public readonly ViewKey Key;
-		public readonly DateTime WhenCreated;
+		public ViewKey Key { get; private set; }
+		public DateTime WhenCreated { get; private set; }
 		public DateTime WhenModified { get; private set; }
 
 		public override Text ToText()

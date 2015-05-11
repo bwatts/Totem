@@ -9,27 +9,32 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public struct TimelinePosition : IEquatable<TimelinePosition>, IComparable<TimelinePosition>
 	{
-		public static readonly TimelinePosition None = new TimelinePosition();
+		public static readonly TimelinePosition External = new TimelinePosition();
 
 		private readonly long? _point;
 
-		public TimelinePosition(long point)
+		public TimelinePosition(long? point)
 		{
 			_point = point;
 		}
 
-		public bool IsNone { get { return _point == null; } }
+		public bool IsExternal { get { return _point == null; } }
 
 		public override string ToString()
 		{
-			return "#" + (IsNone ? "-" : _point.ToString());
+			return "#" + (IsExternal ? "-" : _point.ToString());
 		}
 
 		public long ToInt64()
 		{
-			Expect.That(IsNone).IsFalse("Position has no Int64 value");
+			Expect.That(IsExternal).IsFalse("Position has no Int64 value");
 
 			return _point.Value;
+		}
+
+		public long? ToInt64External()
+		{
+			return _point;
 		}
 
 		//

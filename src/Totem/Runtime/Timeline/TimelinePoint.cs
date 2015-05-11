@@ -27,13 +27,5 @@ namespace Totem.Runtime.Timeline
 		{
 			return Text.Of("[{0}] {1}", Position, EventType);
 		}
-
-		public IEnumerable<FlowType> ReadNewFlowTypes()
-		{
-			return
-				from e in EventType.FlowEvents
-				where e.HasWhenFirstMethod && !e.FlowType.IsRequest
-				select e.FlowType;
-		}
 	}
 }

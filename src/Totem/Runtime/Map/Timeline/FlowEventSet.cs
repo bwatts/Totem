@@ -76,20 +76,23 @@ namespace Totem.Runtime.Map.Timeline
 			return Get(e.GetType(), strict);
 		}
 
-		public Task CallWhenFirst(FlowEventContext context)
+		public void CallBefore(Flow flow, Event e)
 		{
-			return Task.WhenAll(
-				from e in this
-				where e.CanCallWhen(context)
-				select e.CallWhenFirst(context));
+			foreach(var flowEvent in this)
+			{
+				if(flowEvent.CanCall(e))
+				{
+					flowEvent.CallBefore(flow, e);
+				}
+			}
 		}
 
-		public Task CallWhen(FlowEventContext context)
+		public Task CallWhen(Flow flow, Event e, IDependencySource dependencies)
 		{
 			return Task.WhenAll(
-				from e in this
-				where e.CanCallWhen(context)
-				select e.CallWhen(context));
+				from flowEvent in this
+				where flowEvent.CanCall(e)
+				select flowEvent.CallWhen(flow, e, dependencies));
 		}
 
 		internal void Register(FlowEvent e)

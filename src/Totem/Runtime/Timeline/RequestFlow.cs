@@ -5,7 +5,7 @@ using System.Linq;
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// An process observing and publishing to the timeline in order to respond to a request
+	/// An process observing and publishing to the timeline in order to respond to a pending request
 	/// </summary>
 	/// <remarks>
 	/// I generally choose attributes over marker classes. However, this allows a type constraint on

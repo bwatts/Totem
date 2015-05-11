@@ -19,7 +19,6 @@ namespace Totem.Runtime.Reflection
 		private readonly HashSet<EventType> _eventTypes = new HashSet<EventType>();
 		private readonly MethodLookup<FlowEventBefore> _beforeLookup = new MethodLookup<FlowEventBefore>();
 		private readonly MethodLookup<FlowEventWhen> _whenLookup = new MethodLookup<FlowEventWhen>();
-		private readonly Dictionary<EventType, FlowEventWhen> _whenFirstLookup = new Dictionary<EventType, FlowEventWhen>();
 		private readonly RuntimeMap _map;
 		private readonly FlowType _flow;
 
@@ -49,7 +48,7 @@ namespace Totem.Runtime.Reflection
 
 		private void TryReadMethod(MethodInfo method)
 		{
-			if(method.Name == "Before" || method.Name == "When" || method.Name == "WhenFirst")
+			if(method.Name == "Before" || method.Name == "When")
 			{
 				WarnIfNotPrivate(method);
 
@@ -77,7 +76,7 @@ namespace Totem.Runtime.Reflection
 			}
 			else
 			{
-				if(Text.EditDistance(method.Name, "When") <= 3)
+				if(Text.EditDistance(method.Name, "When") <= 2)
 				{
 					Log.Warning("[runtime] Flow method 'When' possibly misspelled: {0}.{1}", method.DeclaringType.FullName, method.Name);
 				}
@@ -129,16 +128,7 @@ namespace Totem.Runtime.Reflection
 
 		private void ReadWhen(MethodInfo method, EventType eventType)
 		{
-			var when = new FlowEventWhen(method, eventType, ReadWhenDependencies(method));
-
-			if(when.IsFirst)
-			{
-				ReadWhenFirst(eventType, when);
-			}
-			else
-			{
-				ReadEventMethod(eventType, _whenLookup, when);
-			}
+			ReadEventMethod(eventType, _whenLookup, new FlowEventWhen(method, eventType, ReadWhenDependencies(method)));
 		}
 
 		private void ReadEventMethod<T>(EventType eventType, MethodLookup<T> lookup, T method)
@@ -153,22 +143,6 @@ namespace Totem.Runtime.Reflection
 			}
 
 			methods.Add(method);
-		}
-
-		private void ReadWhenFirst(EventType eventType, FlowEventWhen method)
-		{
-			FlowEventWhen whenFirst;
-
-			if(_whenFirstLookup.TryGetValue(eventType, out whenFirst))
-			{
-				throw new Exception(Text
-					.Of("Flow {0} has multiple WhenFirst({1}) methods:", _flow, eventType)
-					.WriteLine()
-					.WriteLine("First: " + Text.Of(whenFirst))
-					.WriteLine("Second: " + Text.Of(method)));
-			}
-
-			_whenFirstLookup.Add(eventType, method);
 		}
 
 		private IReadOnlyList<WhenDependency> ReadWhenDependencies(MethodInfo method)
@@ -187,13 +161,10 @@ namespace Totem.Runtime.Reflection
 
 		private void ReadEventsFromMethods()
 		{
-			Expect(_whenFirstLookup.Count > 0).IsTrue(Text.Of("Flow {0} must have at least one WhenFirst method", _flow));
-
 			foreach(var eventType in _eventTypes)
 			{
 				List<FlowEventBefore> beforeMethods;
 				List<FlowEventWhen> whenMethods;
-				FlowEventWhen whenFirst;
 
 				if(!_beforeLookup.TryGetValue(eventType, out beforeMethods))
 				{
@@ -205,12 +176,7 @@ namespace Totem.Runtime.Reflection
 					whenMethods = new List<FlowEventWhen>();
 				}
 
-				if(!_whenFirstLookup.TryGetValue(eventType, out whenFirst))
-				{
-					whenFirst = null;
-				}
-
-				_flow.Events.Register(new FlowEvent(_flow, eventType, beforeMethods, whenMethods, whenFirst));
+				_flow.Events.Register(new FlowEvent(_flow, eventType, beforeMethods, whenMethods));
 			}
 		}
 	}

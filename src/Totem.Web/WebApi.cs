@@ -76,7 +76,7 @@ namespace Totem.Web
 			return Views.Read(viewType, keys, strict);
 		}
 
-		protected T ReadView<T>(string key, bool strict = true) where T : View
+		protected T ReadView<T>(ViewKey key, bool strict = true) where T : View
 		{
 			return Views.Read<T>(key, strict);
 		}
@@ -86,11 +86,11 @@ namespace Totem.Web
 			return Views.Read<T>(keys, strict);
 		}
 
-		protected virtual Response MakeRequest<TFlow>(Event e) where TFlow : WebApiFlow
+		protected Response MakeRequest<TFlow>(Event e) where TFlow : WebRequestFlow
 		{
-			// This could be async all the way back to the API classes...but it doesn't read nearly as well :-)
+			// This could be async all the way back to the API classes...but it doesn't read nearly as well there :-)
 
-			var flow = Timeline.MakeRequest<TFlow>(TimelinePosition.None, e).Result;
+			var flow = Timeline.MakeRequest<TFlow>(TimelinePosition.External, e).Result;
 
 			return flow.ToResponse();
 		}

@@ -13,6 +13,7 @@ namespace Totem.Runtime
 	/// The point of composition for the Totem runtime
 	/// </summary>
 	[Export]
+	[PartCreationPolicy(CreationPolicy.Shared)]
 	public sealed class CompositionRoot : Connection
 	{
 		private Dictionary<AreaType, AreaComposition> _areasByType;

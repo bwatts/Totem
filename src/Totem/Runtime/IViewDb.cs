@@ -5,7 +5,7 @@ using System.Linq;
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// Describes a persistent set of keyed views
+	/// Describes a set of typed views accessible by key
 	/// </summary>
 	public interface IViewDb
 	{

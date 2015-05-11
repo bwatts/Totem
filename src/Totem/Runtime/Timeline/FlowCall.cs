@@ -17,10 +17,7 @@ namespace Totem.Runtime.Timeline
 
 		public FlowCall(
 			FlowType flowType,
-			Id flowId,
-			bool isFirst,
 			IDependencySource dependencies,
-			IViewDb views,
 			Event e,
 			EventType eventType,
 			TimelinePosition cause,
@@ -28,10 +25,7 @@ namespace Totem.Runtime.Timeline
 			CancellationToken cancellationToken)
 		{
 			FlowType = flowType;
-			FlowId = flowId;
-			IsFirst = isFirst;
 			Dependencies = dependencies;
-			Views = views;
 			Event = e;
 			EventType = eventType;
 			Cause = cause;
@@ -40,10 +34,7 @@ namespace Totem.Runtime.Timeline
 		}
 
 		public readonly FlowType FlowType;
-		public readonly Id FlowId;
-		public readonly bool IsFirst;
 		public readonly IDependencySource Dependencies;
-		public readonly IViewDb Views;
 		public readonly Event Event;
 		public readonly EventType EventType;
 		public readonly TimelinePosition Cause;
@@ -53,13 +44,9 @@ namespace Totem.Runtime.Timeline
 		public IReadOnlyList<Event> NewEvents { get { return _newEvents; } }
 		public bool IsDone { get; private set; }
 
-		//
-		// Publish
-		//
-
 		public void Publish(Flow flow, Event e)
 		{
-			Flow.Traits.FlowId.Set(e, FlowId);
+			Flow.Traits.ForwardRequestId(Event, e);
 
 			_newEvents.Add(e);
 		}
@@ -68,9 +55,7 @@ namespace Totem.Runtime.Timeline
 		{
 			foreach(var e in events)
 			{
-				Flow.Traits.FlowId.Set(e, FlowId);
-
-				_newEvents.Add(e);
+				Publish(flow, e);
 			}
 		}
 
@@ -79,30 +64,11 @@ namespace Totem.Runtime.Timeline
 			Publish(flow, events as IEnumerable<Event>);
 		}
 
-		public void Done()
+		public void OnDone()
 		{
 			Expect(IsDone).IsFalse("Flow is already done");
 
 			IsDone = true;
-		}
-
-		//
-		// Schedule
-		//
-
-		public void Schedule(Flow flow, DateTime whenOccurs, Event e)
-		{
-			Publish(flow, new EventsScheduled(whenOccurs, Many.Of(e)));
-		}
-
-		public void Schedule(Flow flow, DateTime whenOccurs, IEnumerable<Event> events)
-		{
-			Publish(flow, new EventsScheduled(whenOccurs, events.ToList()));
-		}
-
-		public void Schedule(Flow flow, DateTime whenOccurs, params Event[] events)
-		{
-			Schedule(flow, whenOccurs, events as IEnumerable<Event>);
 		}
 	}
 }

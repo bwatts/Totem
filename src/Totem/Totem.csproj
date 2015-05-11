@@ -99,7 +99,6 @@
     <Compile Include="Runtime\Map\Timeline\FlowConstructor.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowEvent.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowEventBefore.cs" />
-    <Compile Include="Runtime\Map\Timeline\FlowEventContext.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowEventWhen.cs" />
     <Compile Include="Runtime\Map\Timeline\NamedDependencyAttribute.cs" />
     <Compile Include="Runtime\Map\Timeline\WhenDependencyAttribute.cs" />
@@ -143,10 +142,11 @@
     <Compile Include="Runtime\Map\RuntimeTypeSet.cs" />
     <Compile Include="Runtime\Map\RuntimeSetCore.cs" />
     <Compile Include="Runtime\RuntimeDeployment.cs" />
-    <Compile Include="Runtime\Timeline\EventsScheduled.cs" />
     <Compile Include="Runtime\Timeline\Flow.cs" />
     <Compile Include="Runtime\Timeline\FlowCall.cs" />
+    <Compile Include="Runtime\Timeline\FlowFaulted.cs" />
     <Compile Include="Runtime\Timeline\ITimeline.cs" />
+    <Compile Include="Runtime\Timeline\Query.cs" />
     <Compile Include="Runtime\Timeline\RequestFlow.cs" />
     <Compile Include="Runtime\Timeline\TimelinePoint.cs" />
     <Compile Include="Runtime\Timeline\TimelinePosition.cs" />
