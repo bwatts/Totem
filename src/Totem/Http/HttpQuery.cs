@@ -72,7 +72,7 @@ namespace Totem.Http
 
 		public bool Equals(HttpQuery other)
 		{
-			return !ReferenceEquals(other, null) && new HashSet<HttpQueryPair>(_pairsByKey.Values).SetEquals(other._pairsByKey.Values);
+			return !ReferenceEquals(other, null) && _pairsByKey.Values.ToHashSet().SetEquals(other._pairsByKey.Values);
 		}
 
 		public override int GetHashCode()

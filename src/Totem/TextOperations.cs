@@ -342,6 +342,16 @@ namespace Totem
 			return Text.Of("<{0}>", value);
 		}
 
+		public static Text InSingleQuotes(this Text value)
+		{
+			return Text.Of("'{0}'", value);
+		}
+
+		public static Text InDoubleQuotes(this Text value)
+		{
+			return Text.Of("\"{0}\"", value);
+		}
+
 		public static Text WriteInParentheses(this Text text, Text value)
 		{
 			return text + value.InParentheses();
@@ -360,6 +370,16 @@ namespace Totem
 		public static Text WriteInAngleBrackets(this Text text, Text value)
 		{
 			return text + value.InAngleBrackets();
+		}
+
+		public static Text WriteInSingleQuotes(this Text text, Text value)
+		{
+			return text + value.InSingleQuotes();
+		}
+
+		public static Text WriteInDoubleQuotes(this Text text, Text value)
+		{
+			return text + value.InDoubleQuotes();
 		}
 
 		//

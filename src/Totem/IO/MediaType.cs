@@ -108,14 +108,23 @@ namespace Totem.IO
 		// Inherent
 		//
 
-		public static readonly MediaType Css = new MediaType("text/css");
-		public static readonly MediaType Html = new MediaType("text/html");
-		public static readonly MediaType Javascript = new MediaType("application/javascript");
-		public static readonly MediaType Json = new MediaType("application/json");
-		public static readonly MediaType Plain = new MediaType("text/plain");
+		public static class Names
+		{
+			public const string Css = "text/css";
+			public const string Html = "text/html";
+			public const string Javascript = "application/javascript";
+			public const string Json = "application/json";
+			public const string Plain = "text/plain";
+		}
 
-		public static readonly IReadOnlyList<MediaType> AllKnown = Many.Of(Css, Html, Javascript, Json, Plain).AsReadOnly();
-		public static readonly IReadOnlyList<MediaType> AllText = Many.Of(Css, Html, Javascript, Json, Plain).AsReadOnly();
+		public static readonly MediaType Css = new MediaType(Names.Css);
+		public static readonly MediaType Html = new MediaType(Names.Html);
+		public static readonly MediaType Javascript = new MediaType(Names.Javascript);
+		public static readonly MediaType Json = new MediaType(Names.Json);
+		public static readonly MediaType Plain = new MediaType(Names.Plain);
+
+		public static readonly Many<MediaType> AllKnown = Many.Of(Css, Html, Javascript, Json, Plain);
+		public static readonly Many<MediaType> AllText = Many.Of(Css, Html, Javascript, Json, Plain);
 
 		public sealed class Converter : TextConverter
 		{

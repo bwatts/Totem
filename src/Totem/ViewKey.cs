@@ -10,7 +10,7 @@ namespace Totem
 	/// A reference to a view in a persistent set
 	/// </summary>
 	[TypeConverter(typeof(ViewKey.Converter))]
-	public struct ViewKey : IEquatable<ViewKey>, IComparable<ViewKey>
+	public struct ViewKey : IWritable, IEquatable<ViewKey>, IComparable<ViewKey>
 	{
 		private readonly string _value;
 
@@ -19,11 +19,16 @@ namespace Totem
 			_value = value;
 		}
 
-		public bool IsByType { get { return String.IsNullOrEmpty(_value); } }
+		public bool IsType { get { return String.IsNullOrEmpty(_value); } }
 
 		public override string ToString()
 		{
-			return _value ?? "";
+			return ToText();
+		}
+
+		public Text ToText()
+		{
+			return _value ?? Text.None;
 		}
 
 		//
@@ -42,7 +47,7 @@ namespace Totem
 
 		public override int GetHashCode()
 		{
-			return IsByType ? 0 : _value.GetHashCode();
+			return IsType ? 0 : _value.GetHashCode();
 		}
 
 		public int CompareTo(ViewKey other)
@@ -88,7 +93,7 @@ namespace Totem
 		// Factory
 		//
 
-		public static readonly ViewKey ByType = new ViewKey();
+		public static readonly ViewKey Type = new ViewKey();
 
 		public static ViewKey From(string value)
 		{

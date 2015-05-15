@@ -53,7 +53,7 @@ namespace Totem.Runtime.Reflection
 
 			if(_deployment.InSolution)
 			{
-				packages.AddRange(ReadTotemSubmodulePackages());
+				packages.Write.AddRange(ReadTotemSubmodulePackages());
 			}
 
 			return packages;

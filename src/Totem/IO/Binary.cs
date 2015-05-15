@@ -16,7 +16,7 @@ namespace Totem.IO
 	[TypeConverter(typeof(Binary.Converter))]
 	public struct Binary : IWritable, IEquatable<Binary>
 	{
-		public static readonly Binary Empty = new Binary();
+		public static readonly Binary None = new Binary();
 
 		private readonly byte[] _data;
 
@@ -62,6 +62,11 @@ namespace Totem.IO
 		public string ToBase64()
 		{
 			return Convert.ToBase64String(_data);
+		}
+
+		public Hex ToHex()
+		{
+			return Hex.From(_data);
 		}
 
 		public MemoryStream ToStream()
@@ -135,6 +140,15 @@ namespace Totem.IO
 		public static Binary From(IEnumerable<byte> value)
 		{
 			return new Binary(value.ToArray());
+		}
+
+		public static Binary From(Stream value)
+		{
+			var data = new MemoryStream();
+
+			value.CopyTo(data);
+
+			return new Binary(data.ToArray());
 		}
 
 		public static Binary From(string value, Encoding encoding = null)

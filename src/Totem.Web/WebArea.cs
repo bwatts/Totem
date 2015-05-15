@@ -14,21 +14,15 @@ namespace Totem.Web
 	/// <summary>
 	/// Registers the elements of the Totem web host
 	/// </summary>
-	public class WebArea : RuntimeArea<WebAreaView>
+	public class WebArea : RuntimeArea
 	{
-		protected override bool AllowNullSettings
-		{
-			get { return true; }
-		}
-
 		protected override void RegisterArea()
 		{
 			RegisterType<WebHost>().SingleInstance();
 
 			RegisterType<ErrorHandler>().As<IErrorHandler>().SingleInstance();
 
-			Register(c => Settings != null ? Settings.ErrorDetail : ErrorDetail.StackTrace)
-			.SingleInstance();
+			Register(c => ErrorDetail.StackTrace).SingleInstance();
 
 			Register(c => new JsonNetSerializer(new TotemSerializerSettings().CreateSerializer()))
 			.As<ISerializer>()

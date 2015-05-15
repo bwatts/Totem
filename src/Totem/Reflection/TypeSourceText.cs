@@ -83,17 +83,24 @@ namespace Totem.Reflection
 
 		private static Text ReadQualifiedType(this Type type)
 		{
-			var backtickIndex = type.Name.IndexOf('`');
+			var name = type.Name;
+
+			if(type.IsNested)
+			{
+				name = Text.Of("{0}.{1}", type.DeclaringType.ToSourceText(), name);
+			}
+
+			var backtickIndex = name.IndexOf('`');
 
 			if(backtickIndex == -1)
 			{
-				return type.Name;
+				return name;
 			}
 			else
 			{
 				return Text.Of(
 					"{0}<{1}>",
-					type.Name.Substring(0, backtickIndex),
+					name.Substring(0, backtickIndex),
 					type.GetGenericArguments().ToTextSeparatedBy(", ", arg => arg.ToSourceText()));
 			}
 		}

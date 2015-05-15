@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -38,6 +39,22 @@ namespace Totem.Runtime.Json
 			return CamelCaseProperties
 				? GetCachedJsonObjectContract(_jsonObjectContractCamelCaseCache, objectType)
 				: GetCachedJsonObjectContract(_jsonObjectContractNoCamelCaseCache, objectType);
+		}
+
+		protected override JsonArrayContract CreateArrayContract(Type objectType)
+		{
+			var contract = base.CreateArrayContract(objectType);
+
+			if(typeof(Many<>).IsAssignableFromGeneric(objectType))
+			{
+				var callOf = Expression.Call(typeof(Many), "Of", new[] { contract.CollectionItemType });
+
+				var lambda = Expression.Lambda<Func<object>>(callOf);
+
+				contract.DefaultCreator = lambda.Compile();
+			}
+
+			return contract;
 		}
 
 		private JsonObjectContract GetCachedJsonObjectContract(ConcurrentDictionary<Type, JsonObjectContract> cache, Type objectType)
