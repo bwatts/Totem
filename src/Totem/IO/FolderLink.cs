@@ -113,6 +113,15 @@ namespace Totem.IO
 
 		public new static FolderLink From(string value, bool strict = true)
 		{
+			var folder = FromUnc(value, strict: false) ?? FromLocal(value, strict: false);
+
+			Expect(strict && folder == null).IsFalse(issue: "Cannot parse folder link", actual: t => value);
+
+			return folder;
+		}
+
+		public static FolderLink FromLocal(string value, bool strict = true)
+		{
 			var parsedFolder = FolderResource.From(value, strict);
 
 			if(parsedFolder != null && parsedFolder.Path.Segments.Count > 0)
@@ -125,6 +134,29 @@ namespace Totem.IO
 			}
 
 			Expect(strict).IsFalse(issue: "Cannot parse folder link", actual: t => value);
+
+			return null;
+		}
+
+		public static FolderLink FromUnc(string value, bool strict = true)
+		{
+			if(value.StartsWith(@"\\"))
+			{
+				value = value.Substring(2);
+
+				var parsedFolder = FolderResource.From(value, strict);
+
+				if(parsedFolder != null && parsedFolder.Path.Segments.Count > 0)
+				{
+					var path = parsedFolder.Path.Segments.Count == 1
+						? LinkPath.Root
+						: LinkPath.From(parsedFolder.Path.Segments.Skip(1));
+
+					return new FolderLink(@"\\" + parsedFolder.Path.Segments[0].ToString(), FolderResource.From(path));
+				}
+			}
+
+			Expect(strict).IsFalse(issue: "Cannot parse UNC link", actual: t => value);
 
 			return null;
 		}
