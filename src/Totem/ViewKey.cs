@@ -105,6 +105,11 @@ namespace Totem
 			return From(value);
 		}
 
+		public static implicit operator ViewKey(Id value)
+		{
+			return From(value.ToString());
+		}
+
 		public sealed class Converter : TextConverter
 		{
 			protected override object ConvertFrom(TextValue value)

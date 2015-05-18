@@ -21,6 +21,9 @@ namespace Totem.Runtime
 		[ImportMany]
 		public IRuntimeArea[] Areas { get; set; }
 
+		[Import]
+		public ISettingsDb SettingsDb { get; set; }
+
 		public ILifetimeScope Scope { get; private set; }
 
 		protected override void Open()
@@ -55,6 +58,7 @@ namespace Totem.Runtime
 			var module = new BuilderModule();
 
 			module.RegisterInstance(this).ExternallyOwned();
+			module.RegisterInstance(SettingsDb).ExternallyOwned();
 			module.RegisterType<DependencySource>().As<IDependencySource>().InstancePerDependency();
 
 			foreach(var area in Areas)

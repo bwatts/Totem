@@ -90,6 +90,7 @@
     <Compile Include="LinkText.cs" />
     <Compile Include="LogOperations.cs" />
     <Compile Include="Many.cs" />
+    <Compile Include="Runtime\SettingsView.cs" />
     <Compile Include="Sequences.cs" />
     <Compile Include="Reflection\AnonymousTypes.cs" />
     <Compile Include="Reflection\GenericAssignability.cs" />

@@ -78,13 +78,6 @@ namespace Totem.Runtime
 			{
 				RegisterArea();
 			}
-			else
-			{
-				Log.Debug(
-					"Ignorning area {Area}: settings view {SettingsView} not found",
-					AreaType.Key,
-					AreaType.SettingsView.Key);
-			}
 		}
 
 		protected virtual bool ReadSettings()
@@ -135,7 +128,7 @@ namespace Totem.Runtime
 	/// A set of related objects and settings available for hosting by a runtime
 	/// </summary>
 	/// <typeparam name="TSettings">The type of view providing the area's settings</typeparam>
-	public abstract class RuntimeArea<TSettings> : RuntimeArea where TSettings : View
+	public abstract class RuntimeArea<TSettings> : RuntimeArea where TSettings : SettingsView
 	{
 		[Import]
 		public ISettingsDb SettingsDb { get; set; }
@@ -149,7 +142,7 @@ namespace Totem.Runtime
 
 		protected override bool ReadSettings()
 		{
-			Settings = SettingsDb.ReadViewOrNull<TSettings>();
+			Settings = SettingsDb.Read<TSettings>(strict: false);
 
 			return Settings != null || AllowNullSettings;
 		}

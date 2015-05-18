@@ -10,6 +10,10 @@ namespace Totem.Runtime
 	/// </summary>
 	public interface ISettingsDb
 	{
-		TView ReadViewOrNull<TView>() where TView : View;
+		void Write<T>(Func<Id, T> create) where T : SettingsView;
+
+		void Delete<T>() where T : SettingsView;
+
+		T Read<T>(bool strict = true) where T : SettingsView;
 	}
 }
