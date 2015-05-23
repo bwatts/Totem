@@ -11,14 +11,16 @@ namespace Totem.IO
 	[TypeConverter(typeof(FolderLink.Converter))]
 	public sealed class FolderLink : IOLink, IEquatable<FolderLink>
 	{
-		private FolderLink(LinkText root, FolderResource resource)
+		private FolderLink(LinkText root, FolderResource resource, bool isUnc = false)
 		{
 			Root = root;
 			Resource = resource;
+			IsUnc = isUnc;
 		}
 
 		public LinkText Root { get; private set; }
 		public FolderResource Resource { get; private set; }
+		public bool IsUnc { get; private set; }
 		public override bool IsTemplate { get { return Root.IsTemplate || Resource.IsTemplate; } }
 
 		public override Text ToText(bool altSlash = false)
@@ -142,17 +144,17 @@ namespace Totem.IO
 		{
 			if(value.StartsWith(@"\\"))
 			{
-				value = value.Substring(2);
+				var parsedFolder = FolderResource.From(value.Substring(2), strict);
 
-				var parsedFolder = FolderResource.From(value, strict);
-
-				if(parsedFolder != null && parsedFolder.Path.Segments.Count > 0)
+				if(parsedFolder != null && parsedFolder.Path.Segments.Count > 1)
 				{
-					var path = parsedFolder.Path.Segments.Count == 1
-						? LinkPath.Root
-						: LinkPath.From(parsedFolder.Path.Segments.Skip(1));
+					var root = Text.Of(@"\\{0}\{1}", parsedFolder.Path.Segments[0], parsedFolder.Path.Segments[1]);
 
-					return new FolderLink(@"\\" + parsedFolder.Path.Segments[0].ToString(), FolderResource.From(path));
+					var path = parsedFolder.Path.Segments.Count == 2
+						? LinkPath.Root
+						: LinkPath.From(parsedFolder.Path.Segments.Skip(2));
+
+					return new FolderLink(root, FolderResource.From(path), isUnc: true);
 				}
 			}
 
