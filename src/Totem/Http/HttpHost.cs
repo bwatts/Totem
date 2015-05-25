@@ -104,6 +104,16 @@ namespace Totem.Http
 			return From(secure, HttpDomain.From(domain));
 		}
 
+		public static HttpHost FromHttp(string domain)
+		{
+			return From(false, domain);
+		}
+
+		public static HttpHost FromHttps(string domain)
+		{
+			return From(true, domain);
+		}
+
 		public static HttpHost From(string value, bool strict = true)
 		{
 			var schemeParts = value.Split(new[] { Uri.SchemeDelimiter }, StringSplitOptions.None);
