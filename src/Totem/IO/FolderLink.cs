@@ -122,6 +122,29 @@ namespace Totem.IO
 			return folder;
 		}
 
+		public static FolderLink FromUnc(string value, bool strict = true)
+		{
+			if(value.StartsWith(@"\\"))
+			{
+				var parsedFolder = FolderResource.From(value.Substring(2), strict);
+
+				if(parsedFolder != null)
+				{
+					var root = @"\\" + parsedFolder.Path.Segments[0].ToString();
+
+					var path = parsedFolder.Path.Segments.Count == 1
+						? LinkPath.Root
+						: LinkPath.From(parsedFolder.Path.Segments.Skip(1));
+
+					return new FolderLink(root, FolderResource.From(path), isUnc: true);
+				}
+			}
+
+			Expect(strict).IsFalse("Cannot parse UNC link: " + value);
+
+			return null;
+		}
+
 		public static FolderLink FromLocal(string value, bool strict = true)
 		{
 			var parsedFolder = FolderResource.From(value, strict);
@@ -135,30 +158,7 @@ namespace Totem.IO
 				return new FolderLink(parsedFolder.Path.Segments[0], FolderResource.From(path));
 			}
 
-			Expect(strict).IsFalse(issue: "Cannot parse folder link", actual: t => value);
-
-			return null;
-		}
-
-		public static FolderLink FromUnc(string value, bool strict = true)
-		{
-			if(value.StartsWith(@"\\"))
-			{
-				var parsedFolder = FolderResource.From(value.Substring(2), strict);
-
-				if(parsedFolder != null && parsedFolder.Path.Segments.Count > 1)
-				{
-					var root = Text.Of(@"\\{0}\{1}", parsedFolder.Path.Segments[0], parsedFolder.Path.Segments[1]);
-
-					var path = parsedFolder.Path.Segments.Count == 2
-						? LinkPath.Root
-						: LinkPath.From(parsedFolder.Path.Segments.Skip(2));
-
-					return new FolderLink(root, FolderResource.From(path), isUnc: true);
-				}
-			}
-
-			Expect(strict).IsFalse(issue: "Cannot parse UNC link", actual: t => value);
+			Expect(strict).IsFalse("Cannot parse folder link: " + value);
 
 			return null;
 		}
