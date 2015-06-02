@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Totem.Runtime.Configuration;
 using Totem.Runtime.Map;
 
@@ -11,9 +12,11 @@ namespace Totem.Runtime.Reflection
 	/// </summary>
 	internal static class RuntimeReflection
 	{
-		internal static RuntimeMap ReadMap(this RuntimeSection section)
+		internal static RuntimeMap ReadMap(this RuntimeSection section, Assembly programAssembly)
 		{
-			return new MapReader(section.ReadDeployment()).ReadMap();
+			var deployment = section.ReadDeployment(programAssembly);
+
+			return new MapReader(deployment).ReadMap();
 		}
 	}
 }
