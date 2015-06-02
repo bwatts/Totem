@@ -4,6 +4,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Serilog;
 using Serilog.Events;
 using Topshelf;
@@ -13,31 +14,30 @@ using Totem.Runtime.Configuration;
 using Totem.Runtime.Map;
 using Totem.Runtime.Reflection;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Hosting
 {
 	/// <summary>
 	/// The Topshelf service control hosting the Totem runtime
 	/// </summary>
 	internal sealed class RuntimeService : ServiceControl
 	{
-		private readonly Assembly _assembly;
+		private readonly Assembly _hostAssembly;
 		private RuntimeSection _section;
 		private RuntimeMap _map;
+		private HostControl _hostControl;
 		private CompositionContainer _container;
+		private CancellationTokenSource _cancellationTokenSource;
 		private IDisposable _instance;
 
-		internal RuntimeService(Assembly assembly)
+		internal RuntimeService(Assembly hostAssembly)
 		{
-			_assembly = assembly;
-		}
+			_hostAssembly = hostAssembly;
 
-		internal SerilogAdapter Log { get; private set; }
-
-		internal void Initialize()
-		{
-			SetCurrentDirectoryToRuntime();
+			SetCurrentDirectoryToHost();
 
 			ReadSection();
+
+			InitializeBridge();
 
 			InitializeConsoleIfHasUI();
 
@@ -46,16 +46,30 @@ namespace Totem.Runtime
 			InitializeLog();
 		}
 
-		private void SetCurrentDirectoryToRuntime()
+		internal SerilogAdapter Log { get; private set; }
+
+		//
+		// Initialization
+		//
+
+		private void SetCurrentDirectoryToHost()
 		{
 			// Run the service where installed, instead of a system folder
 
-			Directory.SetCurrentDirectory(_assembly.GetDirectoryName());
+			Directory.SetCurrentDirectory(_hostAssembly.GetDirectoryName());
 		}
 
 		private void ReadSection()
 		{
 			_section = RuntimeSection.Read();
+		}
+
+		private void InitializeBridge()
+		{
+			RuntimeHost.Bridge.Restarting += (sender, e) =>
+			{
+				_hostControl.Stop();
+			};
 		}
 
 		private void InitializeConsoleIfHasUI()
@@ -68,7 +82,7 @@ namespace Totem.Runtime
 
 		private void InitializeMap()
 		{
-			_map = _section.ReadMap();
+			_map = _section.ReadMap(_hostAssembly);
 
 			Notion.Traits.InitializeRuntime(_map);
 		}
@@ -114,61 +128,67 @@ namespace Totem.Runtime
 		}
 
 		//
-		// Start/stop
+		// Start
 		//
 
 		public bool Start(HostControl hostControl)
 		{
-			CreateContainer();
+			_hostControl = hostControl;
+
+			Log.Info("[runtime] Starting service");
+
+			OpenScope();
 
 			LoadInstance();
 
+			Log.Info("[runtime] Service started");
+
 			return true;
 		}
+
+		private void OpenScope()
+		{
+			_container = new CompositionContainer(_map.Catalog, CompositionOptions.DisableSilentRejection);
+
+			_cancellationTokenSource = new CancellationTokenSource();
+		}
+
+		private void LoadInstance()
+		{
+			var compositionRoot = _container.GetExportedValue<CompositionRoot>();
+
+			_instance = compositionRoot.Connect(_cancellationTokenSource.Token);
+		}
+
+		//
+		// Stop
+		//
 
 		public bool Stop(HostControl hostControl)
 		{
 			UnloadInstance();
 
-			DisposeContainer();
-
-			ClearFields();
+			CloseScope();
 
 			return true;
 		}
 
-		private void CreateContainer()
-		{
-			_container = new CompositionContainer(_map.Catalog, CompositionOptions.DisableSilentRejection);
-		}
-
-		private void LoadInstance()
-		{
-			_instance = _container.GetExportedValue<CompositionRoot>().Connect();
-		}
-
 		private void UnloadInstance()
 		{
-			if(_instance != null)
-			{
-				_instance.Dispose();
-			}
+			_cancellationTokenSource.Cancel();
+
+			_instance.Dispose();
 		}
 
-		private void DisposeContainer()
+		private void CloseScope()
 		{
-			if(_container != null)
-			{
-				_container.Dispose();
-			}
-		}
+			_container.Dispose();
 
-		private void ClearFields()
-		{
 			_section = null;
-			_container = null;
-			_instance = null;
 			_map = null;
+			_hostControl = null;
+			_container = null;
+			_cancellationTokenSource = null;
 			_instance = null;
 		}
 	}

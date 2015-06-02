@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Totem.Runtime.Configuration;
+using Totem.Runtime.Hosting;
 using Totem.Runtime.Map;
 
 namespace Totem.Runtime
@@ -46,7 +47,7 @@ namespace Totem.Runtime
 		{
 			Scope = null;
 
-			Log.Info("[runtime] Closed root scope");
+			Log.Debug("[runtime] Closed root composition scope");
 		}
 
 		//
@@ -57,8 +58,10 @@ namespace Totem.Runtime
 		{
 			var module = new BuilderModule();
 
+			module.RegisterInstance(RuntimeHost.Bridge).ExternallyOwned();
 			module.RegisterInstance(this).ExternallyOwned();
 			module.RegisterInstance(SettingsDb).ExternallyOwned();
+
 			module.RegisterType<DependencySource>().As<IDependencySource>().InstancePerDependency();
 
 			foreach(var area in Areas)
@@ -72,7 +75,7 @@ namespace Totem.Runtime
 
 			Track(Scope);
 
-			Log.Info("[runtime] Opened root scope");
+			Log.Debug("[runtime] Opened root composition scope");
 		}
 
 		private void AddArea(IRuntimeArea area)

@@ -82,6 +82,11 @@
     </Compile>
     <Compile Include="DependencySource.cs" />
     <Compile Include="DependsOnAttribute.cs" />
+    <Compile Include="Hosting\ConsoleWriter.cs" />
+    <Compile Include="Hosting\IRuntimeBridge.cs" />
+    <Compile Include="Hosting\RuntimeBridge.cs" />
+    <Compile Include="Hosting\IRuntimeHost.cs" />
+    <Compile Include="Hosting\RuntimeIsolation.cs" />
     <Compile Include="ISettingsDb.cs" />
     <Compile Include="Json\BinaryJsonFormat.cs" />
     <Compile Include="Json\TextJsonFormat.cs" />
@@ -99,7 +104,7 @@
     <Compile Include="Configuration\RowsElement.cs" />
     <Compile Include="Configuration\RuntimeSection.cs" />
     <Compile Include="FlowCallScope.cs" />
-    <Compile Include="RuntimeService.cs" />
+    <Compile Include="Hosting\RuntimeService.cs" />
     <Compile Include="IRuntimeArea.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -107,7 +112,7 @@
     <Compile Include="RuntimeArea.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="RuntimeHost.cs" />
+    <Compile Include="Hosting\RuntimeHost.cs" />
     <Compile Include="SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>

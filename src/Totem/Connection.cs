@@ -74,18 +74,15 @@ namespace Totem
 
 		protected void Disconnect()
 		{
-			if(State.IsConnected)
-			{
-				State.OnDisconnecting();
+			State.OnDisconnecting();
 
-				try
-				{
-					TryClose();
-				}
-				finally
-				{
-					State.OnDisconnected();
-				}
+			try
+			{
+				TryClose();
+			}
+			finally
+			{
+				State.OnDisconnected();
 			}
 		}
 
