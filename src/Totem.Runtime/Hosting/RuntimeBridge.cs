@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
+using System.Threading;
 using Topshelf;
 using Totem.Runtime.Map;
 
@@ -38,14 +40,34 @@ namespace Totem.Runtime.Hosting
 
 		public void RequestRestart(string reason)
 		{
-			Log.Info("[runtime] Restarting runtime: {Reason}", reason);
+			Log.Info("[runtime] Restarting runtime in 5 seconds: {Reason}", reason);
 
 			RestartRequested = true;
 
-			if(Restarting != null)
+			RestartAfterDelay();
+		}
+
+		private void RestartAfterDelay()
+		{
+			// This is the simple way to ensure all flows are done. The advanced way is to track whether work is
+			// in progress and wait/block until it is all done.
+
+			IDisposable subscription = null;
+
+			subscription = Observable.Timer(TimeSpan.FromSeconds(5)).Subscribe(_ =>
 			{
-				Restarting(this, EventArgs.Empty);
-			}
+				try
+				{
+					if(Restarting != null)
+					{
+						Restarting(this, EventArgs.Empty);
+					}
+				}
+				finally
+				{
+					subscription.Dispose();
+				}
+			});
 		}
 
 		public override object InitializeLifetimeService()
