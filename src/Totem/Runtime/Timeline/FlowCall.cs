@@ -13,8 +13,6 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public class FlowCall : Notion
 	{
-		private readonly List<Event> _newEvents = new List<Event>();
-
 		public FlowCall(
 			FlowType flowType,
 			IDependencySource dependencies,
@@ -31,6 +29,8 @@ namespace Totem.Runtime.Timeline
 			Cause = cause;
 			Principal = principal;
 			CancellationToken = cancellationToken;
+
+			NewEvents = new Many<Event>();
 		}
 
 		public readonly FlowType FlowType;
@@ -40,15 +40,14 @@ namespace Totem.Runtime.Timeline
 		public readonly TimelinePosition Cause;
 		public readonly ClaimsPrincipal Principal;
 		public readonly CancellationToken CancellationToken;
-
-		public IReadOnlyList<Event> NewEvents { get { return _newEvents; } }
+		public readonly Many<Event> NewEvents;
 		public bool IsDone { get; private set; }
 
 		public void Publish(Flow flow, Event e)
 		{
 			Flow.Traits.ForwardRequestId(Event, e);
 
-			_newEvents.Add(e);
+			NewEvents.Write.Add(e);
 		}
 
 		public void Publish(Flow flow, IEnumerable<Event> events)
