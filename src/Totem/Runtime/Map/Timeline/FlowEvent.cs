@@ -32,7 +32,7 @@ namespace Totem.Runtime.Map.Timeline
 
 		public bool CanCall(Event e)
 		{
-			return EventType.IsInstance(e);
+			return EventType.IsAssignable(e);
 		}
 
 		public void CallBefore(Flow flow, Event e)

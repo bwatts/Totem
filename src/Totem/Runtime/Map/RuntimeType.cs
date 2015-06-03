@@ -36,9 +36,14 @@ namespace Totem.Runtime.Map
 			return Is(typeof(T));
 		}
 
-		public bool IsInstance(object runtimeObject)
+		public bool IsAssignable(object instance)
 		{
-			return runtimeObject != null && runtimeObject.GetType() == DeclaredType;
+			return instance != null && Is(instance.GetType());
+		}
+
+		public bool IsTypeOf(object instance)
+		{
+			return instance != null && instance.GetType() == DeclaredType;
 		}
 
 		public Expression ConvertToDeclaredType(Expression instance)
@@ -48,7 +53,7 @@ namespace Totem.Runtime.Map
 
 		protected void ExpectInstance(object value)
 		{
-			Expect(IsInstance(value)).IsTrue("Runtime object is not an instance of the specified type", Text.Of(DeclaredType));
+			Expect(IsTypeOf(value)).IsTrue("Runtime object is not an instance of the specified type", Text.Of(DeclaredType));
 		}
 	}
 }
