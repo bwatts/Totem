@@ -100,11 +100,10 @@
     <Compile Include="Hosting\IRuntimeHost.cs" />
     <Compile Include="Hosting\RuntimeIsolation.cs" />
     <Compile Include="ISettingsDb.cs" />
-    <Compile Include="Json\BinaryJsonFormat.cs" />
-    <Compile Include="Json\TextJsonFormat.cs" />
+    <Compile Include="Json\BinaryJson.cs" />
+    <Compile Include="Json\TextJson.cs" />
     <Compile Include="Json\TotemContractResolver.cs" />
-    <Compile Include="Json\TotemJson.cs" />
-    <Compile Include="Json\TotemJsonFormat.cs" />
+    <Compile Include="Json\JsonFormat.cs" />
     <Compile Include="Json\TotemSerializationBinder.cs" />
     <Compile Include="Json\TotemSerializerSettings.cs" />
     <Compile Include="Reflection\FlowEventReader.cs" />

@@ -11,7 +11,7 @@ namespace Totem.Runtime.Json
 	/// <summary>
 	/// The text format of JSON in the Totem runtime
 	/// </summary>
-	public class TextJsonFormat : TotemJsonFormat<Text>
+	public class TextJson : JsonFormat<Text>
 	{
 		//
 		// Serialize

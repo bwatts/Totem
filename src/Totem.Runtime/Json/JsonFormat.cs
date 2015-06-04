@@ -5,14 +5,31 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Totem.IO;
 
 namespace Totem.Runtime.Json
 {
 	/// <summary>
+	/// The set of inherent JSON formats
+	/// </summary>
+	public static class JsonFormat
+	{
+		public static readonly TextJson Text = new TextJson();
+
+		public static readonly BinaryJson BinaryAscii = new BinaryJson(Encoding.ASCII);
+		public static readonly BinaryJson BinaryBigEndianUnicode = new BinaryJson(Encoding.BigEndianUnicode);
+		public static readonly BinaryJson BinaryDefault = new BinaryJson(Encoding.Default);
+		public static readonly BinaryJson BinaryUnicode = new BinaryJson(Encoding.Unicode);
+		public static readonly BinaryJson BinaryUtf32 = new BinaryJson(Encoding.UTF32);
+		public static readonly BinaryJson BinaryUtf7 = new BinaryJson(Encoding.UTF7);
+		public static readonly BinaryJson BinaryUtf8 = new BinaryJson(Encoding.UTF8);
+	}
+
+	/// <summary>
 	/// The serialized format of JSON in the Totem runtime
 	/// </summary>
 	/// <typeparam name="T">The type to which objects are serialized and deserialized</typeparam>
-	public abstract class TotemJsonFormat<T>
+	public abstract class JsonFormat<T>
 	{
 		public abstract T Serialize(object value, JsonSerializerSettings settings = null);
 

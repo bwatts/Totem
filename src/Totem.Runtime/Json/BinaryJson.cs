@@ -11,9 +11,9 @@ namespace Totem.Runtime.Json
 	/// <summary>
 	/// The binary format of JSON in the Totem runtime
 	/// </summary>
-	public class BinaryJsonFormat : TotemJsonFormat<Binary>
+	public class BinaryJson : JsonFormat<Binary>
 	{
-		public BinaryJsonFormat(Encoding encoding)
+		public BinaryJson(Encoding encoding)
 		{
 			Encoding = encoding;
 		}
@@ -30,22 +30,22 @@ namespace Totem.Runtime.Json
 
 		public override Binary Serialize(object value, JsonSerializerSettings settings = null)
 		{
-			return GetBinary(TotemJson.Text.Serialize(value, settings));
+			return GetBinary(JsonFormat.Text.Serialize(value, settings));
 		}
 
 		public override Binary Serialize(object value, Type type, JsonSerializerSettings settings = null)
 		{
-			return GetBinary(TotemJson.Text.Serialize(value, type, settings));
+			return GetBinary(JsonFormat.Text.Serialize(value, type, settings));
 		}
 
 		public override JObject SerializeJson(object value, JsonSerializerSettings settings = null)
 		{
-			return TotemJson.Text.SerializeJson(value, settings);
+			return JsonFormat.Text.SerializeJson(value, settings);
 		}
 
 		public override JObject SerializeJson(object value, Type type, JsonSerializerSettings settings = null)
 		{
-			return TotemJson.Text.SerializeJson(value, type, settings);
+			return JsonFormat.Text.SerializeJson(value, type, settings);
 		}
 
 		private Binary GetBinary(Text json)
@@ -59,22 +59,22 @@ namespace Totem.Runtime.Json
 
 		public override object Deserialize(Binary value, JsonSerializerSettings settings = null)
 		{
-			return TotemJson.Text.Deserialize(GetText(value));
+			return JsonFormat.Text.Deserialize(GetText(value));
 		}
 
 		public override object Deserialize(Binary value, Type type, JsonSerializerSettings settings = null)
 		{
-			return TotemJson.Text.Deserialize(GetText(value), type, settings);
+			return JsonFormat.Text.Deserialize(GetText(value), type, settings);
 		}
 
 		public override TValue Deserialize<TValue>(Binary value, JsonSerializerSettings settings = null)
 		{
-			return TotemJson.Text.Deserialize<TValue>(GetText(value), settings);
+			return JsonFormat.Text.Deserialize<TValue>(GetText(value), settings);
 		}
 
 		public override JObject DeserializeJson(Binary value)
 		{
-			return TotemJson.Text.DeserializeJson(GetText(value));
+			return JsonFormat.Text.DeserializeJson(GetText(value));
 		}
 
 		private string GetText(Binary value)

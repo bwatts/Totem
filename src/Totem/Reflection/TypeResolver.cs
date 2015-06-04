@@ -3,23 +3,15 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Totem.IO;
 
-namespace Totem.Runtime.Json
+namespace Totem.Reflection
 {
 	/// <summary>
-	/// Converts object to and from JSON in the text or binary formats
+	/// Resolves types in the current app domain, correcting for partial assembly names
 	/// </summary>
-	public static class TotemJson
+	public static class TypeResolver
 	{
-		public static readonly TotemJsonFormat<Text> Text = new TextJsonFormat();
-		public static readonly TotemJsonFormat<Binary> BinaryAscii = new BinaryJsonFormat(Encoding.ASCII);
-		public static readonly TotemJsonFormat<Binary> BinaryUtf7 = new BinaryJsonFormat(Encoding.UTF7);
-		public static readonly TotemJsonFormat<Binary> BinaryUtf8 = new BinaryJsonFormat(Encoding.UTF8);
-		public static readonly TotemJsonFormat<Binary> BinaryUtf32 = new BinaryJsonFormat(Encoding.UTF32);
-		public static readonly TotemJsonFormat<Binary> BinaryUnicode = new BinaryJsonFormat(Encoding.Unicode);
-
 		// Adapted from Newtonsoft.Json.Utilities.ReflectionUtils.SplitFullyQualifiedTypeName
 		//
 		// https://github.com/JamesNK/Newtonsoft.Json/blob/master/Src/Newtonsoft.Json/Utilities/ReflectionUtils.cs
@@ -28,14 +20,22 @@ namespace Totem.Runtime.Json
 		//
 		// https://github.com/JamesNK/Newtonsoft.Json/blob/master/Src/Newtonsoft.Json/Serialization/DefaultSerializationBinder.cs
 
-		public static Type ResolveType(string name)
+		public static Type Resolve(string name, bool strict = true)
 		{
-			return _types.ResolveType(name);
+			var type = _types.Resolve(name);
+
+			Expect.That(strict && type == null).IsFalse("Failed to resolve type: " + name);
+
+			return type;
 		}
 
-		public static Type ResolveType(string typeName, string assemblyName)
+		public static Type Resolve(string typeName, string assemblyName, bool strict = true)
 		{
-			return _types.ResolveType(typeName, assemblyName);
+			var type = _types.Resolve(typeName, assemblyName);
+
+			Expect.That(strict && type == null).IsFalse("Failed to resolve type " + typeName + " in assembly " + assemblyName);
+
+			return type;
 		}
 
 		private static readonly TypeIndex _types = new TypeIndex();
@@ -44,14 +44,14 @@ namespace Totem.Runtime.Json
 		{
 			private readonly ConcurrentDictionary<string, Type> _typesByName = new ConcurrentDictionary<string, Type>();
 
-			internal Type ResolveType(string name)
+			internal Type Resolve(string name)
 			{
 				var typeAndAssembly = SplitTypeAndAssembly(name);
 
 				return _typesByName.GetOrAdd(name, _ => LoadType(typeAndAssembly.Item1, typeAndAssembly.Item2));
 			}
 
-			internal Type ResolveType(string typeName, string assemblyName)
+			internal Type Resolve(string typeName, string assemblyName)
 			{
 				var name = typeName + ", " + assemblyName;
 
@@ -77,13 +77,7 @@ namespace Totem.Runtime.Json
 						.FirstOrDefault();
 				}
 
-				Expect.That(assembly).IsNotNull(Totem.Text.Of("Could not load assembly \"{0}\"", assemblyName));
-
-				var assemblyType = assembly.GetType(typeName, throwOnError: false);
-
-				Expect.That(assembly).IsNotNull(Totem.Text.Of("Could not find type \"{0}\" in assembly \"{1}\"", typeName, assembly.FullName));
-
-				return assemblyType;
+				return assembly == null ? null : assembly.GetType(typeName, throwOnError: false);
 			}
 
 			private static Tuple<string, string> SplitTypeAndAssembly(string type)

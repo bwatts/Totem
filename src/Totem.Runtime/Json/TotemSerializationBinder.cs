@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Serialization;
+using Totem.Reflection;
 
 namespace Totem.Runtime.Json
 {
@@ -12,7 +13,7 @@ namespace Totem.Runtime.Json
 	{
 		public override Type BindToType(string assemblyName, string typeName)
 		{
-			return TotemJson.ResolveType(typeName, assemblyName);
+			return TypeResolver.Resolve(typeName, assemblyName);
 		}
 	}
 }
