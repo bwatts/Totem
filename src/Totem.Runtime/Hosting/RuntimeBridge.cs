@@ -17,26 +17,34 @@ namespace Totem.Runtime.Hosting
 		public RuntimeBridge()
 		{
 			Tags = new Tags();
+
+			RuntimeHost.Bridge = this;
 		}
 
 		Tags ITaggable.Tags { get { return Tags; } }
-		protected Tags Tags { get; private set; }
-		protected IClock Clock { get { return Notion.Traits.Clock.Get(this); } }
-		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
-		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
+		private Tags Tags { get; set; }
+		private IClock Clock { get { return Notion.Traits.Clock.Get(this); } }
+		private ILog Log { get { return Notion.Traits.Log.Get(this); } }
+		private RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
-		public event EventHandler Restarting;
-
-		internal bool RestartRequested { get; private set; }
+		//
+		// Run
+		//
 
 		internal TopshelfExitCode Run(TextWriter consoleOut)
 		{
-			RuntimeHost.Bridge = this;
-
 			Console.SetOut(consoleOut);
 
 			return HostFactory.Run(new THost().Configure);
 		}
+
+		//
+		// Restarts
+		//
+
+		public event EventHandler Restarting;
+
+		internal bool RestartRequested { get; private set; }
 
 		public void RequestRestart(string reason)
 		{

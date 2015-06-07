@@ -60,6 +60,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Reactive.Core">
       <HintPath>..\..\..\..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
     </Reference>
@@ -94,6 +95,9 @@
     </Compile>
     <Compile Include="DependencySource.cs" />
     <Compile Include="DependsOnAttribute.cs" />
+    <Compile Include="DeployedResourceAttribute.cs" />
+    <Compile Include="Deployment\IRuntimeBuild.cs" />
+    <Compile Include="Deployment\RuntimeBuild.cs" />
     <Compile Include="Hosting\ConsoleWriter.cs" />
     <Compile Include="Hosting\IRuntimeBridge.cs" />
     <Compile Include="Hosting\RuntimeBridge.cs" />

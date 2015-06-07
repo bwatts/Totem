@@ -60,13 +60,20 @@ namespace Totem.IO
 		// Factory
 		//
 
-		public static FileName From(string value, bool strict = true)
+		public static FileName From(string value, bool strict = true, bool extensionOptional = false)
 		{
 			var extensionIndex = value.LastIndexOf(FileExtension.Separator);
 
 			if(extensionIndex == -1)
 			{
-				return new FileName(value, "");
+				if(extensionOptional)
+				{
+					return new FileName(value, "");
+				}
+
+				Expect(strict).IsFalse(issue: "Extension is required", actual: t => value);
+
+				return null;
 			}
 			
 			if(extensionIndex == value.Length - 1)

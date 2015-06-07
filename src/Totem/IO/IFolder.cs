@@ -17,9 +17,13 @@ namespace Totem.IO
 
 		IFolder Then(FolderResource folder);
 
-		void Write(FileResource file, Stream data, bool overwrite = true);
+		void Write(FileResource file, Stream data, bool overwrite = true, bool createFolders = false);
 
 		void Write(FolderResource folder, bool overwrite = true);
+
+		void Delete(bool strict = true);
+
+		void Delete(FileName file, bool strict = true);
 
 		void Delete(FileResource file, bool strict = true);
 
@@ -35,20 +39,30 @@ namespace Totem.IO
 
 		bool FileExists(FileName file);
 
-		bool FolderExists(FolderResource folder);
+		bool FolderExists(FolderResource subfolder);
 
 		Stream ReadFile(FileResource file, bool strict = true);
 
-		IReadOnlyList<IOResource> ReadFolder(FolderResource folder, bool recursive = false);
+		Many<FileResource> ReadFiles(bool recursive = false);
 
-		IReadOnlyList<FileResource> ReadFiles(FolderResource folder, bool recursive = false);
+		Many<FolderResource> ReadFolders(bool recursive = false);
 
-		IReadOnlyList<FolderResource> ReadFolders(FolderResource folder, bool recursive = false);
+		Many<IOLink> ReadLinks(bool recursive = false);
 
-		IReadOnlyList<IOLink> ReadLinks(FolderResource folder, bool recursive = false);
+		Many<FileLink> ReadFileLinks(bool recursive = false);
 
-		IReadOnlyList<FileLink> ReadFileLinks(FolderResource folder, bool recursive = false);
+		Many<FolderLink> ReadFolderLinks(bool recursive = false);
 
-		IReadOnlyList<FolderLink> ReadFolderLinks(FolderResource folder, bool recursive = false);
+		Many<IOResource> ReadFolder(FolderResource subfolder, bool recursive = false);
+
+		Many<FileResource> ReadFiles(FolderResource subfolder, bool recursive = false);
+
+		Many<FolderResource> ReadFolders(FolderResource subfolder, bool recursive = false);
+
+		Many<IOLink> ReadLinks(FolderResource subfolder, bool recursive = false);
+
+		Many<FileLink> ReadFileLinks(FolderResource subfolder, bool recursive = false);
+
+		Many<FolderLink> ReadFolderLinks(FolderResource subfolder, bool recursive = false);
 	}
 }

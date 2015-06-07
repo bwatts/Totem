@@ -36,6 +36,8 @@ namespace Totem.Runtime.Hosting
 
 			CreateBridge();
 
+			ExecuteHostAssembly();
+
 			return RunBridge();
 		}
 
@@ -48,7 +50,6 @@ namespace Totem.Runtime.Hosting
 			var setup = new AppDomainSetup
 			{
 				ApplicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase,
-				ShadowCopyFiles = "true",
 				ConfigurationFile = AppDomain.CurrentDomain.SetupInformation.ConfigurationFile
 			};
 
@@ -57,10 +58,8 @@ namespace Totem.Runtime.Hosting
 
 		private void CreateBridge()
 		{
-			var assemblyFile = Path.Combine(_appDomain.SetupInformation.ApplicationBase, "Totem.Runtime.dll");
-
 			_bridge = (RuntimeBridge<THost>) _appDomain.CreateInstanceFromAndUnwrap(
-				assemblyFile,
+				ReadRuntimeAssemblyPath(),
 				typeof(RuntimeBridge<THost>).FullName,
 				ignoreCase: false,
 				bindingAttr: BindingFlags.Default,
@@ -68,6 +67,18 @@ namespace Totem.Runtime.Hosting
 				args: null,
 				culture: null,
 				activationAttributes: null);
+		}
+
+		private string ReadRuntimeAssemblyPath()
+		{
+			return Path.Combine(_appDomain.SetupInformation.ApplicationBase, "Totem.Runtime.dll");
+		}
+
+		private void ExecuteHostAssembly()
+		{
+			// Enables Assembly.GetEntryAssembly, required by Topshelf and handled by RuntimeHost.Isolate
+
+			_appDomain.ExecuteAssembly(typeof(THost).Assembly.CodeBase);
 		}
 
 		private TopshelfExitCode RunBridge()

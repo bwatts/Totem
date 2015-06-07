@@ -95,7 +95,7 @@ namespace Totem.IO
 			return parsedFolder == null ? null : From(parsedFolder, file, strict);
 		}
 
-		public new static FileLink From(string value, bool strict = true)
+		public new static FileLink From(string value, bool strict = true, bool extensionOptional = false)
 		{
 			var parsedFolder = FolderLink.From(value, strict);
 
@@ -105,7 +105,7 @@ namespace Totem.IO
 
 				if(fileSegment != null)
 				{
-					var parsedName = FileName.From(fileSegment.ToString(), strict);
+					var parsedName = FileName.From(fileSegment.ToString(), strict, extensionOptional);
 
 					if(parsedName != null)
 					{

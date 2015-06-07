@@ -5,12 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Serilog;
 using Serilog.Events;
 using Topshelf;
 using Totem.IO;
 using Totem.Reflection;
 using Totem.Runtime.Configuration;
+using Totem.Runtime.Deployment;
 using Totem.Runtime.Map;
 using Totem.Runtime.Reflection;
 
@@ -22,6 +24,7 @@ namespace Totem.Runtime.Hosting
 	internal sealed class RuntimeService : ServiceControl
 	{
 		private readonly Assembly _hostAssembly;
+		private readonly IOLink _deployLink;
 		private RuntimeSection _section;
 		private RuntimeMap _map;
 		private HostControl _hostControl;
@@ -29,9 +32,10 @@ namespace Totem.Runtime.Hosting
 		private CancellationTokenSource _cancellationTokenSource;
 		private IDisposable _instance;
 
-		internal RuntimeService(Assembly hostAssembly)
+		internal RuntimeService(Assembly hostAssembly, IOLink deployLink)
 		{
 			_hostAssembly = hostAssembly;
+			_deployLink = deployLink;
 
 			SetCurrentDirectoryToHost();
 
@@ -155,9 +159,46 @@ namespace Totem.Runtime.Hosting
 
 		private void LoadInstance()
 		{
+			if(_deployLink == null)
+			{
+				ComposeInstance();
+			}
+			else
+			{
+				DeployInstance();
+			}
+		}
+
+		private void ComposeInstance()
+		{
 			var compositionRoot = _container.GetExportedValue<CompositionRoot>();
 
 			_instance = compositionRoot.Connect(_cancellationTokenSource.Token);
+		}
+
+		private async void DeployInstance()
+		{
+			// async void => running with scissors (ok because all errors are handled)
+
+			try
+			{
+				Log.Info("[deploy] {Link}", _deployLink);
+
+				await Task.Run(() => DeployBuild());
+
+				Log.Info("[deploy] Finished");
+			}
+			catch(Exception error)
+			{
+				Log.Error(error, "[deploy] Failed");
+			}
+
+			_hostControl.Stop();
+		}
+
+		private void DeployBuild()
+		{
+			_container.GetExportedValue<IRuntimeBuild>().Deploy(_deployLink);
 		}
 
 		//
@@ -175,9 +216,12 @@ namespace Totem.Runtime.Hosting
 
 		private void UnloadInstance()
 		{
-			_cancellationTokenSource.Cancel();
+			if(_instance != null)
+			{
+				_cancellationTokenSource.Cancel();
 
-			_instance.Dispose();
+				_instance.Dispose();
+			}
 		}
 
 		private void CloseScope()

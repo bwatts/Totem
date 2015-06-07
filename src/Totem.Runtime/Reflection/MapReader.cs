@@ -49,7 +49,7 @@ namespace Totem.Runtime.Reflection
 
 		private IEnumerable<RuntimePackage> ReadPackages()
 		{
-			var packages = Many.Of(ReadRuntimePackage(), ReadDeploymentPackages());
+			var packages = Many.Of(ReadRuntimePackages(), ReadDeploymentPackages());
 
 			if(_deployment.InSolution)
 			{
@@ -59,53 +59,77 @@ namespace Totem.Runtime.Reflection
 			return packages;
 		}
 
-		private RuntimePackage ReadRuntimePackage()
+		private IEnumerable<RuntimePackage> ReadRuntimePackages()
 		{
-			return new RuntimePackage(
+			yield return new RuntimePackage(
+				"Totem",
+				_deployment.HostFolder,
+				_deployment.Folder,
+				new AssemblyCatalog(typeof(RuntimeMap).Assembly),
+				RuntimeRegionKey.From("runtime"));
+
+			yield return new RuntimePackage(
 				"Totem.Runtime",
 				_deployment.HostFolder,
-				new AssemblyCatalog(Assembly.GetExecutingAssembly()),
+				_deployment.Folder,
+				new AssemblyCatalog(typeof(MapReader).Assembly),
 				RuntimeRegionKey.From("runtime"));
 		}
 
 		private IEnumerable<RuntimePackage> ReadDeploymentPackages()
 		{
-			return ReadPackages(_deployment.Folder, _deployment.Folder.ReadFolders(FolderResource.Root));
+			return ReadPackages(_deployment.Folder, _deployment.Folder.ReadFolders());
 		}
 
 		private IEnumerable<RuntimePackage> ReadTotemSubmodulePackages()
 		{
 			var submoduleFolder = _deployment.Folder.Up(1).Then(FolderResource.From("submodules/Totem/src"));
 
-			var subfolders = submoduleFolder
-				.ReadFolders(FolderResource.Root)
-				.Where(subfolder => subfolder.Path.ToString() != "Totem.Runtime")
-				.ToList();
+			var subfolders =
+				from subfolder in submoduleFolder.ReadFolders()
+				let path = subfolder.Path.ToString()
+				where path != "Totem" && path != "Totem.Runtime"
+				select subfolder;
 
-			return ReadPackages(submoduleFolder, subfolders);
+			return ReadPackages(submoduleFolder, subfolders.ToMany());
 		}
 
-		private IEnumerable<RuntimePackage> ReadPackages(IFolder folder, IReadOnlyList<FolderResource> subfolders)
+		private IEnumerable<RuntimePackage> ReadPackages(IFolder folder, Many<FolderResource> subfolders)
 		{
 			return
 				from subfolder in subfolders
 				let name = subfolder.Path.ToString()
-				let dllFile = ReadDllFile(subfolder, name)
-				where folder.FileExists(dllFile)
-				let catalog = new AssemblyCatalog(folder.Link.Then(dllFile).ToString())
+				let buildFolder = _deployment.ExpandBuild(subfolder)
+				let primaryFile = ReadPackagePrimaryFile(folder, name, buildFolder)
+				where primaryFile != null
+				let catalog = new AssemblyCatalog(folder.Link.Then(primaryFile).ToString())
 				let region = RuntimeRegionKey.From(catalog.Assembly, strict: false)
 				where region != null
-				select new RuntimePackage(name, folder.Then(subfolder), catalog, region);
+				select new RuntimePackage(
+					name,
+					folder.Then(buildFolder),
+					folder.Then(subfolder),
+					catalog,
+					region);
 		}
 
-		private FileResource ReadDllFile(FolderResource subfolder, string name)
+		private static FileResource ReadPackagePrimaryFile(IFolder folder, string packageName, FolderResource buildFolder)
 		{
-			if(_deployment.InSolution)
+			var dllFile = buildFolder.Then(FileName.From(packageName, "dll"));
+
+			if(folder.FileExists(dllFile))
 			{
-				subfolder = subfolder.Then(FolderResource.From("bin/" + _deployment.SolutionConfiguration));
+				return dllFile;
 			}
 
-			return subfolder.Then(FileName.From(name, "dll"));
+			var exeFile = buildFolder.Then(FileName.From(packageName, "exe"));
+
+			if(folder.FileExists(exeFile))
+			{
+				return exeFile;
+			}
+
+			return null;
 		}
 
 		//
@@ -181,9 +205,15 @@ namespace Totem.Runtime.Reflection
 
 				var settingsType = typeWithSettings == null ? null : typeWithSettings.GetGenericArguments().Single();
 
+				var deployedResources =
+					from attribute in declaredType.GetCustomAttributes<DeployedResourceAttribute>(inherit: true)
+					where attribute != null
+					select attribute.Resource;
+
 				package.Areas.Register(new AreaType(
 					ReadType(package, declaredType),
-					settingsType == null ? null : package.GetView(settingsType)));
+					settingsType == null ? null : package.GetView(settingsType),
+					deployedResources.ToMany()));
 
 				return true;
 			}

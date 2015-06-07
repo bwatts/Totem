@@ -13,10 +13,11 @@ namespace Totem.Runtime.Map
 	/// </summary>
 	public sealed class RuntimePackage : Notion
 	{
-		public RuntimePackage(string name, IFolder folder, AssemblyCatalog catalog, RuntimeRegionKey regionKey)
+		public RuntimePackage(string name, IFolder buildFolder, IFolder deploymentFolder, AssemblyCatalog catalog, RuntimeRegionKey regionKey)
 		{
 			Name = name;
-			Folder = folder;
+			BuildFolder = buildFolder;
+			DeploymentFolder = deploymentFolder;
 			Catalog = catalog;
 			RegionKey = regionKey;
 			Assembly = catalog.Assembly;
@@ -27,7 +28,8 @@ namespace Totem.Runtime.Map
 		}
 
 		public readonly string Name;
-		public readonly IFolder Folder;
+		public readonly IFolder BuildFolder;
+		public readonly IFolder DeploymentFolder;
 		public readonly AssemblyCatalog Catalog;
 		public readonly RuntimeRegionKey RegionKey;
 		public readonly Assembly Assembly;

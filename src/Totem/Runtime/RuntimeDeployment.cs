@@ -59,5 +59,12 @@ namespace Totem.Runtime
 		{
 			return DataFolder.Link.Then(file);
 		}
+
+		public FolderResource ExpandBuild(FolderResource packageFolder)
+		{
+			return !InSolution
+				? packageFolder
+				: packageFolder.Then(FolderResource.From("bin/" + SolutionConfiguration));
+		}
 	}
 }
