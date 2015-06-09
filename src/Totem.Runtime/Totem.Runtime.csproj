@@ -98,11 +98,6 @@
     <Compile Include="DeployedResourceAttribute.cs" />
     <Compile Include="Hosting\IRuntimeBuild.cs" />
     <Compile Include="Hosting\RuntimeBuild.cs" />
-    <Compile Include="Hosting\ConsoleWriter.cs" />
-    <Compile Include="Hosting\IRuntimeBridge.cs" />
-    <Compile Include="Hosting\RuntimeBridge.cs" />
-    <Compile Include="Hosting\IRuntimeHost.cs" />
-    <Compile Include="Hosting\RuntimeIsolation.cs" />
     <Compile Include="ISettingsDb.cs" />
     <Compile Include="Json\BinaryJson.cs" />
     <Compile Include="Json\TextJson.cs" />

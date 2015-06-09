@@ -40,8 +40,6 @@ namespace Totem.Runtime.Hosting
 
 			ReadSection();
 
-			InitializeBridge();
-
 			InitializeConsoleIfHasUI();
 
 			InitializeMap();
@@ -65,14 +63,6 @@ namespace Totem.Runtime.Hosting
 		private void ReadSection()
 		{
 			_section = RuntimeSection.Read();
-		}
-
-		private void InitializeBridge()
-		{
-			RuntimeHost.Bridge.Restarting += (sender, e) =>
-			{
-				_hostControl.Stop();
-			};
 		}
 
 		private void InitializeConsoleIfHasUI()

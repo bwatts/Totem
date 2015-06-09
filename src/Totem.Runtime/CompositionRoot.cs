@@ -58,7 +58,6 @@ namespace Totem.Runtime
 		{
 			var module = new BuilderModule();
 
-			module.RegisterInstance(RuntimeHost.Bridge).ExternallyOwned();
 			module.RegisterInstance(this).ExternallyOwned();
 			module.RegisterInstance(SettingsDb).ExternallyOwned();
 
