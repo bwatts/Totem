@@ -6,7 +6,7 @@ using System.Linq;
 using Totem.IO;
 using Totem.Runtime.Map;
 
-namespace Totem.Runtime.Deployment
+namespace Totem.Runtime.Hosting
 {
 	/// <summary>
 	/// A deployable build of the Totem runtime

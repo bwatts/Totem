@@ -12,7 +12,6 @@ using Topshelf;
 using Totem.IO;
 using Totem.Reflection;
 using Totem.Runtime.Configuration;
-using Totem.Runtime.Deployment;
 using Totem.Runtime.Map;
 using Totem.Runtime.Reflection;
 

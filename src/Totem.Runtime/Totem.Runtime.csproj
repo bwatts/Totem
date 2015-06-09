@@ -96,8 +96,8 @@
     <Compile Include="DependencySource.cs" />
     <Compile Include="DependsOnAttribute.cs" />
     <Compile Include="DeployedResourceAttribute.cs" />
-    <Compile Include="Deployment\IRuntimeBuild.cs" />
-    <Compile Include="Deployment\RuntimeBuild.cs" />
+    <Compile Include="Hosting\IRuntimeBuild.cs" />
+    <Compile Include="Hosting\RuntimeBuild.cs" />
     <Compile Include="Hosting\ConsoleWriter.cs" />
     <Compile Include="Hosting\IRuntimeBridge.cs" />
     <Compile Include="Hosting\RuntimeBridge.cs" />
