@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -21,8 +22,16 @@ namespace Totem.Runtime.Json
 
 			Binder = new TotemSerializationBinder();
 
-			Converters.Add(new StringEnumConverter());
-			Converters.Add(new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffZ" });
+			Converters.AddRange(
+				new StringEnumConverter(),
+				new IsoDateTimeConverter
+				{
+					DateTimeStyles = DateTimeStyles.AssumeUniversal,
+					DateTimeFormat = DateTimeFormatInfo.InvariantInfo.UniversalSortableDateTimePattern
+				});
+
+			DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+			DateFormatHandling = DateFormatHandling.IsoDateFormat;
 		}
 
 		public bool CamelCaseProperties
