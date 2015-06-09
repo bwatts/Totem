@@ -131,6 +131,11 @@ namespace Totem
 			}
 		}
 
+		public static void AddRange<T>(this IList<T> source, params T[] items)
+		{
+			source.AddRange(items as IEnumerable<T>);
+		}
+
 		public static void AddRange<T>(this ISet<T> set, IEnumerable<T> newItems)
 		{
 			foreach(var newItem in newItems)
