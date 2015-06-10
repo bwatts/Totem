@@ -64,60 +64,76 @@ namespace Totem.Runtime.Hosting
 			}
 		}
 
-		private void Deploy(IFolder location)
+		private void Deploy(IFolder output)
 		{
-			location.Delete(FolderResource.Root, strict: false);
-
-			foreach(var package in
+			foreach(var packageBuild in
 				from region in Runtime.Regions
 				from package in region.Packages
-				where package.Name != "Totem" && package.Name != "Totem.Runtime" 
-				select package)
+				where package.Name != "Totem" && package.Name != "Totem.Runtime"
+				select new PackageBuild(package, output))
 			{
-				Log.Info("[deploy] Package {Package:l}", package);
-
-				Deploy(location, package);
+				packageBuild.Deploy();
 			}
 		}
 
-		private void Deploy(IFolder location, RuntimePackage package)
+		private sealed class PackageBuild : Notion
 		{
-			var packageLocation = location.Then(FolderResource.From(package.Name));
+			private readonly RuntimePackage _package;
+			private readonly IFolder _output;
 
-			foreach(var buildFile in package.BuildFolder.ReadFiles(recursive: true))
+			internal PackageBuild(RuntimePackage package, IFolder deploymentOutput)
 			{
-				var data = package.BuildFolder.ReadFile(buildFile);
-
-				packageLocation.Write(buildFile, data, createFolders: true);
-
-				Log.Verbose("[deploy] {Location:l}", packageLocation.Link.Then(buildFile));
+				_package = package;
+				_output = deploymentOutput.Then(FolderResource.From(package.Name));
 			}
 
-			foreach(var deployedResource in package.Areas.SelectMany(area => area.DeployedResources))
+			internal void Deploy()
 			{
-				if(deployedResource is FolderResource)
+				Log.Info("[deploy] Package {Package:l}", _package);
+
+				DeployBuildFiles();
+
+				DeployAreaFiles();
+			}
+
+			private void DeployBuildFiles()
+			{
+				foreach(var file in _package.BuildFolder.ReadFiles(recursive: true))
 				{
-					var deployedFolder = (FolderResource) deployedResource;
+					DeployFile(_package.BuildFolder, file);
+				}
+			}
 
-					var files = package.DeploymentFolder.ReadFiles(deployedFolder, recursive: true);
-
-					foreach(var file in files)
+			private void DeployAreaFiles()
+			{
+				foreach(var deployedResource in _package.Areas.SelectMany(area => area.DeployedResources))
+				{
+					if(deployedResource is FolderResource)
 					{
-						var data = package.DeploymentFolder.ReadFile(file);
-
-						packageLocation.Write(file, data, createFolders: true);
+						DeployFolder(_package.DeploymentFolder, (FolderResource) deployedResource);
+					}
+					else
+					{
+						DeployFile(_package.DeploymentFolder, (FileResource) deployedResource);
 					}
 				}
-				else
+			}
+
+			private void DeployFolder(IFolder source, FolderResource resource)
+			{
+				foreach(var file in source.ReadFiles(resource, recursive: true))
 				{
-					var deployedFile = (FileResource) deployedResource;
-
-					var data = package.DeploymentFolder.ReadFile(deployedFile);
-
-					packageLocation.Write(deployedFile, data, createFolders: true);
-
-					Log.Verbose("[deploy] {Location:l}", packageLocation.Link.Then(deployedFile));
+					DeployFile(source, file);
 				}
+			}
+
+			private void DeployFile(IFolder source, FileResource resource)
+			{
+				var data = source.ReadFile(resource);
+
+				_output.Write(resource, data, createFolders: true);
+
+				Log.Verbose("[deploy] {Location:l}", _output.Link.Then(resource));
 			}
 		}
 	}
