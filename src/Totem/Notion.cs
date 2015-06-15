@@ -12,14 +12,11 @@ namespace Totem
 	/// </summary>
 	public abstract class Notion : IWritable, ITaggable
 	{
-		protected Notion()
-		{
-			Tags = new Tags();
-		}
+		private Tags _tags;
 
 		Tags ITaggable.Tags { get { return Tags; } }
 
-		protected Tags Tags { get; private set; }
+		protected Tags Tags { get { return _tags ?? (_tags = new Tags()); } }
 
 		protected IClock Clock { get { return Traits.Clock.Get(this); } }
 		protected ILog Log { get { return Traits.Log.Get(this); } }
