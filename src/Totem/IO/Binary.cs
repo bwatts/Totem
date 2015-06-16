@@ -59,14 +59,14 @@ namespace Totem.IO
 			return copy;
 		}
 
-		public string ToBase64()
+		public Base64 ToBase64()
 		{
-			return Convert.ToBase64String(_data);
+			return Base64.From(this);
 		}
 
 		public Hex ToHex()
 		{
-			return Hex.From(_data);
+			return Hex.From(this);
 		}
 
 		public MemoryStream ToStream()

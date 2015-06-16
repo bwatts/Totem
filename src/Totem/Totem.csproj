@@ -65,6 +65,7 @@
     <Compile Include="IFluent.cs" />
     <Compile Include="IO\Binary.cs" />
     <Compile Include="IO\BinaryConverter.cs" />
+    <Compile Include="IO\Base64.cs" />
     <Compile Include="IO\FileExtension.cs" />
     <Compile Include="IO\FileLink.cs" />
     <Compile Include="IO\FileName.cs" />
