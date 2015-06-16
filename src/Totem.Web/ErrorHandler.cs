@@ -29,7 +29,13 @@ namespace Totem.Web
 			{
 				StatusCode = codeAndText.Item1,
 				ContentType = MediaType.Plain.ToTextUtf8(),
-				Contents = body => new StreamWriter(body).Write(codeAndText.Item2)
+				Contents = body =>
+				{
+					using(var writer = new StreamWriter(body))
+					{
+						writer.Write(codeAndText.Item2);
+					}
+				}
 			};
 		}
 
