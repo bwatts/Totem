@@ -96,6 +96,20 @@ namespace Totem.Runtime.Map
 			return region == null ? null : region.GetEvent(declaredType, strict);
 		}
 
+		public WebApiType GetWebApi(RuntimeTypeKey key, bool strict = true)
+		{
+			var region = Get(key.Region, strict);
+
+			return region == null ? null : region.GetWebApi(key, strict);
+		}
+
+		public WebApiType GetWebApi(Type declaredType, bool strict = true)
+		{
+			var region = _assemblyRegions.GetRegion(declaredType, strict);
+
+			return region == null ? null : region.GetWebApi(declaredType, strict);
+		}
+
 		private sealed class AssemblyRegionCache
 		{
 			private readonly ConcurrentDictionary<Assembly, RuntimeRegionKey> _cache = new ConcurrentDictionary<Assembly, RuntimeRegionKey>();

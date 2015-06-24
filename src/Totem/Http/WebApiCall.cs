@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Totem.Http;
 
-namespace Totem.Runtime
+namespace Totem.Http
 {
 	/// <summary>
 	/// A call to a Totem web API

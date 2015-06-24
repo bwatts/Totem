@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Autofac;
 using Totem.Http;
+using Totem.IO;
+using Totem.Runtime.Map;
 
 namespace Totem.Web
 {
@@ -11,13 +13,17 @@ namespace Totem.Web
 	/// </summary>
 	public class WebAppContext
 	{
-		public WebAppContext(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope)
+		public WebAppContext(Many<WebApiType> apiTypes, Many<HttpLink> bindings, FolderLink uiFolder, ILifetimeScope scope)
 		{
+			ApiTypes = apiTypes;
 			Bindings = bindings;
+			UIFolder = uiFolder;
 			Scope = scope;
 		}
 
-		public readonly IReadOnlyList<HttpLink> Bindings;
+		public readonly Many<WebApiType> ApiTypes;
+		public readonly Many<HttpLink> Bindings;
+		public readonly FolderLink UIFolder;
 		public readonly ILifetimeScope Scope;
 	}
 }

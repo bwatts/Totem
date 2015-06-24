@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Totem.Runtime
+namespace Totem.Http
 {
 	/// <summary>
 	/// Describes an instance of a Totem web API bound to an HTTP request

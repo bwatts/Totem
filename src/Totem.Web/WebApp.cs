@@ -9,9 +9,11 @@ using Microsoft.Owin.Logging;
 using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.Bootstrappers.Autofac;
+using Nancy.Conventions;
 using Nancy.Owin;
 using Owin;
 using Totem.Http;
+using Totem.IO;
 using Totem.Runtime;
 using Totem.Runtime.Map;
 using Totem.Runtime.Timeline;
@@ -21,13 +23,15 @@ namespace Totem.Web
 	/// <summary>
 	/// An HTTP-bound API composed by OWIN and Nancy
 	/// </summary>
-	public abstract class WebApiApp : AutofacNancyBootstrapper, IWebApp, ITaggable
+	public class WebApp : AutofacNancyBootstrapper, IWebApp, ITaggable, IRootPathProvider
 	{
-		protected WebApiApp(WebAppContext context)
+		public WebApp(WebAppContext context)
 		{
 			Context = context;
 			Tags = new Tags();
 		}
+
+		protected readonly WebAppContext Context;
 
 		Tags ITaggable.Tags { get { return Tags; } }
 		protected Tags Tags { get; private set; }
@@ -35,7 +39,93 @@ namespace Totem.Web
 		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
 		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
-		protected readonly WebAppContext Context;
+		//
+		// Configuration
+		//
+
+		protected override IRootPathProvider RootPathProvider
+		{
+			get { return this; }
+		}
+
+		public string GetRootPath()
+		{
+			return Context.UIFolder.ToString();
+		}
+
+		protected override void ConfigureConventions(NancyConventions nancyConventions)
+		{
+			base.ConfigureConventions(nancyConventions);
+
+			new UIConventions(this, nancyConventions).Configure();
+		}
+
+		private sealed class UIConventions
+		{
+			private readonly WebApp _app;
+			private readonly NancyConventions _conventions;
+
+			internal UIConventions(WebApp app, NancyConventions conventions)
+			{
+				_app = app;
+				_conventions = conventions;
+			}
+
+			internal void Configure()
+			{
+				FindViewsUnderUI();
+
+				CoerceAcceptHeaders();
+
+				ServeStaticContent();
+			}
+
+			private void FindViewsUnderUI()
+			{
+				_conventions.ViewLocationConventions.Clear();
+
+				_conventions.ViewLocationConventions.Add((viewName, model, context) =>
+				{
+					return viewName;
+				});
+			}
+
+			private void CoerceAcceptHeaders()
+			{
+				_conventions.AcceptHeaderCoercionConventions.Add((acceptHeaders, context) =>
+				{
+					return new[]
+					{
+						Tuple.Create("application/json", 1m),
+						Tuple.Create("text/html", 0.9m),
+						Tuple.Create("*/*", 0.8m)
+					};
+				});
+			}
+
+			private void ServeStaticContent()
+			{
+				ServeStaticContent("css");
+				ServeStaticContent("images");
+				ServeStaticContent("js");
+				ServeStaticContent("references");
+			}
+
+			private void ServeStaticContent(string requestPath)
+			{
+				_conventions.StaticContentsConventions.Add(
+					StaticContentConventionBuilder.AddDirectory(requestPath, GetContentFolder(requestPath)));
+			}
+
+			private string GetContentFolder(string requestPath)
+			{
+				return _app.Context.ContentFolder.Then(FolderResource.From(requestPath)).ToString();
+			}
+		}
+
+		//
+		// Lifecycle
+		//
 
 		public virtual IDisposable Start()
 		{
@@ -88,7 +178,12 @@ namespace Totem.Web
 			return Context.Scope;
 		}
 
-		protected override abstract IEnumerable<INancyModule> GetAllModules(ILifetimeScope container);
+		protected override IEnumerable<INancyModule> GetAllModules(ILifetimeScope container)
+		{
+			return
+				from apiType in Context.ApiTypes
+				select (INancyModule) container.Resolve(apiType.DeclaredType);
+		}
 
 		protected override INancyModule GetModule(ILifetimeScope container, Type moduleType)
 		{

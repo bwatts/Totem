@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Totem.IO;
 
-namespace Totem.Runtime
+namespace Totem.Http
 {
 	/// <summary>
 	/// The body of a request to a Totem web API
