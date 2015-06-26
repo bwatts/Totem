@@ -135,7 +135,7 @@ namespace Totem.Web
 
 		public static IWebApp CreateUIApp<TApi1, TApi2, TApi3, TApi4>(WebUIContext context)
 		{
-			return CreateUIApp(context, typeof(TApi1), typeof(TApi2), typeof(TApi3));
+			return CreateUIApp(context, typeof(TApi1), typeof(TApi2), typeof(TApi3), typeof(TApi4));
 		}
 
 		public static IWebApp CreateUIApp(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope, FolderLink contentFolder, IEnumerable<Type> apiTypes)
