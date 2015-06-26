@@ -98,7 +98,6 @@
     <Compile Include="DeployedResourceAttribute.cs" />
     <Compile Include="Hosting\IRuntimeBuild.cs" />
     <Compile Include="Hosting\RuntimeBuild.cs" />
-    <Compile Include="ISettingsDb.cs" />
     <Compile Include="Json\BinaryJson.cs" />
     <Compile Include="Json\TextJson.cs" />
     <Compile Include="Json\TotemContractResolver.cs" />

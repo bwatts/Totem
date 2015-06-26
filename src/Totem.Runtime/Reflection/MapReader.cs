@@ -201,10 +201,6 @@ namespace Totem.Runtime.Reflection
 		{
 			if(typeof(IRuntimeArea).IsAssignableFrom(declaredType))
 			{
-				var typeWithSettings = typeof(RuntimeArea<>).GetAssignableGenericType(declaredType, strict: false);
-
-				var settingsType = typeWithSettings == null ? null : typeWithSettings.GetGenericArguments().Single();
-
 				var deployedResources =
 					from attribute in declaredType.GetCustomAttributes<DeployedResourceAttribute>(inherit: true)
 					where attribute != null
@@ -212,7 +208,6 @@ namespace Totem.Runtime.Reflection
 
 				package.Areas.Register(new AreaType(
 					ReadType(package, declaredType),
-					settingsType == null ? null : package.GetView(settingsType),
 					deployedResources.ToMany()));
 
 				return true;

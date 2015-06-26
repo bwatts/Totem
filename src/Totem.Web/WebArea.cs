@@ -29,7 +29,7 @@ namespace Totem.Web
 			.SingleInstance();
 		}
 
-		protected override IConnectable ResolveConnection(ILifetimeScope scope)
+		public override IConnectable Compose(ILifetimeScope scope)
 		{
 			return scope.Resolve<WebHost>();
 		}
