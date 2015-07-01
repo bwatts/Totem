@@ -40,14 +40,8 @@ namespace Totem.Runtime
 		//
 
 		public AreaType AreaType { get; private set; }
-		public bool Configured { get; private set; }
 
-		public IConnectable Compose(ILifetimeScope scope)
-		{
-			return !Configured ? Connection.None : ResolveConnection(scope);
-		}
-
-		protected virtual IConnectable ResolveConnection(ILifetimeScope scope)
+		public virtual IConnectable Compose(ILifetimeScope scope)
 		{
 			return Connection.None;
 		}
@@ -62,27 +56,12 @@ namespace Totem.Runtime
 
 			ReadAreaType();
 
-			ConfigureArea();
+			RegisterArea();
 		}
 
 		private void ReadAreaType()
 		{
 			AreaType = Runtime.GetArea(GetType());
-		}
-
-		private void ConfigureArea()
-		{
-			Configured = !AreaType.HasSettings || ReadSettings();
-
-			if(Configured)
-			{
-				RegisterArea();
-			}
-		}
-
-		protected virtual bool ReadSettings()
-		{
-			return true;
 		}
 
 		protected abstract void RegisterArea();
@@ -121,30 +100,6 @@ namespace Totem.Runtime
 		public FileLink ExpandInData(FileResource file)
 		{
 			return Runtime.Deployment.ExpandInData(file);
-		}
-	}
-
-	/// <summary>
-	/// A set of related objects and settings available for hosting by a runtime
-	/// </summary>
-	/// <typeparam name="TSettings">The type of view providing the area's settings</typeparam>
-	public abstract class RuntimeArea<TSettings> : RuntimeArea where TSettings : SettingsView
-	{
-		[Import]
-		public ISettingsDb SettingsDb { get; set; }
-
-		protected TSettings Settings { get; private set; }
-
-		protected virtual bool AllowNullSettings
-		{
-			get { return false; }
-		}
-
-		protected override bool ReadSettings()
-		{
-			Settings = SettingsDb.Read<TSettings>(strict: false);
-
-			return Settings != null || AllowNullSettings;
 		}
 	}
 }

@@ -29,9 +29,24 @@ namespace Totem.Web
 			.SingleInstance();
 		}
 
-		protected override IConnectable ResolveConnection(ILifetimeScope scope)
+		public override IConnectable Compose(ILifetimeScope scope)
 		{
 			return scope.Resolve<WebHost>();
+		}
+
+		private sealed class WebHost : Connection
+		{
+			private readonly IEnumerable<IWebApp> _apps;
+
+			public WebHost(IEnumerable<IWebApp> apps)
+			{
+				_apps = apps;
+			}
+
+			protected override void Open()
+			{
+				Track(_apps.Select(app => app.Start()));
+			}
 		}
 	}
 }

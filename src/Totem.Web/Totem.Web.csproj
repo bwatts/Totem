@@ -87,12 +87,13 @@
     <Compile Include="IWebApp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PushApp.cs" />
+    <Compile Include="WebUIApp.cs" />
     <Compile Include="WebApi.cs" />
-    <Compile Include="WebApp.cs" />
-    <Compile Include="WebHost.cs" />
+    <Compile Include="WebApiApp.cs" />
     <Compile Include="WebArea.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="WebUIContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj">

@@ -104,7 +104,7 @@
     <Compile Include="Id.cs" />
     <Compile Include="Runtime\IDependencySource.cs" />
     <Compile Include="Runtime\IViewDb.cs" />
-    <Compile Include="Http\IWebApi.cs" />
+    <Compile Include="Runtime\IWebApi.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowConstructor.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowEvent.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowEventBefore.cs" />
@@ -160,9 +160,9 @@
     <Compile Include="Runtime\Timeline\TimelinePoint.cs" />
     <Compile Include="Runtime\Timeline\TimelinePosition.cs" />
     <Compile Include="Runtime\TransientAttribute.cs" />
-    <Compile Include="Http\WebApiCall.cs" />
+    <Compile Include="Runtime\WebApiCall.cs" />
     <Compile Include="View.cs" />
-    <Compile Include="Http\WebApiCallBody.cs" />
+    <Compile Include="Runtime\WebApiCallBody.cs" />
     <Compile Include="Tag.cs" />
     <Compile Include="Tags.cs" />
     <Compile Include="TagValue.cs" />
