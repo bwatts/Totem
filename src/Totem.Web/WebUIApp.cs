@@ -84,21 +84,8 @@ namespace Totem.Web
 
 			private void ServeStaticContent()
 			{
-				ServeStaticContent("css");
-				ServeStaticContent("images");
-				ServeStaticContent("js");
-				ServeStaticContent("references");
-			}
-
-			private void ServeStaticContent(string requestPath)
-			{
 				_conventions.StaticContentsConventions.Add(
-					StaticContentConventionBuilder.AddDirectory(requestPath, GetContentFolder(requestPath)));
-			}
-
-			private string GetContentFolder(string requestPath)
-			{
-				return _app.Context.ContentFolder.Then(FolderResource.From(requestPath)).ToString();
+					StaticContentConventionBuilder.AddDirectory("/", _app.Context.ContentFolder.ToString()));
 			}
 		}
 	}

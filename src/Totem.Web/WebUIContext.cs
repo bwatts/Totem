@@ -12,7 +12,7 @@ namespace Totem.Web
 	/// </summary>
 	public class WebUIContext : WebAppContext
 	{
-		public WebUIContext(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope, FolderLink contentFolder) : base(bindings, scope)
+		public WebUIContext(Many<HttpLink> bindings, ILifetimeScope scope, FolderLink contentFolder) : base(bindings, scope)
 		{
 			ContentFolder = contentFolder;
 		}

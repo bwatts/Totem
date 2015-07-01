@@ -92,6 +92,8 @@
     <Compile Include="LogOperations.cs" />
     <Compile Include="Many.cs" />
     <Compile Include="Reflection\TypeResolver.cs" />
+    <Compile Include="Runtime\Map\WebApiTypeSet.cs" />
+    <Compile Include="Runtime\Map\WebApiType.cs" />
     <Compile Include="Sequences.cs" />
     <Compile Include="Reflection\AnonymousTypes.cs" />
     <Compile Include="Reflection\GenericAssignability.cs" />

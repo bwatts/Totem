@@ -28,12 +28,6 @@ namespace Totem.Web
 			_enableDetailedErrors = enableDetailedErrors;
 		}
 
-		public PushApp(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope, bool enableDetailedErrors = false)
-		{
-			_context = new WebAppContext(bindings, scope);
-			_enableDetailedErrors = enableDetailedErrors;
-		}
-
 		public virtual IDisposable Start()
 		{
 			var startOptions = GetStartOptions();

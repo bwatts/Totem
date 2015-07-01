@@ -33,5 +33,20 @@ namespace Totem.Web
 		{
 			return scope.Resolve<WebHost>();
 		}
+
+		private sealed class WebHost : Connection
+		{
+			private readonly IEnumerable<IWebApp> _apps;
+
+			public WebHost(IEnumerable<IWebApp> apps)
+			{
+				_apps = apps;
+			}
+
+			protected override void Open()
+			{
+				Track(_apps.Select(app => app.Start()));
+			}
+		}
 	}
 }

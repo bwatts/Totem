@@ -25,6 +25,7 @@ namespace Totem.Runtime.Map
 			Views = new ViewTypeSet();
 			Flows = new FlowTypeSet();
 			Events = new EventTypeSet();
+			WebApis = new WebApiTypeSet();
 		}
 
 		public readonly string Name;
@@ -37,6 +38,7 @@ namespace Totem.Runtime.Map
 		public readonly ViewTypeSet Views;
 		public readonly FlowTypeSet Flows;
 		public readonly EventTypeSet Events;
+		public readonly WebApiTypeSet WebApis;
 
 		public override Text ToText()
 		{
@@ -81,6 +83,16 @@ namespace Totem.Runtime.Map
 		public EventType GetEvent(Type declaredType, bool strict = true)
 		{
 			return Events.Get(declaredType, strict);
+		}
+
+		public WebApiType GetWebApi(RuntimeTypeKey key, bool strict = true)
+		{
+			return WebApis.Get(key, strict);
+		}
+
+		public WebApiType GetWebApi(Type declaredType, bool strict = true)
+		{
+			return WebApis.Get(declaredType, strict);
 		}
 	}
 }

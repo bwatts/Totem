@@ -116,5 +116,27 @@ namespace Totem.Runtime.Map
 
 			return e;
 		}
+
+		public WebApiType GetWebApi(RuntimeTypeKey key, bool strict = true)
+		{
+			var e = Packages
+				.Select(package => package.GetWebApi(key, strict: false))
+				.FirstOrDefault(packageWebApi => packageWebApi != null);
+
+			Expect(strict && e == null).IsFalse("Failed to resolve web API", key.ToText());
+
+			return e;
+		}
+
+		public WebApiType GetWebApi(Type declaredType, bool strict = true)
+		{
+			var e = Packages
+				.Select(package => package.GetWebApi(declaredType, strict: false))
+				.FirstOrDefault(packageWebApi => packageWebApi != null);
+
+			Expect(strict && e == null).IsFalse("Failed to resolve web API", Text.Of(declaredType));
+
+			return e;
+		}
 	}
 }

@@ -11,13 +11,13 @@ namespace Totem.Web
 	/// </summary>
 	public class WebAppContext
 	{
-		public WebAppContext(IReadOnlyList<HttpLink> bindings, ILifetimeScope scope)
+		public WebAppContext(Many<HttpLink> bindings, ILifetimeScope scope)
 		{
 			Bindings = bindings;
 			Scope = scope;
 		}
 
-		public readonly IReadOnlyList<HttpLink> Bindings;
+		public readonly Many<HttpLink> Bindings;
 		public readonly ILifetimeScope Scope;
 	}
 }

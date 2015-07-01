@@ -76,5 +76,15 @@ namespace Totem.Runtime.Map
 		{
 			return Regions.GetEvent(declaredType, strict);
 		}
+
+		public WebApiType GetWebApi(RuntimeTypeKey key, bool strict = true)
+		{
+			return Regions.GetWebApi(key, strict);
+		}
+
+		public WebApiType GetWebApi(Type declaredType, bool strict = true)
+		{
+			return Regions.GetWebApi(declaredType, strict);
+		}
 	}
 }
