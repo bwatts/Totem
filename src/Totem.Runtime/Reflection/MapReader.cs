@@ -150,7 +150,9 @@ namespace Totem.Runtime.Reflection
 					&& !declaredType.IsAnonymous()
 				select new { package, declaredType })
 			{
-				if(!TryReadView(type.package, type.declaredType) && !TryReadEvent(type.package, type.declaredType))
+				if(!TryReadEvent(type.package, type.declaredType)
+					&& !TryReadView(type.package, type.declaredType)
+					&& !TryReadWebApi(type.package, type.declaredType))
 				{
 					deferredReads.Add(() =>
 					{
@@ -190,6 +192,18 @@ namespace Totem.Runtime.Reflection
 			if(typeof(View).IsAssignableFrom(declaredType))
 			{
 				package.Views.Register(new ViewType(ReadType(package, declaredType)));
+
+				return true;
+			}
+
+			return false;
+		}
+
+		private static bool TryReadWebApi(RuntimePackage package, Type declaredType)
+		{
+			if(typeof(IWebApi).IsAssignableFrom(declaredType))
+			{
+				package.WebApis.Register(new WebApiType(ReadType(package, declaredType)));
 
 				return true;
 			}
