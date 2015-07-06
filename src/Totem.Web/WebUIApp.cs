@@ -52,14 +52,14 @@ namespace Totem.Web
 
 			internal void Configure()
 			{
-				FindViewsUnderUI();
+				FindHtmlViews();
 
 				CoerceAcceptHeaders();
 
 				ServeStaticContent();
 			}
 
-			private void FindViewsUnderUI()
+			private void FindHtmlViews()
 			{
 				_conventions.ViewLocationConventions.Clear();
 
@@ -84,8 +84,20 @@ namespace Totem.Web
 
 			private void ServeStaticContent()
 			{
-				_conventions.StaticContentsConventions.Add(
-					StaticContentConventionBuilder.AddDirectory("/", _app.Context.ContentFolder.ToString()));
+				_conventions.StaticContentsConventions.Clear();
+
+				ServeStaticContent("css");
+				ServeStaticContent("js");
+				ServeStaticContent("refs");
+
+				// Not serving /html - APIs map URLs to .html files
+			}
+
+			private void ServeStaticContent(string path)
+			{
+				_conventions
+					.StaticContentsConventions
+					.Add(StaticContentConventionBuilder.AddDirectory(path));
 			}
 		}
 	}
