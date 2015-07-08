@@ -11,13 +11,15 @@ namespace Totem.Web
 	/// </summary>
 	public class WebAppContext
 	{
-		public WebAppContext(Many<HttpLink> bindings, ILifetimeScope scope)
+		public WebAppContext(Many<HttpLink> bindings, ILifetimeScope scope, bool enableCors)
 		{
 			Bindings = bindings;
 			Scope = scope;
+			EnableCors = enableCors;
 		}
 
 		public readonly Many<HttpLink> Bindings;
 		public readonly ILifetimeScope Scope;
+		public readonly bool EnableCors;
 	}
 }

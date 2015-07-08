@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Autofac;
 using Microsoft.Owin.Hosting;
 using Microsoft.Owin.Logging;
@@ -119,13 +120,24 @@ namespace Totem.Web
 			pipelines.BeforeRequest += pipelineContext => BeforeRequest(container, pipelineContext);
 
 			pipelines.OnError += (pipelineContext, exception) => OnRequestError(container, pipelineContext, exception);
+
+			pipelines.AfterRequest += pipelineContext => AfterRequest(container, pipelineContext);
 		}
 
 		private Response BeforeRequest(ILifetimeScope container, NancyContext context)
 		{
+			if(Context.EnableCors && context.Request.Method == "OPTIONS")
+			{
+				var response = new Response { StatusCode = HttpStatusCode.OK };
+
+				AddCorsHeaders(response);
+
+				return response;
+			}
+
 			SetCallItem(container, context);
 
-			return context.Response;
+			return null;
 		}
 
 		private Response OnRequestError(ILifetimeScope container, NancyContext context, Exception exception)
@@ -151,6 +163,23 @@ namespace Totem.Web
 			{
 				context.Items[WebApi.TimelineItemKey] = timeline;
 			}
+		}
+
+		private Task AfterRequest(ILifetimeScope container, NancyContext pipelineContext)
+		{
+			if(Context.EnableCors)
+			{
+				AddCorsHeaders(pipelineContext.Response);
+			}
+
+			return Task.FromResult(0);
+		}
+
+		private static void AddCorsHeaders(Response response)
+		{
+			response
+				.WithHeader("Access-Control-Allow-Origin", "*")
+				.WithHeader("Access-Control-Allow-Headers", "Authorization, Origin, Content-Type");
 		}
 
 		private sealed class LogAdapter : Notion, ILoggerFactory, ILogger
