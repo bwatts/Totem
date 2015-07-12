@@ -5,10 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Totem.Runtime.Configuration;
-using Totem.Runtime.Hosting;
 using Totem.Runtime.Map;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Hosting
 {
 	/// <summary>
 	/// The point of composition for the Totem runtime

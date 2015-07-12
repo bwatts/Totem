@@ -8,7 +8,7 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// Indicates a flow encountered an unhandled exception
 	/// </summary>
-	public class FlowFaulted : Event
+	public sealed class FlowFaulted : Event
 	{
 		public FlowFaulted(RuntimeTypeKey type, string fault)
 		{

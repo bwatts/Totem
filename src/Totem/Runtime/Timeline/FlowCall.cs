@@ -14,38 +14,39 @@ namespace Totem.Runtime.Timeline
 	public class FlowCall : Notion
 	{
 		public FlowCall(
+			ClaimsPrincipal principal,
+			TimelinePoint point,
 			FlowType flowType,
 			IDependencySource dependencies,
-			Event e,
-			EventType eventType,
-			TimelinePosition cause,
-			ClaimsPrincipal principal,
 			CancellationToken cancellationToken)
 		{
+			Principal = principal;
+			Point = point;
 			FlowType = flowType;
 			Dependencies = dependencies;
-			Event = e;
-			EventType = eventType;
-			Cause = cause;
-			Principal = principal;
 			CancellationToken = cancellationToken;
 
 			NewEvents = new Many<Event>();
 		}
 
+		public readonly ClaimsPrincipal Principal;
+		public readonly TimelinePoint Point;
 		public readonly FlowType FlowType;
 		public readonly IDependencySource Dependencies;
-		public readonly Event Event;
-		public readonly EventType EventType;
-		public readonly TimelinePosition Cause;
-		public readonly ClaimsPrincipal Principal;
 		public readonly CancellationToken CancellationToken;
 		public readonly Many<Event> NewEvents;
 		public bool IsDone { get; private set; }
 
+		public void OnDone()
+		{
+			Expect(IsDone).IsFalse("Flow is already done");
+
+			IsDone = true;
+		}
+
 		public void Publish(Flow flow, Event e)
 		{
-			Flow.Traits.ForwardRequestId(Event, e);
+			Flow.Traits.ForwardRequestId(Point.Event, e);
 
 			NewEvents.Write.Add(e);
 		}
@@ -63,11 +64,24 @@ namespace Totem.Runtime.Timeline
 			Publish(flow, events as IEnumerable<Event>);
 		}
 
-		public void OnDone()
+		public void Schedule(Flow flow, DateTime whenOccurs, Event e)
 		{
-			Expect(IsDone).IsFalse("Flow is already done");
+			Message.Traits.When.Set(e, whenOccurs);
 
-			IsDone = true;
+			Publish(flow, new EventScheduled(e));
+		}
+
+		public void Schedule(Flow flow, DateTime whenOccurs, IEnumerable<Event> events)
+		{
+			foreach(var e in events)
+			{
+				Schedule(flow, whenOccurs, e);
+			}
+		}
+
+		public void Schedule(Flow flow, DateTime whenOccurs, params Event[] events)
+		{
+			Schedule(flow, whenOccurs, events as IEnumerable<Event>);
 		}
 	}
 }

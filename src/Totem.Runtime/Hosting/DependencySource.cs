@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autofac;
 
-namespace Totem.Runtime
+namespace Totem.Runtime.Hosting
 {
 	/// <summary>
 	/// The source of dependencies during runtime work

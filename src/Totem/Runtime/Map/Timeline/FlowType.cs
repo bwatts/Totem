@@ -27,14 +27,14 @@ namespace Totem.Runtime.Map.Timeline
 			return Constructor.Call();
 		}
 
-		public void CallBefore(Flow flow, Event e)
+		public void CallBefore(Flow flow, TimelinePoint point)
 		{
-			Events.CallBefore(flow, e);
+			Events.CallBefore(flow, point);
 		}
 
-		public Task CallWhen(Flow flow, Event e, IDependencySource dependencies)
+		public Task CallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
 		{
-			return Events.CallWhen(flow, e, dependencies);
+			return Events.CallWhen(flow, point, dependencies);
 		}
 	}
 }

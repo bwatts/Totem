@@ -90,10 +90,10 @@
     <Compile Include="BuilderModule.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CompositionRoot.cs">
+    <Compile Include="Hosting\CompositionRoot.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DependencySource.cs" />
+    <Compile Include="Hosting\DependencySource.cs" />
     <Compile Include="DependsOnAttribute.cs" />
     <Compile Include="DeployedResourceAttribute.cs" />
     <Compile Include="Hosting\IRuntimeBuild.cs" />
@@ -112,7 +112,7 @@
     <Compile Include="Configuration\LogElement.cs" />
     <Compile Include="Configuration\RowsElement.cs" />
     <Compile Include="Configuration\RuntimeSection.cs" />
-    <Compile Include="FlowCallScope.cs" />
+    <Compile Include="CallScope.cs" />
     <Compile Include="Hosting\RuntimeService.cs" />
     <Compile Include="IRuntimeArea.cs">
       <SubType>Code</SubType>
@@ -122,7 +122,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Hosting\RuntimeHost.cs" />
-    <Compile Include="SerilogAdapter.cs">
+    <Compile Include="Hosting\SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

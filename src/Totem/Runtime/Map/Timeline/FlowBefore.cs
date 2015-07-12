@@ -10,20 +10,15 @@ namespace Totem.Runtime.Map.Timeline
 	/// <summary>
 	/// A .Before method observing an event in a <see cref="Flow"/>
 	/// </summary>
-	public sealed class FlowEventBefore
+	public sealed class FlowBefore : FlowMethod
 	{
 		private readonly Lazy<Action<Flow, Event>> _call;
 
-		public FlowEventBefore(MethodInfo info, EventType eventType)
+		public FlowBefore(MethodInfo info, EventType eventType) : base(info, eventType)
 		{
-			Info = info;
-			EventType = eventType;
-
 			_call = new Lazy<Action<Flow, Event>>(CompileCall);
 		}
 
-		public readonly MethodInfo Info;
-		public readonly EventType EventType;
 		public Action<Flow, Event> Call { get { return _call.Value; } }
 
 		private Action<Flow, Event> CompileCall()

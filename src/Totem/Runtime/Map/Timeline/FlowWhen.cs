@@ -11,14 +11,12 @@ namespace Totem.Runtime.Map.Timeline
 	/// <summary>
 	/// A .When method observing an event in a <see cref="Flow"/>
 	/// </summary>
-	public sealed class FlowEventWhen
+	public sealed class FlowWhen : FlowMethod
 	{
 		private readonly Lazy<Func<Flow, Event, IDependencySource, Task>> _call;
 
-		public FlowEventWhen(MethodInfo info, EventType eventType, IReadOnlyList<WhenDependency> dependencies)
+		public FlowWhen(MethodInfo info, EventType eventType, Many<WhenDependency> dependencies) : base(info, eventType)
 		{
-			Info = info;
-			EventType = eventType;
 			Dependencies = dependencies;
 
 			IsAsync = typeof(Task).IsAssignableFrom(info.ReturnType);
@@ -26,9 +24,7 @@ namespace Totem.Runtime.Map.Timeline
 			_call = new Lazy<Func<Flow, Event, IDependencySource, Task>>(CompileCall);
 		}
 
-		public readonly MethodInfo Info;
-		public readonly EventType EventType;
-		public readonly IReadOnlyList<WhenDependency> Dependencies;
+		public readonly Many<WhenDependency> Dependencies;
 		public readonly bool IsAsync;
 		public Func<Flow, Event, IDependencySource, Task> Call { get { return _call.Value; } }
 

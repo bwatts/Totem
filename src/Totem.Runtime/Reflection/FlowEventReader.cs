@@ -14,11 +14,12 @@ namespace Totem.Runtime.Reflection
 	/// </summary>
 	internal sealed class FlowEventReader : Notion
 	{
-		private sealed class MethodLookup<TMethod> : Dictionary<EventType, List<TMethod>> {}
+		private sealed class MethodLookup<TMethod> : Dictionary<EventType, FlowMethodSet<TMethod>> where TMethod : FlowMethod
+		{}
 
 		private readonly HashSet<EventType> _eventTypes = new HashSet<EventType>();
-		private readonly MethodLookup<FlowEventBefore> _beforeLookup = new MethodLookup<FlowEventBefore>();
-		private readonly MethodLookup<FlowEventWhen> _whenLookup = new MethodLookup<FlowEventWhen>();
+		private readonly MethodLookup<FlowBefore> _beforeLookup = new MethodLookup<FlowBefore>();
+		private readonly MethodLookup<FlowWhen> _whenLookup = new MethodLookup<FlowWhen>();
 		private readonly RuntimeMap _map;
 		private readonly FlowType _flow;
 
@@ -48,7 +49,10 @@ namespace Totem.Runtime.Reflection
 
 		private void TryReadMethod(MethodInfo method)
 		{
-			if(method.Name == "Before" || method.Name == "When")
+			if(method.Name == "Before"
+				|| method.Name == "BeforeScheduled"
+				|| method.Name == "When"
+				|| method.Name == "WhenScheduled")
 			{
 				WarnIfNotPrivate(method);
 
@@ -70,16 +74,17 @@ namespace Totem.Runtime.Reflection
 
 		private void WarnIfPossiblyMisspelled(MethodInfo method)
 		{
-			if(Text.EditDistance(method.Name, "Before") <= 3)
+			WarnIfPossiblyMisspelled(method, "Before");
+			WarnIfPossiblyMisspelled(method, "BeforeScheduled");
+			WarnIfPossiblyMisspelled(method, "When");
+			WarnIfPossiblyMisspelled(method, "WhenScheduled");
+		}
+
+		private void WarnIfPossiblyMisspelled(MethodInfo method, string name)
+		{
+			if(Text.EditDistance(method.Name, name) <= 2)
 			{
-				Log.Warning("[runtime] Flow method 'Before' possibly misspelled: {0}.{1}", method.DeclaringType.FullName, method.Name);
-			}
-			else
-			{
-				if(Text.EditDistance(method.Name, "When") <= 2)
-				{
-					Log.Warning("[runtime] Flow method 'When' possibly misspelled: {0}.{1}", method.DeclaringType.FullName, method.Name);
-				}
+				Log.Warning("[runtime] Flow method '{0}' possibly misspelled: {1}.{2}", name, method.DeclaringType.FullName, method.Name);
 			}
 		}
 
@@ -89,7 +94,7 @@ namespace Totem.Runtime.Reflection
 
 			if(TryReadEventType(method, out eventType))
 			{
-				if(method.Name == "Before")
+				if(method.Name.StartsWith("Before"))
 				{
 					ReadBefore(method, eventType);
 				}
@@ -123,31 +128,38 @@ namespace Totem.Runtime.Reflection
 
 		private void ReadBefore(MethodInfo method, EventType eventType)
 		{
-			ReadEventMethod(eventType, _beforeLookup, new FlowEventBefore(method, eventType));
+			ReadMethod(eventType, _beforeLookup, new FlowBefore(method, eventType));
 		}
 
 		private void ReadWhen(MethodInfo method, EventType eventType)
 		{
-			ReadEventMethod(eventType, _whenLookup, new FlowEventWhen(method, eventType, ReadWhenDependencies(method)));
+			ReadMethod(eventType, _whenLookup, new FlowWhen(method, eventType, ReadWhenDependencies(method)));
 		}
 
-		private void ReadEventMethod<T>(EventType eventType, MethodLookup<T> lookup, T method)
+		private static void ReadMethod<T>(EventType eventType, MethodLookup<T> lookup, T method) where T : FlowMethod
 		{
-			List<T> methods;
+			FlowMethodSet<T> methods;
 
 			if(!lookup.TryGetValue(eventType, out methods))
 			{
-				methods = new List<T>();
+				methods = new FlowMethodSet<T>(new Many<T>(), new Many<T>());
 
 				lookup.Add(eventType, methods);
 			}
 
-			methods.Add(method);
+			if(method.Info.Name.EndsWith("Scheduled"))
+			{
+				methods.ScheduledMethods.Write.Add(method);
+			}
+			else
+			{
+				methods.Methods.Write.Add(method);
+			}
 		}
 
-		private IReadOnlyList<WhenDependency> ReadWhenDependencies(MethodInfo method)
+		private static Many<WhenDependency> ReadWhenDependencies(MethodInfo method)
 		{
-			return method.GetParameters().Skip(1).Select(ReadWhenDependency).ToList();
+			return method.GetParameters().Skip(1).Select(ReadWhenDependency).ToMany();
 		}
 
 		private static WhenDependency ReadWhenDependency(ParameterInfo parameter)
@@ -163,20 +175,20 @@ namespace Totem.Runtime.Reflection
 		{
 			foreach(var eventType in _eventTypes)
 			{
-				List<FlowEventBefore> beforeMethods;
-				List<FlowEventWhen> whenMethods;
+				FlowMethodSet<FlowBefore> before;
+				FlowMethodSet<FlowWhen> when;
 
-				if(!_beforeLookup.TryGetValue(eventType, out beforeMethods))
+				if(!_beforeLookup.TryGetValue(eventType, out before))
 				{
-					beforeMethods = new List<FlowEventBefore>();
+					before = new FlowMethodSet<FlowBefore>(new Many<FlowBefore>(), new Many<FlowBefore>());
 				}
 
-				if(!_whenLookup.TryGetValue(eventType, out whenMethods))
+				if(!_whenLookup.TryGetValue(eventType, out when))
 				{
-					whenMethods = new List<FlowEventWhen>();
+					when = new FlowMethodSet<FlowWhen>(new Many<FlowWhen>(), new Many<FlowWhen>());
 				}
 
-				_flow.Events.Register(new FlowEvent(_flow, eventType, beforeMethods, whenMethods));
+				_flow.Events.Register(new FlowEvent(_flow, eventType, before, when));
 			}
 		}
 	}

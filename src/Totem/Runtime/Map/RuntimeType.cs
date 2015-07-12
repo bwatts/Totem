@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Map
 {
@@ -36,14 +37,24 @@ namespace Totem.Runtime.Map
 			return Is(typeof(T));
 		}
 
-		public bool IsAssignable(object instance)
+		public bool Is(RuntimeType type)
 		{
-			return instance != null && Is(instance.GetType());
+			return Is(type.DeclaredType);
 		}
 
 		public bool IsTypeOf(object instance)
 		{
 			return instance != null && instance.GetType() == DeclaredType;
+		}
+
+		public bool CanAssign(object instance)
+		{
+			return instance != null && Is(instance.GetType());
+		}
+
+		public bool CanAssign(EventType type)
+		{
+			return Is(type.DeclaredType);
 		}
 
 		public Expression ConvertToDeclaredType(Expression instance)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -89,18 +90,22 @@ namespace Totem.Runtime.Hosting
 
 		private ILogger ReadLogger()
 		{
-			var configuration = new LoggerConfiguration().MinimumLevel.Is(ReadSerilogLevel());
+			var configuration = new LoggerConfiguration();
+
+			SetSerilogLevel(configuration);
 
 			WriteToRollingFile(configuration);
 
 			WriteToConsoleIfHasUI(configuration);
 
+			FormatDates(configuration);
+
 			return configuration.CreateLogger();
 		}
 
-		private LogEventLevel ReadSerilogLevel()
+		private void SetSerilogLevel(LoggerConfiguration configuration)
 		{
-			return (LogEventLevel) (_section.Log.Level - 1);
+			configuration.MinimumLevel.Is((LogEventLevel) (_section.Log.Level - 1));
 		}
 
 		private void WriteToRollingFile(LoggerConfiguration configuration)
@@ -118,6 +123,12 @@ namespace Totem.Runtime.Hosting
 			{
 				configuration.WriteTo.ColoredConsole(outputTemplate: "{Timestamp:hh:mm:ss.fff tt} | {Message}{NewLine}{Exception}");
 			}
+		}
+
+		private void FormatDates(LoggerConfiguration configuration)
+		{
+			configuration.Destructure.ByTransforming<DateTime>(value =>
+				value.ToString(DateTimeFormatInfo.InvariantInfo.UniversalSortableDateTimePattern));
 		}
 
 		//

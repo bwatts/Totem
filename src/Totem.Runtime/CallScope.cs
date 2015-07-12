@@ -8,12 +8,12 @@ using Autofac.Builder;
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// Extends area composition with scopes at the runtime, service, and message levels
+	/// Extends area composition with a scope at the call level
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class FlowCallScope
+	public static class CallScope
 	{
-		private static readonly string _tag = typeof(FlowCallScope).FullName + ".FlowCall";
+		private static readonly string _tag = typeof(CallScope).FullName + ".Call";
 
 		public static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> InstancePerCall<TLimit, TActivatorData, TRegistrationStyle>(this IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> registration)
 		{

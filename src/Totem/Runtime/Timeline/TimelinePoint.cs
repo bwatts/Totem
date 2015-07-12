@@ -10,22 +10,24 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public sealed class TimelinePoint
 	{
-		public TimelinePoint(TimelinePosition cause, TimelinePosition position, EventType eventType, Event e)
+		public TimelinePoint(TimelinePosition cause, TimelinePosition position, EventType eventType, Event e, bool scheduled)
 		{
 			Cause = cause;
 			Position = position;
 			EventType = eventType;
 			Event = e;
+			Scheduled = scheduled;
 		}
 
 		public readonly TimelinePosition Cause;
 		public readonly TimelinePosition Position;
 		public readonly EventType EventType;
 		public readonly Event Event;
+		public readonly bool Scheduled;
 
 		public override string ToString()
 		{
-			return Text.Of("[{0}] {1}", Position, EventType);
+			return Text.Of("{0} {1}", Position, EventType);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Totem.Runtime.Timeline;
 
 namespace Totem.Runtime.Map.Timeline
 {
@@ -15,5 +16,10 @@ namespace Totem.Runtime.Map.Timeline
 		}
 
 		public readonly FlowEventSet FlowEvents;
+
+		public bool CanAssign(TimelinePoint point)
+		{
+			return CanAssign(point.EventType);
+		}
 	}
 }

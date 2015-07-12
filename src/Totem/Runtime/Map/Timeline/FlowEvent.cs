@@ -14,42 +14,46 @@ namespace Totem.Runtime.Map.Timeline
 		public FlowEvent(
 			FlowType flowType,
 			EventType eventType,
-			IReadOnlyList<FlowEventBefore> beforeMethods,
-			IReadOnlyList<FlowEventWhen> whenMethods)
+			FlowMethodSet<FlowBefore> before,
+			FlowMethodSet<FlowWhen> when)
 		{
 			FlowType = flowType;
 			EventType = eventType;
-			BeforeMethods = beforeMethods;
-			WhenMethods = whenMethods;
+			Before = before;
+			When = when;
 
 			EventType.FlowEvents.Register(this);
 		}
 
 		public readonly FlowType FlowType;
 		public readonly EventType EventType;
-		public readonly IReadOnlyList<FlowEventBefore> BeforeMethods;
-		public readonly IReadOnlyList<FlowEventWhen> WhenMethods;
+		public readonly FlowMethodSet<FlowBefore> Before;
+		public readonly FlowMethodSet<FlowWhen> When;
 
-		public bool CanCall(Event e)
+		public void TryCallBefore(Flow flow, TimelinePoint point)
 		{
-			return EventType.IsAssignable(e);
-		}
-
-		public void CallBefore(Flow flow, Event e)
-		{
-			foreach(var beforeMethod in BeforeMethods)
+			if(EventType.CanAssign(point))
 			{
-				beforeMethod.Call(flow, e);
+				foreach(var before in Before.SelectMethods(point))
+				{
+					before.Call(flow, point.Event);
+				}
 			}
 		}
 
-		public async Task CallWhen(Flow flow, Event e, IDependencySource dependencies)
+		public async Task TryCallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
 		{
-			CallBefore(flow, e);
-
-			foreach(var whenMethod in WhenMethods)
+			if(EventType.CanAssign(point))
 			{
-				await whenMethod.Call(flow, e, dependencies);
+				foreach(var before in Before.SelectMethods(point))
+				{
+					before.Call(flow, point.Event);
+				}
+
+				foreach(var when in When.SelectMethods(point))
+				{
+					await when.Call(flow, point.Event, dependencies);
+				}
 			}
 		}
 	}

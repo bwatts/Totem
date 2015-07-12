@@ -92,8 +92,13 @@
     <Compile Include="LogOperations.cs" />
     <Compile Include="Many.cs" />
     <Compile Include="Reflection\TypeResolver.cs" />
+    <Compile Include="Runtime\Map\Timeline\FlowMethodSet.cs" />
+    <Compile Include="Runtime\Map\Timeline\FlowMethod.cs" />
     <Compile Include="Runtime\Map\WebApiTypeSet.cs" />
     <Compile Include="Runtime\Map\WebApiType.cs" />
+    <Compile Include="Runtime\Timeline\TimelineOperations.cs" />
+    <Compile Include="Runtime\Timeline\TimelineFaulted.cs" />
+    <Compile Include="Runtime\Timeline\EventScheduled.cs" />
     <Compile Include="Sequences.cs" />
     <Compile Include="Reflection\AnonymousTypes.cs" />
     <Compile Include="Reflection\GenericAssignability.cs" />
@@ -106,8 +111,8 @@
     <Compile Include="Runtime\IWebApi.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowConstructor.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowEvent.cs" />
-    <Compile Include="Runtime\Map\Timeline\FlowEventBefore.cs" />
-    <Compile Include="Runtime\Map\Timeline\FlowEventWhen.cs" />
+    <Compile Include="Runtime\Map\Timeline\FlowBefore.cs" />
+    <Compile Include="Runtime\Map\Timeline\FlowWhen.cs" />
     <Compile Include="Runtime\Map\Timeline\NamedDependencyAttribute.cs" />
     <Compile Include="Runtime\Map\Timeline\WhenDependencyAttribute.cs" />
     <Compile Include="Runtime\Map\Timeline\KeyedDependencyAttribute.cs" />

@@ -76,23 +76,19 @@ namespace Totem.Runtime.Map.Timeline
 			return Get(e.GetType(), strict);
 		}
 
-		public void CallBefore(Flow flow, Event e)
+		public void CallBefore(Flow flow, TimelinePoint point)
 		{
 			foreach(var flowEvent in this)
 			{
-				if(flowEvent.CanCall(e))
-				{
-					flowEvent.CallBefore(flow, e);
-				}
+				flowEvent.TryCallBefore(flow, point);
 			}
 		}
 
-		public Task CallWhen(Flow flow, Event e, IDependencySource dependencies)
+		public Task CallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
 		{
 			return Task.WhenAll(
 				from flowEvent in this
-				where flowEvent.CanCall(e)
-				select flowEvent.CallWhen(flow, e, dependencies));
+				select flowEvent.TryCallWhen(flow, point, dependencies));
 		}
 
 		internal void Register(FlowEvent e)
