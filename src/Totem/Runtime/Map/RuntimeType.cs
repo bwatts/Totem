@@ -52,7 +52,7 @@ namespace Totem.Runtime.Map
 			return instance != null && Is(instance.GetType());
 		}
 
-		public bool CanAssign(EventType type)
+		public bool CanAssign(RuntimeType type)
 		{
 			return Is(type.DeclaredType);
 		}

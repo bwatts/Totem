@@ -9,22 +9,27 @@ namespace Totem.Runtime.Map.Timeline
 	/// <summary>
 	/// A .NET type representing a flow on the timeline
 	/// </summary>
-	public sealed class FlowType : RuntimeType
+	public class FlowType : RuntimeType
 	{
-		internal FlowType(RuntimeTypeRef type, bool isRequest, FlowConstructor constructor) : base(type)
+		internal FlowType(RuntimeTypeRef type, FlowConstructor constructor) : base(type)
 		{
-			IsRequest = isRequest;
 			Constructor = constructor;
 			Events = new FlowEventSet();
+			IsRequest = this is RequestFlowType;
 		}
 
-		public readonly bool IsRequest;
 		public readonly FlowConstructor Constructor;
 		public readonly FlowEventSet Events;
+		public readonly bool IsRequest;
 
 		public Flow New()
 		{
 			return Constructor.Call();
+		}
+
+		public bool CanCall(EventType e)
+		{
+			return Events.Contains(e);
 		}
 
 		public void CallBefore(Flow flow, TimelinePoint point)

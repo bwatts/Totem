@@ -21,8 +21,6 @@ namespace Totem.Runtime.Map.Timeline
 			EventType = eventType;
 			Before = before;
 			When = when;
-
-			EventType.FlowEvents.Register(this);
 		}
 
 		public readonly FlowType FlowType;
@@ -30,30 +28,21 @@ namespace Totem.Runtime.Map.Timeline
 		public readonly FlowMethodSet<FlowBefore> Before;
 		public readonly FlowMethodSet<FlowWhen> When;
 
-		public void TryCallBefore(Flow flow, TimelinePoint point)
+		public void CallBefore(Flow flow, TimelinePoint point)
 		{
-			if(EventType.CanAssign(point))
+			foreach(var before in Before.SelectMethods(point))
 			{
-				foreach(var before in Before.SelectMethods(point))
-				{
-					before.Call(flow, point.Event);
-				}
+				flow.CallBefore(before, point);
 			}
 		}
 
-		public async Task TryCallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
+		public async Task CallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
 		{
-			if(EventType.CanAssign(point))
-			{
-				foreach(var before in Before.SelectMethods(point))
-				{
-					before.Call(flow, point.Event);
-				}
+			CallBefore(flow, point);
 
-				foreach(var when in When.SelectMethods(point))
-				{
-					await when.Call(flow, point.Event, dependencies);
-				}
+			foreach(var when in When.SelectMethods(point))
+			{
+				await when.Call(flow, point.Event, dependencies);
 			}
 		}
 	}

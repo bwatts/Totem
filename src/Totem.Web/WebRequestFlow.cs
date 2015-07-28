@@ -61,9 +61,9 @@ namespace Totem.Web
 			Respond(new Response { StatusCode = HttpStatusCode.UnprocessableEntity, ReasonPhrase = reasonPhrase });
 		}
 
-		void When(FlowFaulted e)
+		void When(FlowStopped e)
 		{
-			RespondError("[web] Flow faulted: " + Text.Of(e.Type), e.Fault);
+			RespondError("[web] Flow stopped: " + Text.Of(e.Type), e.Error);
 		}
 	}
 }

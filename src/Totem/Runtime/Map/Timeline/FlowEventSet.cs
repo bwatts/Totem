@@ -12,14 +12,14 @@ namespace Totem.Runtime.Map.Timeline
 	/// </summary>
 	public sealed class FlowEventSet : Notion, IReadOnlyCollection<FlowEvent>
 	{
-		private sealed class EventLookup<TKey> : Dictionary<TKey, List<FlowEvent>> {}
+		private sealed class EventDictionary<TKey> : Dictionary<TKey, FlowEvent> {}
 
-		private readonly EventLookup<RuntimeTypeKey> _eventsByKey = new EventLookup<RuntimeTypeKey>();
-		private readonly EventLookup<Type> _eventsByDeclaredType = new EventLookup<Type>();
+		private readonly EventDictionary<RuntimeTypeKey> _eventsByKey = new EventDictionary<RuntimeTypeKey>();
+		private readonly EventDictionary<Type> _eventsByDeclaredType = new EventDictionary<Type>();
 
 		public IEnumerator<FlowEvent> GetEnumerator()
 		{
-			return _eventsByKey.Values.SelectMany(events => events).GetEnumerator();
+			return _eventsByKey.Values.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
@@ -32,78 +32,88 @@ namespace Totem.Runtime.Map.Timeline
 			get { return _eventsByKey.Count; }
 		}
 
-		public bool ContainsEvent(RuntimeTypeKey key)
+		public bool Contains(EventType e)
+		{
+			return Contains(e.DeclaredType);
+		}
+
+		public bool Contains(RuntimeTypeKey key)
 		{
 			return _eventsByKey.ContainsKey(key);
 		}
 
-		public bool ContainsEvent(Type declaredType)
+		public bool Contains(Type declaredType)
 		{
 			return _eventsByDeclaredType.ContainsKey(declaredType);
 		}
 
-		public bool ContainsEvent(Event e)
+		public bool Contains(Event e)
 		{
-			return ContainsEvent(e.GetType());
+			return Contains(e.GetType());
 		}
 
-		public IEnumerable<FlowEvent> Get(RuntimeTypeKey key, bool strict = true)
+		public FlowEvent Get(RuntimeTypeKey key, bool strict = true)
 		{
-			if(ContainsEvent(key))
+			FlowEvent e;
+
+			if(_eventsByKey.TryGetValue(key, out e))
 			{
-				return _eventsByKey[key];
+				return e;
 			}
 
 			Expect(strict).IsFalse("Unknown event key: " + Text.Of(key));
 
-			return Enumerable.Empty<FlowEvent>();
+			return null;
 		}
 
-		public IEnumerable<FlowEvent> Get(Type declaredType, bool strict = true)
+		public FlowEvent Get(Type declaredType, bool strict = true)
 		{
-			if(ContainsEvent(declaredType))
+			FlowEvent e;
+
+			if(_eventsByDeclaredType.TryGetValue(declaredType, out e))
 			{
-				return _eventsByDeclaredType[declaredType];
+				return e;
 			}
 
 			Expect(strict).IsFalse("Unknown event type: " + Text.Of(declaredType));
 
-			return Enumerable.Empty<FlowEvent>();
+			return null;
 		}
 
-		public IEnumerable<FlowEvent> Get(Event e, bool strict = true)
+		public FlowEvent Get(Event e, bool strict = true)
 		{
 			return Get(e.GetType(), strict);
 		}
 
 		public void CallBefore(Flow flow, TimelinePoint point)
 		{
-			foreach(var flowEvent in this)
+			var e = Get(point.EventType.Key, strict: false);
+
+			if(e != null)
 			{
-				flowEvent.TryCallBefore(flow, point);
+				e.CallBefore(flow, point);
 			}
 		}
 
-		public Task CallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
+		public async Task CallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
 		{
-			return Task.WhenAll(
-				from flowEvent in this
-				select flowEvent.TryCallWhen(flow, point, dependencies));
+			var e = Get(point.EventType.Key, strict: false);
+
+			if(e != null)
+			{
+				await e.CallWhen(flow, point, dependencies);
+			}
 		}
 
 		internal void Register(FlowEvent e)
 		{
-			List<FlowEvent> events;
-
-			if(!_eventsByKey.TryGetValue(e.EventType.Key, out events))
+			if(_eventsByKey.ContainsKey(e.EventType.Key))
 			{
-				events = new List<FlowEvent>();
-
-				_eventsByKey.Add(e.EventType.Key, events);
-				_eventsByDeclaredType.Add(e.EventType.DeclaredType, events);
+				throw new Exception(Text.Of("Event {0} is already registered", e.EventType.Key));
 			}
 
-			events.Add(e);
+			_eventsByKey.Add(e.EventType.Key, e);
+			_eventsByDeclaredType.Add(e.EventType.DeclaredType, e);
 		}
 	}
 }

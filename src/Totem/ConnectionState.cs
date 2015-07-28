@@ -86,6 +86,11 @@ namespace Totem
 			Expect(_phase).Is(phase, "Connection is in the wrong phase");
 		}
 
+		public void ExpectPhases(params ConnectionPhase[] phases)
+		{
+			Expect(phases.Contains(_phase)).IsTrue("Connection is in the wrong phase");
+		}
+
 		public void ExpectDisconnected()
 		{
 			ExpectPhase(ConnectionPhase.Disconnected);

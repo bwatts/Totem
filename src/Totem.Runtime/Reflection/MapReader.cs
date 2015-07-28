@@ -248,15 +248,25 @@ namespace Totem.Runtime.Reflection
 
 		private FlowType ReadFlow(RuntimePackage package, Type declaredType)
 		{
-			return new FlowType(
-				ReadType(package, declaredType),
-				ReadIsRequest(declaredType),
-				ReadFlowConstructor(declaredType));
-		}
+			var type = ReadType(package, declaredType);
+			var constructor = ReadFlowConstructor(declaredType);
 
-		private static bool ReadIsRequest(Type declaredType)
-		{
-			return typeof(RequestFlow).IsAssignableFrom(declaredType);
+			var queryType = typeof(Query<>).GetAssignableGenericType(declaredType, strict: false);
+
+			if(queryType != null)
+			{
+				var viewType = queryType.GetGenericArguments().Single();
+
+				return new QueryType(type, constructor, _map.GetView(viewType));
+			}
+			else if(typeof(RequestFlow).IsAssignableFrom(declaredType))
+			{
+				return new RequestFlowType(type, constructor);
+			}
+			else
+			{
+				return new FlowType(type, constructor);
+			}
 		}
 
 		private FlowConstructor ReadFlowConstructor(Type declaredType)

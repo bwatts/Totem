@@ -90,7 +90,7 @@ namespace Totem.Web
 		{
 			// This could be async all the way back to the API classes...but it doesn't read nearly as well there :-)
 
-			var flow = Timeline.MakeRequest<TFlow>(TimelinePosition.External, e).Result;
+			var flow = Timeline.MakeRequest<TFlow>(TimelinePosition.None, e).Result;
 
 			return flow.ToResponse();
 		}

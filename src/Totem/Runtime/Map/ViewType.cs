@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Map
 {
@@ -11,5 +12,14 @@ namespace Totem.Runtime.Map
 	{
 		public ViewType(RuntimeTypeRef type) : base(type)
 		{}
+
+		public QueryType Query { get; private set; }
+
+		internal void RegisterQuery(QueryType query)
+		{
+			Expect(Query).IsNull(Text.Of("Query {0} is already associated with view {1}", Query, this));
+
+			Query = query;
+		}
 	}
 }

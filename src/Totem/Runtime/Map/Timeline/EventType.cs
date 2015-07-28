@@ -11,11 +11,7 @@ namespace Totem.Runtime.Map.Timeline
 	public sealed class EventType : RuntimeType
 	{
 		public EventType(RuntimeTypeRef type) : base(type)
-		{
-			FlowEvents = new FlowEventSet();
-		}
-
-		public readonly FlowEventSet FlowEvents;
+		{}
 
 		public bool CanAssign(TimelinePoint point)
 		{

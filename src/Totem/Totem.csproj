@@ -94,6 +94,8 @@
     <Compile Include="Reflection\TypeResolver.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowMethodSet.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowMethod.cs" />
+    <Compile Include="Runtime\Map\Timeline\QueryType.cs" />
+    <Compile Include="Runtime\Map\Timeline\RequestFlowType.cs" />
     <Compile Include="Runtime\Map\WebApiTypeSet.cs" />
     <Compile Include="Runtime\Map\WebApiType.cs" />
     <Compile Include="Runtime\Timeline\TimelineOperations.cs" />
@@ -156,8 +158,8 @@
     <Compile Include="Runtime\Map\RuntimeSetCore.cs" />
     <Compile Include="Runtime\RuntimeDeployment.cs" />
     <Compile Include="Runtime\Timeline\Flow.cs" />
-    <Compile Include="Runtime\Timeline\FlowCall.cs" />
-    <Compile Include="Runtime\Timeline\FlowFaulted.cs" />
+    <Compile Include="Runtime\Timeline\WhenCall.cs" />
+    <Compile Include="Runtime\Timeline\FlowStopped.cs" />
     <Compile Include="Runtime\Timeline\ITimeline.cs" />
     <Compile Include="Runtime\Timeline\Query.cs" />
     <Compile Include="Runtime\Timeline\RequestFlow.cs" />

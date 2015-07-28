@@ -28,17 +28,17 @@ namespace Totem.Runtime.Timeline
 
 		public static void Append(this ITimeline timeline, Event e)
 		{
-			timeline.Append(TimelinePosition.External, e);
+			timeline.Append(TimelinePosition.None, e);
 		}
 
 		public static void Append(this ITimeline timeline, IEnumerable<Event> events)
 		{
-			timeline.Append(TimelinePosition.External, events);
+			timeline.Append(TimelinePosition.None, events);
 		}
 
 		public static void Append(this ITimeline timeline, params Event[] events)
 		{
-			timeline.Append(TimelinePosition.External, events);
+			timeline.Append(TimelinePosition.None, events);
 		}
 	}
 }

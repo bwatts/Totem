@@ -18,8 +18,8 @@ namespace Totem.Runtime.Json
 		}
 
 		Tags ITaggable.Tags { get { return Tags; } }
-		protected Tags Tags { get; private set; }
-		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
+		private Tags Tags { get; set; }
+		private RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
 		public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
 		{

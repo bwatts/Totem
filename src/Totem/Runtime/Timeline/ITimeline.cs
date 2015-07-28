@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// Describes a series of domain events
+	/// Describes the chronological context of a domain
 	/// </summary>
 	public interface ITimeline : IFluent
 	{
