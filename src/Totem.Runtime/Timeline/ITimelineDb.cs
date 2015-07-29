@@ -13,8 +13,6 @@ namespace Totem.Runtime.Timeline
 
 		TimelinePoint AppendOccurred(TimelinePoint scheduledPoint);
 
-		void RemoveFromSchedule(TimelinePosition position);
-
 		TimelineResumeInfo ReadResumeInfo();
 	}
 }
