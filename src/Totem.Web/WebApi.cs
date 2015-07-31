@@ -90,9 +90,70 @@ namespace Totem.Web
 		{
 			// This could be async all the way back to the API classes...but it doesn't read nearly as well there :-)
 
+			// TODO: Look into effects of blocking threads here and in the timeline/flow hosts
+
 			var flow = Timeline.MakeRequest<TFlow>(TimelinePosition.None, e).Result;
 
 			return flow.ToResponse();
+		}
+
+		//
+		// Responses
+		//
+
+		protected dynamic GetView(Type viewType, ViewKey key, bool strict = true)
+		{
+			var view = ReadView(viewType, key, strict: false);
+
+			if(view != null)
+			{
+				return view;
+			}
+
+			return new Response
+			{
+				StatusCode = strict ? HttpStatusCode.NotFound : HttpStatusCode.NoContent,
+				ReasonPhrase = Totem.Text.Of("Unknown key \"{0}\" of view {1}", key, viewType)
+			};
+		}
+
+		protected dynamic GetViews(Type viewType, IEnumerable<ViewKey> keys, bool strict = true)
+		{
+			var keyList = keys.ToList();
+
+			var viewList = ReadViews(viewType, keyList, strict: false).ToList();
+
+			var knownKeys = keyList.Intersect(viewList.Select(view => view.Key)).ToList();
+
+			if(strict && knownKeys.Count < keyList.Count)
+			{
+				return new Response
+				{
+					StatusCode = HttpStatusCode.InternalServerError,
+					ReasonPhrase = Totem.Text.Of("Unknown keys \"{0}\" of view {1}", keyList.Except(knownKeys).ToTextSeparatedBy(", "), viewType)
+				};
+			}
+			
+			if(strict && knownKeys.Count > keyList.Count)
+			{
+				return new Response
+				{
+					StatusCode = HttpStatusCode.InternalServerError,
+					ReasonPhrase = Totem.Text.Of("Unrequested keys \"{0}\" matched view {1}", keyList.Except(knownKeys).ToTextSeparatedBy(", "), viewType)
+				};
+			}
+
+			return viewList;
+		}
+
+		protected dynamic GetView<T>(ViewKey key, bool strict = true) where T : View
+		{
+			return GetView(typeof(T), key, strict);
+		}
+
+		protected dynamic GetViews<T>(IEnumerable<ViewKey> keys, bool strict = true) where T : View
+		{
+			return GetViews(typeof(T), keys, strict);
 		}
 	}
 }
