@@ -109,7 +109,7 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		protected void CreateOrUpdate(ViewKey key, Func<TView> create, Action<TView> update)
+		protected void Upsert(ViewKey key, Func<TView> create, Action<TView> update)
 		{
 			var view = Read(key, strict: false);
 
@@ -117,10 +117,8 @@ namespace Totem.Runtime.Timeline
 			{
 				view = create();
 			}
-			else
-			{
-				update(view);
-			}
+			
+			update(view);
 
 			Write(view);
 		}
