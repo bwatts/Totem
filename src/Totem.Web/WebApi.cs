@@ -66,26 +66,6 @@ namespace Totem.Web
 			return default(T);
 		}
 
-		protected View ReadView(Type viewType, ViewKey key, bool strict = true)
-		{
-			return Views.Read(viewType, key, strict);
-		}
-
-		protected IEnumerable<View> ReadViews(Type viewType, IEnumerable<ViewKey> keys, bool strict = true)
-		{
-			return Views.Read(viewType, keys, strict);
-		}
-
-		protected T ReadView<T>(ViewKey key, bool strict = true) where T : View
-		{
-			return Views.Read<T>(key, strict);
-		}
-
-		protected IEnumerable<T> ReadViews<T>(IEnumerable<ViewKey> keys, bool strict = true) where T : View
-		{
-			return Views.Read<T>(keys, strict);
-		}
-
 		protected Response MakeRequest<TFlow>(Event e) where TFlow : WebRequestFlow
 		{
 			// This could be async all the way back to the API classes...but it doesn't read nearly as well there :-)
@@ -98,30 +78,74 @@ namespace Totem.Web
 		}
 
 		//
-		// Responses
+		// Views (read)
 		//
 
-		protected dynamic GetView(Type viewType, ViewKey key, bool strict = true)
+		protected View ReadView(Type viewType, ViewKey key, bool strict = true)
 		{
-			var view = ReadView(viewType, key, strict: false);
+			return Views.Read(viewType, key, strict);
+		}
+
+		protected T ReadView<T>(ViewKey key, bool strict = true) where T : View
+		{
+			return Views.Read<T>(key, strict);
+		}
+
+		protected IEnumerable<View> ReadViews(Type viewType, IEnumerable<ViewKey> keys, bool strict = true)
+		{
+			return Views.Read(viewType, keys, strict);
+		}
+
+		protected IEnumerable<T> ReadViews<T>(IEnumerable<ViewKey> keys, bool strict = true) where T : View
+		{
+			return Views.Read<T>(keys, strict);
+		}
+
+		protected View ReadViewByType(Type viewType, bool strict = true)
+		{
+			return ReadView(viewType, ViewKey.Type, strict);
+		}
+
+		protected T ReadViewByType<T>(bool strict = true) where T : View
+		{
+			return ReadView<T>(ViewKey.Type, strict);
+		}
+
+		//
+		// Views (GET)
+		//
+
+		protected dynamic GetView(Type viewType, ViewKey key)
+		{
+			var view = Views.Read(viewType, key, strict: false);
 
 			if(view != null)
 			{
 				return view;
 			}
 
+			var runtimeType = Runtime.GetView(viewType);
+
 			return new Response
 			{
-				StatusCode = strict ? HttpStatusCode.NotFound : HttpStatusCode.NoContent,
-				ReasonPhrase = Totem.Text.Of("Unknown key \"{0}\" of view {1}", key, viewType)
+				StatusCode = HttpStatusCode.NotFound,
+				ReasonPhrase = Totem.Text.Of(
+					"Failed to read {0}{1}",
+					runtimeType.Key,
+					key.IsType ? "" : "/" + key.ToString())
 			};
+		}
+
+		protected dynamic GetView<T>(ViewKey key) where T : View
+		{
+			return GetView(typeof(T), key);
 		}
 
 		protected dynamic GetViews(Type viewType, IEnumerable<ViewKey> keys, bool strict = true)
 		{
 			var keyList = keys.ToList();
 
-			var viewList = ReadViews(viewType, keyList, strict: false).ToList();
+			var viewList = Views.Read(viewType, keyList, strict: false).ToList();
 
 			var knownKeys = keyList.Intersect(viewList.Select(view => view.Key)).ToList();
 
@@ -146,14 +170,19 @@ namespace Totem.Web
 			return viewList;
 		}
 
-		protected dynamic GetView<T>(ViewKey key, bool strict = true) where T : View
-		{
-			return GetView(typeof(T), key, strict);
-		}
-
 		protected dynamic GetViews<T>(IEnumerable<ViewKey> keys, bool strict = true) where T : View
 		{
 			return GetViews(typeof(T), keys, strict);
+		}
+
+		protected dynamic GetViewByType(Type viewType)
+		{
+			return GetView(viewType, ViewKey.Type);
+		}
+
+		protected dynamic GetViewByType<T>() where T : View
+		{
+			return GetView<T>(ViewKey.Type);
 		}
 	}
 }
