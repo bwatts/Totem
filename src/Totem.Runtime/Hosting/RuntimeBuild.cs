@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO.Compression;
 using System.Linq;
 using Totem.IO;
@@ -11,11 +10,12 @@ namespace Totem.Runtime.Hosting
 	/// <summary>
 	/// A deployable build of the Totem runtime
 	/// </summary>
-	[Export(typeof(IRuntimeBuild))]
-	public class RuntimeBuild : Notion, IRuntimeBuild
+	internal sealed class RuntimeBuild : Notion, IRuntimeBuild
 	{
 		public void Deploy(IOLink location)
 		{
+			Log.Info("[deploy] {Location:l}", location);
+
 			if(location is FolderLink)
 			{
 				Deploy(location as FolderLink);
@@ -24,19 +24,17 @@ namespace Totem.Runtime.Hosting
 			{
 				Deploy(location as FileLink);
 			}
+
+			Log.Info("[deploy] Finished");
 		}
 
 		private void Deploy(FolderLink location)
 		{
-			Log.Info("[deploy] {Location:l}", location);
-
 			Deploy(new LocalFolder(location));
 		}
 
 		private void Deploy(FileLink zipLocation)
 		{
-			Log.Info("[deploy] {Location:l}", zipLocation);
-
 			var zipFolder = new LocalFolder(zipLocation.Folder);
 
 			var outputResource = FolderResource.From("_deploy_");

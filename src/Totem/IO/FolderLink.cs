@@ -124,7 +124,7 @@ namespace Totem.IO
 
 		public static FolderLink FromUnc(string value, bool strict = true)
 		{
-			if(value.StartsWith(@"\\"))
+			if(!String.IsNullOrEmpty(value) && value.StartsWith(@"\\"))
 			{
 				var parsedFolder = FolderResource.From(value.Substring(2), strict);
 

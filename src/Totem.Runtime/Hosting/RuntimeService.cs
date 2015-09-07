@@ -1,143 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
-using Serilog;
-using Serilog.Events;
 using Topshelf;
-using Totem.IO;
 using Totem.Reflection;
-using Totem.Runtime.Configuration;
 using Totem.Runtime.Map;
-using Totem.Runtime.Reflection;
 
 namespace Totem.Runtime.Hosting
 {
 	/// <summary>
 	/// The Topshelf service control hosting the Totem runtime
 	/// </summary>
-	internal sealed class RuntimeService : ServiceControl
+	internal sealed class RuntimeService : ServiceControl, ITaggable, IRuntimeService
 	{
-		private readonly Assembly _hostAssembly;
-		private readonly IOLink _deployLink;
-		private RuntimeSection _section;
-		private RuntimeMap _map;
+		private readonly Assembly _programAssembly;
 		private HostControl _hostControl;
 		private CompositionContainer _container;
 		private CancellationTokenSource _cancellationTokenSource;
 		private IDisposable _instance;
 
-		internal RuntimeService(Assembly hostAssembly, IOLink deployLink)
+		internal RuntimeService(Assembly programAssembly)
 		{
-			_hostAssembly = hostAssembly;
-			_deployLink = deployLink;
+			_programAssembly = programAssembly;
 
-			SetCurrentDirectoryToHost();
+			Tags = new Tags();
 
-			ReadSection();
-
-			InitializeConsoleIfHasUI();
-
-			InitializeMap();
-
-			InitializeLog();
+			SetCurrentDirectoryToProgram();
 		}
 
-		internal SerilogAdapter Log { get; private set; }
+		Tags ITaggable.Tags { get { return Tags; } }
+		private Tags Tags { get; set; }
+		private IClock Clock { get { return Notion.Traits.Clock.Get(this); } }
+		private ILog Log { get { return Notion.Traits.Log.Get(this); } }
+		private RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
-		//
-		// Initialization
-		//
-
-		private void SetCurrentDirectoryToHost()
+		private void SetCurrentDirectoryToProgram()
 		{
 			// Run the service where installed, instead of a system folder
 
-			Directory.SetCurrentDirectory(_hostAssembly.GetDirectoryName());
-		}
-
-		private void ReadSection()
-		{
-			_section = RuntimeSection.Read();
-		}
-
-		private void InitializeConsoleIfHasUI()
-		{
-			if(_section.HasUI)
-			{
-				_section.Console.Initialize();
-			}
-		}
-
-		private void InitializeMap()
-		{
-			_map = _section.ReadMap(_hostAssembly);
-
-			Notion.Traits.InitializeRuntime(_map);
-		}
-
-		private void InitializeLog()
-		{
-			Log = new SerilogAdapter(ReadLogger(), _section.Log.Level);
-
-			Notion.Traits.InitializeLog(Log);
-		}
-
-		private ILogger ReadLogger()
-		{
-			var configuration = new LoggerConfiguration();
-
-			SetSerilogLevel(configuration);
-
-			WriteToRollingFile(configuration);
-
-			WriteToConsoleIfHasUI(configuration);
-
-			FormatDates(configuration);
-
-			return configuration.CreateLogger();
-		}
-
-		private void SetSerilogLevel(LoggerConfiguration configuration)
-		{
-			configuration.MinimumLevel.Is((LogEventLevel) (_section.Log.Level - 1));
-		}
-
-		private void WriteToRollingFile(LoggerConfiguration configuration)
-		{
-			var pathFormat = _map.Deployment.LogFolder.Link.Then(FileResource.From("runtime-{Date}.txt")).ToString();
-
-			configuration.WriteTo.RollingFile(
-				pathFormat,
-				outputTemplate: "{Timestamp:hh:mm:ss.fff tt} {Level,-11} | {Message}{NewLine}{Exception}");
-		}
-
-		private void WriteToConsoleIfHasUI(LoggerConfiguration configuration)
-		{
-			if(_section.HasUI)
-			{
-				configuration.WriteTo.ColoredConsole(outputTemplate: "{Timestamp:hh:mm:ss.fff tt} | {Message}{NewLine}{Exception}");
-			}
-		}
-
-		private void FormatDates(LoggerConfiguration configuration)
-		{
-			configuration.Destructure.ByTransforming<DateTime>(value =>
-				value.ToString(DateTimeFormatInfo.InvariantInfo.UniversalSortableDateTimePattern));
+			Directory.SetCurrentDirectory(_programAssembly.GetDirectoryName());
 		}
 
 		//
 		// Start
 		//
 
+		internal static IRuntimeService Instance;
+
 		public bool Start(HostControl hostControl)
 		{
 			_hostControl = hostControl;
+
+			Instance = this;
 
 			Log.Info("[runtime] Starting service");
 
@@ -152,53 +69,16 @@ namespace Totem.Runtime.Hosting
 
 		private void OpenScope()
 		{
-			_container = new CompositionContainer(_map.Catalog, CompositionOptions.DisableSilentRejection);
+			_container = new CompositionContainer(Runtime.Catalog, CompositionOptions.DisableSilentRejection);
 
 			_cancellationTokenSource = new CancellationTokenSource();
 		}
 
 		private void LoadInstance()
 		{
-			if(_deployLink == null)
-			{
-				ComposeInstance();
-			}
-			else
-			{
-				DeployInstance();
-			}
-		}
-
-		private void ComposeInstance()
-		{
-			var compositionRoot = _container.GetExportedValue<CompositionRoot>();
-
-			_instance = compositionRoot.Connect(_cancellationTokenSource.Token);
-		}
-
-		private async void DeployInstance()
-		{
-			// async void => running with scissors (ok because all errors are handled)
-
-			try
-			{
-				Log.Info("[deploy] {Link}", _deployLink);
-
-				await Task.Run(() => DeployBuild());
-
-				Log.Info("[deploy] Finished");
-			}
-			catch(Exception error)
-			{
-				Log.Error(error, "[deploy] Failed");
-			}
-
-			_hostControl.Stop();
-		}
-
-		private void DeployBuild()
-		{
-			_container.GetExportedValue<IRuntimeBuild>().Deploy(_deployLink);
+			_instance = _container
+				.GetExportedValue<CompositionRoot>()
+				.Connect(_cancellationTokenSource.Token);
 		}
 
 		//
@@ -228,12 +108,25 @@ namespace Totem.Runtime.Hosting
 		{
 			_container.Dispose();
 
-			_section = null;
-			_map = null;
 			_hostControl = null;
 			_container = null;
 			_cancellationTokenSource = null;
 			_instance = null;
 		}
+
+		//
+		// Restart
+		//
+
+		public void Restart(string reason)
+		{
+			Restarted = true;
+
+			Log.Info("[runtime] Restarting: {Reason:l}", reason);
+
+			_hostControl.Stop();
+		}
+
+		internal bool Restarted { get; private set; }
 	}
 }

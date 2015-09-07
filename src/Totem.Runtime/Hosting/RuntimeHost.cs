@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using Serilog.Extras.Topshelf;
-using Topshelf;
-using Topshelf.HostConfigurators;
-using Totem.IO;
+using Totem.Runtime.Hosting.Commands;
 
 namespace Totem.Runtime.Hosting
 {
@@ -14,24 +10,9 @@ namespace Totem.Runtime.Hosting
 	/// </summary>
 	public static class RuntimeHost
 	{
-		public static void UseRuntime(this HostConfigurator configurator, Assembly hostAssembly)
+		public static int Run<TProgram>(string[] args) where TProgram : IRuntimeProgram, new()
 		{
-			var service = new RuntimeService(hostAssembly, configurator.ReadDeployLink());
-
-			configurator.UseSerilog(service.Log.Logger);
-
-			configurator.Service(() => service);
-		}
-
-		private static IOLink ReadDeployLink(this HostConfigurator configurator)
-		{
-			string link = null;
-
-			configurator.AddCommandLineDefinition("deploy", value => link = value);
-
-			configurator.ApplyCommandLine();
-
-			return String.IsNullOrEmpty(link) ? null : IOLink.From(link);
+			return HostCommandLine.From(args).Execute<TProgram>();
 		}
 	}
 }

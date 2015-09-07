@@ -80,21 +80,31 @@ namespace Totem
 			private sealed class UninitializedLog : ILog
 			{
 				private readonly BlockingCollection<LogMessage> _messages = new BlockingCollection<LogMessage>();
+				private ILog _effectiveLog;
 
 				public LogLevel Level { get { return LogLevel.Inherit; } }
 
 				public void Write(LogMessage message)
 				{
-					_messages.Add(message);
+					if(_effectiveLog == null)
+					{
+						_messages.Add(message);
+					}
+					else
+					{
+						_effectiveLog.Write(message);
+					}
 				}
 
 				internal void ReplayMessages(ILog effectiveLog)
 				{
+					_effectiveLog = effectiveLog;
+
 					_messages.CompleteAdding();
 
 					foreach(var message in _messages.GetConsumingEnumerable())
 					{
-						effectiveLog.Write(message);
+						_effectiveLog.Write(message);
 					}
 				}
 			}

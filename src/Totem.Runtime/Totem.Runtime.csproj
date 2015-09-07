@@ -90,6 +90,13 @@
     <Compile Include="BuilderModule.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Hosting\Commands\DeployCommand.cs" />
+    <Compile Include="Hosting\Commands\HostCommand.cs" />
+    <Compile Include="Hosting\Commands\IssueCommand.cs" />
+    <Compile Include="Hosting\Commands\PassThroughCommand.cs" />
+    <Compile Include="Hosting\Commands\RunCommand.cs" />
+    <Compile Include="Hosting\Commands\HostCommandLine.cs" />
+    <Compile Include="Hosting\Commands\RunCommandBridge.cs" />
     <Compile Include="Hosting\CompositionRoot.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -97,6 +104,9 @@
     <Compile Include="DependsOnAttribute.cs" />
     <Compile Include="DeployedResourceAttribute.cs" />
     <Compile Include="Hosting\IRuntimeBuild.cs" />
+    <Compile Include="Hosting\Commands\IHostCommand.cs" />
+    <Compile Include="Hosting\IRuntimeProgram.cs" />
+    <Compile Include="Hosting\IRuntimeService.cs" />
     <Compile Include="Hosting\RuntimeBuild.cs" />
     <Compile Include="Json\BinaryJson.cs" />
     <Compile Include="Json\TextJson.cs" />

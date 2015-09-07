@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using Totem.Runtime.Configuration;
+using Totem.Runtime.Hosting.Commands;
 using Totem.Runtime.Map;
 
 namespace Totem.Runtime.Hosting
@@ -52,24 +53,41 @@ namespace Totem.Runtime.Hosting
 
 		private void ComposeScope()
 		{
+			Scope = BuildScope();
+
+			Track(Scope);
+
+			Log.Debug("[runtime] Opened root composition scope");
+		}
+
+		private ILifetimeScope BuildScope()
+		{
 			var module = new BuilderModule();
 
+			RegisterContext(module);
+
+			RegisterAreas(module);
+
+			return module.Build();
+		}
+
+		private void RegisterContext(BuilderModule module)
+		{
 			module.RegisterInstance(this).ExternallyOwned();
 
-			module.RegisterType<DependencySource>().As<IDependencySource>().InstancePerDependency();
+			module.RegisterInstance(RuntimeService.Instance).ExternallyOwned();
 
+			module.RegisterType<DependencySource>().As<IDependencySource>().InstancePerDependency();
+		}
+
+		private void RegisterAreas(BuilderModule module)
+		{
 			foreach(var area in Areas)
 			{
 				module.RegisterModule(area);
 
 				AddArea(area);
 			}
-
-			Scope = module.Build();
-
-			Track(Scope);
-
-			Log.Debug("[runtime] Opened root composition scope");
 		}
 
 		private void AddArea(IRuntimeArea area)
