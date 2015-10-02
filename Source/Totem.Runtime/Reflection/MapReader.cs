@@ -83,7 +83,7 @@ namespace Totem.Runtime.Reflection
 
 		private IEnumerable<RuntimePackage> ReadTotemSubmodulePackages()
 		{
-			var submoduleFolder = _deployment.Folder.Up(1).Then(FolderResource.From("submodules/Totem/src"));
+			var submoduleFolder = _deployment.Folder.Up(1).Then(FolderResource.From("Submodules/Totem/Source"));
 
 			var subfolders =
 				from subfolder in submoduleFolder.ReadFolders()

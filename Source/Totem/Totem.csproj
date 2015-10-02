@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Totem</RootNamespace>
     <AssemblyName>Totem</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,8 +37,8 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\SolutionAssemblyInfo.cs">
-      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
+      <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="ConnectionDependencies.cs" />
     <Compile Include="Equality.cs" />

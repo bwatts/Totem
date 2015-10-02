@@ -1,20 +1,24 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{260CF321-5532-41BF-B3E7-8F74438505C4}"
 	ProjectSection(SolutionItems) = preProject
-		..\SolutionAssemblyInfo.cs = ..\SolutionAssemblyInfo.cs
+		Totem.sln.AssemblyInfo.cs = Totem.sln.AssemblyInfo.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".tests", ".tests", "{79EA098B-B4FF-4E56-BB81-B74098B9B4B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Testing", "tests\Totem.Testing\Totem.Testing.csproj", "{1286D14D-086E-4782-B56B-84527FA75149}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Tests", "Tests\Totem.Tests\Totem.Tests.csproj", "{A35B1A06-F8E7-40CE-AE75-4A21DF58F7BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Tests", "tests\Totem.Tests\Totem.Tests.csproj", "{A35B1A06-F8E7-40CE-AE75-4A21DF58F7BA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem", "Source\Totem\Totem.csproj", "{7FA55C94-884E-42B1-83A3-3C4611549789}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem", "src\Totem\Totem.csproj", "{7FA55C94-884E-42B1-83A3-3C4611549789}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Testing", "Source\Totem.Testing\Totem.Testing.csproj", "{1286D14D-086E-4782-B56B-84527FA75149}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Runtime", "Source\Totem.Runtime\Totem.Runtime.csproj", "{5A8E9B26-2368-4121-ACD5-B7FB2A0088D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Web", "Source\Totem.Web\Totem.Web.csproj", "{01763457-40D1-4C7D-9327-2A2976FFC90F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,10 +26,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1286D14D-086E-4782-B56B-84527FA75149}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1286D14D-086E-4782-B56B-84527FA75149}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1286D14D-086E-4782-B56B-84527FA75149}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1286D14D-086E-4782-B56B-84527FA75149}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A35B1A06-F8E7-40CE-AE75-4A21DF58F7BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A35B1A06-F8E7-40CE-AE75-4A21DF58F7BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A35B1A06-F8E7-40CE-AE75-4A21DF58F7BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -34,12 +34,23 @@ Global
 		{7FA55C94-884E-42B1-83A3-3C4611549789}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FA55C94-884E-42B1-83A3-3C4611549789}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FA55C94-884E-42B1-83A3-3C4611549789}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1286D14D-086E-4782-B56B-84527FA75149}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1286D14D-086E-4782-B56B-84527FA75149}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1286D14D-086E-4782-B56B-84527FA75149}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1286D14D-086E-4782-B56B-84527FA75149}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A8E9B26-2368-4121-ACD5-B7FB2A0088D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A8E9B26-2368-4121-ACD5-B7FB2A0088D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A8E9B26-2368-4121-ACD5-B7FB2A0088D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A8E9B26-2368-4121-ACD5-B7FB2A0088D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01763457-40D1-4C7D-9327-2A2976FFC90F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01763457-40D1-4C7D-9327-2A2976FFC90F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01763457-40D1-4C7D-9327-2A2976FFC90F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01763457-40D1-4C7D-9327-2A2976FFC90F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{1286D14D-086E-4782-B56B-84527FA75149} = {79EA098B-B4FF-4E56-BB81-B74098B9B4B7}
 		{A35B1A06-F8E7-40CE-AE75-4A21DF58F7BA} = {79EA098B-B4FF-4E56-BB81-B74098B9B4B7}
 	EndGlobalSection
 EndGlobal

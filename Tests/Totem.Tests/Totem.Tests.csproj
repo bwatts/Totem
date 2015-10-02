@@ -9,10 +9,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Totem</RootNamespace>
     <AssemblyName>Totem.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,8 +41,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\SolutionAssemblyInfo.cs">
-      <Link>Properties\SolutionAssemblyInfo.cs</Link>
+    <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
+      <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="LinkPathScenarios.cs" />
     <Compile Include="LinkTextScenarios.cs" />
@@ -58,11 +59,11 @@
     <Compile Include="TextScenarios.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Totem\Totem.csproj">
+    <ProjectReference Include="..\..\Source\Totem\Totem.csproj">
       <Project>{7fa55c94-884e-42b1-83a3-3c4611549789}</Project>
-      <Name>Totem %28Totem\Totem%29</Name>
+      <Name>Totem</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Totem.Testing\Totem.Testing.csproj">
+    <ProjectReference Include="..\..\Source\Totem.Testing\Totem.Testing.csproj">
       <Project>{1286d14d-086e-4782-b56b-84527fa75149}</Project>
       <Name>Totem.Testing</Name>
     </ProjectReference>

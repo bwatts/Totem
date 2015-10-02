@@ -284,7 +284,7 @@ namespace Totem
 
 		void RepeatNone()
 		{
-			Assert.Same(Text.None, Text.None.Repeat(2));
+			Assert.Equal(Text.None.ToString(), Text.None.Repeat(2).ToString());
 		}
 
 		//

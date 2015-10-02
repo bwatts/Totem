@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,10 +9,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Totem.Runtime</RootNamespace>
     <AssemblyName>Totem.Runtime</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,27 +34,27 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac">
-      <HintPath>..\..\..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
+      <HintPath>..\..\Packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="NDesk.Options">
-      <HintPath>..\..\..\..\packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
+      <HintPath>..\..\Packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\..\..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\Packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\packages\Serilog.1.4.204\lib\net45\Serilog.dll</HintPath>
+      <HintPath>..\..\Packages\Serilog.1.4.204\lib\net45\Serilog.dll</HintPath>
     </Reference>
     <Reference Include="Serilog.Extras.Topshelf">
-      <HintPath>..\..\..\..\packages\Serilog.Extras.Topshelf.1.4.204\lib\net45\Serilog.Extras.Topshelf.dll</HintPath>
+      <HintPath>..\..\Packages\Serilog.Extras.Topshelf.1.4.204\lib\net45\Serilog.Extras.Topshelf.dll</HintPath>
     </Reference>
     <Reference Include="Serilog.FullNetFx, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\packages\Serilog.1.4.204\lib\net45\Serilog.FullNetFx.dll</HintPath>
+      <HintPath>..\..\Packages\Serilog.1.4.204\lib\net45\Serilog.FullNetFx.dll</HintPath>
     </Reference>
     <Reference Include="Serilog.Sinks.Seq">
-      <HintPath>..\..\..\..\packages\Serilog.Sinks.Seq.1.4.168\lib\net45\Serilog.Sinks.Seq.dll</HintPath>
+      <HintPath>..\..\Packages\Serilog.Sinks.Seq.1.4.168\lib\net45\Serilog.Sinks.Seq.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -62,16 +63,16 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Reactive.Core">
-      <HintPath>..\..\..\..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
+      <HintPath>..\..\Packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Reactive.Interfaces">
-      <HintPath>..\..\..\..\packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+      <HintPath>..\..\Packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System.Reactive.Linq">
-      <HintPath>..\..\..\..\packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
+      <HintPath>..\..\Packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Reactive.PlatformServices">
-      <HintPath>..\..\..\..\packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+      <HintPath>..\..\Packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
@@ -80,13 +81,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Topshelf">
-      <HintPath>..\..\..\..\packages\Topshelf.3.1.4\lib\net40-full\Topshelf.dll</HintPath>
+      <HintPath>..\..\Packages\Topshelf.3.1.4\lib\net40-full\Topshelf.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\SolutionAssemblyInfo.cs">
-      <Link>Properties\SolutionAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="BuilderModule.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -148,15 +146,19 @@
     <Compile Include="Timeline\TimelineScope.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Totem\Totem.csproj">
-      <Project>{7fa55c94-884e-42b1-83a3-3c4611549789}</Project>
-      <Name>Totem %28Totem\Totem%29</Name>
-    </ProjectReference>
+    <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
+      <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Totem\Totem.csproj">
+      <Project>{7fa55c94-884e-42b1-83a3-3c4611549789}</Project>
+      <Name>Totem</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -49,6 +49,10 @@ namespace Totem.Runtime.Timeline
 			{
 				CallWhen().Wait(State.CancellationToken);
 			}
+			catch(OperationCanceledException error)
+			{
+				Log.Info("[timeline] When call cancelled for point {Point}", point);
+			}
 			finally
 			{
 				Point = null;
