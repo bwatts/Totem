@@ -106,7 +106,10 @@ namespace Totem.Runtime.Hosting
 
 		private void CloseScope()
 		{
-			_container.Dispose();
+			if(_container != null)
+			{
+				_container.Dispose();
+			}
 
 			_hostControl = null;
 			_container = null;
