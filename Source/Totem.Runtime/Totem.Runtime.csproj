@@ -139,10 +139,12 @@
     <Compile Include="Timeline\ITimelineDb.cs" />
     <Compile Include="Timeline\ITimelineHost.cs" />
     <Compile Include="Timeline\ITimelineScope.cs" />
+    <Compile Include="Timeline\TimelineHostSchedule.cs" />
     <Compile Include="Timeline\TimelineResumeInfo.cs" />
     <Compile Include="Timeline\Timeline.cs" />
     <Compile Include="Timeline\TimelineHost.cs" />
     <Compile Include="Timeline\TimelineRequest.cs" />
+    <Compile Include="Timeline\TimelineResumePointInfo.cs" />
     <Compile Include="Timeline\TimelineScope.cs" />
   </ItemGroup>
   <ItemGroup>

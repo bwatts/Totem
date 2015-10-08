@@ -36,9 +36,14 @@ namespace Totem.Runtime.Timeline
 
 		public void Push(TimelinePoint point)
 		{
-			State.ExpectPhases(ConnectionPhase.Connecting, ConnectionPhase.Connected);
-
-			_points.OnNext(point);
+			if(State.IsConnecting || State.IsConnected)
+			{
+				_points.OnNext(point);
+			}
+			else
+			{
+				Log.Warning("[timeline] Cannot push to scope when {Phase:l} - ignoring {Point:l}", State.Phase, point);
+			}
 		}
 
 		private void WhenPushed(TimelinePoint point)
@@ -51,7 +56,7 @@ namespace Totem.Runtime.Timeline
 			}
 			catch(OperationCanceledException error)
 			{
-				Log.Info("[timeline] When call cancelled for point {Point}", point);
+				Log.Info("[timeline] When call cancelled for point {Point:l}", Point);
 			}
 			finally
 			{

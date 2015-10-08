@@ -113,7 +113,7 @@ namespace Totem.Runtime.Timeline
 
 		private void AppendError(Exception error)
 		{
-			Log.Error(error, "[timeline] Flow {Flow} stopped");
+			Log.Error(error, "[timeline] Flow {Flow:l} stopped", _instance);
 
 			try
 			{
@@ -127,7 +127,7 @@ namespace Totem.Runtime.Timeline
 
 		private void CompleteTask()
 		{
-			_taskCompletionSource.SetResult(_instance);
+			_taskCompletionSource.TrySetResult(_instance);
 
 			_instance = null;
 

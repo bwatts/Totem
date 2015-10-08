@@ -10,13 +10,13 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public class TimelineResumeInfo
 	{
-		public TimelineResumeInfo(Many<FlowType> flows, Many<TimelinePoint> points)
+		public TimelineResumeInfo(Many<FlowType> flows, Many<TimelineResumePointInfo> points)
 		{
 			Flows = flows;
 			Points = points;
 		}
 
 		public readonly Many<FlowType> Flows;
-		public readonly Many<TimelinePoint> Points;
+		public readonly Many<TimelineResumePointInfo> Points;
 	}
 }

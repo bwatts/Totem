@@ -2,9 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Totem.Runtime.Map.Timeline;
 
@@ -19,6 +17,7 @@ namespace Totem.Runtime.Timeline
 		private readonly Func<FlowType, IFlowHost> _flowFactory;
 		private ConcurrentDictionary<FlowType, IFlowHost> _flowsByType;
 		private ConcurrentDictionary<Id, TimelineRequest> _requestsById;
+		private TimelineHostSchedule _schedule;
 
 		public TimelineHost(ITimelineDb db, Func<FlowType, IFlowHost> flowFactory)
 		{
@@ -36,8 +35,9 @@ namespace Totem.Runtime.Timeline
 
 			_flowsByType = new ConcurrentDictionary<FlowType, IFlowHost>();
 			_requestsById = new ConcurrentDictionary<Id, TimelineRequest>();
+			_schedule = new TimelineHostSchedule(this);
 
-			ResumeFlows();
+			ResumeTimeline();
 		}
 
 		protected override void Close()
@@ -46,11 +46,14 @@ namespace Totem.Runtime.Timeline
 
 			_flowsByType = null;
 			_requestsById = null;
+			_schedule = null;
 		}
 
-		private void ResumeFlows()
+		private void ResumeTimeline()
 		{
 			var resumeInfo = _db.ReadResumeInfo();
+
+			_schedule.ResumeWith(resumeInfo);
 
 			foreach(var flow in resumeInfo.Flows)
 			{
@@ -59,7 +62,7 @@ namespace Totem.Runtime.Timeline
 
 			foreach(var point in resumeInfo.Points)
 			{
-				Push(point);
+				Push(point.Point);
 			}
 		}
 
@@ -84,48 +87,28 @@ namespace Totem.Runtime.Timeline
 			});
 		}
 
-		//
-		// CallWhen
-		//
-
-		protected override Task CallWhen()
+		internal void PushOccurred(TimelinePoint point)
 		{
-			if(Point.Scheduled)
-			{
-				ScheduleAppend();
-			}
-			//else
-			//{
-				HostNewFlows();
-
-				PushToFlows();
-
-				PushToRequest();
-			//}
-
-			return Task.FromResult(0);
-		}
-
-		private void ScheduleAppend()
-		{
-			var scheduledPoint = Point;
-			var when = new DateTimeOffset(scheduledPoint.Event.When);
-
-			// Embed subscription lifetime into the callback
-
-			IDisposable subscription = null;
-
-			subscription = Observable.Timer(when).Subscribe(_ =>
-			{
-				subscription.Dispose();
-
-				Push(_db.AppendOccurred(scheduledPoint));
-			});
+			Push(_db.AppendOccurred(point));
 		}
 
 		//
 		// Push
 		//
+
+		protected override Task CallWhen()
+		{
+			return Task.Run(() =>
+			{
+				HostNewFlows();
+
+				TryPushToSchedule();
+
+				PushToFlows();
+
+				PushToRequest();
+			});
+		}
 
 		private void HostNewFlows()
 		{
@@ -144,6 +127,11 @@ namespace Totem.Runtime.Timeline
 			{
 				HostFlow(newFlow);
 			}
+		}
+
+		private void TryPushToSchedule()
+		{
+			_schedule.TryPush(Point);
 		}
 
 		private void PushToFlows()
