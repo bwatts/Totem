@@ -46,6 +46,8 @@ namespace Totem.Runtime.Configuration
 		{
 			var hostFolder = GetHostFolder();
 
+			SetCurrentDirectory(hostFolder);
+
 			string solutionConfiguration;
 
 			var inSolution = TryGetSolutionConfiguration(hostFolder, out solutionConfiguration);
@@ -65,7 +67,12 @@ namespace Totem.Runtime.Configuration
 
 		private static IFolder GetHostFolder()
 		{
-			return new LocalFolder(FolderLink.From(Directory.GetCurrentDirectory()));
+			return new LocalFolder(FolderLink.From(AppDomain.CurrentDomain.BaseDirectory));
+		}
+
+		private static void SetCurrentDirectory(IFolder folder)
+		{
+			Directory.SetCurrentDirectory(folder.Link.ToString());
 		}
 
 		private static bool TryGetSolutionConfiguration(IFolder hostFolder, out string solutionConfiguration)
