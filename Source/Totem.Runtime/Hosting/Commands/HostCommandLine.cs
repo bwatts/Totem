@@ -12,10 +12,10 @@ namespace Totem.Runtime.Hosting.Commands
 	public sealed class HostCommandLine
 	{
 		private readonly string _verb;
-		private readonly IReadOnlyList<string> _options;
+		private readonly Many<string> _options;
 		private readonly IRuntimeBuild _build;
 
-		private HostCommandLine(string verb, IReadOnlyList<string> options, IRuntimeBuild build)
+		private HostCommandLine(string verb, Many<string> options, IRuntimeBuild build)
 		{
 			_verb = verb;
 			_options = options;
@@ -93,11 +93,15 @@ namespace Totem.Runtime.Hosting.Commands
 
 		public static HostCommandLine From(string[] args)
 		{
-			var verb = args.Length > 0 ? args[0] : "run";
+			var first = args.FirstOrDefault() ?? "";
+			var rest = args.Skip(1);
 
-			var options = args.Skip(1).ToList();
+			var implicitRun = first.StartsWith("-");
 
-			return new HostCommandLine(verb, options, new RuntimeBuild());
+			var verb = implicitRun ? "run" : first;
+			var options = implicitRun ? args : rest;
+
+			return new HostCommandLine(verb, options.ToMany(), new RuntimeBuild());
 		}
 
 		public static HostCommandLine FromEnvironment()
