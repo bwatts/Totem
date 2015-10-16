@@ -50,7 +50,7 @@ namespace Totem.Runtime.Hosting.Commands
 			{
 				return new PassThroughCommand();
 			}
-			else if(VerbIs("run"))
+			else if(VerbIsAny("", "run"))
 			{
 				return new RunCommand();
 			}
