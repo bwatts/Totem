@@ -29,7 +29,7 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		public Task<TFlow> MakeRequest<TFlow>(TimelinePosition cause, Event e) where TFlow : RequestFlow
+		public Task<TFlow> MakeRequest<TFlow>(TimelinePosition cause, Event e) where TFlow : Request
 		{
 			var requestId = Flow.Traits.EnsureRequestId(e);
 

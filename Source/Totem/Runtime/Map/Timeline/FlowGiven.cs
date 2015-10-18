@@ -8,13 +8,13 @@ using Totem.Runtime.Timeline;
 namespace Totem.Runtime.Map.Timeline
 {
 	/// <summary>
-	/// A .Before method observing an event in a <see cref="Flow"/>
+	/// A .Given method observing an event in a <see cref="Flow"/>
 	/// </summary>
-	public sealed class FlowBefore : FlowMethod
+	public sealed class FlowGiven : FlowMethod
 	{
 		private readonly Lazy<Action<Flow, Event>> _call;
 
-		public FlowBefore(MethodInfo info, EventType eventType) : base(info, eventType)
+		public FlowGiven(MethodInfo info, EventType eventType) : base(info, eventType)
 		{
 			_call = new Lazy<Action<Flow, Event>>(CompileCall);
 		}

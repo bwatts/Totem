@@ -15,7 +15,7 @@ namespace Totem.Runtime.Timeline
 
 		ClaimsPrincipal ReadPrincipal(TimelinePoint point);
 
-		void AppendCall(WhenCall call);
+		void AppendCall(FlowCall call);
 
 		void AppendError(FlowType type, TimelinePoint point, Exception error);
 	}

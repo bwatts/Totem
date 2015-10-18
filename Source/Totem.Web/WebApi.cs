@@ -66,7 +66,7 @@ namespace Totem.Web
 			return default(T);
 		}
 
-		protected Response MakeRequest<TFlow>(Event e) where TFlow : WebRequestFlow
+		protected Response MakeRequest<TFlow>(Event e) where TFlow : WebRequest
 		{
 			// This could be async all the way back to the API classes...but it doesn't read nearly as well there :-)
 

@@ -7,7 +7,7 @@ using Totem.Runtime.Timeline;
 namespace Totem.Runtime.Map.Timeline
 {
 	/// <summary>
-	/// The set of Before or When methods declared by a flow
+	/// The set of Given or When methods declared by a flow
 	/// </summary>
 	/// <typeparam name="T">The type of declared methods</typeparam>
 	public sealed class FlowMethodSet<T> where T : FlowMethod

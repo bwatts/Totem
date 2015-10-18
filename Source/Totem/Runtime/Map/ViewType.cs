@@ -6,7 +6,7 @@ using Totem.Runtime.Map.Timeline;
 namespace Totem.Runtime.Map
 {
 	/// <summary>
-	/// A .NET type representing the state of a timeline query at a specific point
+	/// A .NET type representing the observed state of a timeline query
 	/// </summary>
 	public sealed class ViewType : RuntimeType
 	{

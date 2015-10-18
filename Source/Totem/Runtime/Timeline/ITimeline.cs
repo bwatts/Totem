@@ -12,6 +12,6 @@ namespace Totem.Runtime.Timeline
 	{
 		void Append(TimelinePosition cause, Many<Event> events);
 
-		Task<TFlow> MakeRequest<TFlow>(TimelinePosition cause, Event e) where TFlow : RequestFlow;
+		Task<TFlow> MakeRequest<TFlow>(TimelinePosition cause, Event e) where TFlow : Request;
 	}
 }

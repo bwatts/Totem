@@ -85,13 +85,13 @@ namespace Totem.Runtime.Map.Timeline
 			return Get(e.GetType(), strict);
 		}
 
-		public void CallBefore(Flow flow, TimelinePoint point)
+		public void CallGiven(Flow flow, TimelinePoint point)
 		{
 			var e = Get(point.EventType.Key, strict: false);
 
 			if(e != null)
 			{
-				e.CallBefore(flow, point);
+				e.CallGiven(flow, point);
 			}
 		}
 

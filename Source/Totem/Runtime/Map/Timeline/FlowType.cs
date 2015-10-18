@@ -15,11 +15,15 @@ namespace Totem.Runtime.Map.Timeline
 		{
 			Constructor = constructor;
 			Events = new FlowEventSet();
-			IsRequest = this is RequestFlowType;
+			IsTopic = this is TopicType;
+			IsQuery = this is QueryType;
+			IsRequest = this is RequestType;
 		}
 
 		public readonly FlowConstructor Constructor;
 		public readonly FlowEventSet Events;
+		public readonly bool IsTopic;
+		public readonly bool IsQuery;
 		public readonly bool IsRequest;
 
 		public Flow New()
@@ -32,9 +36,9 @@ namespace Totem.Runtime.Map.Timeline
 			return Events.Contains(e);
 		}
 
-		public void CallBefore(Flow flow, TimelinePoint point)
+		public void CallGiven(Flow flow, TimelinePoint point)
 		{
-			Events.CallBefore(flow, point);
+			Events.CallGiven(flow, point);
 		}
 
 		public Task CallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)

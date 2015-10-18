@@ -11,7 +11,7 @@ namespace Totem.Web
 	/// <summary>
 	/// An process observing and publishing to the timeline in order to make a web request
 	/// </summary>
-	public abstract class WebRequestFlow : RequestFlow
+	public abstract class WebRequest : Runtime.Timeline.Request
 	{
 		private Response _response;
 

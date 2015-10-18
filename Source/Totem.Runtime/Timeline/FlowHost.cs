@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Autofac;
 using Totem.Runtime.Map.Timeline;
@@ -46,7 +45,7 @@ namespace Totem.Runtime.Timeline
 		{
 			try
 			{
-				if(CanCallWhen())
+				if(CanCall())
 				{
 					await MakeCallInScope();
 				}
@@ -62,7 +61,7 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		private bool CanCallWhen()
+		private bool CanCall()
 		{
 			return Point.Position > _instance.Checkpoint && Type.Events.Contains(Point.EventType);
 		}
@@ -71,26 +70,31 @@ namespace Totem.Runtime.Timeline
 		{
 			using(var callScope = _scope.BeginCallScope())
 			{
-				var call = CreateCall(callScope);
-
-				await _instance.CallWhen(call);
-
-				_db.AppendCall(call);
-
-				if(CheckDone())
-				{
-					Log.Verbose("[timeline] {Position:l} /> {Flow:l}", Point.Position, Type);
-				}
-				else
-				{
-					Log.Verbose("[timeline] {Position:l} => {Flow:l}", Point.Position, Type);
-				}
+				await MakeCall(callScope);
 			}
 		}
 
-		private WhenCall CreateCall(ILifetimeScope scope)
+		private async Task MakeCall(ILifetimeScope scope)
 		{
-			return new WhenCall(
+			var call = CreateCall(scope);
+
+			await _instance.CallWhen(call);
+
+			_db.AppendCall(call);
+
+			if(CheckDone())
+			{
+				Log.Verbose("[timeline] {Position:l} /> {Flow:l}", Point.Position, Type);
+			}
+			else
+			{
+				Log.Verbose("[timeline] {Position:l} => {Flow:l}", Point.Position, Type);
+			}
+		}
+
+		private FlowCall CreateCall(ILifetimeScope scope)
+		{
+			return FlowCall.From(
 				Type,
 				_instance,
 				Point,

@@ -251,21 +251,21 @@ namespace Totem.Runtime.Reflection
 			var type = ReadType(package, declaredType);
 			var constructor = ReadFlowConstructor(declaredType);
 
-			var queryType = typeof(Query<>).GetAssignableGenericType(declaredType, strict: false);
-
-			if(queryType != null)
+			if(typeof(Request).IsAssignableFrom(declaredType))
 			{
-				var viewType = queryType.GetGenericArguments().Single();
-
-				return new QueryType(type, constructor, _map.GetView(viewType));
+				return new RequestType(type, constructor);
 			}
-			else if(typeof(RequestFlow).IsAssignableFrom(declaredType))
+			else if(typeof(Topic).IsAssignableFrom(declaredType))
 			{
-				return new RequestFlowType(type, constructor);
+				return new TopicType(type, constructor);
+			}
+			if(typeof(Query).IsAssignableFrom(declaredType))
+			{
+				return new QueryType(type, constructor, ReadViewType(declaredType));
 			}
 			else
 			{
-				return new FlowType(type, constructor);
+				throw new Exception(Text.Of("Flow {0} is not a topic, query, or request", declaredType));
 			}
 		}
 
@@ -287,6 +287,20 @@ namespace Totem.Runtime.Reflection
 				default:
 					throw new Exception(Text.Of("Flow {0} has multiple constructors", declaredType));
 			}
+		}
+
+		private ViewType ReadViewType(Type queryType)
+		{
+			var queryTypeWithView = typeof(Query<>).GetAssignableGenericType(queryType, strict: false);
+
+			if(queryTypeWithView == null)
+			{
+				return null;
+			}
+
+			var viewType = queryTypeWithView.GetGenericArguments().Single();
+
+			return _map.GetView(viewType);
 		}
 
 		private void ReadFlowEvents(FlowType flow)

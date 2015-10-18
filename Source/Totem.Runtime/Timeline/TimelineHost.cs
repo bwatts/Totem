@@ -83,7 +83,12 @@ namespace Totem.Runtime.Timeline
 			{
 				IFlowHost removed;
 
-				_flowsByType.TryRemove(flow.Type, out removed);
+				var flowsByType = _flowsByType;
+
+				if(flowsByType != null)
+				{
+					flowsByType.TryRemove(flow.Type, out removed);
+				}
 			});
 		}
 
@@ -150,7 +155,7 @@ namespace Totem.Runtime.Timeline
 			{
 				TimelineRequest request;
 
-				if(_requestsById.TryGetValue(requestId, out request))
+				 if(_requestsById.TryGetValue(requestId, out request))
 				{
 					request.Push(Point);
 				}
@@ -161,7 +166,7 @@ namespace Totem.Runtime.Timeline
 		// Requests
 		//
 
-		public async Task<TFlow> MakeRequest<TFlow>(Id id) where TFlow : RequestFlow
+		public async Task<TFlow> MakeRequest<TFlow>(Id id) where TFlow : Request
 		{
 			EnsureUniqueRequestId(id);
 
@@ -185,7 +190,7 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		private TimelineRequest<TFlow> AddRequest<TFlow>(Id id) where TFlow : RequestFlow
+		private TimelineRequest<TFlow> AddRequest<TFlow>(Id id) where TFlow : Request
 		{
 			var request = CreateRequest<TFlow>();
 
@@ -194,7 +199,7 @@ namespace Totem.Runtime.Timeline
 			return request;
 		}
 
-		private TimelineRequest<TFlow> CreateRequest<TFlow>() where TFlow : RequestFlow
+		private TimelineRequest<TFlow> CreateRequest<TFlow>() where TFlow : Request
 		{
 			var type = Runtime.GetFlow(typeof(TFlow));
 

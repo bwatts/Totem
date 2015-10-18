@@ -4,21 +4,18 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Totem;
-using Totem.Runtime.Map;
 using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// A process observing and publishing to the timeline
+	/// A process observing the timeline
 	/// </summary>
 	[Durable]
 	public abstract class Flow : Notion
 	{
-		[Transient] private WhenCall _call;
-
-		[Transient] protected FlowType FlowType { get; private set; }
+		[Transient] protected FlowCall Call { get; private set; }
+		[Transient] protected FlowType Type { get; private set; }
 		[Transient] protected TimelinePosition Cause { get; private set; }
 		[Transient] protected Event Event { get; private set; }
 		[Transient] protected EventType EventType { get; private set; }
@@ -29,12 +26,12 @@ namespace Totem.Runtime.Timeline
 		public TimelinePosition Checkpoint { get { return Traits.Checkpoint.Get(this); } }
 		public bool Done { get { return Traits.Done.Get(this); } private set { Traits.Done.Set(this, value); } }
 
-		public void CallBefore(FlowBefore before, TimelinePoint point)
+		public void CallGiven(FlowGiven given, TimelinePoint point)
 		{
-			before.Call(this, point.Event);
+			given.Call(this, point.Event);
 		}
 
-		public async Task CallWhen(WhenCall call)
+		public async Task CallWhen(FlowCall call)
 		{
 			StartWhenCall(call);
 
@@ -48,12 +45,12 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		private void StartWhenCall(WhenCall call)
+		private void StartWhenCall(FlowCall call)
 		{
-			Expect(_call).IsNull("Flow is already making a call");
+			Expect(Call).IsNull("Flow is already making a call");
 
-			_call = call;
-			FlowType = call.FlowType;
+			Call = call;
+			Type = call.Type;
 			Cause = call.Point.Cause;
 			Event = call.Point.Event;
 			EventType = call.Point.EventType;
@@ -64,13 +61,13 @@ namespace Totem.Runtime.Timeline
 
 		protected virtual Task MakeWhenCall()
 		{
-			return FlowType.CallWhen(this, _call.Point, Dependencies);
+			return Type.CallWhen(this, Call.Point, Dependencies);
 		}
 
 		private void EndWhenCall()
 		{
-			_call = null;
-			FlowType = null;
+			Call = null;
+			Type = null;
 			Cause = default(TimelinePosition);
 			Event = null;
 			EventType = null;
@@ -79,95 +76,18 @@ namespace Totem.Runtime.Timeline
 			CancellationToken = default(CancellationToken);
 		}
 
-		protected void ExpectMakingCall()
+		protected void ExpectCallingWhen()
 		{
-			Expect(_call).IsNotNull("Flow is not making a When call");
+			Expect(Call).IsNotNull("Flow is not calling a When method");
 		}
-
-		//
-		// Then
-		//
 
 		protected void ThenDone()
 		{
-			ExpectMakingCall();
+			ExpectCallingWhen();
 
 			Expect(Done).IsFalse("Flow is already done");
 
 			Done = true;
-		}
-
-		protected void Then(Event e)
-		{
-			ExpectMakingCall();
-
-			_call.Publish(e);
-		}
-
-		protected void Then(IEnumerable<Event> events)
-		{
-			ExpectMakingCall();
-
-			_call.Publish(events);
-		}
-
-		protected void Then(params Event[] events)
-		{
-			ExpectMakingCall();
-
-			_call.Publish(events);
-		}
-
-		protected void ThenAt(DateTime whenOccurs, Event e)
-		{
-			ExpectMakingCall();
-
-			_call.Schedule(whenOccurs, e);
-		}
-
-		protected void ThenAt(DateTime whenOccurs, IEnumerable<Event> events)
-		{
-			ExpectMakingCall();
-
-			_call.Schedule(whenOccurs, events);
-		}
-
-		protected void ThenAt(DateTime whenOccurs, params Event[] events)
-		{
-			ExpectMakingCall();
-
-			_call.Schedule(whenOccurs, events);
-		}
-
-		protected void ThenAt(TimeSpan timeOfDay, Event e)
-		{
-			ThenAt(GetWhenOccursNext(timeOfDay), e);
-		}
-
-		protected void ThenAt(TimeSpan timeOfDay, IEnumerable<Event> events)
-		{
-			ThenAt(GetWhenOccursNext(timeOfDay), events);
-		}
-
-		protected void ThenAt(TimeSpan timeOfDay, params Event[] events)
-		{
-			ThenAt(GetWhenOccursNext(timeOfDay), events);
-		}
-
-		private DateTime GetWhenOccursNext(TimeSpan timeOfDay)
-		{
-			// The time of day is relative to the client's timezone
-
-			var now = Clock.Now.ToLocalTime();
-			var today = now.Date;
-
-			var whenToday = today + timeOfDay;
-
-			var whenOccurs = whenToday > now
-				? whenToday
-				: today.AddDays(1) + timeOfDay;
-
-			return whenOccurs.ToUniversalTime();
 		}
 
 		public new static class Traits

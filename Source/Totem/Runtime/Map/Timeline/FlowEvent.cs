@@ -14,31 +14,31 @@ namespace Totem.Runtime.Map.Timeline
 		public FlowEvent(
 			FlowType flowType,
 			EventType eventType,
-			FlowMethodSet<FlowBefore> before,
+			FlowMethodSet<FlowGiven> given,
 			FlowMethodSet<FlowWhen> when)
 		{
 			FlowType = flowType;
 			EventType = eventType;
-			Before = before;
+			Given = given;
 			When = when;
 		}
 
 		public readonly FlowType FlowType;
 		public readonly EventType EventType;
-		public readonly FlowMethodSet<FlowBefore> Before;
+		public readonly FlowMethodSet<FlowGiven> Given;
 		public readonly FlowMethodSet<FlowWhen> When;
 
-		public void CallBefore(Flow flow, TimelinePoint point)
+		public void CallGiven(Flow flow, TimelinePoint point)
 		{
-			foreach(var before in Before.SelectMethods(point))
+			foreach(var given in Given.SelectMethods(point))
 			{
-				flow.CallBefore(before, point);
+				flow.CallGiven(given, point);
 			}
 		}
 
 		public async Task CallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
 		{
-			CallBefore(flow, point);
+			CallGiven(flow, point);
 
 			foreach(var when in When.SelectMethods(point))
 			{

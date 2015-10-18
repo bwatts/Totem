@@ -51,7 +51,7 @@ namespace Totem.Runtime.Timeline
 	/// A request pending a response on the timeline
 	/// </summary>
 	/// <typeparam name="TFlow">The type of flow observing the request</typeparam>
-	internal sealed class TimelineRequest<TFlow> : TimelineRequest where TFlow : RequestFlow
+	internal sealed class TimelineRequest<TFlow> : TimelineRequest where TFlow : Request
 	{
 		private readonly TaskCompletionSource<TFlow> _taskCompletionSource = new TaskCompletionSource<TFlow>();
 

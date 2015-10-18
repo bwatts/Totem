@@ -13,9 +13,15 @@ namespace Totem.Runtime.Map.Timeline
 		{
 			View = view;
 
-			view.RegisterQuery(this);
+			if(view != null)
+			{
+				HasView = true;
+
+				view.RegisterQuery(this);
+			}
 		}
 
+		public readonly bool HasView;
 		public readonly ViewType View;
 	}
 }

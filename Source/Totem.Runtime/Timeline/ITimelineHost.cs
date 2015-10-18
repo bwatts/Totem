@@ -10,6 +10,6 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public interface ITimelineHost : ITimelineScope
 	{
-		Task<TFlow> MakeRequest<TFlow>(Id id) where TFlow : RequestFlow;
+		Task<TFlow> MakeRequest<TFlow>(Id id) where TFlow : Request;
 	}
 }

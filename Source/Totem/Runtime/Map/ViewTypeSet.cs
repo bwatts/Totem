@@ -5,7 +5,7 @@ using System.Linq;
 namespace Totem.Runtime.Map
 {
 	/// <summary>
-	/// The set of point-in-time views of runtime queries
+	/// The set of observed states of runtime queries
 	/// </summary>
 	public sealed class ViewTypeSet : RuntimeTypeSetCore<ViewType>
 	{
