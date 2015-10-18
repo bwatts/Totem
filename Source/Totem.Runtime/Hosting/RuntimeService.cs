@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Topshelf;
 using Totem.Reflection;
 using Totem.Runtime.Map;
@@ -125,9 +126,9 @@ namespace Totem.Runtime.Hosting
 		{
 			Restarted = true;
 
-			Log.Info("[runtime] Restarting: {Reason:l}", reason);
+			Log.Info("[runtime] Restarting in 3s: {Reason:l}", reason);
 
-			_hostControl.Stop();
+			Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(_ => _hostControl.Stop());
 		}
 
 		internal bool Restarted { get; private set; }
