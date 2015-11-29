@@ -115,5 +115,20 @@ namespace Totem.Runtime.Timeline
 
 			Write(view);
 		}
-	}
+
+    protected void Upsert(ViewKey key, Func<ViewKey, TView> create, Action<TView> update)
+    {
+      Upsert(key, () => create(key), update);
+    }
+
+    protected void Upsert(ViewKey key, Func<TView> create, Action<ViewKey, TView> update)
+    {
+      Upsert(key, create, view => update(key, view));
+    }
+
+    protected void Upsert(ViewKey key, Func<ViewKey, TView> create, Action<ViewKey, TView> update)
+    {
+      Upsert(key, () => create(key), view => update(key, view));
+    }
+  }
 }

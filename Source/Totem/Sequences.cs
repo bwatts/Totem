@@ -166,7 +166,27 @@ namespace Totem
 			list.Replace(newItems as IEnumerable<T>);
 		}
 
-		public static bool RemoveFirst<T>(this IList<T> list, Func<T, bool> predicate)
+    public static void Reorder<T, TKey>(this IList<T> list, Func<T, TKey> keySelector)
+    {
+      list.Replace(list.OrderBy(keySelector));
+    }
+
+    public static void Reorder<T, TKey>(this IList<T> list, Func<T, TKey> keySelector, IComparer<TKey> comparer)
+    {
+      list.Replace(list.OrderBy(keySelector, comparer));
+    }
+
+    public static void ReorderDescending<T, TKey>(this IList<T> list, Func<T, TKey> keySelector)
+    {
+      list.Replace(list.OrderByDescending(keySelector));
+    }
+
+    public static void ReorderDescending<T, TKey>(this IList<T> list, Func<T, TKey> keySelector, IComparer<TKey> comparer)
+    {
+      list.Replace(list.OrderByDescending(keySelector, comparer));
+    }
+
+    public static bool RemoveFirst<T>(this IList<T> list, Func<T, bool> predicate)
 		{
 			for(var i = 0; i < list.Count; i++)
 			{
