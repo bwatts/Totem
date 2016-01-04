@@ -154,12 +154,12 @@ namespace Totem.Web
 			IViewDb views;
 			ITimeline timeline;
 
-			if(container.TryResolve<IViewDb>(out views))
-			{
-				context.Items[WebApi.ViewsItemKey] = views;
-			}
+      if(container.TryResolve<IViewDb>(out views))
+      {
+        context.Items[WebApi.ViewsItemKey] = views;
+      }
 
-			if(container.TryResolve<ITimeline>(out timeline))
+      if(container.TryResolve<ITimeline>(out timeline))
 			{
 				context.Items[WebApi.TimelineItemKey] = timeline;
 			}
@@ -172,7 +172,7 @@ namespace Totem.Web
 				AddCorsHeaders(pipelineContext.Response);
 			}
 
-			return Task.FromResult(0);
+			return Task.CompletedTask;
 		}
 
 		private static void AddCorsHeaders(Response response)

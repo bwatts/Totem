@@ -18,7 +18,7 @@ namespace Totem.Runtime.Timeline
 			_point = point;
 		}
 
-		public bool IsNone { get { return _point == null; } }
+		public bool IsNone => _point == null;
 
 		public override string ToString()
 		{

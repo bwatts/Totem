@@ -1,69 +1,78 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Totem.Runtime.Map.Timeline;
+using Autofac;
 
 namespace Totem.Runtime.Timeline
 {
-	/// <summary>
-	/// A scope in which timeline points occur synchronously
-	/// </summary>
-	public abstract class TimelineScope : Connection, ITimelineScope
+  /// <summary>
+  /// The scope of timeline activity in a runtime
+  /// </summary>
+  public sealed class TimelineScope : PushScope, ITimelineScope
 	{
-		private Subject<TimelinePoint> _points;
+    private readonly ILifetimeScope _scope;
+    private readonly ITimelineDb _timelineDb;
+    private readonly IFlowDb _flowDb;
+    private TimelineSchedule _schedule;
+    private TimelineFlowSet _flows;
+    private TimelineRequestSet _requests;
 
-		protected TimelinePoint Point { get; private set; }
-
-		protected override void Open()
+    public TimelineScope(ILifetimeScope scope, ITimelineDb timelineDb, IFlowDb flowDb)
 		{
-			_points = new Subject<TimelinePoint>();
+      _scope = scope;
+      _timelineDb = timelineDb;
+      _flowDb = flowDb;
 
-			Track(_points);
+      _schedule = new TimelineSchedule(this);
+      _flows = new TimelineFlowSet(this);
+      _requests = new TimelineRequestSet(this);
+    }
 
-			Track(_points
-				.ObserveOn(ThreadPoolScheduler.Instance)
-				.Subscribe(WhenPushed));
-		}
-
-		protected override void Close()
+    protected override void Open()
 		{
-			_points = null;
-		}
+      Track(_schedule);
+      Track(_flows);
+      Track(_requests);
 
-		public void Push(TimelinePoint point)
-		{
-			if(State.IsConnecting || State.IsConnected)
-			{
-				_points.OnNext(point);
-			}
-			else
-			{
-				Log.Warning("[timeline] Cannot push to scope when {Phase:l} - ignoring {Point:l}", State.Phase, point);
-			}
-		}
+      base.Open();
 
-		private void WhenPushed(TimelinePoint point)
-		{
-			Point = point;
+      ResumeTimeline();
+    }
 
-			try
-			{
-				CallWhen().Wait(State.CancellationToken);
-			}
-			catch(OperationCanceledException error)
-			{
-				Log.Info("[timeline] When call cancelled for point {Point:l}", Point);
-			}
-			finally
-			{
-				Point = null;
-			}
-		}
+    private void ResumeTimeline()
+    {
+      var resumeInfo = _timelineDb.ReadResumeInfo();
 
-		protected abstract Task CallWhen();
+      _schedule.ResumeWith(resumeInfo);
+
+      resumeInfo.Push(this);
+    }
+
+    //
+    // Runtime
+    //
+
+    protected override void Push()
+    {
+      _schedule.Push(Point);
+      _flows.Push(Point);
+      _requests.Push(Point);
+    }
+
+    internal void PushScheduled(TimelinePoint point)
+    {
+      Push(_timelineDb.WriteScheduled(point));
+    }
+
+    public Task<T> MakeRequest<T>(Id id) where T : Request
+    {
+      return _requests.MakeRequest<T>(id);
+    }
+
+    public IFlowScope OpenFlowScope(FlowKey key)
+    {
+      return new FlowScope(key, _scope, _flowDb);
+    }
 	}
 }

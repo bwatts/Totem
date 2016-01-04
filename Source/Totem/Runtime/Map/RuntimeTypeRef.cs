@@ -7,13 +7,13 @@ namespace Totem.Runtime.Map
 	/// <summary>
 	/// A package-qualified reference to a .NET type in the Totem runtime
 	/// </summary>
-	public sealed class RuntimeTypeRef : Notion
+	public sealed class RuntimeTypeRef
 	{
-		public RuntimeTypeRef(RuntimePackage package, Type declaredType, RuntimeState state)
+		public RuntimeTypeRef(RuntimePackage package, Type declaredType)
 		{
 			Package = package;
 			DeclaredType = declaredType;
-			State = state;
+			State = new RuntimeState(declaredType);
 			Key = RuntimeTypeKey.From(package.RegionKey, declaredType.Name);
 		}
 
@@ -22,9 +22,6 @@ namespace Totem.Runtime.Map
 		public readonly RuntimeState State;
 		public readonly RuntimeTypeKey Key;
 
-		public override Text ToText()
-		{
-			return Key.ToText();
-		}
+		public override string ToString() => Key.ToString();
 	}
 }

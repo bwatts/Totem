@@ -17,6 +17,7 @@ namespace Totem.Runtime.Map.Timeline
 			Events = new FlowEventSet();
 			IsTopic = this is TopicType;
 			IsQuery = this is QueryType;
+      IsView = this is ViewType;
 			IsRequest = this is RequestType;
 		}
 
@@ -24,17 +25,52 @@ namespace Totem.Runtime.Map.Timeline
 		public readonly FlowEventSet Events;
 		public readonly bool IsTopic;
 		public readonly bool IsQuery;
-		public readonly bool IsRequest;
+    public readonly bool IsView;
+    public readonly bool IsRequest;
+    
+    public bool IsSingleInstance { get; private set; }
+    public bool IsRouted { get; private set; }
 
-		public Flow New()
+    internal void SetSingleInstance()
+    {
+      IsSingleInstance = true;
+      IsRouted = false;
+    }
+
+    internal void SetRouted()
+    {
+      IsSingleInstance = false;
+      IsRouted = true;
+    }
+
+    public FlowKey CreateKey(Id id)
+    {
+      Expect(IsSingleInstance && id.IsAssigned).IsFalse(Text.Of(
+        "Flow {0} is single-instance and cannot have an assigned id of {1}",
+        this,
+        id));
+
+      Expect(IsRouted && id.IsUnassigned).IsFalse(Text.Of(
+        "Flow {0} is routed and must have an assigned id",
+        this));
+
+      return new FlowKey(this, id);
+    }
+
+    public Flow New()
 		{
-			return Constructor.Call();
+      return Constructor.Call();
 		}
 
 		public bool CanCall(EventType e)
 		{
 			return Events.Contains(e);
 		}
+
+    public Many<Id> CallRoute(TimelinePoint point)
+    {
+      return Events.CallRoute(point);
+    }
 
 		public void CallGiven(Flow flow, TimelinePoint point)
 		{

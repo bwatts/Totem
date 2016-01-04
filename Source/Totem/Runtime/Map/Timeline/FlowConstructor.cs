@@ -23,10 +23,7 @@ namespace Totem.Runtime.Map.Timeline
 
 		public readonly ConstructorInfo Info;
 
-		public Flow Call()
-		{
-			return _call.Value();
-		}
+    public Flow Call() => _call.Value();
 
 		private Func<Flow> CompileCall()
 		{

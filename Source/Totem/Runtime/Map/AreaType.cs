@@ -12,11 +12,11 @@ namespace Totem.Runtime.Map
 	{
 		internal AreaType(RuntimeTypeRef type, Many<IOResource> deployedResources) : base(type)
 		{
-			Dependencies = new AreaTypeSet();
+			Dependencies = new RuntimeTypeSet<AreaType>();
 			DeployedResources = deployedResources;
 		}
 
-		public readonly AreaTypeSet Dependencies;
+		public readonly RuntimeTypeSet<AreaType> Dependencies;
 		public readonly Many<IOResource> DeployedResources;
 	}
 }

@@ -80,7 +80,7 @@
     <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
       <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="WebRequest.cs" />
+    <Compile Include="WebApiRequest.cs" />
     <Compile Include="WebAppContext.cs" />
     <Compile Include="ErrorDetail.cs" />
     <Compile Include="ErrorHandler.cs" />

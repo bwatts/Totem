@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// Describes a scope in which timeline points occur synchronously
+	/// Describes the scope of timeline activity in a runtime
 	/// </summary>
 	public interface ITimelineScope : IConnectable
 	{
-		void Push(TimelinePoint point);
-	}
+    void Push(TimelinePoint point);
+
+		Task<T> MakeRequest<T>(Id id) where T : Request;
+
+    IFlowScope OpenFlowScope(FlowKey key);
+  }
 }

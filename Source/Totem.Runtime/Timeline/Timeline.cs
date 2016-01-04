@@ -8,34 +8,37 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// The chronological context of a domain
 	/// </summary>
+  /// <remarks>
+  /// This is a naive but working implementation of domain + persistence
+  /// </remarks>
 	public sealed class Timeline : ITimeline
 	{
 		private readonly ITimelineDb _db;
-		private readonly ITimelineHost _host;
+		private readonly ITimelineScope _scope;
 
-		public Timeline(ITimelineDb db, ITimelineHost host)
+		public Timeline(ITimelineDb db, ITimelineScope scope)
 		{
 			_db = db;
-			_host = host;
+			_scope = scope;
 		}
 
-		public void Append(TimelinePosition cause, Many<Event> events)
+		public void Write(TimelinePosition cause, Many<Event> events)
 		{
-			var points = _db.Append(cause, events);
+			var points = _db.Write(cause, events);
 
 			foreach(var point in points)
 			{
-				_host.Push(point);
+				_scope.Push(point);
 			}
 		}
 
-		public Task<TFlow> MakeRequest<TFlow>(TimelinePosition cause, Event e) where TFlow : Request
+		public Task<TFlow> MakeRequest<TFlow>(Event e) where TFlow : Request
 		{
 			var requestId = Flow.Traits.EnsureRequestId(e);
 
-			var requestTask = _host.MakeRequest<TFlow>(requestId);
+			var requestTask = _scope.MakeRequest<TFlow>(requestId);
 
-			Append(cause, Many.Of(e));
+			Write(TimelinePosition.None, Many.Of(e));
 
 			return requestTask;
 		}

@@ -95,18 +95,20 @@
     <Compile Include="Reflection\TypeResolver.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowMethodSet.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowMethod.cs" />
+    <Compile Include="Runtime\Map\Timeline\FlowRoute.cs" />
+    <Compile Include="Runtime\Map\Timeline\ViewType.cs" />
     <Compile Include="Runtime\Map\Timeline\TopicType.cs" />
     <Compile Include="Runtime\Map\Timeline\QueryType.cs" />
     <Compile Include="Runtime\Map\Timeline\RequestType.cs" />
-    <Compile Include="Runtime\Map\WebApiTypeSet.cs" />
     <Compile Include="Runtime\Map\WebApiType.cs" />
-    <Compile Include="Runtime\Timeline\QueryCall.cs" />
+    <Compile Include="Runtime\Timeline\FlowCall.cs" />
+    <Compile Include="Runtime\Timeline\FlowKey.cs" />
     <Compile Include="Runtime\Timeline\Topic.cs" />
     <Compile Include="Runtime\Timeline\TimelineOperations.cs" />
-    <Compile Include="Runtime\Timeline\TimelineFaulted.cs" />
     <Compile Include="Runtime\Timeline\EventScheduled.cs" />
-    <Compile Include="Runtime\Timeline\TopicCall.cs" />
-    <Compile Include="Runtime\ViewDbOperations.cs" />
+    <Compile Include="Runtime\Timeline\TopicWhenCall.cs" />
+    <Compile Include="Runtime\Timeline\View.cs" />
+    <Compile Include="Runtime\Timeline\GivenCall.cs" />
     <Compile Include="Sequences.cs" />
     <Compile Include="Reflection\AnonymousTypes.cs" />
     <Compile Include="Reflection\GenericAssignability.cs" />
@@ -115,7 +117,6 @@
     <Compile Include="Runtime\DurableAttribute.cs" />
     <Compile Include="Id.cs" />
     <Compile Include="Runtime\IDependencySource.cs" />
-    <Compile Include="Runtime\IViewDb.cs" />
     <Compile Include="Runtime\IWebApi.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowConstructor.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowEvent.cs" />
@@ -126,20 +127,15 @@
     <Compile Include="Runtime\Map\Timeline\KeyedDependencyAttribute.cs" />
     <Compile Include="Runtime\Map\Timeline\TypedDependency.cs" />
     <Compile Include="Runtime\Map\Timeline\KeyedDependency.cs" />
-    <Compile Include="Runtime\Map\Timeline\EventTypeSet.cs" />
     <Compile Include="Runtime\Map\Timeline\EventType.cs" />
     <Compile Include="Runtime\Map\Timeline\WhenDependency.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowEventSet.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowType.cs" />
-    <Compile Include="Runtime\Map\Timeline\FlowTypeSet.cs" />
     <Compile Include="Runtime\Map\Timeline\NamedDependency.cs" />
-    <Compile Include="Runtime\Map\ViewTypeSet.cs" />
-    <Compile Include="Runtime\Map\ViewType.cs" />
     <Compile Include="Runtime\Map\RuntimePackageSet.cs" />
     <Compile Include="Runtime\Map\RuntimeRegionSet.cs" />
-    <Compile Include="Runtime\Map\RuntimeSet.cs" />
+    <Compile Include="Runtime\Map\RuntimeSetBase.cs" />
     <Compile Include="Runtime\MessageTextTemplate.cs" />
-    <Compile Include="Runtime\Map\AreaTypeSet.cs" />
     <Compile Include="Runtime\Map\RuntimeState.cs" />
     <Compile Include="Runtime\Map\RuntimeStatePart.cs" />
     <Compile Include="Runtime\Map\RuntimeTypeRef.cs" />
@@ -152,7 +148,7 @@
     <Compile Include="Reflection\AssemblyDirectories.cs" />
     <Compile Include="Reflection\LambdaBodies.cs" />
     <Compile Include="Runtime\Map\AreaType.cs" />
-    <Compile Include="Runtime\Map\RuntimeTypeSetCore.cs" />
+    <Compile Include="Runtime\Map\RuntimeTypeSet.cs" />
     <Compile Include="Runtime\Map\RuntimeMap.cs" />
     <Compile Include="Runtime\Map\RuntimePackage.cs" />
     <Compile Include="Runtime\Map\RuntimeRegion.cs" />
@@ -160,11 +156,11 @@
     <Compile Include="Runtime\Map\RuntimeRegionKey.cs" />
     <Compile Include="Runtime\Map\RuntimeType.cs" />
     <Compile Include="Runtime\Map\RuntimeTypeKey.cs" />
-    <Compile Include="Runtime\Map\RuntimeTypeSet.cs" />
-    <Compile Include="Runtime\Map\RuntimeSetCore.cs" />
+    <Compile Include="Runtime\Map\RuntimeTypeSetBase.cs" />
+    <Compile Include="Runtime\Map\RuntimeSet.cs" />
     <Compile Include="Runtime\RuntimeDeployment.cs" />
     <Compile Include="Runtime\Timeline\Flow.cs" />
-    <Compile Include="Runtime\Timeline\FlowCall.cs" />
+    <Compile Include="Runtime\Timeline\WhenCall.cs" />
     <Compile Include="Runtime\Timeline\FlowStopped.cs" />
     <Compile Include="Runtime\Timeline\ITimeline.cs" />
     <Compile Include="Runtime\Timeline\Query.cs" />
@@ -173,7 +169,6 @@
     <Compile Include="Runtime\Timeline\TimelinePosition.cs" />
     <Compile Include="Runtime\TransientAttribute.cs" />
     <Compile Include="Runtime\WebApiCall.cs" />
-    <Compile Include="View.cs" />
     <Compile Include="Runtime\WebApiCallBody.cs" />
     <Compile Include="Tag.cs" />
     <Compile Include="Tags.cs" />
@@ -185,7 +180,6 @@
     <Compile Include="TextOperations.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ViewKey.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

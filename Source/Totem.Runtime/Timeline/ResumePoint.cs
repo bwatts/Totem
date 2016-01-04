@@ -7,9 +7,9 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// A point in the resuming of the timeline
 	/// </summary>
-	public class TimelineResumePointInfo
+	public class ResumePoint
 	{
-		public TimelineResumePointInfo(TimelinePoint point, bool onSchedule)
+		public ResumePoint(TimelinePoint point, bool onSchedule)
 		{
 			Point = point;
 			OnSchedule = onSchedule;
@@ -17,5 +17,12 @@ namespace Totem.Runtime.Timeline
 
 		public readonly TimelinePoint Point;
 		public readonly bool OnSchedule;
-	}
+
+    public override string ToString() => Point.ToString();
+
+    public void Push(PushScope scope)
+    {
+      scope.Push(Point);
+    }
+  }
 }

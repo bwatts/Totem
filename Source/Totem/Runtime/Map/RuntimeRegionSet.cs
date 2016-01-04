@@ -10,7 +10,7 @@ namespace Totem.Runtime.Map
 	/// <summary>
 	/// A set of runtime regions, indexed by key
 	/// </summary>
-	public sealed class RuntimeRegionSet : RuntimeSetCore<RuntimeRegionKey, RuntimeRegion>
+	public sealed class RuntimeRegionSet : RuntimeSet<RuntimeRegionKey, RuntimeRegion>
 	{
 		private readonly AssemblyRegionCache _assemblyRegions;
 
@@ -35,7 +35,7 @@ namespace Totem.Runtime.Map
 				.Select(region => region.GetPackage(name, strict: false))
 				.FirstOrDefault(regionPackage => regionPackage != null);
 
-			Expect(strict && package == null).IsFalse("Failed to resolve package: " + name);
+			Expect(strict && package == null).IsFalse($"Failed to resolve package: {name}");
 
 			return package;
 		}
@@ -44,70 +44,112 @@ namespace Totem.Runtime.Map
 		{
 			var region = Get(key.Region, strict);
 
-			return region == null ? null : region.GetArea(key, strict);
+      return region?.GetArea(key, strict);
 		}
 
 		public AreaType GetArea(Type declaredType, bool strict = true)
 		{
 			var region = _assemblyRegions.GetRegion(declaredType, strict);
 
-			return region == null ? null : region.GetArea(declaredType, strict);
-		}
+      return region?.GetArea(declaredType, strict);
+    }
 
-		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
-		{
-			var region = Get(key.Region, strict);
+    public EventType GetEvent(RuntimeTypeKey key, bool strict = true)
+    {
+      var region = Get(key.Region, strict);
 
-			return region == null ? null : region.GetView(key, strict);
-		}
+      return region?.GetEvent(key, strict);
+    }
 
-		public ViewType GetView(Type declaredType, bool strict = true)
-		{
-			var region = _assemblyRegions.GetRegion(declaredType, strict);
+    public EventType GetEvent(Type declaredType, bool strict = true)
+    {
+      var region = _assemblyRegions.GetRegion(declaredType, strict);
 
-			return region == null ? null : region.GetView(declaredType, strict);
-		}
+      return region?.GetEvent(declaredType, strict);
+    }
 
-		public FlowType GetFlow(RuntimeTypeKey key, bool strict = true)
-		{
-			var region = Get(key.Region, strict);
+    public FlowType GetFlow(RuntimeTypeKey key, bool strict = true)
+    {
+      var region = Get(key.Region, strict);
 
-			return region == null ? null : region.GetFlow(key, strict);
-		}
+      return region?.GetFlow(key, strict);
+    }
 
-		public FlowType GetFlow(Type declaredType, bool strict = true)
-		{
-			var region = _assemblyRegions.GetRegion(declaredType, strict);
+    public FlowType GetFlow(Type declaredType, bool strict = true)
+    {
+      var region = _assemblyRegions.GetRegion(declaredType, strict);
 
-			return region == null ? null : region.GetFlow(declaredType, strict);
-		}
+      return region?.GetFlow(declaredType, strict);
+    }
 
-		public EventType GetEvent(RuntimeTypeKey key, bool strict = true)
-		{
-			var region = Get(key.Region, strict);
+    public TopicType GetTopic(RuntimeTypeKey key, bool strict = true)
+    {
+      var region = Get(key.Region, strict);
 
-			return region == null ? null : region.GetEvent(key, strict);
-		}
+      return region?.GetTopic(key, strict);
+    }
 
-		public EventType GetEvent(Type declaredType, bool strict = true)
-		{
-			var region = _assemblyRegions.GetRegion(declaredType, strict);
+    public TopicType GetTopic(Type declaredType, bool strict = true)
+    {
+      var region = _assemblyRegions.GetRegion(declaredType, strict);
 
-			return region == null ? null : region.GetEvent(declaredType, strict);
-		}
+      return region?.GetTopic(declaredType, strict);
+    }
+
+    public QueryType GetQuery(RuntimeTypeKey key, bool strict = true)
+    {
+      var region = Get(key.Region, strict);
+
+      return region?.GetQuery(key, strict);
+    }
+
+    public QueryType GetQuery(Type declaredType, bool strict = true)
+    {
+      var region = _assemblyRegions.GetRegion(declaredType, strict);
+
+      return region?.GetQuery(declaredType, strict);
+    }
+
+    public ViewType GetView(RuntimeTypeKey key, bool strict = true)
+    {
+      var region = Get(key.Region, strict);
+
+      return region?.GetView(key, strict);
+    }
+
+    public ViewType GetView(Type declaredType, bool strict = true)
+    {
+      var region = _assemblyRegions.GetRegion(declaredType, strict);
+
+      return region?.GetView(declaredType, strict);
+    }
+
+    public RequestType GetRequest(RuntimeTypeKey key, bool strict = true)
+    {
+      var region = Get(key.Region, strict);
+
+      return region?.GetRequest(key, strict);
+    }
+
+    public RequestType GetRequest(Type declaredType, bool strict = true)
+    {
+      var region = _assemblyRegions.GetRegion(declaredType, strict);
+
+      return region?.GetRequest(declaredType, strict);
+    }
 
 		public WebApiType GetWebApi(RuntimeTypeKey key, bool strict = true)
 		{
 			var region = Get(key.Region, strict);
 
-			return region == null ? null : region.GetWebApi(key, strict);
+			return region?.GetWebApi(key, strict);
 		}
 
 		public WebApiType GetWebApi(Type declaredType, bool strict = true)
 		{
 			var region = _assemblyRegions.GetRegion(declaredType, strict);
 
-			return region == null ? null : region.GetWebApi(declaredType, strict);
+			return region?.GetWebApi(declaredType, strict);
 		}
 
 		private sealed class AssemblyRegionCache

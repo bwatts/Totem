@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Totem.Http;
 using Totem.IO;
 
 namespace Totem
 {
 	/// <summary>
-	/// Identifies a persistent object by a string
+	/// Identifies a persistent object by a string. May be assigned or unassigned.
 	/// </summary>
-	[TypeConverter(typeof(Id.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public struct Id : IEquatable<Id>, IComparable<Id>
 	{
 		private readonly string _value;
@@ -20,18 +19,10 @@ namespace Totem
 			_value = value;
 		}
 
-		public bool IsAssigned { get { return !String.IsNullOrEmpty(_value); } }
-		public bool IsUnassigned { get { return String.IsNullOrEmpty(_value); } }
+		public bool IsUnassigned => string.IsNullOrEmpty(_value);
+		public bool IsAssigned => !string.IsNullOrEmpty(_value);
 
-		public override string ToString()
-		{
-			return _value ?? "";
-		}
-
-		public HttpResource ToResource()
-		{
-			return IsUnassigned ? HttpResource.Root : HttpResource.From(_value);
-		}
+    public override string ToString() => _value ?? "";
 
 		//
 		// Equality
@@ -57,39 +48,12 @@ namespace Totem
 			return Equality.Compare(this, other).Check(x => x.ToString());
 		}
 
-		//
-		// Operators
-		//
-
-		public static bool operator ==(Id x, Id y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(Id x, Id y)
-		{
-			return !(x == y);
-		}
-
-		public static bool operator >(Id x, Id y)
-		{
-			return Equality.CompareOp(x, y) > 0;
-		}
-
-		public static bool operator <(Id x, Id y)
-		{
-			return Equality.CompareOp(x, y) < 0;
-		}
-
-		public static bool operator >=(Id x, Id y)
-		{
-			return Equality.CompareOp(x, y) >= 0;
-		}
-
-		public static bool operator <=(Id x, Id y)
-		{
-			return Equality.CompareOp(x, y) <= 0;
-		}
+		public static bool operator ==(Id x, Id y) => Equality.CheckOp(x, y);
+		public static bool operator !=(Id x, Id y) => !(x == y);
+		public static bool operator >(Id x, Id y) => Equality.CompareOp(x, y) > 0;
+		public static bool operator <(Id x, Id y) => Equality.CompareOp(x, y) < 0;
+		public static bool operator >=(Id x, Id y) => Equality.CompareOp(x, y) >= 0;
+		public static bool operator <=(Id x, Id y) => Equality.CompareOp(x, y) <= 0;
 
 		//
 		// Factory
@@ -99,7 +63,7 @@ namespace Totem
 
 		public static Id From(string value)
 		{
-			return new Id(value);
+			return new Id((value ?? "").Trim());
 		}
 
 		public static Id FromGuid()

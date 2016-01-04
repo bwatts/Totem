@@ -25,9 +25,6 @@ namespace Totem.Runtime.Timeline
 		public readonly Event Event;
 		public readonly bool Scheduled;
 
-		public override string ToString()
-		{
-			return Text.Of("{0} {1}", Position, EventType);
-		}
+		public override string ToString() => $"{Position} {EventType}";
 	}
 }

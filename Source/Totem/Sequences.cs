@@ -200,5 +200,14 @@ namespace Totem
 
 			return false;
 		}
-	}
+
+    public static List<T> RemoveAll<T>(this ICollection<T> collection)
+    {
+      var items = collection.ToList();
+
+      collection.Clear();
+
+      return items;
+    }
+  }
 }

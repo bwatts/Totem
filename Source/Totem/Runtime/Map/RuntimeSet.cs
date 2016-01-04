@@ -1,37 +1,80 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Totem.Runtime.Map
 {
 	/// <summary>
-	/// A set of runtime objects, indexed by key
+	/// A set of runtime objects with no further differentiation, indexed by key
 	/// </summary>
 	/// <typeparam name="TKey">The type of key identifying runtime objects in the set</typeparam>
 	/// <typeparam name="TValue">The type of keyed runtime objects in the set</typeparam>
-	[DebuggerDisplay("Count = {Count}")]
-	public abstract class RuntimeSet<TKey, TValue> : Notion, IEnumerable<TValue>
+	public abstract class RuntimeSet<TKey, TValue> : RuntimeSetBase<TKey, TValue>
 	{
-		public abstract int Count { get; }
-		public abstract TValue this[TKey key] { get; }
-		public abstract IEnumerable<TKey> Keys { get; }
-		public abstract IEnumerable<TValue> Values { get; }
-		public abstract IEnumerable<KeyValuePair<TKey, TValue>> Pairs { get; }
+		private readonly Dictionary<TKey, TValue> _set = new Dictionary<TKey, TValue>();
 
-		public IEnumerator<TValue> GetEnumerator()
+		public override int Count => _set.Count;
+		public override TValue this[TKey key] => _set[key];
+		public override IEnumerable<TKey> Keys => _set.Keys;
+		public override IEnumerable<TValue> Values => _set.Values;
+		public override IEnumerable<KeyValuePair<TKey, TValue>> Pairs => _set;
+
+		public override bool Contains(TKey key)
 		{
-			return Values.GetEnumerator();
+			return _set.ContainsKey(key);
 		}
 
-		IEnumerator IEnumerable.GetEnumerator()
+		public override TValue Get(TKey key, bool strict = true)
 		{
-			return GetEnumerator();
+			TValue value;
+
+			if(!_set.TryGetValue(key, out value) && strict)
+			{
+				throw new KeyNotFoundException("Unknown key: " + Text.Of(key));
+			}
+
+			return value;
 		}
 
-		public abstract bool Contains(TKey key);
+		internal void RegisterIfNotAlready(TValue value)
+		{
+			var key = GetKey(value);
 
-		public abstract TValue Get(TKey key, bool strict = true);
+			if(!Contains(key))
+			{
+				Register(key, value);
+			}
+		}
+
+		internal void Register(TValue value)
+		{
+			Register(GetKey(value), value);
+		}
+
+		private void Register(TKey key, TValue value)
+		{
+			RegisterByKey(key, value);
+
+			RegisterByOtherKeys(value);
+		}
+
+		private void RegisterByKey(TKey key, TValue value)
+		{
+			if(Contains(key))
+			{
+				throw new Exception(Text.None
+					.WriteLine("The key {0} is associated with multiple values", key)
+					.WriteLine()
+					.WriteLine(_set[key])
+					.Write(value));
+			}
+
+			_set.Add(key, value);
+		}
+
+		internal abstract TKey GetKey(TValue value);
+
+		internal virtual void RegisterByOtherKeys(TValue value)
+		{}
 	}
 }

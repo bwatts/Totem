@@ -8,31 +8,53 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// A request pending a response on the timeline
 	/// </summary>
-	internal abstract class TimelineRequest : Notion
+	internal abstract class TimelineRequest : Connection
 	{
-		internal TimelineRequest(IFlowHost flowHost)
+		internal TimelineRequest(IFlowScope flow)
 		{
-			FlowHost = flowHost;
-
-			FlowHost.Task.ContinueWith(_ => Respond());
+			Flow = flow;
 		}
 
-		protected readonly IFlowHost FlowHost;
+    protected readonly IFlowScope Flow;
+
+    protected override void Open()
+    {
+      Flow.Task.ContinueWith(_ => Respond());
+
+      Track(Flow);
+
+      base.Open();
+    }
 
 		internal void Push(TimelinePoint point)
 		{
-			FlowHost.Push(point);
+      if(Flow.Key.Type.CanCall(point.EventType))
+      {
+        Flow.Push(point);
+      }
 		}
 
-		private void Respond()
+    private void Respond()
+    {
+      try
+      {
+        RespondFromTask();
+      }
+      finally
+      {
+        Close();
+      }
+    }
+
+		private void RespondFromTask()
 		{
-			if(FlowHost.Task.IsCompleted)
+			if(Flow.Task.IsCompleted)
 			{
-				RespondCompleted(FlowHost.Task.Result);
+				RespondCompleted(Flow.Task.Result);
 			}
-			else if(FlowHost.Task.IsFaulted)
+			else if(Flow.Task.IsFaulted)
 			{
-				RespondError(FlowHost.Task.Exception);
+				RespondError(Flow.Task.Exception);
 			}
 			else
 			{
@@ -50,19 +72,19 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// A request pending a response on the timeline
 	/// </summary>
-	/// <typeparam name="TFlow">The type of flow observing the request</typeparam>
-	internal sealed class TimelineRequest<TFlow> : TimelineRequest where TFlow : Request
+	/// <typeparam name="T">The type of observing request</typeparam>
+	internal sealed class TimelineRequest<T> : TimelineRequest where T : Request
 	{
-		private readonly TaskCompletionSource<TFlow> _taskCompletionSource = new TaskCompletionSource<TFlow>();
+		private readonly TaskCompletionSource<T> _taskCompletionSource = new TaskCompletionSource<T>();
 
-		internal TimelineRequest(IFlowHost flowHost) : base(flowHost)
+		internal TimelineRequest(IFlowScope flow) : base(flow)
 		{}
 
-		internal Task<TFlow> Task { get { return _taskCompletionSource.Task; } }
+		internal Task<T> Task => _taskCompletionSource.Task;
 
 		internal override void RespondCompleted(Flow instance)
 		{
-			_taskCompletionSource.SetResult((TFlow) instance);
+			_taskCompletionSource.SetResult((T) instance);
 		}
 
 		internal override void RespondError(Exception error)

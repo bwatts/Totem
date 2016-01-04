@@ -11,7 +11,7 @@ namespace Totem.Runtime.Map
 	/// <summary>
 	/// A set of related aseemblies in a region of a Totem runtime
 	/// </summary>
-	public sealed class RuntimePackage : Notion
+	public sealed class RuntimePackage
 	{
 		public RuntimePackage(string name, IFolder buildFolder, IFolder deploymentFolder, AssemblyCatalog catalog, RuntimeRegionKey regionKey)
 		{
@@ -21,11 +21,14 @@ namespace Totem.Runtime.Map
 			Catalog = catalog;
 			RegionKey = regionKey;
 			Assembly = catalog.Assembly;
-			Areas = new AreaTypeSet();
-			Views = new ViewTypeSet();
-			Flows = new FlowTypeSet();
-			Events = new EventTypeSet();
-			WebApis = new WebApiTypeSet();
+			Areas = new RuntimeTypeSet<AreaType>();
+      Events = new RuntimeTypeSet<EventType>();
+			Flows = new RuntimeTypeSet<FlowType>();
+      Topics = new RuntimeTypeSet<TopicType>();
+      Queries = new RuntimeTypeSet<QueryType>();
+      Views = new RuntimeTypeSet<ViewType>();
+      Requests = new RuntimeTypeSet<RequestType>();
+			WebApis = new RuntimeTypeSet<WebApiType>();
 		}
 
 		public readonly string Name;
@@ -34,65 +37,15 @@ namespace Totem.Runtime.Map
 		public readonly AssemblyCatalog Catalog;
 		public readonly RuntimeRegionKey RegionKey;
 		public readonly Assembly Assembly;
-		public readonly AreaTypeSet Areas;
-		public readonly ViewTypeSet Views;
-		public readonly FlowTypeSet Flows;
-		public readonly EventTypeSet Events;
-		public readonly WebApiTypeSet WebApis;
+		public readonly RuntimeTypeSet<AreaType> Areas;
+    public readonly RuntimeTypeSet<EventType> Events;
+		public readonly RuntimeTypeSet<FlowType> Flows;
+    public readonly RuntimeTypeSet<TopicType> Topics;
+    public readonly RuntimeTypeSet<QueryType> Queries;
+    public readonly RuntimeTypeSet<ViewType> Views;
+    public readonly RuntimeTypeSet<RequestType> Requests;
+		public readonly RuntimeTypeSet<WebApiType> WebApis;
 
-		public override Text ToText()
-		{
-			return Name;
-		}
-
-		public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
-		{
-			return Areas.Get(key, strict);
-		}
-
-		public AreaType GetArea(Type declaredType, bool strict = true)
-		{
-			return Areas.Get(declaredType, strict);
-		}
-
-		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
-		{
-			return Views.Get(key, strict);
-		}
-
-		public ViewType GetView(Type declaredType, bool strict = true)
-		{
-			return Views.Get(declaredType, strict);
-		}
-
-		public FlowType GetFlow(RuntimeTypeKey key, bool strict = true)
-		{
-			return Flows.Get(key, strict);
-		}
-
-		public FlowType GetFlow(Type declaredType, bool strict = true)
-		{
-			return Flows.Get(declaredType, strict);
-		}
-
-		public EventType GetEvent(RuntimeTypeKey key, bool strict = true)
-		{
-			return Events.Get(key, strict);
-		}
-
-		public EventType GetEvent(Type declaredType, bool strict = true)
-		{
-			return Events.Get(declaredType, strict);
-		}
-
-		public WebApiType GetWebApi(RuntimeTypeKey key, bool strict = true)
-		{
-			return WebApis.Get(key, strict);
-		}
-
-		public WebApiType GetWebApi(Type declaredType, bool strict = true)
-		{
-			return WebApis.Get(declaredType, strict);
-		}
+    public override string ToString() => Name;
 	}
 }

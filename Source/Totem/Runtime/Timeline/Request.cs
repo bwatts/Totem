@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// An process observing the timeline pending a request
+	/// A timeline presence that responds to a pending request
 	/// </summary>
-	/// <remarks>
-	/// I generally choose attributes over marker classes. However, this allows a type constraint on
-	/// the ITimeline.Run method, preventing an easy mistake and gently correcting the author at compile-time.
-	/// </remarks>
 	public abstract class Request : Query
 	{
-
-	}
+    [Transient] public new RequestType Type => (RequestType) base.Type;
+  }
 }

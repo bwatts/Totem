@@ -26,21 +26,14 @@ namespace Totem.Runtime.Map
 			_partsByName = parts.ToDictionary(part => part.Name);
 		}
 
-		public int Count { get { return _partsByName.Count; } }
-		public bool Any { get { return _partsByName.Count > 0; } }
-		public IEnumerable<string> Names { get { return _partsByName.Keys; } }
-		public IEnumerable<RuntimeStatePart> Parts { get { return _partsByName.Values; } }
-		public RuntimeStatePart this[string name] { get { return _partsByName[name]; } }
+		public int Count => _partsByName.Count;
+		public bool Any => _partsByName.Count > 0;
+		public IEnumerable<string> Names => _partsByName.Keys;
+		public IEnumerable<RuntimeStatePart> Parts => _partsByName.Values;
+		public RuntimeStatePart this[string name] => _partsByName[name];
 
-		public IEnumerator<RuntimeStatePart> GetEnumerator()
-		{
-			return _partsByName.Values.GetEnumerator();
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+		public IEnumerator<RuntimeStatePart> GetEnumerator() => _partsByName.Values.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 		public bool ContainsName(string name)
 		{
@@ -63,8 +56,8 @@ namespace Totem.Runtime.Map
 		// IReadOnlyDictionary
 		//
 
-		IEnumerable<string> IReadOnlyDictionary<string, RuntimeStatePart>.Keys { get { return _partsByName.Keys; } }
-		IEnumerable<RuntimeStatePart> IReadOnlyDictionary<string, RuntimeStatePart>.Values { get { return _partsByName.Values; } }
+		IEnumerable<string> IReadOnlyDictionary<string, RuntimeStatePart>.Keys => _partsByName.Keys;
+		IEnumerable<RuntimeStatePart> IReadOnlyDictionary<string, RuntimeStatePart>.Values => _partsByName.Values;
 
 		bool IReadOnlyDictionary<string, RuntimeStatePart>.ContainsKey(string key)
 		{

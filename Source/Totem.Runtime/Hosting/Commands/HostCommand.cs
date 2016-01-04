@@ -8,7 +8,6 @@ using Serilog.Events;
 using Totem.IO;
 using Totem.Runtime.Configuration;
 using Totem.Runtime.Map;
-using Totem.Runtime.Reflection;
 
 namespace Totem.Runtime.Hosting.Commands
 {
@@ -26,7 +25,7 @@ namespace Totem.Runtime.Hosting.Commands
 			{
 				ReadSection();
 
-				InitializeMap<TProgram>();
+				InitializeRuntime<TProgram>();
 
 				InitializeLog();
 
@@ -52,11 +51,13 @@ namespace Totem.Runtime.Hosting.Commands
 			}
 		}
 
-		private void InitializeMap<TProgram>()
+		private void InitializeRuntime<TProgram>()
 		{
-			var map = Section.ReadMap(typeof(TProgram).Assembly);
+      var deployment = Section.ReadDeployment(typeof(TProgram).Assembly);
 
-			Notion.Traits.InitializeRuntime(map);
+      var runtime = new RuntimeReader(deployment).Read();
+
+			Notion.Traits.InitializeRuntime(runtime);
 		}
 
 		private void InitializeLog()

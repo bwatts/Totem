@@ -11,34 +11,34 @@ namespace Totem.Runtime.Timeline
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class TimelineOperations
 	{
-		public static void Append(this ITimeline timeline, TimelinePosition cause, Event e)
+		public static void Write(this ITimeline timeline, TimelinePosition cause, Event e)
 		{
-			timeline.Append(cause, Many.Of(e));
+			timeline.Write(cause, Many.Of(e));
 		}
 
-		public static void Append(this ITimeline timeline, TimelinePosition cause, IEnumerable<Event> events)
+		public static void Write(this ITimeline timeline, TimelinePosition cause, IEnumerable<Event> events)
 		{
-			timeline.Append(cause, events.ToMany());
+			timeline.Write(cause, events.ToMany());
 		}
 
-		public static void Append(this ITimeline timeline, TimelinePosition cause, params Event[] events)
+		public static void Write(this ITimeline timeline, TimelinePosition cause, params Event[] events)
 		{
-			timeline.Append(cause, events.ToMany());
+			timeline.Write(cause, events.ToMany());
 		}
 
-		public static void Append(this ITimeline timeline, Event e)
+		public static void Write(this ITimeline timeline, Event e)
 		{
-			timeline.Append(TimelinePosition.None, e);
+			timeline.Write(TimelinePosition.None, e);
 		}
 
-		public static void Append(this ITimeline timeline, IEnumerable<Event> events)
+		public static void Write(this ITimeline timeline, IEnumerable<Event> events)
 		{
-			timeline.Append(TimelinePosition.None, events);
+			timeline.Write(TimelinePosition.None, events);
 		}
 
-		public static void Append(this ITimeline timeline, params Event[] events)
+		public static void Write(this ITimeline timeline, params Event[] events)
 		{
-			timeline.Append(TimelinePosition.None, events);
+			timeline.Write(TimelinePosition.None, events);
 		}
-	}
+  }
 }

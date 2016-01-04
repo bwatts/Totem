@@ -2,21 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
-	/// <summary>
-	/// Describes the database peristing instances of flow types
-	/// </summary>
-	public interface IFlowDb : IFluent
-	{
-		Flow ReadInstance(FlowType type);
+  /// <summary>
+  /// Describes a database persisting data pertaining to flows
+  /// </summary>
+  public interface IFlowDb
+  {
+    ClaimsPrincipal ReadPrincipal(TimelinePoint point);
 
-		ClaimsPrincipal ReadPrincipal(TimelinePoint point);
+    Flow ReadInstance(FlowKey key);
 
-		void AppendCall(FlowCall call);
+    void WriteCall(WhenCall call);
 
-		void AppendError(FlowType type, TimelinePoint point, Exception error);
-	}
+    void WriteError(FlowKey key, TimelinePoint point, Exception error);
+  }
 }

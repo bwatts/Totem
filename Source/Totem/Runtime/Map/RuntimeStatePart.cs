@@ -77,9 +77,6 @@ namespace Totem.Runtime.Map
 		public readonly bool IsPrivate;
 		public readonly bool IsPrivateSet;
 
-		public override Text ToText()
-		{
-			return Text.Of("{0} {1}", ValueType.ToSourceText(), Name);
-		}
+		public override Text ToText() => $"{ValueType.ToSourceText()} {Name}";
 	}
 }

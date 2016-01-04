@@ -10,8 +10,8 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public interface ITimeline : IFluent
 	{
-		void Append(TimelinePosition cause, Many<Event> events);
+		void Write(TimelinePosition cause, Many<Event> events);
 
-		Task<TFlow> MakeRequest<TFlow>(TimelinePosition cause, Event e) where TFlow : Request;
+		Task<T> MakeRequest<T>(Event e) where T : Request;
 	}
 }

@@ -5,19 +5,19 @@ using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
-	/// <summary>
-	/// A process observing the timeline and making decisions
-	/// </summary>
-	public abstract class Topic : Flow
+  /// <summary>
+  /// A timeline presence that makes decisions
+  /// </summary>
+  public abstract class Topic : Flow
 	{
-		[Transient] protected new TopicCall Call { get { return (TopicCall) base.Call; } }
-		[Transient] protected new TopicType Type { get { return (TopicType) base.Type; } }
+		[Transient] public new TopicType Type => (TopicType) base.Type;
+    [Transient] protected new TopicWhenCall WhenCall => (TopicWhenCall) base.WhenCall;
 
 		protected void Then(Event e)
 		{
 			ExpectCallingWhen();
 
-			Call.Append(e);
+			WhenCall.Append(e);
 		}
 
 		protected void Then(IEnumerable<Event> events)
@@ -26,7 +26,7 @@ namespace Totem.Runtime.Timeline
 
 			foreach(var e in events)
 			{
-				Call.Append(e);
+				WhenCall.Append(e);
 			}
 		}
 
@@ -44,16 +44,18 @@ namespace Totem.Runtime.Timeline
 
 		protected void ThenAt(DateTime whenOccurs, IEnumerable<Event> events)
 		{
-			foreach(var e in events)
-			{
-				ThenAt(whenOccurs, e);
-			}
+      ThenAt(whenOccurs, events.ToArray());
 		}
 
 		protected void ThenAt(DateTime whenOccurs, params Event[] events)
 		{
-			ThenAt(whenOccurs, events as IEnumerable<Event>);
-		}
+      foreach(var e in events)
+      {
+        Message.Traits.When.Set(e, whenOccurs);
+      }
+
+      Then(events);
+    }
 
 		protected void ThenAt(TimeSpan timeOfDay, Event e)
 		{

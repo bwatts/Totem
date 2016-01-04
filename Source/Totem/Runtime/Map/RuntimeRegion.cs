@@ -29,114 +29,84 @@ namespace Totem.Runtime.Map
 			return Packages.Get(name, strict);
 		}
 
-		public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
+    public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
 		{
-			var area = Packages
-				.Select(package => package.GetArea(key, strict: false))
-				.FirstOrDefault(packageArea => packageArea != null);
-
-			Expect(strict && area == null).IsFalse("Failed to resolve area", key.ToText());
-
-			return area;
+      return Packages.GetArea(key, strict);
 		}
 
 		public AreaType GetArea(Type declaredType, bool strict = true)
 		{
-			var area = Packages
-				.Select(package => package.GetArea(declaredType, strict: false))
-				.FirstOrDefault(packageArea => packageArea != null);
-
-			Expect(strict && area == null).IsFalse("Failed to resolve area", Text.Of(declaredType));
-
-			return area;
+      return Packages.GetArea(declaredType, strict);
 		}
 
-		public ViewType GetView(RuntimeTypeKey key, bool strict = true)
-		{
-			var view = Packages
-				.Select(package => package.GetView(key, strict: false))
-				.FirstOrDefault(packageView => packageView != null);
+    public EventType GetEvent(RuntimeTypeKey key, bool strict = true)
+    {
+      return Packages.GetEvent(key, strict);
+    }
 
-			Expect(strict && view == null).IsFalse("Failed to resolve view", key.ToText());
+    public EventType GetEvent(Type declaredType, bool strict = true)
+    {
+      return Packages.GetEvent(declaredType, strict);
+    }
 
-			return view;
-		}
+    public FlowType GetFlow(RuntimeTypeKey key, bool strict = true)
+    {
+      return Packages.GetFlow(key, strict);
+    }
 
-		public ViewType GetView(Type declaredType, bool strict = true)
-		{
-			var view = Packages
-				.Select(package => package.GetView(declaredType, strict: false))
-				.FirstOrDefault(packageView => packageView != null);
+    public FlowType GetFlow(Type declaredType, bool strict = true)
+    {
+      return Packages.GetFlow(declaredType, strict);
+    }
 
-			Expect(strict && view == null).IsFalse("Failed to resolve view", Text.Of(declaredType));
+    public TopicType GetTopic(RuntimeTypeKey key, bool strict = true)
+    {
+      return Packages.GetTopic(key, strict);
+    }
 
-			return view;
-		}
+    public TopicType GetTopic(Type declaredType, bool strict = true)
+    {
+      return Packages.GetTopic(declaredType, strict);
+    }
 
-		public FlowType GetFlow(RuntimeTypeKey key, bool strict = true)
-		{
-			var flow = Packages
-				.Select(package => package.GetFlow(key, strict: false))
-				.FirstOrDefault(packageFlow => packageFlow != null);
+    public QueryType GetQuery(RuntimeTypeKey key, bool strict = true)
+    {
+      return Packages.GetQuery(key, strict);
+    }
 
-			Expect(strict && flow == null).IsFalse("Failed to resolve flow", key.ToText());
+    public QueryType GetQuery(Type declaredType, bool strict = true)
+    {
+      return Packages.GetQuery(declaredType, strict);
+    }
 
-			return flow;
-		}
+    public ViewType GetView(RuntimeTypeKey key, bool strict = true)
+    {
+      return Packages.GetView(key, strict);
+    }
 
-		public FlowType GetFlow(Type declaredType, bool strict = true)
-		{
-			var flow = Packages
-				.Select(package => package.GetFlow(declaredType, strict: false))
-				.FirstOrDefault(packageFlow => packageFlow != null);
+    public ViewType GetView(Type declaredType, bool strict = true)
+    {
+      return Packages.GetView(declaredType, strict);
+    }
 
-			Expect(strict && flow == null).IsFalse("Failed to resolve flow", Text.Of(declaredType));
+    public RequestType GetRequest(RuntimeTypeKey key, bool strict = true)
+    {
+      return Packages.GetRequest(key, strict);
+    }
 
-			return flow;
-		}
-
-		public EventType GetEvent(RuntimeTypeKey key, bool strict = true)
-		{
-			var e = Packages
-				.Select(package => package.GetEvent(key, strict: false))
-				.FirstOrDefault(packageEvent => packageEvent != null);
-
-			Expect(strict && e == null).IsFalse("Failed to resolve event", key.ToText());
-
-			return e;
-		}
-
-		public EventType GetEvent(Type declaredType, bool strict = true)
-		{
-			var e = Packages
-				.Select(package => package.GetEvent(declaredType, strict: false))
-				.FirstOrDefault(packageEvent => packageEvent != null);
-
-			Expect(strict && e == null).IsFalse("Failed to resolve event", Text.Of(declaredType));
-
-			return e;
-		}
+    public RequestType GetRequest(Type declaredType, bool strict = true)
+    {
+      return Packages.GetRequest(declaredType, strict);
+    }
 
 		public WebApiType GetWebApi(RuntimeTypeKey key, bool strict = true)
 		{
-			var e = Packages
-				.Select(package => package.GetWebApi(key, strict: false))
-				.FirstOrDefault(packageWebApi => packageWebApi != null);
-
-			Expect(strict && e == null).IsFalse("Failed to resolve web API", key.ToText());
-
-			return e;
-		}
+      return Packages.GetWebApi(key, strict);
+    }
 
 		public WebApiType GetWebApi(Type declaredType, bool strict = true)
 		{
-			var e = Packages
-				.Select(package => package.GetWebApi(declaredType, strict: false))
-				.FirstOrDefault(packageWebApi => packageWebApi != null);
-
-			Expect(strict && e == null).IsFalse("Failed to resolve web API", Text.Of(declaredType));
-
-			return e;
-		}
+      return Packages.GetWebApi(declaredType, strict);
+    }
 	}
 }

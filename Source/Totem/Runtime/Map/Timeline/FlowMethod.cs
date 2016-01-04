@@ -10,7 +10,7 @@ namespace Totem.Runtime.Map.Timeline
 	/// </summary>
 	public abstract class FlowMethod
 	{
-		public FlowMethod(MethodInfo info, EventType eventType)
+		protected FlowMethod(MethodInfo info, EventType eventType)
 		{
 			Info = info;
 			EventType = eventType;

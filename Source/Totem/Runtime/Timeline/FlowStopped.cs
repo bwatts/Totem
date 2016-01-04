@@ -10,13 +10,15 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public sealed class FlowStopped : Event
 	{
-		public FlowStopped(RuntimeTypeKey type, string error)
+		public FlowStopped(RuntimeTypeKey type, Id id, string error)
 		{
 			Type = type;
+      Id = id;
 			Error = error;
 		}
 
 		public readonly RuntimeTypeKey Type;
+    public readonly Id Id;
 		public readonly string Error;
-	}
+  }
 }

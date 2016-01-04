@@ -5,14 +5,14 @@ using System.Linq;
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// Describes the database persisting the timeline
+	/// Describes the database persisting timeline data
 	/// </summary>
 	public interface ITimelineDb
 	{
-		Many<TimelinePoint> Append(TimelinePosition cause, Many<Event> events);
+		Many<TimelinePoint> Write(TimelinePosition cause, Many<Event> events);
 
-		TimelinePoint AppendOccurred(TimelinePoint scheduledPoint);
+		TimelinePoint WriteScheduled(TimelinePoint point);
 
-		TimelineResumeInfo ReadResumeInfo();
+		ResumeInfo ReadResumeInfo();
 	}
 }

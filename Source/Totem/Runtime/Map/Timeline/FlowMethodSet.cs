@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Totem.Runtime.Timeline;
 
 namespace Totem.Runtime.Map.Timeline
@@ -17,6 +16,9 @@ namespace Totem.Runtime.Map.Timeline
 			Methods = methods;
 			ScheduledMethods = scheduledMethods;
 		}
+
+    public FlowMethodSet() : this(new Many<T>(), new Many<T>())
+    {}
 
 		public readonly Many<T> Methods;
 		public readonly Many<T> ScheduledMethods;

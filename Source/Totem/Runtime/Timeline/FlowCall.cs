@@ -1,60 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
-using System.Threading;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
-	/// <summary>
-	/// A call to a When method of a <see cref="Flow"/>
-	/// </summary>
-	public class FlowCall : Notion
-	{
-		internal FlowCall(
-			FlowType type,
-			Flow instance,
-			TimelinePoint point,
-			IDependencySource dependencies,
-			ClaimsPrincipal principal,
-			CancellationToken cancellationToken)
-		{
-			Type = type;
-			Instance = instance;
-			Point = point;
-			Dependencies = dependencies;
-			Principal = principal;
-			CancellationToken = cancellationToken;
-		}
+  /// <summary>
+  /// A call to a method defined by a <see cref="Timeline.Flow"/>
+  /// </summary>
+  public class FlowCall
+  {
+    internal FlowCall(Flow flow, TimelinePoint point)
+    {
+      Flow = flow;
+      Point = point;
+    }
 
-		public readonly FlowType Type;
-		public readonly Flow Instance;
-		public readonly TimelinePoint Point;
-		public readonly IDependencySource Dependencies;
-		public readonly ClaimsPrincipal Principal;
-		public readonly CancellationToken CancellationToken;
-
-		public static FlowCall From(
-			FlowType type,
-			Flow instance,
-			TimelinePoint point,
-			IDependencySource dependencies,
-			ClaimsPrincipal principal,
-			CancellationToken cancellationToken)
-		{
-			if(type.IsTopic)
-			{
-				return new TopicCall((TopicType) type, (Topic) instance, point, dependencies, principal, cancellationToken);
-			}
-			else if(type.IsQuery)
-			{
-				return new QueryCall((QueryType) type, (Query) instance, point, dependencies, principal, cancellationToken, dependencies.Resolve<IViewDb>());
-      }
-			else
-			{
-				return new FlowCall(type, instance, point, dependencies, principal, cancellationToken);
-			}
-		}
+    public readonly Flow Flow;
+    public readonly TimelinePoint Point;
   }
 }

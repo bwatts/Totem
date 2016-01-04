@@ -126,9 +126,9 @@ namespace Totem.Runtime.Hosting
 		{
 			Restarted = true;
 
-			Log.Info("[runtime] Restarting in 3s: {Reason:l}", reason);
+			Log.Info("[runtime] Restarting in 8s: {Reason:l}", reason);
 
-			Task.Delay(TimeSpan.FromSeconds(3)).ContinueWith(_ => _hostControl.Stop());
+			Task.Delay(TimeSpan.FromSeconds(8)).ContinueWith(_ => _hostControl.Stop());
 		}
 
 		internal bool Restarted { get; private set; }

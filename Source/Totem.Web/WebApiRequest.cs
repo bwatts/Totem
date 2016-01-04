@@ -11,7 +11,7 @@ namespace Totem.Web
 	/// <summary>
 	/// An process observing and publishing to the timeline in order to make a web request
 	/// </summary>
-	public abstract class WebRequest : Runtime.Timeline.Request
+	public abstract class WebApiRequest : Runtime.Timeline.Request
 	{
 		private Response _response;
 
@@ -50,8 +50,14 @@ namespace Totem.Web
 				StatusCode = HttpStatusCode.InternalServerError,
 				ReasonPhrase = reason,
 				ContentType = MediaType.Plain.ToTextUtf8(),
-				Contents = content => new StreamWriter(content).Write(error)
-			});
+        Contents = body =>
+        {
+          using(var writer = new StreamWriter(body))
+          {
+            writer.Write(error);
+          }
+        }
+      });
 		}
 
 		protected void RespondUnprocessableEntity(string reasonPhrase)

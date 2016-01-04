@@ -112,9 +112,8 @@
     <Compile Include="Json\JsonFormat.cs" />
     <Compile Include="Json\TotemSerializationBinder.cs" />
     <Compile Include="Json\TotemSerializerSettings.cs" />
-    <Compile Include="Reflection\FlowEventReader.cs" />
-    <Compile Include="Reflection\MapReader.cs" />
-    <Compile Include="Reflection\RuntimeReflection.cs" />
+    <Compile Include="RuntimeReaderFlow.cs" />
+    <Compile Include="RuntimeReader.cs" />
     <Compile Include="Configuration\ColumnsElement.cs" />
     <Compile Include="Configuration\ConsoleElement.cs" />
     <Compile Include="Configuration\LogElement.cs" />
@@ -133,19 +132,24 @@
     <Compile Include="Hosting\SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Timeline\FlowHost.cs" />
+    <Compile Include="Timeline\EventRouter.cs" />
+    <Compile Include="Timeline\FlowRouter.cs" />
+    <Compile Include="Timeline\FlowScope.cs" />
     <Compile Include="Timeline\IFlowDb.cs" />
-    <Compile Include="Timeline\IFlowHost.cs" />
+    <Compile Include="Timeline\IFlowScope.cs" />
+    <Compile Include="Timeline\IViewDb.cs" />
+    <Compile Include="Timeline\TimelineFlowSet.cs" />
+    <Compile Include="Timeline\TimelineRequestSet.cs" />
     <Compile Include="Timeline\ITimelineDb.cs" />
-    <Compile Include="Timeline\ITimelineHost.cs" />
     <Compile Include="Timeline\ITimelineScope.cs" />
-    <Compile Include="Timeline\TimelineHostSchedule.cs" />
-    <Compile Include="Timeline\TimelineResumeInfo.cs" />
+    <Compile Include="Timeline\TimelineSchedule.cs" />
+    <Compile Include="Timeline\ResumeInfo.cs" />
     <Compile Include="Timeline\Timeline.cs" />
-    <Compile Include="Timeline\TimelineHost.cs" />
-    <Compile Include="Timeline\TimelineRequest.cs" />
-    <Compile Include="Timeline\TimelineResumePointInfo.cs" />
     <Compile Include="Timeline\TimelineScope.cs" />
+    <Compile Include="Timeline\TimelineRequest.cs" />
+    <Compile Include="Timeline\ResumePoint.cs" />
+    <Compile Include="Timeline\PushScope.cs" />
+    <Compile Include="Timeline\ViewDbOperations.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
@@ -161,6 +165,7 @@
       <Name>Totem</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
