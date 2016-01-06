@@ -119,6 +119,15 @@ namespace Totem
 			return items.Select(selectItem).ToHashSet(comparer);
 		}
 
+    //
+    // Reads
+    //
+
+    public static IEnumerable<T> Except<T>(this IEnumerable<T> source, params T[] items)
+    {
+      return source.Except(items as IEnumerable<T>);
+    }
+
 		//
 		// Writes
 		//

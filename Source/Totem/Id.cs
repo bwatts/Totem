@@ -66,7 +66,12 @@ namespace Totem
 			return new Id((value ?? "").Trim());
 		}
 
-		public static Id FromGuid()
+    public static Id From<T>(T value)
+    {
+      return From(value?.ToString());
+    }
+
+    public static Id FromGuid()
 		{
 			return new Id(Guid.NewGuid().ToString());
 		}

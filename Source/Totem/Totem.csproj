@@ -92,6 +92,7 @@
     <Compile Include="LinkText.cs" />
     <Compile Include="LogOperations.cs" />
     <Compile Include="Many.cs" />
+    <Compile Include="Reflection\ChangeType.cs" />
     <Compile Include="Reflection\TypeResolver.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowMethodSet.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowMethod.cs" />
@@ -103,6 +104,7 @@
     <Compile Include="Runtime\Map\WebApiType.cs" />
     <Compile Include="Runtime\Timeline\FlowCall.cs" />
     <Compile Include="Runtime\Timeline\FlowKey.cs" />
+    <Compile Include="Runtime\Timeline\IdCounter.cs" />
     <Compile Include="Runtime\Timeline\Topic.cs" />
     <Compile Include="Runtime\Timeline\TimelineOperations.cs" />
     <Compile Include="Runtime\Timeline\EventScheduled.cs" />
