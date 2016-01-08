@@ -21,22 +21,13 @@ namespace Totem.Runtime.Hosting.Commands
 
 		public int Execute<TProgram>() where TProgram : IRuntimeProgram, new()
 		{
-			try
-			{
-				ReadSection();
+			ReadSection();
 
-				InitializeRuntime<TProgram>();
+			InitializeRuntime<TProgram>();
 
-				InitializeLog();
+			InitializeLog();
 
-				return ExecuteCommand<TProgram>();
-			}
-			catch(Exception error)
-			{
-				Log.Error(error, "[runtime] Error while hosting runtime");
-
-				return -1;
-			}
+			return ExecuteCommand<TProgram>();
 		}
 
 		protected abstract int ExecuteCommand<TProgram>() where TProgram : IRuntimeProgram, new();

@@ -36,7 +36,12 @@ namespace Totem.Web
 			Respond(new Response { StatusCode = HttpStatusCode.OK, ReasonPhrase = reason });
 		}
 
-		protected void RespondError(string reason)
+    protected void RespondCreated(string reason)
+    {
+      Respond(new Response { StatusCode = HttpStatusCode.Created, ReasonPhrase = reason });
+    }
+
+    protected void RespondError(string reason)
 		{
 			Respond(new Response { StatusCode = HttpStatusCode.InternalServerError, ReasonPhrase = reason });
 		}
