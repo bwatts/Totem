@@ -7,8 +7,8 @@ namespace Totem
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.LinkText"/> class
 	/// </summary>
-	public class LinkTextScenarios : Scenarios
-	{
+	public class LinkTextSpecs : Specs
+  {
 		void CreateEmpty()
 		{
 			var text = new LinkText("");

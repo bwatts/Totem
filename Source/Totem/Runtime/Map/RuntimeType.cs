@@ -64,7 +64,7 @@ namespace Totem.Runtime.Map
 
 		protected void ExpectInstance(object value)
 		{
-			Expect(IsTypeOf(value)).IsTrue("Runtime object is not an instance of the specified type", Text.Of(DeclaredType));
+			Expect(IsTypeOf(value)).IsTrue("Runtime object is not an instance of the specified type");
 		}
 	}
 }

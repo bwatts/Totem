@@ -7,8 +7,8 @@ namespace Totem
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.Tags"/> class
 	/// </summary>
-	public class TagsScenarios : Scenarios
-	{
+	public class TagsSpecs : Specs
+  {
 		static Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
 		static Tag<int> TagWithValue = Tag.Declare(() => TagWithValue);
 

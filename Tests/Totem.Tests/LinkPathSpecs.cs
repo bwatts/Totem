@@ -7,8 +7,8 @@ namespace Totem
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.LinkText"/> class
 	/// </summary>
-	public class LinkPathScenarios : Scenarios
-	{
+	public class LinkPathSpecs : Specs
+  {
 		//
 		// Root
 		//

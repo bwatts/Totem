@@ -7,8 +7,8 @@ namespace Totem
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.Notion"/> class
 	/// </summary>
-	public class NotionScenarios : Scenarios
-	{
+	public class NotionSpecs : Specs
+  {
 		class TestNotion : Notion
 		{
 			internal DateTime Now { get { return Clock.Now; } }

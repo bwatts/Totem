@@ -10,8 +10,8 @@ namespace Totem
 	/// <typeparam name="T">The type of value with expected characteristics</typeparam>
 	public interface IExpect<T> : IFluent
 	{
-		IExpect<T> IsTrue(Func<T, bool> check, Text issue = null, Text expected = null, Func<T, Text> actual = null);
+		IExpect<T> IsTrue(Func<T, bool> check, Text message = null);
 
-		IExpect<T> IsFalse(Func<T, bool> check, Text issue = null, Text expected = null, Func<T, Text> actual = null);
+		IExpect<T> IsFalse(Func<T, bool> check, Text message = null);
 	}
 }

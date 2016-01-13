@@ -71,14 +71,14 @@ namespace Totem.IO
 					return new FileName(value, "");
 				}
 
-				Expect(strict).IsFalse(issue: "Extension is required", actual: t => value);
+				Expect(strict).IsFalse("Extension is required");
 
 				return null;
 			}
 			
 			if(extensionIndex == value.Length - 1)
 			{
-				Expect(strict).IsFalse(issue: "A file name cannot end with an extension separator", actual: t => value);
+				Expect(strict).IsFalse("A file name cannot end with an extension separator");
 
 				return null;
 			}

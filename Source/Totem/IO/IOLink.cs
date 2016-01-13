@@ -25,10 +25,7 @@ namespace Totem.IO
 		{
 			var link = FileLink.From(value, strict: false) ?? FolderLink.From(value, strict: false) as IOLink;
 
-			Expect(strict && link == null).IsFalse(
-				issue: "Value is not an I/O link",
-				expected: "File or folder link",
-				actual: t => value);
+      Expect(strict && link == null).IsFalse("Value is not an I/O link");
 
 			return link;
 		}

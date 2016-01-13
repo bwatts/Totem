@@ -7,8 +7,8 @@ namespace Totem
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.Terms"/> class
 	/// </summary>
-	public class TermsScenarios : Scenarios
-	{
+	public class TermsSpecs : Specs
+  {
 		//
 		// None
 		//

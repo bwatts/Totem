@@ -61,7 +61,7 @@ namespace Totem.IO
 				return;
 			}
 
-			Expect(overwrite).IsTrue(issue: "Folder exists and overwrite option is not set", actual: t => folder.ToText());
+			Expect(overwrite).IsTrue("Folder exists and overwrite option is not set");
 
 			Directory.CreateDirectory(folderPath);
 		}
@@ -90,7 +90,7 @@ namespace Totem.IO
 			}
 			else
 			{
-				Expect(strict).IsFalse(issue: "File not found", actual: t => filePath);
+				Expect(strict).IsFalse("File not found");
 			}
 		}
 
@@ -106,7 +106,7 @@ namespace Totem.IO
 			{
 				if(strict)
 				{
-					Expect(strict).IsFalse(issue: "Folder not found", actual: t => folderPath);
+					Expect(strict).IsFalse("Folder not found");
 				}
 			}
 		}

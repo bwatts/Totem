@@ -9,8 +9,8 @@ namespace Totem.Reflection
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.Reflection.LambdaBodies"/> class
 	/// </summary>
-	public class LambdaBodiesScenarios : Scenarios
-	{
+	public class LambdaBodiesSpecs : Specs
+  {
 		public static readonly object Field;
 
 		public static object Property { get; private set; }
@@ -20,9 +20,9 @@ namespace Totem.Reflection
 			return null;
 		}
 
-		FieldInfo _fieldInfo = typeof(LambdaBodiesScenarios).GetField("Field");
-		PropertyInfo _propertyInfo = typeof(LambdaBodiesScenarios).GetProperty("Property");
-		MethodInfo _methodInfo = typeof(LambdaBodiesScenarios).GetMethod("Method");
+		FieldInfo _fieldInfo = typeof(LambdaBodiesSpecs).GetField("Field");
+		PropertyInfo _propertyInfo = typeof(LambdaBodiesSpecs).GetProperty("Property");
+		MethodInfo _methodInfo = typeof(LambdaBodiesSpecs).GetMethod("Method");
 
 		Expression<Func<object>> _getField = () => Field;
 		Expression<Func<object>> _getProperty = () => Property;

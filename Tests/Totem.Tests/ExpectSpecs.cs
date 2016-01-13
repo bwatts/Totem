@@ -8,8 +8,8 @@ namespace Totem
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.Expect"/> class
 	/// </summary>
-	public class ExpectScenarios : Scenarios
-	{
+	public class ExpectSpecs : Specs
+  {
 		//
 		// Null
 		//

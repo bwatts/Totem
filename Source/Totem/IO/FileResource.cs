@@ -119,7 +119,7 @@ namespace Totem.IO
 				}
 			}
 
-			Expect(strict).IsFalse(issue: "Cannot parse file resource", actual: t => value);
+			Expect(strict).IsFalse("Cannot parse file resource");
 
 			return null;
 		}

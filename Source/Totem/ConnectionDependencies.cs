@@ -70,14 +70,13 @@ namespace Totem
 			{
 				foreach(var dependency in _selectDependencies(item))
 				{
-					Expect.That(_addContext.Contains(dependency)).IsFalse(
-						issue: Text
-							.Of("There is a cycle in the connection graph")
-							.WriteTwoLines()
-							.Write("item: ").WriteLine(item)
-							.Write("dependency: ").Write(dependency),
-						expected: "Dependency not in item ancestry",
-						actual: t => "Dependency is an ancestor of the item");
+          Expect.That(_addContext.Contains(dependency)).IsFalse(Text
+            .Of("There is a cycle in the connection graph")
+            .WriteTwoLines()
+            .Write("item: ")
+            .WriteLine(item)
+            .Write("dependency: ")
+            .Write(dependency));
 
 					yield return GetOrAddNode(dependency);
 				}

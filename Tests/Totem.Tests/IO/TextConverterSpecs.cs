@@ -7,8 +7,8 @@ namespace Totem.IO
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.IO.TextConverter"/> class
 	/// </summary>
-	public class TextConverterScenarios : Scenarios
-	{
+	public class TextConverterSpecs : Specs
+  {
 		class TestTextConverter : TextConverter
 		{
 			protected override object ConvertFrom(TextValue value)

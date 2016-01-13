@@ -7,7 +7,7 @@ namespace Totem
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.Equality"/> class
 	/// </summary>
-	public class EqualityScenarios : Scenarios
+	public class EqualitySpecs : Specs
 	{
 		//
 		// Check

@@ -117,7 +117,7 @@ namespace Totem.IO
 		{
 			var folder = FromUnc(value, strict: false) ?? FromLocal(value, strict: false);
 
-			Expect(strict && folder == null).IsFalse(issue: "Cannot parse folder link", actual: t => value);
+			Expect(strict && folder == null).IsFalse("Cannot parse folder link");
 
 			return folder;
 		}

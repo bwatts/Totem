@@ -26,10 +26,7 @@ namespace Totem.IO
 		{
 			var resource = FileResource.From(value, strict: false) ?? FolderResource.From(value, strict: false) as IOResource;
 
-			Expect(strict && resource == null).IsFalse(
-				issue: "Value is not an I/O resource",
-				expected: "File or folder resource",
-				actual: t => value);
+      Expect(strict && resource == null).IsFalse("Value is not an I/O resource");
 
 			return resource;
 		}

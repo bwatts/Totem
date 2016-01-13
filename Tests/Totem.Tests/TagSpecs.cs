@@ -7,8 +7,8 @@ namespace Totem
 	/// <summary>
 	/// Scenarios involving the <see cref="Totem.Tag"/> class
 	/// </summary>
-	public class TagScenarios : Scenarios
-	{
+	public class TagSpecs : Specs
+  {
 		static Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
 		static Tag<int> TagWithoutDefault = Tag.Declare(() => TagWithoutDefault);
 		static Tag<int> TagWithDefault = Tag.Declare(() => TagWithDefault, 1);
@@ -17,14 +17,14 @@ namespace Totem
 		void Declare()
 		{
 			Expect(TagWithoutValue.HasValue).IsFalse("Tag should not have a value");
-			Expect(TagWithoutValue.Field.DeclaringType).Is(typeof(TagScenarios));
+			Expect(TagWithoutValue.Field.DeclaringType).Is(typeof(TagSpecs));
 			Expect(TagWithoutValue.Field.Name).Is("TagWithoutValue");
 		}
 
 		void DeclareValue()
 		{
 			Expect(TagWithoutDefault.HasValue).IsTrue("Tag should have a value");
-			Expect(TagWithoutDefault.Field.DeclaringType).Is(typeof(TagScenarios));
+			Expect(TagWithoutDefault.Field.DeclaringType).Is(typeof(TagSpecs));
 			Expect(TagWithoutDefault.Field.Name).Is("TagWithoutDefault");
 		}
 

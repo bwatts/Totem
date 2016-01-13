@@ -13,8 +13,8 @@ namespace Totem
 	/// <remarks>
 	/// Totem's expectations are written in terms of <see cref="Totem.Text"/>; use native xUnit assertions here
 	/// </remarks>
-	public class TextScenarios : Scenarios
-	{
+	public class TextSpecs : Specs
+  {
 		//
 		// Values to strings
 		//
@@ -452,7 +452,7 @@ namespace Totem
 
 		void TypeValueGeneric()
 		{
-			Assert.Equal("Totem.TextScenarios", Text.OfType<TextScenarios>().ToString());
+			Assert.Equal("Totem.TextScenarios", Text.OfType<TextSpecs>().ToString());
 		}
 	}
 }

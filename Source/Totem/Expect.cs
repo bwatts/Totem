@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Totem
@@ -9,7 +10,8 @@ namespace Totem
 	/// </summary>
 	public static class Expect
 	{
-		public static IExpect<T> That<T>(T value)
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static IExpect<T> That<T>(T value)
 		{
 			return new Expectation<T>(value);
 		}
@@ -18,40 +20,53 @@ namespace Totem
 		{
 			private readonly T _value;
 
-			internal Expectation(T value)
+      [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+      internal Expectation(T value)
 			{
 				_value = value;
 			}
 
-			public IExpect<T> IsTrue(Func<T, bool> check, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+      [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+      public IExpect<T> IsTrue(Func<T, bool> check, Text message = null)
 			{
-				return Is(true, check, issue, expected, actual);
+				return Is(true, check, message);
 			}
 
-			public IExpect<T> IsFalse(Func<T, bool> check, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+      [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+      public IExpect<T> IsFalse(Func<T, bool> check, Text message = null)
 			{
-				return Is(false, check, issue, expected, actual);
+				return Is(false, check, message);
 			}
 
-			private IExpect<T> Is(bool expectedResult, Func<T, bool> check, Text issue, Text expected, Func<T, Text> actual)
+      [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+      private IExpect<T> Is(bool expectedResult, Func<T, bool> check, Text message)
 			{
-				if(check(_value) != expectedResult)
-				{
-					throw new ExpectException(
-						issue != null ? issue.ToString() : "Unexpected value",
-						expected,
-						actual != null ? actual(_value) : Text.Of(_value));
-				}
+        bool result;
+
+        try
+        {
+          result = check(_value);
+        }
+        catch(Exception error)
+        {
+          throw new ExpectException($"Check failed: {check}", error);
+        }
+
+        if(result != expectedResult)
+        {
+          throw new ExpectException(message ?? $"Expected {expectedResult}, actual {result}: {check}");
+        }
 
 				return this;
 			}
 		}
 
-		//
-		// Throws
-		//
+    //
+    // Throws
+    //
 
-		public static void Throws<TException>(Action action, Text issue = null) where TException : Exception
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static void Throws<TException>(Action action, Text message = null) where TException : Exception
 		{
 			try
 			{
@@ -63,140 +78,108 @@ namespace Totem
 			}
 			catch(Exception error)
 			{
-				throw new ExpectException(
-					error,
-					issue ?? "Unexpected exception",
-					expected: "An exception of type " + Text.OfType<TException>(),
-					actual: "An unexpected exception");
+        throw new ExpectException(message ?? $"Expected {Text.OfType<TException>()}, actual: {error.GetType()}", error);
 			}
-
-			throw new ExpectException(
-				issue ?? "Exception did not occur",
-				expected: "An exception of type " + Text.OfType<TException>(),
-				actual: "No exception");
 		}
 
-		public static void Throws<TException>(Func<object> func, Text issue = null) where TException : Exception
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static void Throws<TException>(Func<object> func, Text issue = null) where TException : Exception
 		{
-			Totem.Expect.Throws<TException>(() => { func(); });
+			Throws<TException>(() => { func(); });
 		}
 
 		//
 		// Null
 		//
 
-		public static IExpect<T> IsNull<T>(this IExpect<T> expect, Text issue = null, Text expected = null, Func<T, Text> actual = null)
-			where T : class
+		public static IExpect<T> IsNull<T>(this IExpect<T> expect, Text message = null)
+      where T : class
 		{
-			return expect.IsTrue(t => t == null, issue ?? "Value is not null", expected ?? "null", actual);
+      return expect.IsTrue(t => t == null, message ?? "Expected null");
 		}
 
-		public static IExpect<T?> IsNull<T>(this IExpect<T?> expect, Text issue = null, Text expected = null, Func<T?, Text> actual = null)
+		public static IExpect<T?> IsNull<T>(this IExpect<T?> expect, Text message = null)
 			where T : struct
 		{
-			return expect.IsTrue(t => t == null, issue ?? "Value is not null", expected ?? "null", actual);
+			return expect.IsTrue(t => t == null, message ?? "Expected null");
 		}
 
-		public static IExpect<T> IsNotNull<T>(this IExpect<T> expect, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+		public static IExpect<T> IsNotNull<T>(this IExpect<T> expect, Text message = null)
 			where T : class
 		{
-			return expect.IsTrue(t => t != null, issue ?? "Value is null", expected ?? "not null", actual);
-		}
+      return expect.IsTrue(t => t != null, message ?? "Expected not null");
+    }
 
-		public static IExpect<T?> IsNotNull<T>(this IExpect<T?> expect, Text issue = null, Text expected = null, Func<T?, Text> actual = null)
+		public static IExpect<T?> IsNotNull<T>(this IExpect<T?> expect, Text message = null)
 			where T : struct
 		{
-			return expect.IsTrue(t => t != null, issue ?? "Value is null", expected ?? "not null", actual);
-		}
+      return expect.IsTrue(t => t != null, message ?? "Expected not null");
+    }
 
 		//
 		// Equality
 		//
 
-		public static IExpect<T> Is<T>(this IExpect<T> expect, T other, IEqualityComparer<T> comparer, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+		public static IExpect<T> Is<T>(this IExpect<T> expect, T other, IEqualityComparer<T> comparer, Text message = null)
 		{
-			return expect.IsTrue(
-				t => comparer.Equals(t, other),
-				issue ?? "Value does not equal other value",
-				expected ?? Text.Of(other).Write(" ").WriteInParentheses(Text.Of(comparer)),
-				actual);
+      return expect.IsTrue(t => comparer.Equals(t, other), message ?? "Values are not equal");
 		}
 
-		public static IExpect<T> Is<T>(this IExpect<T> expect, T other, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+		public static IExpect<T> Is<T>(this IExpect<T> expect, T other, Text message = null)
 		{
-			return expect.IsTrue(
-				t => EqualityComparer<T>.Default.Equals(t, other),
-				issue ?? "Value does not equal other value",
-				expected ?? Text.Of(other),
-				actual);
+      return expect.Is(other, EqualityComparer<T>.Default, message);
 		}
 
-		public static IExpect<T> IsNot<T>(this IExpect<T> expect, T other, IEqualityComparer<T> comparer, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+		public static IExpect<T> IsNot<T>(this IExpect<T> expect, T other, IEqualityComparer<T> comparer, Text message = null)
 		{
-			return expect.IsFalse(
-				t => comparer.Equals(t, other),
-				issue ?? "Value equals other value",
-				expected ?? Text.Of("not ").Write(other).Write(" ").WriteInParentheses(Text.Of(comparer)),
-				actual);
+      return expect.IsFalse(t => comparer.Equals(t, other), message ?? "Expected valeus are not equal");
 		}
 
-		public static IExpect<T> IsNot<T>(this IExpect<T> expect, T other, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+		public static IExpect<T> IsNot<T>(this IExpect<T> expect, T other, Text message = null)
 		{
-			return expect.IsFalse(
-				t => EqualityComparer<T>.Default.Equals(t, other),
-				issue ?? "Value equals other value",
-				expected ?? Text.Of("not ").Write(other),
-				actual);
+      return expect.IsNot(other, EqualityComparer<T>.Default, message);
 		}
 
 		//
 		// String
 		//
 
-		public static IExpect<string> IsEmpty(this IExpect<string> expect, Text issue = null, Text expected = null, Func<string, Text> actual = null)
+		public static IExpect<string> IsEmpty(this IExpect<string> expect, Text message = null)
 		{
-			return expect.IsTrue(t => t == "", issue ?? "String is not empty", "empty", actual);
+			return expect.IsTrue(t => t == "", message ?? "Expected empty string");
 		}
 
-		public static IExpect<string> IsNotEmpty(this IExpect<string> expect, Text issue = null, Text expected = null, Func<string, Text> actual = null)
+		public static IExpect<string> IsNotEmpty(this IExpect<string> expect, Text message = null)
 		{
-			return expect.IsTrue(t => t != "", issue ?? "String is empty", "not empty", actual);
+			return expect.IsTrue(t => t != "", message ?? "Expected non-empty string");
 		}
 
 		//
 		// Boolean
 		//
 
-		public static IExpect<bool> IsTrue(this IExpect<bool> expect, Text issue = null, Text expected = null, Func<bool, Text> actual = null)
+		public static IExpect<bool> IsTrue(this IExpect<bool> expect, Text message = null)
 		{
-			return expect.IsTrue(t => t, issue ?? "Value is not true", Text.Of(true), actual);
+			return expect.IsTrue(t => t, message ?? "Expected true");
 		}
 
-		public static IExpect<bool> IsFalse(this IExpect<bool> expect, Text issue = null, Text expected = null, Func<bool, Text> actual = null)
+		public static IExpect<bool> IsFalse(this IExpect<bool> expect, Text message = null)
 		{
-			return expect.IsFalse(t => t, issue ?? "Value is not false", Text.Of(false), actual);
+			return expect.IsFalse(t => t, message ?? "Expected false");
 		}
 
 		//
 		// Types
 		//
 
-		public static IExpect<T> IsAssignableTo<T>(this IExpect<T> expect, Type type, Text issue = null, Text expected = null, Func<T, Text> actual = null)
+		public static IExpect<T> IsAssignableTo<T>(this IExpect<T> expect, Type type, Text message = null)
 		{
-			return expect.IsTrue(
-				t => type.IsAssignableFrom(t.GetType()),
-				issue ?? "Value is not assignable to type",
-				expected ?? Text.Of(type),
-				actual);
+      return expect.IsTrue(t => type.IsAssignableFrom(t.GetType()), message ?? "Expected assignable value");
 		}
 
-		public static IExpect<Type> IsAssignableTo(this IExpect<Type> expect, Type type, Text issue = null, Text expected = null, Func<Type, Text> actual = null)
+		public static IExpect<Type> IsAssignableTo(this IExpect<Type> expect, Type type, Text message = null)
 		{
-			return expect.IsTrue(
-				type.IsAssignableFrom,
-				issue ?? "Type is not assignable to type",
-				expected ?? Text.Of(type),
-				actual);
+      return expect.IsTrue(type.IsAssignableFrom, message ?? "Expected assignable value");
 		}
 	}
 }

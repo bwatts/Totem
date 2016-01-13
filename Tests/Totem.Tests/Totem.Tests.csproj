@@ -44,19 +44,19 @@
     <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
       <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="LinkPathScenarios.cs" />
-    <Compile Include="LinkTextScenarios.cs" />
-    <Compile Include="EqualityScenarios.cs" />
-    <Compile Include="IO\TextConverterScenarios.cs" />
-    <Compile Include="Reflection\LambdaBodiesScenarios.cs" />
-    <Compile Include="NotionScenarios.cs" />
-    <Compile Include="TagValueScenarios.cs" />
-    <Compile Include="TagsScenarios.cs" />
-    <Compile Include="TagScenarios.cs" />
+    <Compile Include="LinkPathSpecs.cs" />
+    <Compile Include="LinkTextSpecs.cs" />
+    <Compile Include="EqualitySpecs.cs" />
+    <Compile Include="IO\TextConverterSpecs.cs" />
+    <Compile Include="Reflection\LambdaBodiesSpecs.cs" />
+    <Compile Include="NotionSpecs.cs" />
+    <Compile Include="TagValueSpecs.cs" />
+    <Compile Include="TagsSpecs.cs" />
+    <Compile Include="TagSpecs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ExpectScenarios.cs" />
-    <Compile Include="TermsScenarios.cs" />
-    <Compile Include="TextScenarios.cs" />
+    <Compile Include="ExpectSpecs.cs" />
+    <Compile Include="TermsSpecs.cs" />
+    <Compile Include="TextSpecs.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Source\Totem\Totem.csproj">
