@@ -24,7 +24,7 @@ namespace Totem.Runtime.Timeline
 
     public static View Read(this IViewDb viewDb, ViewType viewType, Id id, bool strict = true)
     {
-      return viewDb.Read(viewType, Id.Unassigned, strict);
+      return viewDb.Read(viewType, id, strict);
     }
 
     public static View Read(this IViewDb viewDb, Type viewType, bool strict = true)
