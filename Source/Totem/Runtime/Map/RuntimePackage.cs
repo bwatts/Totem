@@ -21,6 +21,7 @@ namespace Totem.Runtime.Map
 			Catalog = catalog;
 			RegionKey = regionKey;
 			Assembly = catalog.Assembly;
+			Durable = new RuntimeTypeSet<DurableType>();
 			Areas = new RuntimeTypeSet<AreaType>();
       Events = new RuntimeTypeSet<EventType>();
 			Flows = new RuntimeTypeSet<FlowType>();
@@ -37,6 +38,7 @@ namespace Totem.Runtime.Map
 		public readonly AssemblyCatalog Catalog;
 		public readonly RuntimeRegionKey RegionKey;
 		public readonly Assembly Assembly;
+		public readonly RuntimeTypeSet<DurableType> Durable;
 		public readonly RuntimeTypeSet<AreaType> Areas;
     public readonly RuntimeTypeSet<EventType> Events;
 		public readonly RuntimeTypeSet<FlowType> Flows;
@@ -46,6 +48,6 @@ namespace Totem.Runtime.Map
     public readonly RuntimeTypeSet<RequestType> Requests;
 		public readonly RuntimeTypeSet<WebApiType> WebApis;
 
-    public override string ToString() => Name;
+		public override string ToString() => Name;
 	}
 }

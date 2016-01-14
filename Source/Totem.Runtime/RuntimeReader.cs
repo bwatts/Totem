@@ -156,7 +156,7 @@ namespace Totem.Runtime
         _package = type.package;
         _declaredType = type.declaredType;
 
-        if(type.isEvent)
+				if(type.isEvent)
         {
           RegisterEvent();
         }
@@ -166,7 +166,10 @@ namespace Totem.Runtime
         }
         else
         {
-          TryRegisterFlow();
+					if(!TryRegisterFlow())
+					{
+						TryRegisterDurable();
+					}
         }
 			}
 
@@ -176,7 +179,10 @@ namespace Totem.Runtime
 
     private void RegisterEvent()
     {
-      _package.Events.Register(new EventType(ReadType()));
+			var e = new EventType(ReadType());
+
+			_package.Durable.Register(e);
+			_package.Events.Register(e);
     }
 
     private bool TryRegisterArea()
@@ -301,10 +307,23 @@ namespace Totem.Runtime
 
     private void RegisterFlow(FlowType flow)
     {
-      _package.Flows.Register(flow);
+			_package.Durable.Register(flow);
+			_package.Flows.Register(flow);
 
       new RuntimeReaderFlow(_map, flow).Register();
     }
+
+		//
+		// Durable
+		//
+
+		private void TryRegisterDurable()
+		{
+			if(_declaredType.IsDefined(typeof(DurableAttribute), inherit: true))
+			{
+				_package.Durable.Register(new DurableType(ReadType()));
+			}
+		}
 
 		//
 		// Area dependencies

@@ -5,24 +5,28 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Totem.Reflection;
+using Totem.Runtime.Map;
 
 namespace Totem.Runtime.Json
 {
 	/// <summary>
 	/// Resolves contracts describing the serialization and deserialization of objects to JSON in the Totem runtime
 	/// </summary>
-	public class TotemContractResolver : DefaultContractResolver
+	public class TotemContractResolver : DefaultContractResolver, ITaggable
 	{
-		public TotemContractResolver()
+		internal TotemContractResolver()
 		{
-			CamelCaseProperties = true;
+			Tags = new Tags();
 		}
 
-		public bool CamelCaseProperties { get; set; }
+		Tags ITaggable.Tags { get { return Tags; } }
+		private Tags Tags;
+		private RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
+
+		public bool CamelCaseProperties { get; set; } = true;
 
 		protected override string ResolvePropertyName(string propertyName)
 		{
@@ -63,9 +67,11 @@ namespace Totem.Runtime.Json
 			{
 				var contract = base.CreateObjectContract(objectType);
 
-				if(objectType.IsDefined(typeof(DurableAttribute), inherit: true))
+				var mapType = Runtime.GetDurable(objectType, strict: false);
+
+				if(mapType != null)
 				{
-					contract.DefaultCreator = () => FormatterServices.GetUninitializedObject(objectType);
+					contract.DefaultCreator = mapType.CreateToDeserialize;
 				}
 
 				return contract;

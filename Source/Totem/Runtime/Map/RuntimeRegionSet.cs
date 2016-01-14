@@ -40,6 +40,20 @@ namespace Totem.Runtime.Map
 			return package;
 		}
 
+		public DurableType GetDurable(RuntimeTypeKey key, bool strict = true)
+		{
+			var region = Get(key.Region, strict);
+
+			return region?.GetDurable(key, strict);
+		}
+
+		public DurableType GetDurable(Type declaredType, bool strict = true)
+		{
+			var region = _assemblyRegions.GetRegion(declaredType, strict);
+
+			return region?.GetDurable(declaredType, strict);
+		}
+
 		public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
 		{
 			var region = Get(key.Region, strict);

@@ -23,7 +23,17 @@ namespace Totem.Runtime.Map
 			return value.Name;
 		}
 
-    public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
+		public DurableType GetDurable(RuntimeTypeKey key, bool strict = true)
+		{
+			return GetPackageType(key, package => package.Durable, strict);
+		}
+
+		public DurableType GetDurable(Type declaredType, bool strict = true)
+		{
+			return GetPackageType(declaredType, package => package.Durable, strict);
+		}
+
+		public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
     {
       return GetPackageType(key, package => package.Areas, strict);
     }
@@ -103,7 +113,7 @@ namespace Totem.Runtime.Map
       return GetPackageType(declaredType, package => package.WebApis, strict);
     }
 
-    private T GetPackageType<T>(RuntimeTypeKey key, Func<RuntimePackage, RuntimeTypeSetBase<T>> selectTypes, bool strict = true) where T : RuntimeType
+		private T GetPackageType<T>(RuntimeTypeKey key, Func<RuntimePackage, RuntimeTypeSetBase<T>> selectTypes, bool strict = true) where T : RuntimeType
     {
       var packageType = this
         .Select(package => selectTypes(package).Get(key, strict: false))

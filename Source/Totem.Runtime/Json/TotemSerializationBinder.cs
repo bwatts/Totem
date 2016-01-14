@@ -8,7 +8,7 @@ using Totem.Runtime.Map;
 namespace Totem.Runtime.Json
 {
 	/// <summary>
-	/// Resolves type names by working around a minor bug in JSON.NET
+	/// Binds durable types to their keys in the runtime
 	/// </summary>
 	internal sealed class TotemSerializationBinder : DefaultSerializationBinder, ITaggable
 	{
@@ -18,17 +18,17 @@ namespace Totem.Runtime.Json
 		}
 
 		Tags ITaggable.Tags { get { return Tags; } }
-		private Tags Tags { get; set; }
+		private Tags Tags;
 		private RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
 
 		public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
 		{
-			var eventType = Runtime.GetEvent(serializedType, strict: false);
+			var durableType = Runtime.GetDurable(serializedType, strict: false);
 
-			if(eventType != null)
+			if(durableType != null)
 			{
 				assemblyName = null;
-				typeName = eventType.Key.ToString();
+				typeName = durableType.Key.ToString();
 			}
 			else
 			{
@@ -38,11 +38,19 @@ namespace Totem.Runtime.Json
 
 		public override Type BindToType(string assemblyName, string typeName)
 		{
-			var eventTypeKey = RuntimeTypeKey.From(typeName, strict: false);
+			var key = RuntimeTypeKey.From(typeName, strict: false);
 
-			return eventTypeKey != null
-				? Runtime.GetEvent(eventTypeKey).DeclaredType
-				: TypeResolver.Resolve(typeName, assemblyName);
+			if(key != null)
+			{
+				var durableType = Runtime.GetDurable(key, strict: false);
+
+				if(durableType != null)
+				{
+					return durableType.DeclaredType;
+				}
+			}
+
+			return TypeResolver.Resolve(typeName, assemblyName);
 		}
 	}
 }

@@ -101,6 +101,7 @@
     <Compile Include="Runtime\Map\Timeline\TopicType.cs" />
     <Compile Include="Runtime\Map\Timeline\QueryType.cs" />
     <Compile Include="Runtime\Map\Timeline\RequestType.cs" />
+    <Compile Include="Runtime\Map\DurableType.cs" />
     <Compile Include="Runtime\Map\WebApiType.cs" />
     <Compile Include="Runtime\Timeline\FlowCall.cs" />
     <Compile Include="Runtime\Timeline\FlowKey.cs" />

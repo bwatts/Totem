@@ -28,7 +28,17 @@ namespace Totem.Runtime.Map
 
     public override string ToString() => Deployment.Folder.ToString();
 
-    public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
+		public DurableType GetDurable(RuntimeTypeKey key, bool strict = true)
+		{
+			return Regions.GetDurable(key, strict);
+		}
+
+		public DurableType GetDurable(Type declaredType, bool strict = true)
+		{
+			return Regions.GetDurable(declaredType, strict);
+		}
+
+		public AreaType GetArea(RuntimeTypeKey key, bool strict = true)
     {
       return Regions.GetArea(key, strict);
     }

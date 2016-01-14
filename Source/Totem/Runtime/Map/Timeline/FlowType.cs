@@ -9,7 +9,7 @@ namespace Totem.Runtime.Map.Timeline
 	/// <summary>
 	/// A .NET type representing a flow on the timeline
 	/// </summary>
-	public class FlowType : RuntimeType
+	public class FlowType : DurableType
 	{
 		internal FlowType(RuntimeTypeRef type, FlowConstructor constructor) : base(type)
 		{
