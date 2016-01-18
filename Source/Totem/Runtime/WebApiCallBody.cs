@@ -11,43 +11,33 @@ namespace Totem.Runtime
 	/// </summary>
 	public class WebApiCallBody : Notion
 	{
-		private readonly MediaType _mediaType;
 		private readonly Func<string> _readAsString;
 		private readonly Func<Stream> _readAsStream;
 
 		public WebApiCallBody(MediaType mediaType, Func<string> readAsString, Func<Stream> readAsStream)
 		{
-			_mediaType = mediaType;
+			MediaType = mediaType;
 			_readAsString = readAsString;
 			_readAsStream = readAsStream;
 
 			CanRead = true;
 		}
 
+		public MediaType MediaType { get; }
 		public bool CanRead { get; private set; }
 
-		public override Text ToText()
-		{
-			return _mediaType.ToText();
-		}
+		public override Text ToText() => MediaType.ToText();
 
-		public Media<string> ReadAsString()
-		{
-			return Read(_readAsString);
-		}
+		public string ReadAsString() => Read(_readAsString);
+		public Stream ReadAsStream() => Read(_readAsStream);
 
-		public Media<Stream> ReadAsStream()
-		{
-			return Read(_readAsStream);
-		}
-
-		private Media<TContent> Read<TContent>(Func<TContent> read)
+		private TContent Read<TContent>(Func<TContent> read)
 		{
 			Expect(CanRead).IsTrue("Cannot read stream twice");
 
 			CanRead = false;
 
-			return new Media<TContent>(_mediaType, read());
+			return read();
 		}
 
 		public static WebApiCallBody From(MediaType mediaType, Func<string> readAsString, Func<Stream> readAsStream)

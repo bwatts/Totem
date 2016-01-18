@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Nancy;
+using Nancy.ModelBinding;
 using Totem.IO;
 using Totem.Runtime;
+using Totem.Runtime.Json;
 using Totem.Runtime.Map;
 using Totem.Runtime.Map.Timeline;
 using Totem.Runtime.Timeline;
@@ -77,6 +79,26 @@ namespace Totem.Web
       var flow = Timeline.MakeRequest<T>(e).Result;
 
       return flow.ToResponse();
+		}
+
+		//
+		// Body
+		//
+
+		protected T ReadBody<T>() where T : class
+		{
+			// See Totem.Web.WebArea.cs for an explanation; it could be argued that this is fairly hacky.
+
+			if(Call.Body.MediaType == MediaType.Json)
+			{
+				using(var body = Call.Body.ReadAsStream())
+				using(var reader = new StreamReader(body))
+				{
+					return JsonFormat.Text.Deserialize<T>(reader.ReadToEnd());
+				}
+			}
+
+			return this.Bind<T>();
 		}
 
     //
