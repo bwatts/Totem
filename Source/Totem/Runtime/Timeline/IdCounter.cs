@@ -28,7 +28,7 @@ namespace Totem.Runtime.Timeline
 
       _value += 1;
 
-      Next = Id.From(_value);
+      Next = Id.From(_value + 1);
     }
 
     public override string ToString() => Current.ToString();
