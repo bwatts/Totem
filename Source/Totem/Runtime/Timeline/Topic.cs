@@ -20,56 +20,26 @@ namespace Totem.Runtime.Timeline
 			WhenCall.Append(e);
 		}
 
-		protected void Then(IEnumerable<Event> events)
-		{
-			ExpectCallingWhen();
-
-			foreach(var e in events)
-			{
-				WhenCall.Append(e);
-			}
-		}
-
-		protected void Then(params Event[] events)
-		{
-			Then(events as IEnumerable<Event>);
-		}
-
-		protected void ThenAt(DateTime whenOccurs, Event e)
+		protected void ThenSchedule(Event e, DateTime whenOccurs)
 		{
 			Message.Traits.When.Set(e, whenOccurs);
 
 			Then(new EventScheduled(e));
 		}
 
-		protected void ThenAt(DateTime whenOccurs, IEnumerable<Event> events)
+		protected void ThenSchedule(Event e, TimeSpan timeOfDay)
 		{
-      ThenAt(whenOccurs, events.ToArray());
+			ThenSchedule(e, GetWhenOccursNext(timeOfDay));
 		}
 
-		protected void ThenAt(DateTime whenOccurs, params Event[] events)
+		protected void ThenSchedule(Event e, IEnumerable<TimeSpan> timesOfDay)
 		{
-      foreach(var e in events)
-      {
-        Message.Traits.When.Set(e, whenOccurs);
-      }
-
-      Then(events);
-    }
-
-		protected void ThenAt(TimeSpan timeOfDay, Event e)
-		{
-			ThenAt(GetWhenOccursNext(timeOfDay), e);
+			ThenSchedule(e, timesOfDay.Select(timeOfDay => GetWhenOccursNext(timeOfDay)).Min());
 		}
 
-		protected void ThenAt(TimeSpan timeOfDay, IEnumerable<Event> events)
+		protected void ThenSchedule(Event e, params TimeSpan[] timesOfDay)
 		{
-			ThenAt(GetWhenOccursNext(timeOfDay), events);
-		}
-
-		protected void ThenAt(TimeSpan timeOfDay, params Event[] events)
-		{
-			ThenAt(GetWhenOccursNext(timeOfDay), events);
+			ThenSchedule(e, timesOfDay as IEnumerable<TimeSpan>);
 		}
 
 		private DateTime GetWhenOccursNext(TimeSpan timeOfDay)
