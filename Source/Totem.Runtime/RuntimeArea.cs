@@ -30,9 +30,14 @@ namespace Totem.Runtime
 			return base.ToString();
 		}
 
-		protected static IExpect<T> Expect<T>(T value)
+		protected static Check<T> Check<T>(T target)
 		{
-			return Totem.Expect.That(value);
+			return Totem.Check.That(target);
+		}
+
+		protected static Expect<T> Expect<T>(T target)
+		{
+			return Totem.Expect.That(target);
 		}
 
 		//

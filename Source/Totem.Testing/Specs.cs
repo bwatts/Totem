@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Xunit;
 using Xunit.Sdk;
 
@@ -20,126 +19,23 @@ namespace Totem
 	[XunitAdapter]
 	public abstract class Specs
 	{
-    //
-    // Expectations
-    //
-
     [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-    protected IExpect<T> Expect<T>(
-			T value,
-			[CallerMemberName] string caller = "",
-			[CallerFilePath] string callerFile = "",
-			[CallerLineNumber] int callerLine = 0)
+    protected Expect<T> Expect<T>(T target)
 		{
-			return new SpecExpect<T>(value, caller, callerFile, callerLine);
-		}
-
-    private sealed class SpecExpect<T> : IExpect<T>
-    {
-      private readonly T _value;
-      private readonly string _caller;
-      private readonly string _callerFile;
-      private readonly int _callerLine;
-
-      [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-      internal SpecExpect(T value, string caller, string callerFile, int callerLine)
-      {
-        _value = value;
-        _caller = caller;
-        _callerFile = callerFile;
-        _callerLine = callerLine;
-      }
-
-      [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-      public IExpect<T> IsTrue(Func<T, bool> check, Text message = null)
-      {
-        return Apply(() => Totem.Expect.That(_value).IsTrue(check), message);
-      }
-
-      [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-      public IExpect<T> IsFalse(Func<T, bool> check, Text message = null)
-      {
-        return Apply(() => Totem.Expect.That(_value).IsFalse(check), message);
-      }
-
-      [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-      private IExpect<T> Apply(Action expect, Text message)
-      {
-        try
-        {
-          expect();
-        }
-        catch(Exception error)
-        {
-          ThrowSpecException(message, error, _caller, _callerFile, _callerLine);
-        }
-
-        return this;
-      }
-    }
-
-    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-    private static void ThrowSpecException(
-      Text message,
-      Exception error,
-      string caller,
-      string callerFile,
-      int callerLine)
-    {
-      message = Text
-        .Of("Spec failed: ")
-        .Write(caller)
-        .Write(" (ln ")
-        .Write(callerLine)
-        .Write(" in ")
-        .Write(callerFile)
-        .Write(")")
-        .WriteIf(message != null, Text.TwoLines + message);
-
-      throw new SpecException(message, error);
-    }
-
-    //
-    // Throws
-    //
-
-    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-    protected void ExpectThrows<TException>(
-			Action action,
-			Text message = null,
-			[CallerMemberName] string caller = "",
-			[CallerFilePath] string callerFile = "",
-			[CallerLineNumber] int callerLine = 0)
-			where TException : Exception
-		{
-      try
-			{
-				Totem.Expect.Throws<TException>(action, message);
-			}
-			catch(Exception error)
-			{
-        ThrowSpecException($"Unexpected exception type: {error.GetType()}", error, caller, callerFile, callerLine);
-			}
+			return Totem.Expect.That(target);
 		}
 
     [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-    protected void ExpectThrows<TException>(
-			Func<object> func,
-			Text message = null,
-			[CallerMemberName] string caller = "",
-			[CallerFilePath] string callerFile = "",
-			[CallerLineNumber] int callerLine = 0)
-			where TException : Exception
+    protected void ExpectThrows<TException>(Action action, Text issue = null) where TException : Exception
 		{
-      try
-      {
-        Totem.Expect.Throws<TException>(func, message);
-      }
-      catch(Exception error)
-      {
-        ThrowSpecException($"Unexpected exception type: {error.GetType()}", error, caller, callerFile, callerLine);
-      }
-    }
+			Totem.Expect.Throws<TException>(action, issue);
+		}
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    protected void ExpectThrows<TException>(Func<object> func, Text issue = null) where TException : Exception
+		{
+			Totem.Expect.Throws<TException>(func, issue);
+		}
 
 		//
 		// xUnit smoothing

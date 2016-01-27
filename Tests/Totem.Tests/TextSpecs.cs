@@ -447,12 +447,12 @@ namespace Totem
 
 		void TypeValue()
 		{
-			Assert.Equal("Totem.TextScenarios", Text.OfType(this).ToString());
+			Assert.Equal("Totem.TextSpecs", Text.OfType(this).ToString());
 		}
 
 		void TypeValueGeneric()
 		{
-			Assert.Equal("Totem.TextScenarios", Text.OfType<TextSpecs>().ToString());
+			Assert.Equal("Totem.TextSpecs", Text.OfType<TextSpecs>().ToString());
 		}
 	}
 }

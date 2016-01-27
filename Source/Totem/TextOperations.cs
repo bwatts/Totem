@@ -726,16 +726,15 @@ namespace Totem
 		// Split
 		//
 
-		public static IEnumerable<Text> Split(this Text text, Text separator, int maximumSubstrings = Int32.MaxValue, bool includeEmptyValues = false)
+		public static IEnumerable<string> Split(this Text text, Text separator, int maximumSubstrings = int.MaxValue, bool includeEmptyValues = false)
 		{
 			return text.ToString().Split(
 				new string[] { separator },
 				maximumSubstrings,
-				includeEmptyValues ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries)
-				.ToTextValues();
+				includeEmptyValues ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
 		}
 
-		public static IEnumerable<Text> SplitLines(this Text text, int maximumLineLength = Int32.MaxValue, int maximumSubstrings = Int32.MaxValue, bool includeEmptyValues = false)
+		public static IEnumerable<string> SplitLines(this Text text, int maximumLineLength = int.MaxValue, int maximumSubstrings = int.MaxValue, bool includeEmptyValues = false)
 		{
 			foreach(var lineText in text.Split(Text.Line, maximumSubstrings, includeEmptyValues))
 			{
@@ -752,12 +751,12 @@ namespace Totem
 			}
 		}
 
-		public static IEnumerable<Text> SplitSpaces(this Text text, int maximumSubstrings = Int32.MaxValue, bool includeEmptyValues = false)
+		public static IEnumerable<string> SplitSpaces(this Text text, int maximumSubstrings = int.MaxValue, bool includeEmptyValues = false)
 		{
 			return text.Split(' ', maximumSubstrings, includeEmptyValues);
 		}
 
-		public static IEnumerable<Text> SplitCommas(this Text text, int maximumSubstrings = Int32.MaxValue, bool includeEmptyValues = false)
+		public static IEnumerable<string> SplitCommas(this Text text, int maximumSubstrings = int.MaxValue, bool includeEmptyValues = false)
 		{
 			return text.Split(',', maximumSubstrings, includeEmptyValues);
 		}
