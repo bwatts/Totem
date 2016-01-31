@@ -116,7 +116,7 @@
     <Compile Include="Runtime\Timeline\GivenCall.cs" />
     <Compile Include="Sequences.cs" />
     <Compile Include="Reflection\AnonymousTypes.cs" />
-    <Compile Include="Reflection\GenericAssignability.cs" />
+    <Compile Include="Reflection\Assignability.cs" />
     <Compile Include="Reflection\TypeSourceText.cs" />
     <Compile Include="Reflection\InheritanceChain.cs" />
     <Compile Include="Runtime\DurableAttribute.cs" />

@@ -9,7 +9,7 @@ namespace Totem.Reflection
 	/// Extends <see cref="System.Type"/> to check for assignability of generic types
 	/// </summary>
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public static class GenericAssignability
+	public static class Assignability
 	{
 		public static Type GetAssignableGenericType(this Type openGenericType, Type closedGenericType, bool strict = true)
 		{
@@ -28,6 +28,18 @@ namespace Totem.Reflection
 		public static bool IsAssignableFromGeneric(this Type openGenericType, Type closedGenericType)
 		{
 			return openGenericType.GetAssignableGenericType(closedGenericType, strict: false) != null;
+		}
+
+		public static bool IsAssignableNull(this Type type)
+		{
+			return type.IsClass
+				|| type.IsInterface
+				|| (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>));
+		}
+
+		public static object GetDefaultValue(this Type type)
+		{
+			return type.IsValueType ? Activator.CreateInstance(type) : null;
 		}
 	}
 }

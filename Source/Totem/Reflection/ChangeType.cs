@@ -16,12 +16,12 @@ namespace Totem.Reflection
 
       if(value == null)
       {
-        if(!IsAssignableNull(type))
+        if(!type.IsAssignableNull())
         {
           throw new Exception($"Type {type} cannot be assigned null values");
         }
 
-        convertedValue = GetDefaultValue(type);
+        convertedValue = type.GetDefaultValue();
       }
       else if(type.IsAssignableFrom(value.GetType()))
       {
@@ -48,7 +48,7 @@ namespace Totem.Reflection
 
       if(value == null)
       {
-        success = IsAssignableNull(type);
+        success = type.IsAssignableNull();
 
         result = null;
       }
@@ -64,7 +64,7 @@ namespace Totem.Reflection
 
         success = TryGetConvertibleValue(value, type, out convertibleValue);
 
-        result = success ? convertibleValue.Convert() : GetDefaultValue(type);
+				result = success ? convertibleValue.Convert() : type.GetDefaultValue();
       }
 
       return success;
@@ -84,18 +84,6 @@ namespace Totem.Reflection
       result = success ? (T) untypedResult : default(T);
 
       return success;
-    }
-
-    private static bool IsAssignableNull(Type type)
-    {
-      return type.IsClass
-        || type.IsInterface
-        || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>));
-    }
-
-    private static object GetDefaultValue(Type type)
-    {
-      return type.IsValueType ? Activator.CreateInstance(type) : null;
     }
 
     private static bool TryGetConvertibleValue(object value, Type destinationType, out ConvertibleValue convertibleValue)
