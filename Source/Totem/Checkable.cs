@@ -115,16 +115,30 @@ namespace Totem
 			return check.Has(0);
 		}
 
-		public static Check<Many<T>> Has1<T>(this Check<Many<T>> check, Func<T, bool> itemCheck = null)
+		public static Check<Many<T>> Has1<T>(this Check<Many<T>> check, Func<T, bool> checkItem = null)
 		{
 			check = check.Has(1);
 
-			if(itemCheck != null)
+			if(checkItem != null)
 			{
-				check = check.That(t => itemCheck(t[0]));
+				check = check.That(t => checkItem(t[0]));
 			}
 
 			return check;
+		}
+
+		//
+		// Tags
+		//
+
+		public static Check<Tag<T>> IsUnset<T>(this Check<Tag<T>> check, ITaggable target)
+		{
+			return check.That(t => t.IsUnset(target));
+		}
+
+		public static Check<Tag<T>> IsSet<T>(this Check<Tag<T>> check, ITaggable target)
+		{
+			return check.That(t => !t.IsUnset(target));
 		}
 	}
 }

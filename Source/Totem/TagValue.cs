@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace Totem
 {
@@ -10,30 +9,32 @@ namespace Totem
 	/// </summary>
 	public sealed class TagValue : IWritable
 	{
+		public TagValue(Tag tag)
+		{
+			Tag = tag;
+			Content = tag.ResolveDefault();
+			IsUnset = true;
+		}
+
 		public TagValue(Tag tag, object content)
 		{
 			Tag = tag;
 			Content = content;
+			IsUnset = false;
 		}
 
-		public TagValue(Tag tag)
-		{
-			Tag = tag;
-			Content = tag.ResolveDefaultValue();
-		}
-
-		public Tag Tag { get; private set; }
+		public Tag Tag { get; }
 		public object Content { get; private set; }
-		public bool IsUnset { get { return Content == Tag.UnsetValue; } }
+		public bool IsUnset { get; private set; }
 
-		public sealed override string ToString()
-		{
-			return ToText();
-		}
+		public sealed override string ToString() => ToText();
+		public Text ToText() => Text.Of(Content);
 
-		public Text ToText()
+		public void Set(object content)
 		{
-			return Tag.ToText().Write(" = ").WriteIf(IsUnset, "<unset>", Text.Of(Content));
+			Content = content;
+
+			IsUnset = content == Tag.UnsetValue;
 		}
 	}
 }

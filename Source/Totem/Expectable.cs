@@ -176,16 +176,32 @@ namespace Totem
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-		public static Expect<Many<T>> Has1<T>(this Expect<Many<T>> expect, Action<T> itemExpect = null, Text issue = null)
+		public static Expect<Many<T>> Has1<T>(this Expect<Many<T>> expect, Action<T> expectItem = null, Text issue = null)
 		{
 			expect = expect.Has(1, issue);
 
-			if(itemExpect != null)
+			if(expectItem != null)
 			{
-				itemExpect(expect.Target[0]);
+				expectItem(expect.Target[0]);
 			}
 
 			return expect;
+		}
+
+		//
+		// Tags
+		//
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static Expect<Tag<T>> IsUnset<T>(this Expect<Tag<T>> expect, ITaggable target, Text issue = null)
+		{
+			return expect.That(t => t.IsUnset(target), issue, "tag not set", t => $"tag set: {t}");
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static Expect<Tag<T>> IsSet<T>(this Expect<Tag<T>> expect, ITaggable target, Text issue = null)
+		{
+			return expect.That(t => t.IsSet(target), issue, "tag set", t => $"tag set: {t}");
 		}
 	}
 }

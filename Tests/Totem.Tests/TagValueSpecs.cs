@@ -9,33 +9,23 @@ namespace Totem
 	/// </summary>
 	public class TagValueSpecs : Specs
   {
-		static Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
-		static Tag<int> TagWithValue = Tag.Declare(() => TagWithValue, 1);
+		static Tag<int> Tag = Totem.Tag.Declare(() => Tag, 1);
 
-		void WithoutValue()
+		void WithoutContent()
 		{
-			var value = new TagValue(TagWithoutValue);
+			var value = new TagValue(Tag);
 
-			Expect(value.Tag).Is(TagWithoutValue);
-			Expect(value.Content).Is(Tag.UnsetValue);
+			Expect(value.Tag).Is(Tag);
+			Expect(value.Content).Is(Tag.ResolveDefault());
 			Expect(value.IsUnset).IsTrue();
 		}
 
-		void WithValue()
+		void WithContent()
 		{
-			var value = new TagValue(TagWithValue, 2);
+			var value = new TagValue(Tag, 2);
 
-			Expect(value.Tag).Is(TagWithValue);
+			Expect(value.Tag).Is(Tag);
 			Expect(value.Content).Is(2);
-			Expect(value.IsUnset).IsFalse();
-		}
-
-		void WithDefaultValue()
-		{
-			var value = new TagValue(TagWithValue);
-
-			Expect(value.Tag).Is(TagWithValue);
-			Expect(value.Content).Is(1);
 			Expect(value.IsUnset).IsFalse();
 		}
 	}

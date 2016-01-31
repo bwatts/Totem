@@ -33,6 +33,7 @@ namespace Totem
 					.WriteTwoLines()
 					.WriteLine("Expected:")
 					.WriteLine(Text.OfType<TException>().Indent(retainWhitespace: true))
+					.WriteLine()
 					.WriteLine("Actual:")
 					.WriteLine(Text.OfType(error).Indent(retainWhitespace: true));
 

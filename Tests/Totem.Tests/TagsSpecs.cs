@@ -9,109 +9,77 @@ namespace Totem
 	/// </summary>
 	public class TagsSpecs : Specs
   {
-		static Tag TagWithoutValue = Tag.Declare(() => TagWithoutValue);
-		static Tag<int> TagWithValue = Tag.Declare(() => TagWithValue);
+		static Tag<int> Tag = Totem.Tag.Declare(() => Tag);
+		static Tag<string> OtherTag = Totem.Tag.Declare(() => OtherTag);
 
 		void Create()
 		{
 			var tags = new Tags();
 
 			Expect(tags.Count).Is(0);
-			Expect(!tags.Any()).IsTrue();
-			Expect(!tags.Keys.Any()).IsTrue();
-			Expect(!tags.Values.Any()).IsTrue();
-			ExpectThrows<KeyNotFoundException>(() => tags[TagWithoutValue]);
+			Expect(tags.Any()).IsFalse();
+			Expect(tags.Keys.Any()).IsFalse();
+			Expect(tags.Values.Any()).IsFalse();
+			ExpectThrows<KeyNotFoundException>(() => tags[Tag]);
 		}
 
-		void SetWithoutValue()
+		void Set()
 		{
 			var tags = new Tags();
 
-			tags.Set(TagWithoutValue);
+			tags.Set(Tag, 1);
 
 			Expect(tags.Count).Is(1);
 			Expect(tags.Any()).IsTrue();
 			Expect(tags.Keys.Count()).Is(1);
 			Expect(tags.Values.Count()).Is(1);
-			Expect(tags.IsSet(TagWithoutValue)).IsTrue();
-			Expect(tags[TagWithoutValue].Content).Is(Tag.UnsetValue);
-		}
-
-		void SetWithValue()
-		{
-			var tags = new Tags();
-
-			tags.Set(TagWithValue, 1);
-
-			Expect(tags.Count).Is(1);
-			Expect(tags.Any()).IsTrue();
-			Expect(tags.Keys.Count()).Is(1);
-			Expect(tags.Values.Count()).Is(1);
-			Expect(tags.IsSet(TagWithValue)).IsTrue();
-			Expect(tags[TagWithValue].Content).Is(1);
+			Expect(tags.IsUnset(Tag)).IsFalse();
+			Expect(tags[Tag].Content).Is(1);
 		}
 
 		void Clear()
 		{
 			var tags = new Tags();
 
-			tags.Set(TagWithoutValue);
-			tags.Set(TagWithValue, 2);
+			tags.Set(Tag, 2);
+			tags.Set(OtherTag, "");
 
-			tags.Clear(TagWithoutValue);
+			tags.Clear(Tag);
 
 			Expect(tags.Count).Is(1);
-			Expect(tags[TagWithValue].Content).Is(2);
+			Expect(tags[OtherTag].Content).Is("");
 		}
 
 		void GetUnset()
 		{
 			var tags = new Tags();
 
-			Expect(tags.Get(TagWithoutValue)).Is(Tag.UnsetValue);
+			Expect(tags.Get((Tag) Tag)).Is(0);
 		}
 
 		void GetUnsetStrict()
 		{
 			var tags = new Tags();
 
-			ExpectThrows<ExpectException>(() => tags.Get(TagWithoutValue, throwIfUnset: true));
+			ExpectThrows<InvalidOperationException>(() => tags.Get((Tag) Tag, throwIfUnset: true));
 		}
 
-		void GetWithoutValue()
+		void Get()
 		{
 			var tags = new Tags();
 
-			tags.Set(TagWithoutValue);
+			tags.Set(Tag, 1);
 
-			Expect(tags.Get(TagWithoutValue)).Is(Tag.UnsetValue);
+			Expect(tags.Get(Tag)).Is(1);
 		}
 
-		void GetWithValue()
+		void GetStrict()
 		{
 			var tags = new Tags();
 
-			tags.Set(TagWithValue, 1);
+			tags.Set(Tag, 1);
 
-			Expect(tags.Get(TagWithValue)).Is(1);
-		}
-
-		void GetWithoutValueStrict()
-		{
-			var tags = new Tags();
-
-			tags.Set(TagWithoutValue);
-
-			ExpectThrows<ExpectException>(() => tags.Get(TagWithoutValue, throwIfUnset: true));
-		}
-
-		void GetWithValueStrict()
-		{
-			var tags = new Tags();
-
-			tags.Set(TagWithValue, 1);
-
-			Expect(tags.Get(TagWithValue, throwIfUnset: true)).Is(1);
+			Expect(tags.Get(Tag, throwIfUnset: true)).Is(1);
 		}
 	}
 }

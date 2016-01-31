@@ -10,44 +10,36 @@ namespace Totem
 	/// <summary>
 	/// Metadata attached to taggable objects
 	/// </summary>
-	public class Tag : IWritable
+	public abstract class Tag
 	{
 		internal Tag(FieldInfo field)
 		{
 			Field = field;
+			Name = field.Name;
+			Type = field.FieldType;
 		}
 
-		public FieldInfo Field { get; private set; }
-		public virtual bool HasValue { get { return false; } }
+		public FieldInfo Field { get; }
+		public string Name { get; }
+		public Type Type { get; }
 
-		public sealed override string ToString()
-		{
-			return ToText();
-		}
+		public override string ToString() => Name;
 
-		public virtual Text ToText()
-		{
-			return Field.Name;
-		}
+		public abstract object ResolveDefault();
 
-		public virtual object ResolveDefaultValue()
+		public bool IsUnset(ITaggable target)
 		{
-			return UnsetValue;
-		}
-
-		public bool IsSet(ITaggable target)
-		{
-			return target.Tags.IsSet(this);
-		}
-
-		public void Set(ITaggable target)
-		{
-			target.Tags.Set(this);
+			return target.Tags.IsUnset(this);
 		}
 
 		public object Get(ITaggable target, bool throwIfUnset = false)
 		{
 			return target.Tags.Get(this, throwIfUnset);
+		}
+
+		public void Set(ITaggable target, object value)
+		{
+			target.Tags.Set(this, value);
 		}
 
 		public void Clear(ITaggable target)
@@ -73,11 +65,6 @@ namespace Totem
 		// Declarations
 		//
 
-		public static Tag Declare(Expression<Func<Tag>> getField)
-		{
-			return new Tag(getField.GetFieldInfo());
-		}
-
 		public static Tag<T> Declare<T>(Expression<Func<Tag<T>>> getField, T defaultValue = default(T))
 		{
 			return new Tag<T>(getField.GetFieldInfo(), defaultValue);
@@ -93,14 +80,19 @@ namespace Totem
 			return new Tag<IReadOnlyList<T>>(getField.GetFieldInfo(), () => new List<T>());
 		}
 
+		public static Tag<T[]> Declare<T>(Expression<Func<Tag<T[]>>> getField)
+		{
+			return new Tag<T[]>(getField.GetFieldInfo(), () => new T[0]);
+		}
+
 		public static Tag<List<T>> Declare<T>(Expression<Func<Tag<List<T>>>> getField)
 		{
 			return new Tag<List<T>>(getField.GetFieldInfo(), () => new List<T>());
 		}
 
-		public static Tag<T[]> Declare<T>(Expression<Func<Tag<T[]>>> getField)
+		public static Tag<Many<T>> Declare<T>(Expression<Func<Tag<Many<T>>>> getField)
 		{
-			return new Tag<T[]>(getField.GetFieldInfo(), () => new T[0]);
+			return new Tag<Many<T>>(getField.GetFieldInfo(), () => new Many<T>());
 		}
 
 		public static Tag<IReadOnlyDictionary<TKey, TValue>> Declare<TKey, TValue>(Expression<Func<Tag<IReadOnlyDictionary<TKey, TValue>>>> getField)
@@ -112,6 +104,21 @@ namespace Totem
 		{
 			return new Tag<Dictionary<TKey, TValue>>(getField.GetFieldInfo(), () => new Dictionary<TKey, TValue>());
 		}
+
+		public static IEnumerable<Tag> ReadDeclaredTags(Type type, bool nonPublic = false)
+		{
+			var flags = BindingFlags.Public | BindingFlags.Static;
+
+			if(nonPublic)
+			{
+				flags |= BindingFlags.NonPublic;
+			}
+
+			return type
+				.GetFields(flags)
+				.Where(field => typeof(Tag).IsAssignableFrom(field.FieldType))
+				.Select(field => (Tag) field.GetValue(null));
+		}
 	}
 
 	/// <summary>
@@ -120,11 +127,11 @@ namespace Totem
 	/// <typeparam name="T">The type of attached metadata</typeparam>
 	public sealed class Tag<T> : Tag
 	{
-		private Func<T> _resolveDefaultValue;
+		private Func<T> _resolveDefault;
 
-		internal Tag(FieldInfo field, Func<T> resolveDefaultValue) : base(field)
+		internal Tag(FieldInfo field, Func<T> resolveDefault) : base(field)
 		{
-			_resolveDefaultValue = resolveDefaultValue;
+			_resolveDefault = resolveDefault;
 		}
 
 		internal Tag(FieldInfo field) : this(field, () => default(T))
@@ -133,16 +140,9 @@ namespace Totem
 		internal Tag(FieldInfo field, T defaultValue) : this(field, () => defaultValue)
 		{}
 
-		public override bool HasValue { get { return true; } }
-
-		public override object ResolveDefaultValue()
+		public override object ResolveDefault()
 		{
-			return _resolveDefaultValue();
-		}
-
-		public void Set(ITaggable target, T value)
-		{
-			target.Tags.Set(this, value);
+			return _resolveDefault();
 		}
 
 		public new T Get(ITaggable target, bool throwIfUnset = false)
@@ -150,14 +150,19 @@ namespace Totem
 			return target.Tags.Get(this, throwIfUnset);
 		}
 
-		public void SetDefaultValue(Func<T> resolve)
+		public void Set(ITaggable target, T value)
 		{
-			_resolveDefaultValue = resolve;
+			target.Tags.Set(this, value);
 		}
 
-		public void SetDefaultValue(T value)
+		public void SetDefault(Func<T> resolve)
 		{
-			_resolveDefaultValue = () => value;
+			_resolveDefault = resolve;
+		}
+
+		public void SetDefault(T value)
+		{
+			_resolveDefault = () => value;
 		}
 	}
 }

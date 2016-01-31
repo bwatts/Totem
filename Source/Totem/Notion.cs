@@ -62,9 +62,9 @@ namespace Totem
 
 			public static void InitializeRuntime(RuntimeMap runtime)
 			{
-				Expect(Runtime.ResolveDefaultValue()).IsNull("The runtime trait is already initialized");
+				Expect(Runtime.ResolveDefault()).IsNull("The runtime trait is already initialized");
 
-				Runtime.SetDefaultValue(runtime);
+				Runtime.SetDefault(runtime);
 			}
 
 			//
@@ -73,11 +73,11 @@ namespace Totem
 
 			public static void InitializeLog(ILog effectiveLog)
 			{
-				var uninitializedLog = Log.ResolveDefaultValue() as UninitializedLog;
+				var uninitializedLog = Log.ResolveDefault() as UninitializedLog;
 
 				Expect(uninitializedLog).IsNotNull("The log is already initialized");
 
-				Log.SetDefaultValue(effectiveLog);
+				Log.SetDefault(effectiveLog);
 
 				uninitializedLog.ReplayMessages(effectiveLog);
 			}

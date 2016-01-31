@@ -8,7 +8,7 @@ namespace Totem
 	/// <summary>
 	/// A set of tags and corresponding values
 	/// </summary>
-	public sealed class Tags : IReadOnlyDictionary<Tag, TagValue>
+	public sealed class Tags : IReadOnlyCollection<TagValue>
 	{
 		private readonly Dictionary<Tag, TagValue> _pairs = new Dictionary<Tag, TagValue>();
 
@@ -17,34 +17,14 @@ namespace Totem
 		public IEnumerable<TagValue> Values { get { return _pairs.Values; } }
 		public TagValue this[Tag key] { get { return _pairs[key]; } }
 
-		public IEnumerator<KeyValuePair<Tag, TagValue>> GetEnumerator()
-		{
-			return _pairs.GetEnumerator();
-		}
+		public IEnumerator<TagValue> GetEnumerator() => _pairs.Values.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-		IEnumerator IEnumerable.GetEnumerator()
+		public bool IsUnset(Tag tag)
 		{
-			return GetEnumerator();
-		}
+			TagValue value;
 
-		public bool IsSet(Tag tag)
-		{
-			return _pairs.ContainsKey(tag);
-		}
-
-		public void Set(Tag tag)
-		{
-			_pairs[tag] = new TagValue(tag);
-		}
-
-		public void Set<T>(Tag<T> tag, T value)
-		{
-			_pairs[tag] = new TagValue(tag, value);
-		}
-
-		public void Clear(Tag tag)
-		{
-			_pairs.Remove(tag);
+			return !_pairs.TryGetValue(tag, out value) || value.IsUnset;
 		}
 
 		public object Get(Tag tag, bool throwIfUnset = false)
@@ -58,7 +38,10 @@ namespace Totem
 				_pairs[tag] = value;
 			}
 
-      Expect.That(throwIfUnset && value.IsUnset).IsFalse("Get is strict and tag is not set");
+			if(throwIfUnset && value.IsUnset)
+			{
+				throw new InvalidOperationException($"Tag {tag} is not set");
+      }
 
 			return value.Content;
 		}
@@ -68,14 +51,23 @@ namespace Totem
 			return (T) Get((Tag) tag, throwIfUnset);
 		}
 
-		bool IReadOnlyDictionary<Tag, TagValue>.ContainsKey(Tag key)
+		public void Set(Tag tag, object value)
 		{
-			return _pairs.ContainsKey(key);
+			TagValue tagValue;
+
+			if(_pairs.TryGetValue(tag, out tagValue))
+			{
+				tagValue.Set(value);
+			}
+			else
+			{
+				_pairs[tag] = new TagValue(tag, value);
+			}
 		}
 
-		bool IReadOnlyDictionary<Tag, TagValue>.TryGetValue(Tag key, out TagValue value)
+		public void Clear(Tag tag)
 		{
-			return _pairs.TryGetValue(key, out value);
+			_pairs.Remove(tag);
 		}
 	}
 }
