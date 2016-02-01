@@ -42,13 +42,13 @@
     </Compile>
     <Compile Include="Check.cs" />
     <Compile Include="Checkable.cs" />
-    <Compile Include="ConnectionDependencies.cs" />
+    <Compile Include="Runtime\ConnectionDependencies.cs" />
     <Compile Include="Equality.cs" />
-    <Compile Include="Connection.cs">
+    <Compile Include="Runtime\Connection.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ConnectionState.cs" />
-    <Compile Include="ConnectionPhase.cs" />
+    <Compile Include="Runtime\ConnectionState.cs" />
+    <Compile Include="Runtime\ConnectionPhase.cs" />
     <Compile Include="Disposal.cs" />
     <Compile Include="Event.cs" />
     <Compile Include="Expectable.cs" />
@@ -64,7 +64,7 @@
     <Compile Include="Http\HttpQueryPair.cs" />
     <Compile Include="Http\HttpResource.cs" />
     <Compile Include="IClock.cs" />
-    <Compile Include="IConnectable.cs" />
+    <Compile Include="Runtime\IConnectable.cs" />
     <Compile Include="IFluent.cs" />
     <Compile Include="IO\Binary.cs" />
     <Compile Include="IO\BinaryConverter.cs" />

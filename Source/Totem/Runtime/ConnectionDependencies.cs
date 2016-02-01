@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace Totem
+namespace Totem.Runtime
 {
 	/// <summary>
 	/// Extends sequences of connections with the ability to connect them in order of dependencies between them
