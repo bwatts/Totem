@@ -25,7 +25,7 @@ namespace Totem
 
 			var check = Equality.Check(left, right).Check(x => x.Value);
 
-			Expect((bool) check).IsTrue();
+			Expect((bool) check);
 		}
 
 		void CheckNotEqual()
@@ -35,17 +35,17 @@ namespace Totem
 
 			var check = Equality.Check(left, right).Check(x => x.Value);
 
-			Expect((bool) check).IsFalse();
+			ExpectNot((bool) check);
 		}
 
 		void CheckOpEqual()
 		{
-			Expect(Equality.CheckOp(1, 1)).IsTrue();
+			Expect(Equality.CheckOp(1, 1));
 		}
 
 		void CheckOpNotEqual()
 		{
-			Expect(Equality.CheckOp(1, 2)).IsFalse();
+			ExpectNot(Equality.CheckOp(1, 2));
 		}
 
 		//
@@ -59,7 +59,7 @@ namespace Totem
 
 			var check = Equality.Check(left, right).Check(x => x.ValueA).Check(x => x.ValueB);
 
-			Expect((bool) check).IsTrue();
+			Expect((bool) check);
 		}
 
 		void CheckManyNotEqual()
@@ -69,7 +69,7 @@ namespace Totem
 
 			var check = Equality.Check(left, right).Check(x => x.ValueA).Check(x => x.ValueB);
 
-			Expect((bool) check).IsFalse();
+			ExpectNot((bool) check);
 		}
 
 		//

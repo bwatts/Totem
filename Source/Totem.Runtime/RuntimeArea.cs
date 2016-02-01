@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using Autofac;
 using Autofac.Core;
@@ -32,12 +33,46 @@ namespace Totem.Runtime
 
 		protected static Check<T> Check<T>(T target)
 		{
-			return Totem.Check.That(target);
+			return Totem.Check.True(target);
+		}
+
+		protected static Check<T> CheckNot<T>(T target)
+		{
+			return Totem.Check.False(target);
 		}
 
 		protected static Expect<T> Expect<T>(T target)
 		{
-			return Totem.Expect.That(target);
+			return Totem.Expect.True(target);
+		}
+
+		protected static Expect<T> ExpectNot<T>(T target)
+		{
+			return Totem.Expect.False(target);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static void Expect(bool result)
+		{
+			Totem.Expect.True(result);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static void Expect(bool result, Text issue)
+		{
+			Totem.Expect.True(result, issue);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static void ExpectNot(bool result)
+		{
+			Totem.Expect.False(result);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static void ExpectNot(bool result, Text issue)
+		{
+			Totem.Expect.False(result, issue);
 		}
 
 		//

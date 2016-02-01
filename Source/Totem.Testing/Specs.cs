@@ -19,13 +19,41 @@ namespace Totem
 	[XunitAdapter]
 	public abstract class Specs
 	{
-    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
     protected Expect<T> Expect<T>(T target)
 		{
-			return Totem.Expect.That(target);
+			return Totem.Expect.True(target);
 		}
 
-    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		protected Expect<T> ExpectNot<T>(T target)
+		{
+			return Totem.Expect.False(target);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static void Expect(bool result)
+		{
+			Totem.Expect.True(result);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static void Expect(bool result, Text issue)
+		{
+			Totem.Expect.True(result, issue);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static void ExpectNot(bool result)
+		{
+			Totem.Expect.False(result);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static void ExpectNot(bool result, Text issue)
+		{
+			Totem.Expect.False(result, issue);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
     protected void ExpectThrows<TException>(Action action, Text issue = null) where TException : Exception
 		{
 			Totem.Expect.Throws<TException>(action, issue);

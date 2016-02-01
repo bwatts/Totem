@@ -96,7 +96,7 @@ namespace Totem.Http
 		{
 			if(type == "")
 			{
-				Expect(credentials != "" && strict).IsFalse("Credentials cannot be provided without a type");
+				ExpectNot(credentials != "" && strict, "Credentials cannot be provided without a type");
 
 				return Anonymous;
 			}
@@ -115,7 +115,7 @@ namespace Totem.Http
 
 			if(parts.Length != 2)
 			{
-				Expect(strict).IsFalse("Unable to parse value: " + value);
+				ExpectNot(strict, "Unable to parse value: " + value);
 
 				return null;
 			}

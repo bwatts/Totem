@@ -17,9 +17,9 @@ namespace Totem
 			var tags = new Tags();
 
 			Expect(tags.Count).Is(0);
-			Expect(tags.Any()).IsFalse();
-			Expect(tags.Keys.Any()).IsFalse();
-			Expect(tags.Values.Any()).IsFalse();
+			ExpectNot(tags.Any());
+			ExpectNot(tags.Keys.Any());
+			ExpectNot(tags.Values.Any());
 			ExpectThrows<KeyNotFoundException>(() => tags[Tag]);
 		}
 
@@ -30,10 +30,10 @@ namespace Totem
 			tags.Set(Tag, 1);
 
 			Expect(tags.Count).Is(1);
-			Expect(tags.Any()).IsTrue();
+			Expect(tags.Any());
 			Expect(tags.Keys.Count()).Is(1);
 			Expect(tags.Values.Count()).Is(1);
-			Expect(tags.IsUnset(Tag)).IsFalse();
+			ExpectNot(tags.IsUnset(Tag));
 			Expect(tags[Tag].Content).Is(1);
 		}
 

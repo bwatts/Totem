@@ -119,7 +119,7 @@ namespace Totem.Runtime.Map
         .Select(package => selectTypes(package).Get(key, strict: false))
         .FirstOrDefault(type => type != null);
 
-      Expect(strict && packageType == null).IsFalse($"Failed to resolve {typeof(T)} by key: {key}");
+			ExpectNot(strict && packageType == null, $"Failed to resolve {typeof(T)} by key: {key}");
 
       return packageType;
     }
@@ -130,7 +130,7 @@ namespace Totem.Runtime.Map
         .Select(package => selectTypes(package).Get(declaredType, strict: false))
         .FirstOrDefault(type => type != null);
 
-      Expect(strict && packageType == null).IsFalse($"Failed to resolve {typeof(T)} by declared type: {declaredType}");
+			ExpectNot(strict && packageType == null, $"Failed to resolve {typeof(T)} by declared type: {declaredType}");
 
       return packageType;
     }

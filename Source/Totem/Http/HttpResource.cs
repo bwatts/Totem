@@ -42,7 +42,7 @@ namespace Totem.Http
 
 		public HttpResource RelativeTo(HttpResource other)
 		{
-			Expect(Query.IsEmpty).IsTrue("Queried resources are final");
+			Expect(Query.IsEmpty, "Queried resources are final");
 
 			return new HttpResource(Path.RelativeTo(other.Path), other.Query);
 		}
@@ -54,7 +54,7 @@ namespace Totem.Http
 
 		public HttpResource Then(HttpResource resource)
 		{
-			Expect(Query.IsEmpty).IsTrue("Queried resources are final");
+			Expect(Query.IsEmpty, "Queried resources are final");
 
 			return new HttpResource(Path.Then(resource.Path), resource.Query);
 		}
@@ -138,7 +138,7 @@ namespace Totem.Http
 				}
 			}
 
-			Expect(strict).IsFalse("Failed to parse resource: " + value);
+			ExpectNot(strict, "Failed to parse resource: " + value);
 
 			return null;
 		}

@@ -13,24 +13,44 @@ namespace Totem
 	public static class Expectable
 	{
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-		public static Expect<T> That<T>(
+		public static Expect<T> IsTrue<T>(
 			this Expect<T> expect,
-			Func<Check<T>, bool> check,
+			Func<T, bool> check,
 			Text issue = null,
 			Text expected = null,
-			Func<T, Text> actual = null)
+			Func<T, Text> received = null)
+		{
+			return expect.IsTrue(check, WriteMessage(check, issue, expected, received));
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static Expect<T> IsFalse<T>(
+			this Expect<T> expect,
+			Func<T, bool> check,
+			Text issue = null,
+			Text expected = null,
+			Func<T, Text> received = null)
+		{
+			return expect.IsFalse(check, WriteMessage(check, issue, expected, received));
+		}
+
+		private static Func<T, string> WriteMessage<T>(
+			Func<T, bool> check,
+			Text issue,
+			Text expected,
+			Func<T, Text> received)
 		{
 			if(issue == null)
 			{
 				issue = "Unexpected value";
 			}
 
-			if(actual == null)
+			if(received == null)
 			{
-				actual = t => Text.Of(t);
+				received = t => Text.Of(t);
 			}
 
-			return expect.That(check, t =>
+			return t =>
 			{
 				var message = issue.WriteTwoLines();
 
@@ -40,19 +60,19 @@ namespace Totem
 						.WriteLine("Expected:")
 						.WriteLine(expected.Indent())
 						.WriteLine()
-						.WriteLine("Actual:");
+						.WriteLine("Received:");
 				}
 				else
 				{
 					message = message
 						.WriteLine("Check:")
-						.WriteLine(Text.Of(check).Indent())
+						.WriteLine(Text.Of("{0}.{1}", check.Method.DeclaringType, check.Method).Indent())
 						.WriteLine()
 						.WriteLine("Value:");
 				}
 
-				return message.WriteLine(actual(t).Indent());
-			});
+				return message.WriteLine(received(t).Indent());
+			};
 		}
 
 		//
@@ -62,13 +82,13 @@ namespace Totem
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<bool> IsTrue(this Expect<bool> expect, Text issue = null)
 		{
-			return expect.That(t => t.IsTrue(), issue, Text.Of(true));
+			return expect.IsTrue(t => t, issue, Text.Of(true));
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<bool> IsFalse(this Expect<bool> expect, Text issue = null)
 		{
-			return expect.That(t => t.IsFalse(), issue, Text.Of(false));
+			return expect.IsFalse(t => t, issue, Text.Of(false));
 		}
 
 		//
@@ -78,25 +98,25 @@ namespace Totem
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<T> IsNull<T>(this Expect<T> expect, Text issue = null) where T : class
 		{
-			return expect.That(t => t.IsNull(), issue, "null");
+			return expect.IsTrue(t => t == null, issue, "null");
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<T> IsNotNull<T>(this Expect<T> expect, Text issue = null) where T : class
 		{
-			return expect.That(t => t.IsNotNull(), issue, "not null", t => "null");
+			return expect.IsTrue(t => t != null, issue, "not null", t => "null");
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<T?> IsNull<T>(this Expect<T?> expect, Text issue = null) where T : struct
 		{
-			return expect.That(t => t.IsNull(), issue, "null");
+			return expect.IsTrue(t => t == null, issue, "null");
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<T?> IsNotNull<T>(this Expect<T?> expect, Text issue = null) where T : struct
 		{
-			return expect.That(t => t.IsNotNull(), issue, "not null", t => "null");
+			return expect.IsTrue(t => t != null, issue, "not null", t => "null");
 		}
 
 		//
@@ -106,25 +126,25 @@ namespace Totem
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<T> Is<T>(this Expect<T> expect, T other, IEqualityComparer<T> comparer, Text issue = null)
 		{
-			return expect.That(t => t.Is(other, comparer), issue, Text.Of("{0} (comparer = {1})", other, comparer));
+			return expect.IsTrue(t => Check.True(t).Is(other, comparer), issue ?? "Values are not equal", Text.Of("{0} (comparer = {1})", other, comparer));
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<T> Is<T>(this Expect<T> expect, T other, Text issue = null)
 		{
-			return expect.That(t => t.Is(other), issue, Text.Of(other));
+			return expect.IsTrue(t => Check.True(t).Is(other), issue ?? "Values are not equal", Text.Of(other));
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<T> IsNot<T>(this Expect<T> expect, T other, IEqualityComparer<T> comparer, Text issue = null)
 		{
-			return expect.That(t => t.IsNot(other, comparer), issue, Text.Of("not {0} (comparer = {1})", other, comparer));
+			return expect.IsTrue(t => Check.True(t).IsNot(other, comparer), issue ?? "Values are equal", Text.Of("not {0} (comparer = {1})", other, comparer));
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<T> IsNot<T>(this Expect<T> expect, T other, Text issue = null)
 		{
-			return expect.That(t => t.IsNot(other), issue, "not " + Text.Of(other));
+			return expect.IsTrue(t => Check.True(t).IsNot(other), issue ?? "Values are equal", "not " + Text.Of(other));
 		}
 
 		//
@@ -134,13 +154,13 @@ namespace Totem
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<string> IsEmpty(this Expect<string> expect, Text issue = null)
 		{
-			return expect.That(t => t.IsEmpty(), issue, "empty");
+			return expect.IsTrue(t => t == "", issue, "empty");
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<string> IsNotEmpty(this Expect<string> expect, Text issue = null)
 		{
-			return expect.That(t => t.IsNotEmpty(), issue, "not empty", t => "empty");
+			return expect.IsTrue(t => t != "", issue, "not empty", t => "empty");
 		}
 
 		//
@@ -150,13 +170,13 @@ namespace Totem
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<T> IsAssignableTo<T>(this Expect<T> expect, Type type, Text issue = null)
 		{
-			return expect.That(t => t.IsAssignableTo(type), issue, "assignable to " + Text.Of(type));
+			return expect.IsTrue(t => Check.True(t).IsAssignableTo(type), issue ?? "Value is not assignable", "assignable to " + Text.Of(type));
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<Type> IsAssignableTo(this Expect<Type> expect, Type type, Text issue = null)
 		{
-			return expect.That(t => t.IsAssignableTo(type), issue, "assignable to " + Text.Of(type));
+			return expect.IsTrue(t => Check.True(t).IsAssignableTo(type), issue ?? "Value is not assignable", "assignable to " + Text.Of(type));
 		}
 
 		//
@@ -166,7 +186,7 @@ namespace Totem
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<Many<T>> Has<T>(this Expect<Many<T>> expect, int count, Text issue = null)
 		{
-			return expect.That(t => t.Has(count), issue, Text.Count(count, "item"), t => Text.Count(t.Count, "item"));
+			return expect.IsTrue(t => Check.True(t).Has(count), issue ?? "Value has the wrong number of items", Text.Count(count, "item"), t => Text.Count(t.Count, "item"));
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
@@ -195,13 +215,13 @@ namespace Totem
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<Tag<T>> IsUnset<T>(this Expect<Tag<T>> expect, ITaggable target, Text issue = null)
 		{
-			return expect.That(t => t.IsUnset(target), issue, "tag not set", t => $"tag set: {t}");
+			return expect.IsTrue(t => Check.True(t).IsUnset(target), issue, "tag not set", t => $"tag set: {t}");
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<Tag<T>> IsSet<T>(this Expect<Tag<T>> expect, ITaggable target, Text issue = null)
 		{
-			return expect.That(t => t.IsSet(target), issue, "tag set", t => $"tag set: {t}");
+			return expect.IsTrue(t => Check.True(t).IsSet(target), issue, "tag set", t => $"tag set: {t}");
 		}
 	}
 }

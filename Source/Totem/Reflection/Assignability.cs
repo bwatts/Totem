@@ -17,7 +17,7 @@ namespace Totem.Reflection
 				.GetInheritanceChainToObject(includeType: true)
 				.FirstOrDefault(ancestorType => ancestorType.IsGenericType && ancestorType.GetGenericTypeDefinition() == openGenericType);
 
-			Expect.That(strict && assignableGenericType == null).IsFalse(Text.Of(
+			Expect.False(strict && assignableGenericType == null, Text.Of(
 				"No generic type in the inheritance chain of {0} is assignable to {1}",
 				closedGenericType,
 				openGenericType));

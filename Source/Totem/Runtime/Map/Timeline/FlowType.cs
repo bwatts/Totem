@@ -45,14 +45,8 @@ namespace Totem.Runtime.Map.Timeline
 
     public FlowKey CreateKey(Id id)
     {
-      Expect(IsSingleInstance && id.IsAssigned).IsFalse(Text.Of(
-        "Flow {0} is single-instance and cannot have an assigned id of {1}",
-        this,
-        id));
-
-      Expect(IsRouted && id.IsUnassigned).IsFalse(Text.Of(
-        "Flow {0} is routed and must have an assigned id",
-        this));
+      ExpectNot(IsSingleInstance && id.IsAssigned, Text.Of("Flow {0} is single-instance and cannot have an assigned id of {1}", this, id));
+			ExpectNot(IsRouted && id.IsUnassigned, Text.Of("Flow {0} is routed and must have an assigned id", this));
 
       return new FlowKey(this, id);
     }

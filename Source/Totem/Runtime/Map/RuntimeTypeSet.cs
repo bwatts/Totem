@@ -28,7 +28,7 @@ namespace Totem.Runtime.Map
 		{
 			T type;
 
-			Expect(_typesByKey.TryGetValue(key, out type) && strict).IsFalse("Unknown domain key: " + Text.Of(key));
+			ExpectNot(_typesByKey.TryGetValue(key, out type) && strict, "Unknown domain key: " + Text.Of(key));
 
 			return type;
 		}

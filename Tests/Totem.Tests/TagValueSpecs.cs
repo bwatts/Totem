@@ -17,7 +17,7 @@ namespace Totem
 
 			Expect(value.Tag).Is(Tag);
 			Expect(value.Content).Is(Tag.ResolveDefault());
-			Expect(value.IsUnset).IsTrue();
+			Expect(value.IsUnset);
 		}
 
 		void WithContent()
@@ -26,7 +26,7 @@ namespace Totem
 
 			Expect(value.Tag).Is(Tag);
 			Expect(value.Content).Is(2);
-			Expect(value.IsUnset).IsFalse();
+			ExpectNot(value.IsUnset);
 		}
 	}
 }

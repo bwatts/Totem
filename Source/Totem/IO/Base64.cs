@@ -122,8 +122,9 @@ namespace Totem.IO
 			{
 				if(strict)
 				{
-					Expect.That(strict).IsFalse(Text
-						.Of("Failed to parse value: " + value)
+					Expect.False(strict, Text
+						.Of("Failed to parse value: ")
+						.Write(value)
 						.WriteTwoLines()
 						.Write(error));
 				}

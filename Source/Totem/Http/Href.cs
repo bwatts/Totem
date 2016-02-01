@@ -27,7 +27,7 @@ namespace Totem.Http
 		{
 			var href = HttpLink.From(value, strict: false) ?? HttpResource.From(value, strict: false) as Href;
 
-			Expect(strict && href == null).IsFalse("Failed to parse href: " + value);
+			ExpectNot(strict && href == null, "Failed to parse href: " + value);
 
 			return href;
 		}

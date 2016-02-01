@@ -146,7 +146,7 @@ namespace Totem.Http
 				}
 			}
 
-			Expect(strict).IsFalse("Failed to parse host: " + value);
+			ExpectNot(strict, "Failed to parse host: " + value);
 
 			return null;
 		}

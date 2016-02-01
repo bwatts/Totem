@@ -33,7 +33,7 @@ namespace Totem.Reflection
 
 			if(currentType == null)
 			{
-				Expect.That(requireTargetType).IsFalse(Text.Of("Target type {0} is not in chain of {1}", targetType, type));
+				Expect.False(requireTargetType, Text.Of("Target type {0} is not in chain of {1}", targetType, type));
 			}
 			else
 			{

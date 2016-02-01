@@ -51,21 +51,18 @@ namespace Totem.Web
 		{
 			object item;
 
-			Expect.That(Context.Items.TryGetValue(key, out item)).IsTrue("Missing context item: " + key);
+			Expect.True(Context.Items.TryGetValue(key, out item), "Missing context item: " + key);
 
 			if(item is T)
 			{
 				return (T) item;
 			}
 
-			if(strict)
-			{
-				throw new Exception(Totem.Text.Of(
-					"Unexpected context item type for key \"{0}\"; expected {1}, actual is {2}",
-					key,
-					typeof(T),
-					item.GetType()));
-			}
+			Expect.True<bool>(strict).IsFalse(
+				t => t,
+				Totem.Text.Of("Unexpected context item type for key \"{0}\"", key),
+				Totem.Text.OfType<T>(),
+				_ => Totem.Text.OfType(item));
 
 			return default(T);
 		}

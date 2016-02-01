@@ -24,7 +24,7 @@ namespace Totem.Reflection
 		{
 			var type = _types.Resolve(name);
 
-			Expect.That(strict && type == null).IsFalse("Failed to resolve type: " + name);
+			Expect.False(strict && type == null, "Failed to resolve type: " + name);
 
 			return type;
 		}
@@ -33,7 +33,7 @@ namespace Totem.Reflection
 		{
 			var type = _types.Resolve(typeName, assemblyName);
 
-			Expect.That(strict && type == null).IsFalse("Failed to resolve type " + typeName + " in assembly " + assemblyName);
+			Expect.False(strict && type == null, Text.Of("Failed to resolve type {0} in assembly {1}", typeName, assemblyName));
 
 			return type;
 		}

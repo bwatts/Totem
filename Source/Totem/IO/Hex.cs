@@ -113,7 +113,7 @@ namespace Totem.IO
 		{
 			if(value.Length % 2 != 0)
 			{
-				Expect.That(strict).IsFalse("Value is not an even length: " + value);
+				Expect.False(strict, "Value is not an even length: " + value);
 
 				return None;
 			}
@@ -130,8 +130,9 @@ namespace Totem.IO
 				}
 				catch(FormatException exception)
 				{
-					Expect.That(strict).IsFalse(Text
-						.Of("Failed to parse value: " + value)
+					Expect.False(strict, Text
+						.Of("Failed to parse value: ")
+						.Write(value)
 						.WriteTwoLines()
 						.Write(exception));
 

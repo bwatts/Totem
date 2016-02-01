@@ -114,7 +114,7 @@ namespace Totem.Runtime.Configuration
 		{
 			var section = (RuntimeSection) ConfigurationManager.GetSection("totem.runtime");
 
-			Expect.That(strict && section == null).IsFalse(@"Runtime is not configured. Specify this in the configuration file:
+			Expect.False(strict && section == null, @"Runtime is not configured. Specify this in the configuration file:
 
 <configSections>
 	<section name=" + "\"totem.runtime\" type=\"Totem.Runtime.Configuration.RuntimeSection, Totem.Runtime\"" + @" />

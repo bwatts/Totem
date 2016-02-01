@@ -56,7 +56,7 @@ namespace Totem.Http
 		{
 			HttpQueryPair pair;
 
-			Expect(!_pairsByKey.TryGetValue(key, out pair) && strict).IsFalse("Unknown key: " + Text.Of(key));
+			Expect(_pairsByKey.TryGetValue(key, out pair) || !strict, "Unknown key: " + Text.Of(key));
 
 			return pair == null ? null : pair.Value;
 		}
@@ -114,7 +114,7 @@ namespace Totem.Http
 
 				if(pair == null)
 				{
-					Expect(strict).IsFalse("Failed to parse query: " + value);
+					ExpectNot(strict, "Failed to parse query: " + value);
 
 					return null;
 				}

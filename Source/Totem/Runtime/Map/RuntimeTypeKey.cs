@@ -101,7 +101,7 @@ namespace Totem.Runtime.Map
 
 			if(!match.Success)
 			{
-				Expect(strict).IsFalse("Failed to parse runtime type key: " + value);
+				Expect(strict, "Failed to parse runtime type key: " + value);
 
 				return null;
 			}

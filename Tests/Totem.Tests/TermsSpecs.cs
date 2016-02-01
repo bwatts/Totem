@@ -15,8 +15,8 @@ namespace Totem
 
 		void None()
 		{
-			Expect(Terms.None.IsNone).IsTrue();
-			Expect(Terms.None.IsNotNone).IsFalse();
+			Expect(Terms.None.IsNone);
+			ExpectNot(Terms.None.IsNotNone);
 			Expect(Terms.None.Count).Is(0);
 		}
 
@@ -38,8 +38,8 @@ namespace Totem
 		{
 			var terms = Terms.From("x");
 
-			Expect(terms.IsNone).IsFalse();
-			Expect(terms.IsNotNone).IsTrue();
+			ExpectNot(terms.IsNone);
+			Expect(terms.IsNotNone);
 			Expect(terms.Count).Is(1);
 		}
 
@@ -66,8 +66,8 @@ namespace Totem
 		{
 			var terms = Terms.From("x", "y");
 
-			Expect(terms.IsNone).IsFalse();
-			Expect(terms.IsNotNone).IsTrue();
+			ExpectNot(terms.IsNone);
+			Expect(terms.IsNotNone);
 			Expect(terms.Count).Is(2);
 		}
 

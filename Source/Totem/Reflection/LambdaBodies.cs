@@ -19,7 +19,7 @@ namespace Totem.Reflection
 
 			var member = memberExpression == null ? null : memberExpression.Member;
 
-      Expect.That(strict && member == null).IsFalse("Lambda does not access a field or property");
+      Expect.False(strict && member == null, "Lambda does not access a field or property");
 
 			return member;
 		}
@@ -28,7 +28,7 @@ namespace Totem.Reflection
 		{
 			var field = lambda.GetMemberInfo(strict: false) as FieldInfo;
 
-      Expect.That(strict && field == null).IsFalse("Lambda does not access a field");
+      Expect.False(strict && field == null, "Lambda does not access a field");
 
 			return field;
 		}
@@ -37,7 +37,7 @@ namespace Totem.Reflection
 		{
 			var property = lambda.GetMemberInfo(strict: false) as PropertyInfo;
 
-      Expect.That(strict && property == null).IsFalse("Lambda does not access a property");
+      Expect.False(strict && property == null, "Lambda does not access a property");
 
 			return property;
 		}
@@ -48,7 +48,7 @@ namespace Totem.Reflection
 
 			var method = callExpression == null ? null : callExpression.Method;
 
-      Expect.That(strict && method == null).IsFalse("Lambda does not call a method");
+      Expect.False(strict && method == null, "Lambda does not call a method");
 
 			return method;
 		}

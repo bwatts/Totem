@@ -103,7 +103,7 @@ namespace Totem.Runtime.Map
 		{
 			if(!_regex.IsMatch(value))
 			{
-				Expect(strict).IsFalse("Failed to parse region key: " + value);
+				ExpectNot(strict, "Failed to parse region key: " + value);
 
 				return null;
 			}
@@ -124,7 +124,7 @@ namespace Totem.Runtime.Map
 
 			var regionKey = attribute == null ? null : attribute.Region;
 
-			Expect(strict && regionKey == null).IsFalse(Text
+			ExpectNot(strict && regionKey == null, Text
 				.Of("Assembly is not a runtime package: ")
 				.WriteTwoLines()
 				.Write(assembly.FullName)

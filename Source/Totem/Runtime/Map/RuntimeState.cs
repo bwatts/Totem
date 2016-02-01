@@ -44,7 +44,7 @@ namespace Totem.Runtime.Map
 		{
 			if(!ContainsName(name))
 			{
-				Expect(strict).IsFalse("Unknown part name: " + Text.Of(name));
+				Expect(strict, "Unknown part name: " + Text.Of(name));
 
 				return null;
 			}

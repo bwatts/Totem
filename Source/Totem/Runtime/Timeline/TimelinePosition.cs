@@ -27,7 +27,7 @@ namespace Totem.Runtime.Timeline
 
 		public long ToInt64()
 		{
-			Expect.That(IsNone).IsFalse("Position has no Int64 value");
+			Expect.False(IsNone, "Position has no Int64 value");
 
 			return _point.Value;
 		}

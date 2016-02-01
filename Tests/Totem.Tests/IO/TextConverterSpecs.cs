@@ -25,17 +25,17 @@ namespace Totem.IO
 
 		void CanConvertFromString()
 		{
-			Expect(converter.CanConvertFrom(typeof(string))).IsTrue();
+			Expect(converter.CanConvertFrom(typeof(string)));
 		}
 
 		void CanConvertFromText()
 		{
-			Expect(converter.CanConvertFrom(typeof(Text))).IsTrue();
+			Expect(converter.CanConvertFrom(typeof(Text)));
 		}
 
 		void CanConvertFromInt32()
 		{
-			Expect(converter.CanConvertFrom(typeof(int))).IsTrue();
+			Expect(converter.CanConvertFrom(typeof(int)));
 		}
 
 		//
@@ -44,17 +44,17 @@ namespace Totem.IO
 
 		void CanConvertToString()
 		{
-			Expect(converter.CanConvertTo(typeof(string))).IsTrue();
+			Expect(converter.CanConvertTo(typeof(string)));
 		}
 
 		void CanConvertToText()
 		{
-			Expect(converter.CanConvertTo(typeof(Text))).IsTrue();
+			Expect(converter.CanConvertTo(typeof(Text)));
 		}
 
 		void CanConvertToInt32()
 		{
-			Expect(converter.CanConvertTo(typeof(int))).IsFalse();
+			ExpectNot(converter.CanConvertTo(typeof(int)));
 		}
 
 		//
@@ -72,7 +72,7 @@ namespace Totem.IO
 		{
 			var value = converter.ConvertTo(1, typeof(Text));
 
-			Expect(value is Text).IsTrue();
+			Expect(value is Text);
 			Expect(value.ToString()).Is("1");
 		}
 

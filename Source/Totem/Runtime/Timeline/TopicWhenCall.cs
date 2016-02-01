@@ -46,7 +46,7 @@ namespace Totem.Runtime.Timeline
 
 		private void ExpectNotRetrieved()
 		{
-			Expect.That(_newEvents).IsNotNull("New events already retrieved");
+			Expect.True(_newEvents).IsNotNull("New events already retrieved");
 		}
 	}
 }

@@ -17,12 +17,12 @@ namespace Totem
 
 		public static Check<bool> IsTrue(this Check<bool> check)
 		{
-			return check.That(t => t);
+			return check.IsTrue(t => t);
 		}
 
 		public static Check<bool> IsFalse(this Check<bool> check)
 		{
-			return check.That(t => !t);
+			return check.IsTrue(t => !t);
 		}
 
 		//
@@ -31,22 +31,22 @@ namespace Totem
 
 		public static Check<T> IsNull<T>(this Check<T> check) where T : class
 		{
-			return check.That(t => t == null);
+			return check.IsTrue(t => t == null);
 		}
 
 		public static Check<T?> IsNull<T>(this Check<T?> check) where T : struct
 		{
-			return check.That(t => t == null);
+			return check.IsTrue(t => t == null);
 		}
 
 		public static Check<T> IsNotNull<T>(this Check<T> check) where T : class
 		{
-			return check.That(t => t != null);
+			return check.IsTrue(t => t != null);
 		}
 
 		public static Check<T?> IsNotNull<T>(this Check<T?> check) where T : struct
 		{
-			return check.That(t => t != null);
+			return check.IsTrue(t => t != null);
 		}
 
 		//
@@ -55,7 +55,7 @@ namespace Totem
 
 		public static Check<T> Is<T>(this Check<T> check, T other, IEqualityComparer<T> comparer)
 		{
-			return check.That(t => comparer.Equals(t, other));
+			return check.IsTrue(t => comparer.Equals(t, other));
 		}
 
 		public static Check<T> Is<T>(this Check<T> check, T other)
@@ -65,7 +65,7 @@ namespace Totem
 
 		public static Check<T> IsNot<T>(this Check<T> check, T other, IEqualityComparer<T> comparer)
 		{
-			return check.That(t => !comparer.Equals(t, other));
+			return check.IsFalse(t => comparer.Equals(t, other));
 		}
 
 		public static Check<T> IsNot<T>(this Check<T> check, T other)
@@ -79,12 +79,12 @@ namespace Totem
 
 		public static Check<string> IsEmpty(this Check<string> check)
 		{
-			return check.That(t => t == "");
+			return check.IsTrue(t => t == "");
 		}
 
 		public static Check<string> IsNotEmpty(this Check<string> check)
 		{
-			return check.That(t => t != "");
+			return check.IsTrue(t => t != "");
 		}
 
 		//
@@ -93,12 +93,12 @@ namespace Totem
 
 		public static Check<T> IsAssignableTo<T>(this Check<T> check, Type type)
 		{
-			return check.That(t => type.IsAssignableFrom(t.GetType()));
+			return check.IsTrue(t => type.IsAssignableFrom(t.GetType()));
 		}
 
 		public static Check<Type> IsAssignableTo(this Check<Type> check, Type type)
 		{
-			return check.That(type.IsAssignableFrom);
+			return check.IsTrue(type.IsAssignableFrom);
 		}
 
 		//
@@ -107,7 +107,7 @@ namespace Totem
 
 		public static Check<Many<T>> Has<T>(this Check<Many<T>> check, int count)
 		{
-			return check.That(t => t.Count == count);
+			return check.IsTrue(t => t.Count == count);
 		}
 
 		public static Check<Many<T>> Has0<T>(this Check<Many<T>> check)
@@ -121,7 +121,7 @@ namespace Totem
 
 			if(checkItem != null)
 			{
-				check = check.That(t => checkItem(t[0]));
+				check = check.IsTrue(t => checkItem(t[0]));
 			}
 
 			return check;
@@ -133,12 +133,12 @@ namespace Totem
 
 		public static Check<Tag<T>> IsUnset<T>(this Check<Tag<T>> check, ITaggable target)
 		{
-			return check.That(t => t.IsUnset(target));
+			return check.IsTrue(t => t.IsUnset(target));
 		}
 
 		public static Check<Tag<T>> IsSet<T>(this Check<Tag<T>> check, ITaggable target)
 		{
-			return check.That(t => !t.IsUnset(target));
+			return check.IsFalse(t => t.IsUnset(target));
 		}
 	}
 }

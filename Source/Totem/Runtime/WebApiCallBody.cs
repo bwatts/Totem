@@ -33,7 +33,7 @@ namespace Totem.Runtime
 
 		private TContent Read<TContent>(Func<TContent> read)
 		{
-			Expect(CanRead).IsTrue("Cannot read stream twice");
+			Expect(CanRead, "Cannot read stream twice");
 
 			CanRead = false;
 

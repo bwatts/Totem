@@ -61,7 +61,7 @@ namespace Totem.Runtime.Map.Timeline
 				return e;
 			}
 
-			Expect(strict).IsFalse("Unknown event key: " + Text.Of(key));
+			ExpectNot(strict, "Unknown event key: " + Text.Of(key));
 
 			return null;
 		}
@@ -75,7 +75,7 @@ namespace Totem.Runtime.Map.Timeline
 				return e;
 			}
 
-			Expect(strict).IsFalse("Unknown event type: " + Text.Of(declaredType));
+			ExpectNot(strict, "Unknown event type: " + Text.Of(declaredType));
 
 			return null;
 		}

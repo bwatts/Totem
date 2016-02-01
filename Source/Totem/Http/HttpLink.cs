@@ -167,7 +167,7 @@ namespace Totem.Http
 				}
 			}
 
-			Expect(strict).IsFalse("Failed to parse HTTP link: " + value);
+			ExpectNot(strict, "Failed to parse HTTP link: " + value);
 
 			return null;
 		}

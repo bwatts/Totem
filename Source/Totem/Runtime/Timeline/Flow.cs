@@ -116,7 +116,7 @@ namespace Totem.Runtime.Timeline
 		{
 			ExpectCallingWhen();
 
-			Expect(Done).IsFalse("Flow is already done");
+			ExpectNot(Done, "Flow is already done");
 
       Done = true;
 		}

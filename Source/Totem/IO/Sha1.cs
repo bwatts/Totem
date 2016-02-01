@@ -116,7 +116,7 @@ namespace Totem.IO
 		{
 			if(hex.TextLength != HexLength)
 			{
-				Expect.That(strict).IsFalse("Value is not the SHA-1 text length of 40 characters: " + hex.ToText());
+				Expect.False(strict, "Value is not the SHA-1 text length of 40 characters: " + hex.ToText());
 
 				return None;
 			}
@@ -133,7 +133,7 @@ namespace Totem.IO
 		{
 			if(binary.Length != BinaryLength)
 			{
-				Expect.That(strict).IsFalse("Value is not the SHA-1 binary length of 20 bytes: " + binary.ToText());
+				Expect.False(strict, "Value is not the SHA-1 binary length of 20 bytes: " + binary.ToText());
 
 				return None;
 			}

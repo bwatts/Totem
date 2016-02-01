@@ -35,7 +35,7 @@ namespace Totem.Runtime.Map
 				.Select(region => region.GetPackage(name, strict: false))
 				.FirstOrDefault(regionPackage => regionPackage != null);
 
-			Expect(strict && package == null).IsFalse($"Failed to resolve package: {name}");
+			ExpectNot(strict && package == null, $"Failed to resolve package: {name}");
 
 			return package;
 		}

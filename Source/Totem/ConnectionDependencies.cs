@@ -70,7 +70,7 @@ namespace Totem
 			{
 				foreach(var dependency in _selectDependencies(item))
 				{
-          Expect.That(_addContext.Contains(dependency)).IsFalse(Text
+          Expect.False(_addContext.Contains(dependency), Text
             .Of("There is a cycle in the connection graph")
             .WriteTwoLines()
             .Write("item: ")

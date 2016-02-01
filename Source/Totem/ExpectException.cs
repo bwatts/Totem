@@ -35,8 +35,14 @@ namespace Totem
 			return Text
 				.Of(base.StackTrace)
 				.SplitLines()
-				.Where(line => !line.Contains("at Totem.Expect`1.") && !line.Contains("at Totem.Expectable."))
+				.Where(line => _filters.All(filter => !line.Contains(filter)))
 				.ToTextSeparatedBy(Text.Line);
 		}
+
+		private static readonly Many<string> _filters = Many.Of(
+			"at Totem.Expect.",
+			"at Totem.Expect`1.",
+			"at Totem.Expectable.",
+			"at Totem.Specs.");
 	}
 }

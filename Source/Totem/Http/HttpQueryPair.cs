@@ -74,7 +74,7 @@ namespace Totem.Http
 
 			if(parts.Length != 2)
 			{
-				Expect(strict).IsFalse("Failed to parse query pair: " + value);
+				ExpectNot(strict, "Failed to parse query pair: " + value);
 
 				return null;
 			}

@@ -16,7 +16,7 @@ namespace Totem
 		void Root()
 		{
 			Expect(LinkPath.Root.Segments.Count).Is(0);
-			Expect(LinkPath.Root.IsTemplate).IsFalse();
+			ExpectNot(LinkPath.Root.IsTemplate);
 			Expect(LinkPath.Root.ToString()).Is("");
 		}
 
@@ -93,8 +93,8 @@ namespace Totem
 		{
 			var path = LinkPath.From("{x}");
 
-			Expect(path.IsTemplate).IsTrue();
-			Expect(path.Segments[0].IsTemplate).IsTrue();
+			Expect(path.IsTemplate);
+			Expect(path.Segments[0].IsTemplate);
 		}
 
 		//
@@ -143,9 +143,9 @@ namespace Totem
 		{
 			var path = LinkPath.From("{x}", "y");
 
-			Expect(path.IsTemplate).IsTrue();
-			Expect(path.Segments[0].IsTemplate).IsTrue();
-			Expect(path.Segments[1].IsTemplate).IsFalse();
+			Expect(path.IsTemplate);
+			Expect(path.Segments[0].IsTemplate);
+			ExpectNot(path.Segments[1].IsTemplate);
 		}
 	}
 }
