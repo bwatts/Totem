@@ -9,7 +9,7 @@ namespace Totem.Http
 	/// <summary>
 	/// The value of the HTTP Authorization header
 	/// </summary>
-	[TypeConverter(typeof(HttpAuthorization.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class HttpAuthorization : Notion, IEquatable<HttpAuthorization>, IComparable<HttpAuthorization>
 	{
 		private HttpAuthorization(string type, string credentials)
@@ -20,8 +20,8 @@ namespace Totem.Http
 
 		public string Type { get; private set; }
 		public string Credentials { get; private set; }
-		public bool IsAnonymous { get { return Type == "" || Credentials == ""; } }
-		public bool IsAuthenticated { get { return Credentials != ""; } }
+		public bool IsAnonymous => Type == "" || Credentials == "";
+		public bool IsAuthenticated => Credentials != "";
 
 		public override Text ToText()
 		{
@@ -39,7 +39,7 @@ namespace Totem.Http
 
 		public bool Equals(HttpAuthorization other)
 		{
-			return Equality.Check(this, other).Check(x => x.Type).Check(x => x.Credentials);
+			return Eq.Values(this, other).Check(x => x.Type).Check(x => x.Credentials);
 		}
 
 		public override int GetHashCode()
@@ -49,42 +49,15 @@ namespace Totem.Http
 
 		public int CompareTo(HttpAuthorization other)
 		{
-			return Equality.Compare(this, other).Check(x => x.Type).Check(x => x.Credentials);
+			return Cmp.Values(this, other).Check(x => x.Type).Check(x => x.Credentials);
 		}
 
-		//
-		// Operators
-		//
-
-		public static bool operator ==(HttpAuthorization x, HttpAuthorization y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(HttpAuthorization x, HttpAuthorization y)
-		{
-			return !(x == y);
-		}
-
-		public static bool operator >(HttpAuthorization x, HttpAuthorization y)
-		{
-			return Equality.CompareOp(x, y) > 0;
-		}
-
-		public static bool operator <(HttpAuthorization x, HttpAuthorization y)
-		{
-			return Equality.CompareOp(x, y) < 0;
-		}
-
-		public static bool operator >=(HttpAuthorization x, HttpAuthorization y)
-		{
-			return Equality.CompareOp(x, y) >= 0;
-		}
-
-		public static bool operator <=(HttpAuthorization x, HttpAuthorization y)
-		{
-			return Equality.CompareOp(x, y) <= 0;
-		}
+		public static bool operator ==(HttpAuthorization x, HttpAuthorization y) => Eq.Op(x, y);
+		public static bool operator !=(HttpAuthorization x, HttpAuthorization y) => Eq.OpNot(x, y);
+		public static bool operator >(HttpAuthorization x, HttpAuthorization y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(HttpAuthorization x, HttpAuthorization y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(HttpAuthorization x, HttpAuthorization y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(HttpAuthorization x, HttpAuthorization y) => Cmp.Op(x, y) <= 0;
 
 		//
 		// Factory

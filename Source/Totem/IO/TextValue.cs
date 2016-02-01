@@ -23,14 +23,11 @@ namespace Totem.IO
 		public ITypeDescriptorContext Context { get; private set; }
 		public CultureInfo Culture { get; private set; }
 
-		public override string ToString()
-		{
-			return _value;
-		}
+		public override string ToString() => _value;
 
 		public static implicit operator string(TextValue value)
 		{
-			return value.ToString();
+			return value?.ToString() ?? "";
 		}
 	}
 }

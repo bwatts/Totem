@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Map
 {
@@ -22,10 +21,7 @@ namespace Totem.Runtime.Map
 		public readonly Type DeclaredType;
 		public readonly RuntimeTypeKey Key;
 
-		public override Text ToText()
-		{
-			return Key.ToText();
-		}
+		public override Text ToText() => Key.ToText();
 
 		public bool Is(Type type)
 		{

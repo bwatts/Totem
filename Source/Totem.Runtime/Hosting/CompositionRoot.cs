@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Threading.Tasks;
 using Autofac;
-using Totem.Runtime.Configuration;
-using Totem.Runtime.Hosting.Commands;
 using Totem.Runtime.Map;
 
 namespace Totem.Runtime.Hosting

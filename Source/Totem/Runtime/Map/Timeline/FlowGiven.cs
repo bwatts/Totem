@@ -19,7 +19,7 @@ namespace Totem.Runtime.Map.Timeline
 			_call = new Lazy<Action<Flow, Event>>(CompileCall);
 		}
 
-		public Action<Flow, Event> Call { get { return _call.Value; } }
+		public Action<Flow, Event> Call => _call.Value;
 
 		private Action<Flow, Event> CompileCall()
 		{

@@ -6,14 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Totem.IO
 {
 	/// <summary>
 	/// A sequences of bytes
 	/// </summary>
-	[TypeConverter(typeof(Binary.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public struct Binary : IWritable, IEquatable<Binary>
 	{
 		public static readonly Binary None = new Binary();
@@ -25,18 +24,11 @@ namespace Totem.IO
 			_data = data;
 		}
 
-		public int Length { get { return _data == null ? 0 : _data.Length; } }
-		public long LongLength { get { return _data == null ? 0 : _data.LongLength; } }
+		public int Length => _data == null ? 0 : _data.Length;
+		public long LongLength => _data == null ? 0 : _data.LongLength;
 
-		public override string ToString()
-		{
-			return ToText();
-		}
-
-		public Text ToText()
-		{
-			return _data == null ? Text.None : ToBase64().ToText();
-		}
+		public override string ToString() => ToText();
+		public Text ToText() => _data == null ? Text.None : ToBase64().ToText();
 
 		public Text ToText(Encoding encoding)
 		{
@@ -59,20 +51,9 @@ namespace Totem.IO
 			return copy;
 		}
 
-		public Base64 ToBase64()
-		{
-			return Base64.From(this);
-		}
-
-		public Hex ToHex()
-		{
-			return Hex.From(this);
-		}
-
-		public MemoryStream ToStream()
-		{
-			return new MemoryStream(_data);
-		}
+		public Base64 ToBase64() => Base64.From(this);
+		public Hex ToHex() => Hex.From(this);
+		public MemoryStream ToStream() => new MemoryStream(_data);
 
 		public Binary Append(Binary other)
 		{
@@ -108,15 +89,8 @@ namespace Totem.IO
 		// Operators
 		//
 
-		public static bool operator ==(Binary x, Binary y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(Binary x, Binary y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(Binary x, Binary y) => Eq.Op(x, y);
+		public static bool operator !=(Binary x, Binary y) => Eq.OpNot(x, y);
 
 		public static implicit operator Binary(byte[] data)
 		{

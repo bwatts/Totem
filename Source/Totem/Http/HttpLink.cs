@@ -10,7 +10,7 @@ namespace Totem.Http
 	/// <summary>
 	/// A link to an HTTP resource
 	/// </summary>
-	[TypeConverter(typeof(HttpLink.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class HttpLink : Href, IEquatable<HttpLink>, IComparable<HttpLink>
 	{
 		private HttpLink(HttpHost host, HttpResource resource)
@@ -21,12 +21,9 @@ namespace Totem.Http
 
 		public HttpHost Host { get; private set; }
 		public HttpResource Resource { get; private set; }
-		public override bool IsTemplate { get { return Host.IsTemplate || Resource.IsTemplate; } }
+		public override bool IsTemplate => Host.IsTemplate || Resource.IsTemplate;
 
-		public override Text ToText()
-		{
-			return ToText(false);
-		}
+		public override Text ToText() => ToText();
 
 		public Text ToText(bool trailingSlash = false)
 		{
@@ -49,7 +46,7 @@ namespace Totem.Http
 
 		public bool Equals(HttpLink other)
 		{
-			return Equality.Check(this, other).Check(x => x.Host).Check(x => x.Resource);
+			return Eq.Values(this, other).Check(x => x.Host).Check(x => x.Resource);
 		}
 
 		public override int GetHashCode()
@@ -59,42 +56,15 @@ namespace Totem.Http
 
 		public int CompareTo(HttpLink other)
 		{
-			return Equality.Compare(this, other).Check(x => x.Host).Check(x => x.Resource);
+			return Cmp.Values(this, other).Check(x => x.Host).Check(x => x.Resource);
 		}
 
-		//
-		// Operators
-		//
-
-		public static bool operator ==(HttpLink x, HttpLink y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(HttpLink x, HttpLink y)
-		{
-			return !(x == y);
-		}
-
-		public static bool operator >(HttpLink x, HttpLink y)
-		{
-			return Equality.CompareOp(x, y) > 0;
-		}
-
-		public static bool operator <(HttpLink x, HttpLink y)
-		{
-			return Equality.CompareOp(x, y) < 0;
-		}
-
-		public static bool operator >=(HttpLink x, HttpLink y)
-		{
-			return Equality.CompareOp(x, y) >= 0;
-		}
-
-		public static bool operator <=(HttpLink x, HttpLink y)
-		{
-			return Equality.CompareOp(x, y) <= 0;
-		}
+		public static bool operator ==(HttpLink x, HttpLink y) => Eq.Op(x, y);
+		public static bool operator !=(HttpLink x, HttpLink y) => Eq.OpNot(x, y);
+		public static bool operator >(HttpLink x, HttpLink y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(HttpLink x, HttpLink y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(HttpLink x, HttpLink y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(HttpLink x, HttpLink y) => Cmp.Op(x, y) <= 0;
 
 		//
 		// Factory

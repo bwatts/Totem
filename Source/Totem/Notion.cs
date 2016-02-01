@@ -15,23 +15,16 @@ namespace Totem
 	{
 		private Tags _tags;
 
-		Tags ITaggable.Tags { get { return Tags; } }
+		Tags ITaggable.Tags => Tags;
 
-		protected Tags Tags { get { return _tags ?? (_tags = new Tags()); } }
+		protected Tags Tags => _tags ?? (_tags = new Tags());
 
-		protected IClock Clock { get { return Traits.Clock.Get(this); } }
-		protected ILog Log { get { return Traits.Log.Get(this); } }
-		protected RuntimeMap Runtime { get { return Traits.Runtime.Get(this); } }
+		protected IClock Clock => Traits.Clock.Get(this);
+		protected ILog Log => Traits.Log.Get(this);
+		protected RuntimeMap Runtime => Traits.Runtime.Get(this);
 
-		public sealed override string ToString()
-		{
-			return ToText();
-		}
-
-		public virtual Text ToText()
-		{
-			return base.ToString();
-		}
+		public sealed override string ToString() => ToText();
+		public virtual Text ToText() => base.ToString();
 
 		protected static Check<T> Check<T>(T target)
 		{
@@ -122,7 +115,7 @@ namespace Totem
 				private readonly BlockingCollection<LogMessage> _messages = new BlockingCollection<LogMessage>();
 				private ILog _effectiveLog;
 
-				public LogLevel Level { get { return LogLevel.Inherit; } }
+				public LogLevel Level => LogLevel.Inherit;
 
 				public void Write(LogMessage message)
 				{

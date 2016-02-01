@@ -9,7 +9,7 @@ namespace Totem.IO
 	/// <summary>
 	/// An identifier representing the format of a piece of media
 	/// </summary>
-	[TypeConverter(typeof(MediaType.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class MediaType : Notion, IEquatable<MediaType>, IComparable<MediaType>
 	{
 		public MediaType(string name)
@@ -19,10 +19,7 @@ namespace Totem.IO
 
 		public readonly string Name;
 
-		public override Text ToText()
-		{
-			return ToText();
-		}
+		public override Text ToText() => ToText();
 
 		public Text ToText(bool escaped = false, Encoding encoding = null)
 		{
@@ -65,44 +62,14 @@ namespace Totem.IO
 			return other == null ? 1 : String.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
 		}
 
-		//
-		// Operators
-		//
+		public static bool operator ==(MediaType x, MediaType y) => Eq.Op(x, y);
+		public static bool operator !=(MediaType x, MediaType y) => Eq.OpNot(x, y);
+		public static bool operator >(MediaType x, MediaType y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(MediaType x, MediaType y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(MediaType x, MediaType y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(MediaType x, MediaType y) => Cmp.Op(x, y) <= 0;
 
-		public static implicit operator MediaType(string name)
-		{
-			return new MediaType(name);
-		}
-
-		public static bool operator ==(MediaType x, MediaType y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(MediaType x, MediaType y)
-		{
-			return !(x == y);
-		}
-
-		public static bool operator >(MediaType x, MediaType y)
-		{
-			return Equality.CompareOp(x, y) > 0;
-		}
-
-		public static bool operator <(MediaType x, MediaType y)
-		{
-			return Equality.CompareOp(x, y) < 0;
-		}
-
-		public static bool operator >=(MediaType x, MediaType y)
-		{
-			return Equality.CompareOp(x, y) >= 0;
-		}
-
-		public static bool operator <=(MediaType x, MediaType y)
-		{
-			return Equality.CompareOp(x, y) <= 0;
-		}
+		public static implicit operator MediaType(string name) => new MediaType(name);
 
 		//
 		// Inherent

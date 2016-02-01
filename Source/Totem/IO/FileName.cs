@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 
 namespace Totem.IO
@@ -9,7 +8,7 @@ namespace Totem.IO
 	/// <summary>
 	/// The extension-qualified name identifying a file
 	/// </summary>
-	[TypeConverter(typeof(FileName.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class FileName : LinkPart, IEquatable<FileName>
 	{
 		private FileName(LinkText text, LinkText extension)
@@ -20,7 +19,7 @@ namespace Totem.IO
 
 		public LinkText Text { get; private set; }
 		public LinkText Extension { get; private set; }
-		public override bool IsTemplate { get { return Text.IsTemplate || Extension.IsTemplate; } }
+		public override bool IsTemplate => Text.IsTemplate || Extension.IsTemplate;
 
 		public override Text ToText()
 		{
@@ -38,7 +37,7 @@ namespace Totem.IO
 
 		public bool Equals(FileName other)
 		{
-			return Equality.Check(this, other).Check(x => x.Text).Check(x => x.Extension);
+			return Eq.Values(this, other).Check(x => x.Text).Check(x => x.Extension);
 		}
 
 		public override int GetHashCode()
@@ -46,15 +45,8 @@ namespace Totem.IO
 			return HashCode.Combine(Text, Extension);
 		}
 
-		public static bool operator ==(FileName x, FileName y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(FileName x, FileName y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(FileName x, FileName y) => Eq.Op(x, y);
+		public static bool operator !=(FileName x, FileName y) => Eq.OpNot(x, y);
 
 		//
 		// Factory

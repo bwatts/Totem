@@ -42,8 +42,9 @@
     </Compile>
     <Compile Include="Check.cs" />
     <Compile Include="Checkable.cs" />
+    <Compile Include="Cmp.cs" />
     <Compile Include="Runtime\ConnectionDependencies.cs" />
-    <Compile Include="Equality.cs" />
+    <Compile Include="Eq.cs" />
     <Compile Include="Runtime\Connection.cs">
       <SubType>Code</SubType>
     </Compile>

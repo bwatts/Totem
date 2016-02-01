@@ -11,7 +11,7 @@ namespace Totem
 	/// <summary>
 	/// Content in a write to <see cref="System.IO.TextWriter"/>
 	/// </summary>
-	[TypeConverter(typeof(Text.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class Text : IWritable
 	{
 		private readonly bool _isNone;
@@ -90,19 +90,8 @@ namespace Totem
 			_textValue = right;
 		}
 
-		//
-		// ToString
-		//
-
-		public override string ToString()
-		{
-			return ToBuilder().ToString();
-		}
-
-		public Text ToText()
-		{
-			return this;
-		}
+		public override string ToString() => ToBuilder().ToString();
+		public Text ToText() => this;
 
 		//
 		// ToBuilder

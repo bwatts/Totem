@@ -19,10 +19,7 @@ namespace Totem.Runtime.Map
 		public RuntimeRegionKey Key { get; private set; }
 		public RuntimePackageSet Packages { get; private set; }
 
-		public override Text ToText()
-		{
-			return Key.ToText();
-		}
+		public override Text ToText() => Key.ToText();
 
 		public RuntimePackage GetPackage(string name, bool strict = true)
 		{

@@ -17,20 +17,10 @@ namespace Totem.Runtime.Map.Timeline
 		private readonly EventDictionary<RuntimeTypeKey> _eventsByKey = new EventDictionary<RuntimeTypeKey>();
 		private readonly EventDictionary<Type> _eventsByDeclaredType = new EventDictionary<Type>();
 
-		public IEnumerator<FlowEvent> GetEnumerator()
-		{
-			return _eventsByKey.Values.GetEnumerator();
-		}
+		public IEnumerator<FlowEvent> GetEnumerator() => _eventsByKey.Values.GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public int Count
-		{
-			get { return _eventsByKey.Count; }
-		}
+		public int Count => _eventsByKey.Count;
 
 		public bool Contains(EventType e)
 		{

@@ -10,7 +10,7 @@ namespace Totem
 	/// <summary>
 	/// A space-separated list of descriptive text values
 	/// </summary>
-	[TypeConverter(typeof(Terms.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class Terms : IWritable, IEquatable<Terms>, IReadOnlyList<string>
 	{
 		private readonly string[] _terms;
@@ -20,30 +20,16 @@ namespace Totem
 			_terms = terms;
 		}
 
-		public bool IsNone { get { return _terms.Length == 0; } }
-		public bool IsNotNone { get { return _terms.Length != 0; } }
-		public int Count { get { return _terms.Length; } }
-		public string this[int index] { get { return _terms[index]; } }
+		public bool IsNone => _terms.Length == 0;
+		public bool IsNotNone => _terms.Length != 0;
+		public int Count => _terms.Length;
+		public string this[int index] => _terms[index];
 
-		public IEnumerator<string> GetEnumerator()
-		{
-			return _terms.AsEnumerable().GetEnumerator();
-		}
+		public IEnumerator<string> GetEnumerator() => _terms.AsEnumerable().GetEnumerator();
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public override string ToString()
-		{
-			return ToText();
-		}
-
-		public Text ToText()
-		{
-			return _terms.ToTextSeparatedBy(" ");
-		}
+		public override string ToString() => ToText();
+		public Text ToText() => _terms.ToTextSeparatedBy(" ");
 
 		//
 		// Equality
@@ -128,55 +114,18 @@ namespace Totem
 		// Operators
 		//
 
-		public static bool operator ==(Terms x, Terms y)
-		{
-			return Equality.CheckOp(x, y);
-		}
+		public static bool operator ==(Terms x, Terms y) => Eq.Op(x, y);
+		public static bool operator !=(Terms x, Terms y) => Eq.OpNot(x, y);
 
-		public static bool operator !=(Terms x, Terms y)
-		{
-			return !(x == y);
-		}
+		public static Terms operator +(Terms x, Terms y) => x.Union(y);
+		public static Terms operator +(Terms x, IEnumerable<Terms> y) => x.Union(y);
+		public static Terms operator +(Terms x, string y) => x.Union(y);
+		public static Terms operator +(Terms x, IEnumerable<string> y) => x.Union(y);
 
-		public static Terms operator +(Terms x, Terms y)
-		{
-			return x.Union(y);
-		}
-
-		public static Terms operator +(Terms x, IEnumerable<Terms> y)
-		{
-			return x.Union(y);
-		}
-
-		public static Terms operator +(Terms x, string y)
-		{
-			return x.Union(y);
-		}
-
-		public static Terms operator +(Terms x, IEnumerable<string> y)
-		{
-			return x.Union(y);
-		}
-
-		public static Terms operator -(Terms x, Terms y)
-		{
-			return x.Except(y);
-		}
-
-		public static Terms operator -(Terms x, IEnumerable<Terms> y)
-		{
-			return x.Except(y);
-		}
-
-		public static Terms operator -(Terms x, string y)
-		{
-			return x.Except(y);
-		}
-
-		public static Terms operator -(Terms x, IEnumerable<string> y)
-		{
-			return x.Except(y);
-		}
+		public static Terms operator -(Terms x, Terms y) => x.Except(y);
+		public static Terms operator -(Terms x, IEnumerable<Terms> y) => x.Except(y);
+		public static Terms operator -(Terms x, string y) => x.Except(y);
+		public static Terms operator -(Terms x, IEnumerable<string> y) => x.Except(y);
 
 		//
 		// Factory

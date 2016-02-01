@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Totem.Http;
 using Totem.IO;
 
@@ -14,7 +12,7 @@ namespace Totem.Runtime.Map
 	/// <summary>
 	/// Identifies a region within a runtime, establishing a boundary for areas
 	/// </summary>
-	[TypeConverter(typeof(RuntimeRegionKey.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class RuntimeRegionKey : Notion, IEquatable<RuntimeRegionKey>, IComparable<RuntimeRegionKey>
 	{
 		private readonly string _name;
@@ -24,15 +22,9 @@ namespace Totem.Runtime.Map
 			_name = name;
 		}
 
-		public override Text ToText()
-		{
-			return _name;
-		}
+		public override Text ToText() => _name;
 
-		public HttpResource ToResource()
-		{
-			return HttpResource.From(_name);
-		}
+		public HttpResource ToResource() => HttpResource.From(_name);
 
 		//
 		// Equality
@@ -45,7 +37,7 @@ namespace Totem.Runtime.Map
 
 		public bool Equals(RuntimeRegionKey other)
 		{
-			return Equality.Check(this, other).Check(x => x._name);
+			return Eq.Values(this, other).Check(x => x._name);
 		}
 
 		public override int GetHashCode()
@@ -55,42 +47,15 @@ namespace Totem.Runtime.Map
 
 		public int CompareTo(RuntimeRegionKey other)
 		{
-			return Equality.Compare(this, other).Check(x => x._name);
+			return Cmp.Values(this, other).Check(x => x._name);
 		}
 
-		//
-		// Operators
-		//
-
-		public static bool operator ==(RuntimeRegionKey x, RuntimeRegionKey y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(RuntimeRegionKey x, RuntimeRegionKey y)
-		{
-			return !(x == y);
-		}
-
-		public static bool operator >(RuntimeRegionKey x, RuntimeRegionKey y)
-		{
-			return Equality.CompareOp(x, y) > 0;
-		}
-
-		public static bool operator <(RuntimeRegionKey x, RuntimeRegionKey y)
-		{
-			return Equality.CompareOp(x, y) < 0;
-		}
-
-		public static bool operator >=(RuntimeRegionKey x, RuntimeRegionKey y)
-		{
-			return Equality.CompareOp(x, y) >= 0;
-		}
-
-		public static bool operator <=(RuntimeRegionKey x, RuntimeRegionKey y)
-		{
-			return Equality.CompareOp(x, y) <= 0;
-		}
+		public static bool operator ==(RuntimeRegionKey x, RuntimeRegionKey y) => Eq.Op(x, y);
+		public static bool operator !=(RuntimeRegionKey x, RuntimeRegionKey y) => Eq.OpNot(x, y);
+		public static bool operator >(RuntimeRegionKey x, RuntimeRegionKey y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(RuntimeRegionKey x, RuntimeRegionKey y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(RuntimeRegionKey x, RuntimeRegionKey y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(RuntimeRegionKey x, RuntimeRegionKey y) => Cmp.Op(x, y) <= 0;
 
 		//
 		// Factory

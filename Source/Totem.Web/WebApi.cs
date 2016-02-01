@@ -27,25 +27,18 @@ namespace Totem.Web
 			Tags = new Tags();
 		}
 
-		Tags ITaggable.Tags { get { return Tags; } }
+		Tags ITaggable.Tags => Tags;
 		protected Tags Tags { get; private set; }
-		protected IClock Clock { get { return Notion.Traits.Clock.Get(this); } }
-		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
-		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
+		protected IClock Clock => Notion.Traits.Clock.Get(this);
+		protected ILog Log => Notion.Traits.Log.Get(this);
+		protected RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
-		public WebApiCall Call { get { return ReadContextItem<WebApiCall>(CallItemKey); } }
-		protected IViewDb Views { get { return ReadContextItem<IViewDb>(ViewsItemKey); } }
-		protected ITimeline Timeline { get { return ReadContextItem<ITimeline>(TimelineItemKey); } }
+		public WebApiCall Call => ReadContextItem<WebApiCall>(CallItemKey);
+		protected IViewDb Views => ReadContextItem<IViewDb>(ViewsItemKey);
+		protected ITimeline Timeline => ReadContextItem<ITimeline>(TimelineItemKey);
 
-		public sealed override string ToString()
-		{
-			return ToText();
-		}
-
-		public virtual Text ToText()
-		{
-			return Call.Link.ToText();
-		}
+		public sealed override string ToString() => ToText();
+		public virtual Text ToText() => Call.Link.ToText();
 
 		protected T ReadContextItem<T>(string key, bool strict = true)
 		{

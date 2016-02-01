@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 
 namespace Totem.IO
@@ -9,16 +8,13 @@ namespace Totem.IO
 	/// <summary>
 	/// A resource targeted by an I/O link
 	/// </summary>
-	[TypeConverter(typeof(IOResource.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public abstract class IOResource : LinkPart
 	{
 		internal IOResource()
 		{}
 
-		public sealed override Text ToText()
-		{
-			return ToText();
-		}
+		public sealed override Text ToText() => ToText();
 
 		public abstract Text ToText(bool altSlash = false, bool leading = false);
 

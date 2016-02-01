@@ -19,10 +19,7 @@ namespace Totem.Runtime.Timeline
     public readonly FlowType Type;
     public readonly Id Id;
 
-    public override string ToString()
-		{
-			return Text.Of(Type).WriteIf(Id.IsAssigned, $"/{Id}");
-		}
+    public override string ToString() => Text.Of(Type).WriteIf(Id.IsAssigned, $"/{Id}");
 
 		//
 		// Equality
@@ -35,7 +32,7 @@ namespace Totem.Runtime.Timeline
 
 		public bool Equals(FlowKey other)
 		{
-			return Equality.Check(this, other).Check(x => x.Type).Check(x => x.Id);
+			return Eq.Values(this, other).Check(x => x.Type).Check(x => x.Id);
 		}
 
 		public override int GetHashCode()
@@ -45,14 +42,14 @@ namespace Totem.Runtime.Timeline
 
 		public int CompareTo(FlowKey other)
 		{
-      return Equality.Compare(this, other).Check(x => x.Type).Check(x => x.Id);
+      return Cmp.Values(this, other).Check(x => x.Type).Check(x => x.Id);
     }
 
-		public static bool operator ==(FlowKey x, FlowKey y) => Equality.CheckOp(x, y);
-		public static bool operator !=(FlowKey x, FlowKey y) => !(x == y);
-		public static bool operator >(FlowKey x, FlowKey y) => Equality.CompareOp(x, y) > 0;
-		public static bool operator <(FlowKey x, FlowKey y) => Equality.CompareOp(x, y) < 0;
-		public static bool operator >=(FlowKey x, FlowKey y) => Equality.CompareOp(x, y) >= 0;
-		public static bool operator <=(FlowKey x, FlowKey y) => Equality.CompareOp(x, y) <= 0;
-  }
+		public static bool operator ==(FlowKey x, FlowKey y) => Eq.Op(x, y);
+		public static bool operator !=(FlowKey x, FlowKey y) => Eq.OpNot(x, y);
+		public static bool operator >(FlowKey x, FlowKey y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(FlowKey x, FlowKey y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(FlowKey x, FlowKey y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(FlowKey x, FlowKey y) => Cmp.Op(x, y) <= 0;
+	}
 }

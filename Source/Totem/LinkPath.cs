@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 
 namespace Totem
@@ -24,17 +21,14 @@ namespace Totem
 		}
 
 		public IReadOnlyList<LinkText> Segments { get; private set; }
-		public override bool IsTemplate { get { return _isTemplate; } }
+		public override bool IsTemplate => _isTemplate;
 
-		public sealed override Text ToText()
-		{
-			return ToText();
-		}
+		public sealed override Text ToText() => ToText();
 
 		public Text ToText(string separator = "/", bool leading = false, bool trailing = false)
 		{
-			return Text.None
-				.WriteIf(leading, separator)
+			return Text
+				.If(leading, separator)
 				.WriteIf(Segments.Any(), Segments.ToTextSeparatedBy(separator))
 				.WriteIf(trailing && (!leading || Segments.Any()), separator);
 		}
@@ -97,15 +91,8 @@ namespace Totem
 			return HashCode.CombineItems(Segments);
 		}
 
-		public static bool operator ==(LinkPath x, LinkPath y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(LinkPath x, LinkPath y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(LinkPath x, LinkPath y) => Eq.Op(x, y);
+		public static bool operator !=(LinkPath x, LinkPath y) => Eq.OpNot(x, y);
 
 		//
 		// Factory

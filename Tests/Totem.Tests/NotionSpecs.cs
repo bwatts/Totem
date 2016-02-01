@@ -11,7 +11,7 @@ namespace Totem
   {
 		class TestNotion : Notion
 		{
-			internal DateTime Now { get { return Clock.Now; } }
+			internal DateTime Now => Clock.Now;
 		}
 
 		void Create()

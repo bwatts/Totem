@@ -10,7 +10,7 @@ namespace Totem.Http
 	/// <summary>
 	/// A name/value pair that selects resources
 	/// </summary>
-	[TypeConverter(typeof(HttpQueryPair.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class HttpQueryPair : LinkPart, IEquatable<HttpQueryPair>
 	{
 		public const char Separator = '=';
@@ -23,12 +23,9 @@ namespace Totem.Http
 
 		public LinkText Key { get; private set; }
 		public LinkText Value { get; private set; }
-		public override bool IsTemplate { get { return Key.IsTemplate || Value.IsTemplate; } }
+		public override bool IsTemplate => Key.IsTemplate || Value.IsTemplate;
 
-		public override Text ToText()
-		{
-			return Key.ToText().Write(Separator).Write(Value);
-		}
+		public override Text ToText() => Key.ToText().Write(Separator).Write(Value);
 
 		//
 		// Equality
@@ -41,7 +38,7 @@ namespace Totem.Http
 
 		public bool Equals(HttpQueryPair other)
 		{
-			return Equality.Check(this, other).Check(x => x.Key).Check(x => x.Value);
+			return Eq.Values(this, other).Check(x => x.Key).Check(x => x.Value);
 		}
 
 		public override int GetHashCode()
@@ -49,15 +46,8 @@ namespace Totem.Http
 			return HashCode.Combine(Key, Value);
 		}
 
-		public static bool operator ==(HttpQueryPair x, HttpQueryPair y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(HttpQueryPair x, HttpQueryPair y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(HttpQueryPair x, HttpQueryPair y) => Eq.Op(x, y);
+		public static bool operator !=(HttpQueryPair x, HttpQueryPair y) => Eq.OpNot(x, y);
 
 		//
 		// Factory

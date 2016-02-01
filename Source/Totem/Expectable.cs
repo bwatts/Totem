@@ -208,6 +208,19 @@ namespace Totem
 			return expect;
 		}
 
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static Expect<Many<T>> Has2<T>(this Expect<Many<T>> expect, Action<T, T> expectItems = null, Text issue = null)
+		{
+			expect = expect.Has(2, issue);
+
+			if(expectItems != null)
+			{
+				expectItems(expect.Target[0], expect.Target[1]);
+			}
+
+			return expect;
+		}
+
 		//
 		// Tags
 		//

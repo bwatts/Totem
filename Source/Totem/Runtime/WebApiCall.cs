@@ -21,9 +21,6 @@ namespace Totem.Runtime
 		public readonly HttpAuthorization Authorization;
 		public readonly WebApiCallBody Body;
 
-		public override string ToString()
-		{
-			return Link.ToString();
-		}
+		public override string ToString() => Link.ToString();
 	}
 }

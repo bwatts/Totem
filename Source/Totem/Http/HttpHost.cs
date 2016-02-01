@@ -10,7 +10,7 @@ namespace Totem.Http
 	/// <summary>
 	/// The global identifier of an HTTP host
 	/// </summary>
-	[TypeConverter(typeof(HttpHost.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class HttpHost : LinkPart, IEquatable<HttpHost>
 	{
 		public const char PortSeparator = ':';
@@ -29,13 +29,10 @@ namespace Totem.Http
 		public HttpDomain Domain { get; private set; }
 		public int Port { get; private set; }
 		public bool PortIsDefault { get; private set; }
-		public string Scheme { get { return Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp; } }
-		public override bool IsTemplate { get { return Domain.IsTemplate; } }
+		public string Scheme => Secure ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
+		public override bool IsTemplate => Domain.IsTemplate;
 
-		public override Text ToText()
-		{
-			return ToText();
-		}
+		public override Text ToText() => ToText();
 
 		public Text ToText(bool defaultPort = false)
 		{
@@ -46,10 +43,7 @@ namespace Totem.Http
 				.WriteIf(defaultPort || !PortIsDefault, PortSeparator + Port.ToString());
 		}
 
-		public HttpLink ToLink()
-		{
-			return HttpLink.From(this);
-		}
+		public HttpLink ToLink() => HttpLink.From(this);
 
 		//
 		// Equality
@@ -62,7 +56,7 @@ namespace Totem.Http
 
 		public bool Equals(HttpHost other)
 		{
-			return Equality.Check(this, other).Check(x => x.Secure).Check(x => x.Domain).Check(x => x.Port);
+			return Eq.Values(this, other).Check(x => x.Secure).Check(x => x.Domain).Check(x => x.Port);
 		}
 
 		public override int GetHashCode()
@@ -70,15 +64,8 @@ namespace Totem.Http
 			return HashCode.Combine(Secure, Domain, Port);
 		}
 
-		public static bool operator ==(HttpHost x, HttpHost y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(HttpHost x, HttpHost y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(HttpHost x, HttpHost y) => Eq.Op(x, y);
+		public static bool operator !=(HttpHost x, HttpHost y) => Eq.OpNot(x, y);
 
 		//
 		// Factory

@@ -10,7 +10,7 @@ namespace Totem.Http
 	/// <summary>
 	/// A resource targeted by an HTTP link
 	/// </summary>
-	[TypeConverter(typeof(HttpResource.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class HttpResource : Href, IEquatable<HttpResource>
 	{
 		public const char PathSeparator = '/';
@@ -26,12 +26,9 @@ namespace Totem.Http
 
 		public LinkPath Path { get; private set; }
 		public HttpQuery Query { get; private set; }
-		public override bool IsTemplate { get { return Path.IsTemplate || Query.IsTemplate; } }
+		public override bool IsTemplate => Path.IsTemplate || Query.IsTemplate;
 
-		public override Text ToText()
-		{
-			return ToText();
-		}
+		public override Text ToText() => ToText();
 
 		public Text ToText(bool leadingSlash = false, bool trailingSlash = false)
 		{
@@ -70,7 +67,7 @@ namespace Totem.Http
 
 		public bool Equals(HttpResource other)
 		{
-			return Equality.Check(this, other).Check(x => x.Path).Check(x => x.Query);
+			return Eq.Values(this, other).Check(x => x.Path).Check(x => x.Query);
 		}
 
 		public override int GetHashCode()
@@ -78,15 +75,8 @@ namespace Totem.Http
 			return HashCode.Combine(Path, Query);
 		}
 
-		public static bool operator ==(HttpResource x, HttpResource y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(HttpResource x, HttpResource y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(HttpResource x, HttpResource y) => Eq.Op(x, y);
+		public static bool operator !=(HttpResource x, HttpResource y) => Eq.OpNot(x, y);
 
 		//
 		// Factory

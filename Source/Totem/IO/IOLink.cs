@@ -8,16 +8,13 @@ namespace Totem.IO
 	/// <summary>
 	/// A rooted reference to an IO resource
 	/// </summary>
-	[TypeConverter(typeof(IOLink.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public abstract class IOLink : LinkPart
 	{
 		internal IOLink()
 		{}
 
-		public sealed override Text ToText()
-		{
-			return ToText();
-		}
+		public sealed override Text ToText() => ToText();
 
 		public abstract Text ToText(bool altSlash = false);
 

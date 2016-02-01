@@ -26,8 +26,8 @@ namespace Totem.Runtime.Hosting.Commands
 			return FinalResult;
 		}
 
-		private bool Executing { get { return _result == null; } }
-		private int FinalResult { get { return _result.Value; } }
+		private bool Executing => _result == null;
+		private int FinalResult => _result.Value;
 
 		private void ExecuteRuntime<TProgram>() where TProgram : IRuntimeProgram, new()
 		{

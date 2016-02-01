@@ -15,15 +15,15 @@ namespace Totem.Runtime
 		private bool _hasConnected;
 
 		public CancellationToken CancellationToken { get; private set; }
-		public ConnectionPhase Phase { get { return _phase; } }
+		public ConnectionPhase Phase => _phase;
 
-		public bool IsDisconnected { get { return _phase == ConnectionPhase.Disconnected; } }
-		public bool IsConnecting { get { return _phase == ConnectionPhase.Connecting; } }
-		public bool IsConnected { get { return _phase == ConnectionPhase.Connected; } }
-		public bool IsCancelled { get { return _phase == ConnectionPhase.Cancelled; } }
-		public bool IsDisconnecting { get { return _phase == ConnectionPhase.Disconnecting; } }
-		public bool IsReconnecting { get { return _phase == ConnectionPhase.Reconnecting; } }
-		public bool IsReconnected { get { return _phase == ConnectionPhase.Reconnected; } }
+		public bool IsDisconnected => _phase == ConnectionPhase.Disconnected;
+		public bool IsConnecting => _phase == ConnectionPhase.Connecting;
+		public bool IsConnected => _phase == ConnectionPhase.Connected;
+		public bool IsCancelled => _phase == ConnectionPhase.Cancelled;
+		public bool IsDisconnecting => _phase == ConnectionPhase.Disconnecting;
+		public bool IsReconnecting => _phase == ConnectionPhase.Reconnecting;
+		public bool IsReconnected => _phase == ConnectionPhase.Reconnected;
 
 		//
 		// Lifecycle

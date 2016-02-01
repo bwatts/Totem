@@ -35,7 +35,7 @@ namespace Totem
 
 		public bool Equals(Id other)
 		{
-			return Equality.Check(this, other).Check(x => x.ToString());
+			return Eq.Values(this, other).Check(x => x.ToString());
 		}
 
 		public override int GetHashCode()
@@ -45,15 +45,15 @@ namespace Totem
 
 		public int CompareTo(Id other)
 		{
-			return Equality.Compare(this, other).Check(x => x.ToString());
+			return Cmp.Values(this, other).Check(x => x.ToString());
 		}
 
-		public static bool operator ==(Id x, Id y) => Equality.CheckOp(x, y);
-		public static bool operator !=(Id x, Id y) => !(x == y);
-		public static bool operator >(Id x, Id y) => Equality.CompareOp(x, y) > 0;
-		public static bool operator <(Id x, Id y) => Equality.CompareOp(x, y) < 0;
-		public static bool operator >=(Id x, Id y) => Equality.CompareOp(x, y) >= 0;
-		public static bool operator <=(Id x, Id y) => Equality.CompareOp(x, y) <= 0;
+		public static bool operator ==(Id x, Id y) => Eq.Op(x, y);
+		public static bool operator !=(Id x, Id y) => Eq.OpNot(x, y);
+		public static bool operator >(Id x, Id y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(Id x, Id y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(Id x, Id y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(Id x, Id y) => Cmp.Op(x, y) <= 0;
 
 		//
 		// Factory

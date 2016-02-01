@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Nancy;
-using Nancy.Responses;
 using Nancy.ViewEngines;
 using Totem.IO;
 

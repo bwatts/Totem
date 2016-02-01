@@ -8,7 +8,7 @@ namespace Totem.IO
 	/// <summary>
 	/// A folder targeted by a link
 	/// </summary>
-	[TypeConverter(typeof(FolderResource.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class FolderResource : IOResource, IEquatable<FolderResource>
 	{
 		public static readonly FolderResource Root = new FolderResource(LinkPath.Root);
@@ -19,7 +19,7 @@ namespace Totem.IO
 		}
 
 		public LinkPath Path { get; private set; }
-		public override bool IsTemplate { get { return Path.IsTemplate; } }
+		public override bool IsTemplate => Path.IsTemplate;
 
 		public override Text ToText(bool altSlash = false, bool leading = false)
 		{
@@ -67,7 +67,7 @@ namespace Totem.IO
 
 		public bool Equals(FolderResource other)
 		{
-			return Equality.Check(this, other).Check(x => x.Path);
+			return Eq.Values(this, other).Check(x => x.Path);
 		}
 
 		public override int GetHashCode()
@@ -75,15 +75,8 @@ namespace Totem.IO
 			return Path.GetHashCode();
 		}
 
-		public static bool operator ==(FolderResource x, FolderResource y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(FolderResource x, FolderResource y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(FolderResource x, FolderResource y) => Eq.Op(x, y);
+		public static bool operator !=(FolderResource x, FolderResource y) => Eq.OpNot(x, y);
 
 		//
 		// Factory

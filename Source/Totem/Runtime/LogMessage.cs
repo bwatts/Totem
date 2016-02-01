@@ -29,9 +29,6 @@ namespace Totem.Runtime
 		public object[] PropertyValues { get; private set; }
 		public Exception Error { get; private set; }
 
-		public override Text ToText()
-		{
-			return Template;
-		}
+		public override Text ToText() => Template;
 	}
 }

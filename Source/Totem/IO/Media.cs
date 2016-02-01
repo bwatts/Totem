@@ -19,10 +19,7 @@ namespace Totem.IO
 		public MediaType Type { get; private set; }
 		public TContent Content { get; private set; }
 
-		public override Text ToText()
-		{
-			return Text.Of(Content);
-		}
+		public override Text ToText() => Text.Of(Content);
 
 		public bool Is(MediaType type)
 		{

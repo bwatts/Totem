@@ -30,11 +30,11 @@ namespace Totem.Web
 			Tags = new Tags();
 		}
 
-		Tags ITaggable.Tags { get { return Tags; } }
+		Tags ITaggable.Tags => Tags;
 		protected Tags Tags { get; private set; }
-		protected IClock Clock { get { return Notion.Traits.Clock.Get(this); } }
-		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
-		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
+		protected IClock Clock => Notion.Traits.Clock.Get(this);
+		protected ILog Log => Notion.Traits.Log.Get(this);
+		protected RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
 		protected readonly WebAppContext Context;
 

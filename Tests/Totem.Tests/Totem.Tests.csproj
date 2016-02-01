@@ -44,9 +44,10 @@
     <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
       <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="CmpSpecs.cs" />
     <Compile Include="LinkPathSpecs.cs" />
     <Compile Include="LinkTextSpecs.cs" />
-    <Compile Include="EqualitySpecs.cs" />
+    <Compile Include="EqSpecs.cs" />
     <Compile Include="IO\TextConverterSpecs.cs" />
     <Compile Include="Reflection\LambdaBodiesSpecs.cs" />
     <Compile Include="NotionSpecs.cs" />

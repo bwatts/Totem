@@ -8,7 +8,7 @@ namespace Totem.IO
 	/// <summary>
 	/// A file targeted by a link
 	/// </summary>
-	[TypeConverter(typeof(FileResource.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class FileResource : IOResource, IEquatable<FileResource>
 	{
 		private FileResource(FolderResource folder, FileName name)
@@ -19,7 +19,7 @@ namespace Totem.IO
 
 		public FolderResource Folder { get; private set; }
 		public FileName Name { get; private set; }
-		public override bool IsTemplate { get { return Folder.IsTemplate || Name.IsTemplate; } }
+		public override bool IsTemplate => Folder.IsTemplate || Name.IsTemplate;
 
 		public override Text ToText(bool altSlash = false, bool leading = false)
 		{
@@ -47,7 +47,7 @@ namespace Totem.IO
 
 		public bool Equals(FileResource other)
 		{
-			return Equality.Check(this, other).Check(x => x.Folder).Check(x => x.Name);
+			return Eq.Values(this, other).Check(x => x.Folder).Check(x => x.Name);
 		}
 
 		public override int GetHashCode()
@@ -55,15 +55,8 @@ namespace Totem.IO
 			return HashCode.Combine(Folder, Name);
 		}
 
-		public static bool operator ==(FileResource x, FileResource y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(FileResource x, FileResource y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(FileResource x, FileResource y) => Eq.Op(x, y);
+		public static bool operator !=(FileResource x, FileResource y) => Eq.OpNot(x, y);
 
 		//
 		// Factory

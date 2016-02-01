@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Totem.IO;
-using Totem.Reflection;
 
 namespace Totem.Http
 {
 	/// <summary>
 	/// An absolute or relative reference to an HTTP resource
 	/// </summary>
-	[TypeConverter(typeof(Href.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public abstract class Href : LinkPart
 	{
 		public bool IsRoot

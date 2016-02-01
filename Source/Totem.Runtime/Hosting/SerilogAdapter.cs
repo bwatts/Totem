@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Serilog;
 using Serilog.Events;
-using Serilog.Parsing;
 
 namespace Totem.Runtime.Configuration
 {

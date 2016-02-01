@@ -20,10 +20,7 @@ namespace Totem.Runtime.Timeline
 
 		public bool IsNone => _point == null;
 
-		public override string ToString()
-		{
-			return "#" + (IsNone ? "-" : _point.ToString());
-		}
+		public override string ToString() => "#" + (IsNone ? "-" : _point.ToString());
 
 		public long ToInt64()
 		{
@@ -48,7 +45,7 @@ namespace Totem.Runtime.Timeline
 
 		public bool Equals(TimelinePosition other)
 		{
-			return Equality.Check(this, other).Check(x => x._point);
+			return Eq.Values(this, other).Check(x => x._point);
 		}
 
 		public override int GetHashCode()
@@ -56,43 +53,16 @@ namespace Totem.Runtime.Timeline
 			return _point == null ? 0 : _point.GetHashCode();
 		}
 
-		public static bool operator ==(TimelinePosition x, TimelinePosition y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(TimelinePosition x, TimelinePosition y)
-		{
-			return !(x == y);
-		}
-
-		//
-		// Comparisons
-		//
-
 		public int CompareTo(TimelinePosition other)
 		{
-			return Equality.Compare(this, other).Check(x => x._point);
+			return Cmp.Values(this, other).Check(x => x._point);
 		}
 
-		public static bool operator >(TimelinePosition x, TimelinePosition y)
-		{
-			return Equality.CompareOp(x, y) > 0;
-		}
-
-		public static bool operator <(TimelinePosition x, TimelinePosition y)
-		{
-			return Equality.CompareOp(x, y) < 0;
-		}
-
-		public static bool operator >=(TimelinePosition x, TimelinePosition y)
-		{
-			return Equality.CompareOp(x, y) >= 0;
-		}
-
-		public static bool operator <=(TimelinePosition x, TimelinePosition y)
-		{
-			return Equality.CompareOp(x, y) <= 0;
-		}
+		public static bool operator ==(TimelinePosition x, TimelinePosition y) => Eq.Op(x, y);
+		public static bool operator !=(TimelinePosition x, TimelinePosition y) => Eq.OpNot(x, y);
+		public static bool operator >(TimelinePosition x, TimelinePosition y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(TimelinePosition x, TimelinePosition y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(TimelinePosition x, TimelinePosition y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(TimelinePosition x, TimelinePosition y) => Cmp.Op(x, y) <= 0;
 	}
 }

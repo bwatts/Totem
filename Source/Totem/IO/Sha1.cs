@@ -10,7 +10,7 @@ namespace Totem.IO
 	/// <summary>
 	/// A SHA-1 value encoded as hexadecimal text
 	/// </summary>
-	[TypeConverter(typeof(Sha1.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class Sha1 : IWritable, IEquatable<Sha1>, IComparable<Sha1>
 	{
 		public const int HexLength = 40;
@@ -25,30 +25,12 @@ namespace Totem.IO
 			_hex = hex;
 		}
 
-		public override string ToString()
-		{
-			return _hex.ToString();
-		}
+		public override string ToString() => _hex.ToString();
+		public Text ToText() => _hex.ToText();
 
-		public Text ToText()
-		{
-			return _hex.ToText();
-		}
-
-		public Hex ToHex()
-		{
-			return _hex;
-		}
-
-		public Binary ToBinary()
-		{
-			return _hex.ToBinary();
-		}
-
-		public byte[] ToBytes()
-		{
-			return _hex.ToBytes();
-		}
+		public Hex ToHex() => _hex;
+		public Binary ToBinary() => _hex.ToBinary();
+		public byte[] ToBytes() => _hex.ToBytes();
 
 		//
 		// Equality
@@ -61,7 +43,7 @@ namespace Totem.IO
 
 		public bool Equals(Sha1 other)
 		{
-			return Equality.Check(this, other).Check(x => x._hex);
+			return Eq.Values(this, other).Check(x => x._hex);
 		}
 
 		public override int GetHashCode()
@@ -71,42 +53,15 @@ namespace Totem.IO
 
 		public int CompareTo(Sha1 other)
 		{
-			return Equality.Compare(this, other).Check(x => x._hex);
+			return Cmp.Values(this, other).Check(x => x._hex);
 		}
 
-		//
-		// Operators
-		//
-
-		public static bool operator ==(Sha1 x, Sha1 y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(Sha1 x, Sha1 y)
-		{
-			return !(x == y);
-		}
-
-		public static bool operator >(Sha1 x, Sha1 y)
-		{
-			return Equality.CompareOp(x, y) > 0;
-		}
-
-		public static bool operator <(Sha1 x, Sha1 y)
-		{
-			return Equality.CompareOp(x, y) < 0;
-		}
-
-		public static bool operator >=(Sha1 x, Sha1 y)
-		{
-			return Equality.CompareOp(x, y) >= 0;
-		}
-
-		public static bool operator <=(Sha1 x, Sha1 y)
-		{
-			return Equality.CompareOp(x, y) <= 0;
-		}
+		public static bool operator ==(Sha1 x, Sha1 y) => Eq.Op(x, y);
+		public static bool operator !=(Sha1 x, Sha1 y) => Eq.OpNot(x, y);
+		public static bool operator >(Sha1 x, Sha1 y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(Sha1 x, Sha1 y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(Sha1 x, Sha1 y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(Sha1 x, Sha1 y) => Cmp.Op(x, y) <= 0;
 
 		//
 		// Factory

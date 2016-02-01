@@ -20,5 +20,5 @@ namespace Totem.Runtime.Timeline
 		public readonly RuntimeTypeKey Type;
     public readonly Id Id;
 		public readonly string Error;
-  }
+	}
 }

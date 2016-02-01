@@ -35,30 +35,12 @@ namespace Totem.Runtime
 		public readonly bool InSolution;
 		public readonly string SolutionConfiguration;
 
-		public override string ToString()
-		{
-			return Folder.ToString();
-		}
+		public override string ToString() => Folder.ToString();
 
-		public FolderLink Expand(FolderResource folder)
-		{
-			return Folder.Link.Then(folder);
-		}
-
-		public FileLink Expand(FileResource file)
-		{
-			return Folder.Link.Then(file);
-		}
-
-		public FolderLink ExpandInData(FolderResource folder)
-		{
-			return DataFolder.Link.Then(folder);
-		}
-
-		public FileLink ExpandInData(FileResource file)
-		{
-			return DataFolder.Link.Then(file);
-		}
+		public FolderLink Expand(FolderResource folder) => Folder.Link.Then(folder);
+		public FileLink Expand(FileResource file) => Folder.Link.Then(file);
+		public FolderLink ExpandInData(FolderResource folder) => DataFolder.Link.Then(folder);
+		public FileLink ExpandInData(FileResource file) => DataFolder.Link.Then(file);
 
 		public FolderResource ExpandBuild(FolderResource packageFolder)
 		{

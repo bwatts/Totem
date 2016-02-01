@@ -26,7 +26,7 @@ namespace Totem.Runtime.Map.Timeline
 
 		public readonly Many<WhenDependency> Dependencies;
 		public readonly bool IsAsync;
-		public Func<Flow, Event, IDependencySource, Task> Call { get { return _call.Value; } }
+		public Func<Flow, Event, IDependencySource, Task> Call => _call.Value;
 
 		private Func<Flow, Event, IDependencySource, Task> CompileCall()
 		{

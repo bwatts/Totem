@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Autofac;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin.Hosting;
 using Owin;
-using Totem.Http;
-using Totem.IO;
 using Totem.Runtime;
 
 namespace Totem.Web
@@ -77,7 +73,7 @@ namespace Totem.Web
 			}
 
 			public Tags Tags { get; private set; }
-			private ILog Log { get { return Notion.Traits.Log.Get(this); } }
+			private ILog Log => Traits.Log.Get(this);
 
 			protected override void OnIncomingError(Exception ex, IHubIncomingInvokerContext context)
 			{

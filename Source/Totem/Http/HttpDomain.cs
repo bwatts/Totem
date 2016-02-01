@@ -13,7 +13,7 @@ namespace Totem.Http
 	/// http://msdn.microsoft.com/en-us/library/aa364698%28v=vs.85%29.aspx
 	/// https://www.ietf.org/rfc/rfc1035.txt 2.3.3
 	/// </remarks>
-	[TypeConverter(typeof(HttpDomain.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class HttpDomain : LinkPart, IEquatable<HttpDomain>
 	{
 		public const string WeakWildcardName = "*";
@@ -32,17 +32,14 @@ namespace Totem.Http
 		}
 
 		public LinkText Name { get; private set; }
-		public bool IsWeakWildcard { get { return Name == WeakWildcardName; } }
-		public bool IsStrongWildcard { get { return Name == StrongWildcardName; } }
-		public bool IsLoopback { get { return Name == LoopbackName; } }
-		public bool IsLocalhost { get { return Name.Value.Equals(LocalhostName, StringComparison.OrdinalIgnoreCase); } }
-		public bool IsLocal { get { return IsLoopback || IsLocalhost; } }
-		public override bool IsTemplate { get { return Name.IsTemplate; } }
+		public bool IsWeakWildcard => Name == WeakWildcardName;
+		public bool IsStrongWildcard => Name == StrongWildcardName;
+		public bool IsLoopback => Name == LoopbackName;
+		public bool IsLocalhost => Name.Value.Equals(LocalhostName, StringComparison.OrdinalIgnoreCase);
+		public bool IsLocal => IsLoopback || IsLocalhost;
+		public override bool IsTemplate => Name.IsTemplate;
 
-		public override Text ToText()
-		{
-			return Name.ToText();
-		}
+		public override Text ToText() => Name.ToText();
 
 		//
 		// Equality
@@ -55,7 +52,7 @@ namespace Totem.Http
 
 		public bool Equals(HttpDomain other)
 		{
-			return Equality.Check(this, other).Check(x => x.Name);
+			return Eq.Values(this, other).Check(x => x.Name);
 		}
 
 		public override int GetHashCode()
@@ -63,15 +60,8 @@ namespace Totem.Http
 			return Name.GetHashCode();
 		}
 
-		public static bool operator ==(HttpDomain x, HttpDomain y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(HttpDomain x, HttpDomain y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(HttpDomain x, HttpDomain y) => Eq.Op(x, y);
+		public static bool operator !=(HttpDomain x, HttpDomain y) => Eq.OpNot(x, y);
 
 		//
 		// Factory

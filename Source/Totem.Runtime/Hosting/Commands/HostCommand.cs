@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using Serilog;
 using Serilog.Events;
 using Totem.IO;
 using Totem.Runtime.Configuration;
-using Totem.Runtime.Map;
 
 namespace Totem.Runtime.Hosting.Commands
 {

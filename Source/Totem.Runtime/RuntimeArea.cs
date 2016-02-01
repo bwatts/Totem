@@ -15,21 +15,14 @@ namespace Totem.Runtime
 	/// </summary>
 	public abstract class RuntimeArea : BuilderModule, IRuntimeArea, IPartImportsSatisfiedNotification
 	{
-		Tags ITaggable.Tags { get { return Tags; } }
+		Tags ITaggable.Tags => Tags;
 		protected Tags Tags { get; private set; }
-		protected IClock Clock { get { return Notion.Traits.Clock.Get(this); } }
-		protected ILog Log { get { return Notion.Traits.Log.Get(this); } }
-		protected RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
+		protected IClock Clock => Notion.Traits.Clock.Get(this);
+		protected ILog Log => Notion.Traits.Log.Get(this);
+		protected RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
-		public sealed override string ToString()
-		{
-			return ToText();
-		}
-
-		public virtual Text ToText()
-		{
-			return base.ToString();
-		}
+		public sealed override string ToString() => ToText();
+		public virtual Text ToText() => base.ToString();
 
 		protected static Check<T> Check<T>(T target)
 		{

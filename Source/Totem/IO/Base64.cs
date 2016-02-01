@@ -10,7 +10,7 @@ namespace Totem.IO
 	/// <summary>
 	/// A binary value encoded as Base64 text
 	/// </summary>
-	[TypeConverter(typeof(Base64.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class Base64 : IWritable, IEquatable<Base64>, IComparable<Base64>
 	{
 		public static readonly Base64 None = new Base64("", Binary.None);
@@ -24,29 +24,15 @@ namespace Totem.IO
 			_data = data;
 		}
 
-		public int TextLength { get { return _text.Length; } }
-		public int DataLength { get { return _data.Length; } }
-		public long DataLongLength { get { return _data.LongLength; } }
+		public int TextLength => _text.Length;
+		public int DataLength => _data.Length;
+		public long DataLongLength => _data.LongLength;
 
-		public override string ToString()
-		{
-			return _text;
-		}
+		public override string ToString() => _text;
+		public Text ToText() => _text;
 
-		public Text ToText()
-		{
-			return _text;
-		}
-
-		public Binary ToBinary()
-		{
-			return _data;
-		}
-
-		public byte[] ToBytes()
-		{
-			return _data.ToBytes();
-		}
+		public Binary ToBinary() => _data;
+		public byte[] ToBytes() => _data.ToBytes();
 
 		//
 		// Equality
@@ -59,7 +45,7 @@ namespace Totem.IO
 
 		public bool Equals(Base64 other)
 		{
-			return Equality.Check(this, other).Check(x => x._text);
+			return Eq.Values(this, other).Check(x => x._text);
 		}
 
 		public override int GetHashCode()
@@ -69,42 +55,15 @@ namespace Totem.IO
 
 		public int CompareTo(Base64 other)
 		{
-			return Equality.Compare(this, other).Check(x => x._text);
+			return Cmp.Values(this, other).Check(x => x._text);
 		}
 
-		//
-		// Operators
-		//
-
-		public static bool operator ==(Base64 x, Base64 y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(Base64 x, Base64 y)
-		{
-			return !(x == y);
-		}
-
-		public static bool operator >(Base64 x, Base64 y)
-		{
-			return Equality.CompareOp(x, y) > 0;
-		}
-
-		public static bool operator <(Base64 x, Base64 y)
-		{
-			return Equality.CompareOp(x, y) < 0;
-		}
-
-		public static bool operator >=(Base64 x, Base64 y)
-		{
-			return Equality.CompareOp(x, y) >= 0;
-		}
-
-		public static bool operator <=(Base64 x, Base64 y)
-		{
-			return Equality.CompareOp(x, y) <= 0;
-		}
+		public static bool operator ==(Base64 x, Base64 y) => Eq.Op(x, y);
+		public static bool operator !=(Base64 x, Base64 y) => Eq.OpNot(x, y);
+		public static bool operator >(Base64 x, Base64 y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(Base64 x, Base64 y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(Base64 x, Base64 y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(Base64 x, Base64 y) => Cmp.Op(x, y) <= 0;
 
 		//
 		// Factory

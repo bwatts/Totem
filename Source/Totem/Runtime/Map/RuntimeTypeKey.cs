@@ -11,7 +11,7 @@ namespace Totem.Runtime.Map
 	/// <summary>
 	/// Identifies a runtime type within the region of its declaring assembly
 	/// </summary>
-	[TypeConverter(typeof(RuntimeTypeKey.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class RuntimeTypeKey : Notion, IEquatable<RuntimeTypeKey>, IComparable<RuntimeTypeKey>
 	{
 		private RuntimeTypeKey(RuntimeRegionKey region, string name)
@@ -23,10 +23,7 @@ namespace Totem.Runtime.Map
 		public readonly RuntimeRegionKey Region;
 		public readonly string Name;
 
-		public override Text ToText()
-		{
-			return Region.ToText() + ':' + Name;
-		}
+		public override Text ToText() => Region.ToText() + ':' + Name;
 
 		public HttpResource ToResource()
 		{
@@ -44,7 +41,7 @@ namespace Totem.Runtime.Map
 
 		public bool Equals(RuntimeTypeKey other)
 		{
-			return Equality.Check(this, other).Check(x => x.Region).Check(x => x.Name);
+			return Eq.Values(this, other).Check(x => x.Region).Check(x => x.Name);
 		}
 
 		public override int GetHashCode()
@@ -54,42 +51,15 @@ namespace Totem.Runtime.Map
 
 		public int CompareTo(RuntimeTypeKey other)
 		{
-			return Equality.Compare(this, other).Check(x => x.Region).Check(x => x.Name);
+			return Cmp.Values(this, other).Check(x => x.Region).Check(x => x.Name);
 		}
 
-		//
-		// Operators
-		//
-
-		public static bool operator ==(RuntimeTypeKey x, RuntimeTypeKey y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(RuntimeTypeKey x, RuntimeTypeKey y)
-		{
-			return !(x == y);
-		}
-
-		public static bool operator >(RuntimeTypeKey x, RuntimeTypeKey y)
-		{
-			return Equality.CompareOp(x, y) > 0;
-		}
-
-		public static bool operator <(RuntimeTypeKey x, RuntimeTypeKey y)
-		{
-			return Equality.CompareOp(x, y) < 0;
-		}
-
-		public static bool operator >=(RuntimeTypeKey x, RuntimeTypeKey y)
-		{
-			return Equality.CompareOp(x, y) >= 0;
-		}
-
-		public static bool operator <=(RuntimeTypeKey x, RuntimeTypeKey y)
-		{
-			return Equality.CompareOp(x, y) <= 0;
-		}
+		public static bool operator ==(RuntimeTypeKey x, RuntimeTypeKey y) => Eq.Op(x, y);
+		public static bool operator !=(RuntimeTypeKey x, RuntimeTypeKey y) => Eq.OpNot(x, y);
+		public static bool operator >(RuntimeTypeKey x, RuntimeTypeKey y) => Cmp.Op(x, y) > 0;
+		public static bool operator <(RuntimeTypeKey x, RuntimeTypeKey y) => Cmp.Op(x, y) < 0;
+		public static bool operator >=(RuntimeTypeKey x, RuntimeTypeKey y) => Cmp.Op(x, y) >= 0;
+		public static bool operator <=(RuntimeTypeKey x, RuntimeTypeKey y) => Cmp.Op(x, y) <= 0;
 
 		//
 		// Factory

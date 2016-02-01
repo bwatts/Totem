@@ -12,10 +12,10 @@ namespace Totem
 	{
 		private readonly Dictionary<Tag, TagValue> _pairs = new Dictionary<Tag, TagValue>();
 
-		public int Count { get { return _pairs.Count; } }
-		public IEnumerable<Tag> Keys { get { return _pairs.Keys; } }
-		public IEnumerable<TagValue> Values { get { return _pairs.Values; } }
-		public TagValue this[Tag key] { get { return _pairs[key]; } }
+		public int Count => _pairs.Count;
+		public IEnumerable<Tag> Keys => _pairs.Keys;
+		public IEnumerable<TagValue> Values => _pairs.Values;
+		public TagValue this[Tag key] => _pairs[key];
 
 		public IEnumerator<TagValue> GetEnumerator() => _pairs.Values.GetEnumerator();
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

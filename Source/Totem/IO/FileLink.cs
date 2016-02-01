@@ -8,7 +8,7 @@ namespace Totem.IO
 	/// <summary>
 	/// A rooted reference to a file resource
 	/// </summary>
-	[TypeConverter(typeof(FileLink.Converter))]
+	[TypeConverter(typeof(Converter))]
 	public sealed class FileLink : IOLink, IEquatable<FileLink>
 	{
 		private FileLink(FolderLink folder, FileName name)
@@ -19,7 +19,7 @@ namespace Totem.IO
 
 		public FolderLink Folder { get; private set; }
 		public FileName Name { get; private set; }
-		public override bool IsTemplate { get { return Folder.IsTemplate || Name.IsTemplate; } }
+		public override bool IsTemplate => Folder.IsTemplate || Name.IsTemplate;
 
 		public override Text ToText(bool altSlash = false)
 		{
@@ -47,7 +47,7 @@ namespace Totem.IO
 
 		public bool Equals(FileLink other)
 		{
-			return Equality.Check(this, other).Check(x => x.Folder).Check(x => x.Name);
+			return Eq.Values(this, other).Check(x => x.Folder).Check(x => x.Name);
 		}
 
 		public override int GetHashCode()
@@ -55,15 +55,8 @@ namespace Totem.IO
 			return HashCode.Combine(Folder, Name);
 		}
 
-		public static bool operator ==(FileLink x, FileLink y)
-		{
-			return Equality.CheckOp(x, y);
-		}
-
-		public static bool operator !=(FileLink x, FileLink y)
-		{
-			return !(x == y);
-		}
+		public static bool operator ==(FileLink x, FileLink y) => Eq.Op(x, y);
+		public static bool operator !=(FileLink x, FileLink y) => Eq.OpNot(x, y);
 
 		//
 		// Factory

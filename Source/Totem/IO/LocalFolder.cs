@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Totem.IO
 {
@@ -18,10 +17,7 @@ namespace Totem.IO
 
 		public FolderLink Link { get; private set; }
 
-		public override Text ToText()
-		{
-			return Link.ToText();
-		}
+		public override Text ToText() => Link.ToText();
 
 		public IFolder Then(FolderResource folder)
 		{

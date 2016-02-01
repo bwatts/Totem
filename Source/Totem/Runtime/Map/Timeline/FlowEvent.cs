@@ -33,7 +33,9 @@ namespace Totem.Runtime.Map.Timeline
     public readonly FlowRoute Route;
     public readonly bool HasRoute;
 
-    public Many<Id> CallRoute(TimelinePoint point)
+		public override string ToString() => $"{EventType} => {FlowType}";
+
+		public Many<Id> CallRoute(TimelinePoint point)
     {
       return HasRoute ? Route.Call(point.Event) : Many.Of(Id.Unassigned);
     }

@@ -32,11 +32,11 @@ namespace Totem.Runtime.Hosting
 			SetCurrentDirectoryToProgram();
 		}
 
-		Tags ITaggable.Tags { get { return Tags; } }
+		Tags ITaggable.Tags => Tags;
 		private Tags Tags { get; set; }
-		private IClock Clock { get { return Notion.Traits.Clock.Get(this); } }
-		private ILog Log { get { return Notion.Traits.Log.Get(this); } }
-		private RuntimeMap Runtime { get { return Notion.Traits.Runtime.Get(this); } }
+		private IClock Cloc => Notion.Traits.Clock.Get(this);
+		private ILog Log => Notion.Traits.Log.Get(this);
+		private RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
 		private void SetCurrentDirectoryToProgram()
 		{

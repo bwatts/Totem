@@ -82,7 +82,7 @@ namespace Totem.Runtime
 				}
 			}
 
-			private IEnumerable<ConnectionNode> Nodes { get { return _nodesByItem.Values; } }
+			private IEnumerable<ConnectionNode> Nodes => _nodesByItem.Values;
 
 			//
 			// Connection

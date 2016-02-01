@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using Totem.IO;
 using Totem.Runtime.Configuration.Console;
-using Totem.Runtime.Map;
 
 namespace Totem.Runtime.Configuration
 {
@@ -36,7 +35,7 @@ namespace Totem.Runtime.Configuration
 			set { this["console"] = value; }
 		}
 
-		public bool HasUI { get { return Environment.UserInteractive; } }
+		public bool HasUI => Environment.UserInteractive;
 
 		//
 		// Map
