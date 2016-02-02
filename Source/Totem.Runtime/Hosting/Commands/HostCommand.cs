@@ -34,7 +34,7 @@ namespace Totem.Runtime.Hosting.Commands
 		{
 			Section = RuntimeSection.Read();
 
-			if(Section.HasUI)
+			if(Section.HasUI && Section.Console != null)
 			{
 				Section.Console.Initialize();
 			}
@@ -42,18 +42,18 @@ namespace Totem.Runtime.Hosting.Commands
 
 		private void InitializeRuntime<TProgram>()
 		{
-      var deployment = Section.ReadDeployment(typeof(TProgram).Assembly);
+      var deployment = Section.ReadDeployment();
 
       var runtime = new RuntimeReader(deployment).Read();
 
-			Notion.Traits.InitializeRuntime(runtime);
+			Traits.InitializeRuntime(runtime);
 		}
 
 		private void InitializeLog()
 		{
 			SerilogAdapter = new SerilogAdapter(ReadLogger(), Section.Log.Level);
 
-			Notion.Traits.InitializeLog(SerilogAdapter);
+			Traits.InitializeLog(SerilogAdapter);
 		}
 
 		private ILogger ReadLogger()

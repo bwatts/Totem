@@ -41,7 +41,7 @@ namespace Totem.Runtime.Configuration
 		// Map
 		//
 
-		public RuntimeDeployment ReadDeployment(Assembly programAssembly)
+		public RuntimeDeployment ReadDeployment()
 		{
 			var hostFolder = GetHostFolder();
 
@@ -59,9 +59,7 @@ namespace Totem.Runtime.Configuration
 
 			var logFolder = GetLogFolder(dataFolder);
 
-			var hostExe = FileLink.From(programAssembly.Location);
-
-			return new RuntimeDeployment(folder, hostFolder, dataFolder, logFolder, hostExe, solutionConfiguration);
+			return new RuntimeDeployment(folder, hostFolder, dataFolder, logFolder, solutionConfiguration);
 		}
 
 		private static IFolder GetHostFolder()

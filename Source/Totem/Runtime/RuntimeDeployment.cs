@@ -15,14 +15,13 @@ namespace Totem.Runtime
 			IFolder hostFolder,
 			IFolder dataFolder,
 			IFolder logFolder,
-			FileLink hostExe,
 			string solutionConfiguration = "")
 		{
 			Folder = folder;
 			HostFolder = hostFolder;
 			DataFolder = dataFolder;
 			LogFolder = logFolder;
-			HostExe = hostExe;
+			InTotemSubmodule = folder.Link.ToString().Contains(@"\Submodules\Totem\");
 			InSolution = solutionConfiguration != "";
 			SolutionConfiguration = solutionConfiguration;
 		}
@@ -31,7 +30,7 @@ namespace Totem.Runtime
 		public readonly IFolder HostFolder;
 		public readonly IFolder DataFolder;
 		public readonly IFolder LogFolder;
-		public readonly FileLink HostExe;
+		public readonly bool InTotemSubmodule;
 		public readonly bool InSolution;
 		public readonly string SolutionConfiguration;
 
