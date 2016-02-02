@@ -34,6 +34,7 @@ namespace Totem
 			Expect(tags.Keys.Count()).Is(1);
 			Expect(tags.Values.Count()).Is(1);
 			ExpectNot(tags.IsUnset(Tag));
+			Expect(tags.IsSet(Tag));
 			Expect(tags[Tag].Content).Is(1);
 		}
 

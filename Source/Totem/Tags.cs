@@ -27,6 +27,13 @@ namespace Totem
 			return !_pairs.TryGetValue(tag, out value) || value.IsUnset;
 		}
 
+		public bool IsSet(Tag tag)
+		{
+			TagValue value;
+
+			return _pairs.TryGetValue(tag, out value) && value.IsSet;
+		}
+
 		public object Get(Tag tag, bool throwIfUnset = false)
 		{
 			TagValue value;

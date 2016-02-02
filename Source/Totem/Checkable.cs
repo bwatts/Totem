@@ -138,7 +138,7 @@ namespace Totem
 
 		public static Check<Tag<T>> IsSet<T>(this Check<Tag<T>> check, ITaggable target)
 		{
-			return check.IsFalse(t => t.IsUnset(target));
+			return check.IsTrue(t => t.IsSet(target));
 		}
 	}
 }

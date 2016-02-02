@@ -14,6 +14,7 @@ namespace Totem
 			Tag = tag;
 			Content = tag.ResolveDefault();
 			IsUnset = true;
+			IsSet = false;
 		}
 
 		public TagValue(Tag tag, object content)
@@ -21,11 +22,13 @@ namespace Totem
 			Tag = tag;
 			Content = content;
 			IsUnset = false;
+			IsSet = true;
 		}
 
 		public Tag Tag { get; }
 		public object Content { get; private set; }
 		public bool IsUnset { get; private set; }
+		public bool IsSet { get; private set; }
 
 		public sealed override string ToString() => ToText();
 		public Text ToText() => Text.Of(Content);
@@ -35,6 +38,7 @@ namespace Totem
 			Content = content;
 
 			IsUnset = content == Tag.UnsetValue;
+			IsSet = !IsUnset;
 		}
 	}
 }

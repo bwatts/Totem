@@ -12,11 +12,11 @@ namespace Totem
 	/// </summary>
 	public abstract class Tag
 	{
-		internal Tag(FieldInfo field)
+		internal Tag(FieldInfo field, Type type)
 		{
 			Field = field;
 			Name = field.Name;
-			Type = field.FieldType;
+			Type = type;
 		}
 
 		public FieldInfo Field { get; }
@@ -30,6 +30,11 @@ namespace Totem
 		public bool IsUnset(ITaggable target)
 		{
 			return target.Tags.IsUnset(this);
+		}
+
+		public bool IsSet(ITaggable target)
+		{
+			return target.Tags.IsSet(this);
 		}
 
 		public object Get(ITaggable target, bool throwIfUnset = false)
@@ -129,7 +134,7 @@ namespace Totem
 	{
 		private Func<T> _resolveDefault;
 
-		internal Tag(FieldInfo field, Func<T> resolveDefault) : base(field)
+		internal Tag(FieldInfo field, Func<T> resolveDefault) : base(field, typeof(T))
 		{
 			_resolveDefault = resolveDefault;
 		}
