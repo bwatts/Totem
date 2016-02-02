@@ -34,25 +34,6 @@ namespace Totem.Runtime.Json
 			DateFormatHandling = DateFormatHandling.IsoDateFormat;
 		}
 
-		public bool CamelCaseProperties
-		{
-			get
-			{
-				var knownResolver = ContractResolver as TotemContractResolver;
-
-				return knownResolver != null && knownResolver.CamelCaseProperties;
-			}
-			set
-			{
-				var knownResolver = ContractResolver as TotemContractResolver;
-
-				if(knownResolver != null)
-				{
-					knownResolver.CamelCaseProperties = value;
-				}
-			}
-		}
-
 		public JsonSerializer CreateSerializer()
 		{
 			return JsonSerializer.Create(this);

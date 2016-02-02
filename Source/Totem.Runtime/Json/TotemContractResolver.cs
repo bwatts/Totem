@@ -15,7 +15,7 @@ namespace Totem.Runtime.Json
 	/// <summary>
 	/// Resolves contracts describing the serialization and deserialization of objects to JSON in the Totem runtime
 	/// </summary>
-	public class TotemContractResolver : DefaultContractResolver, ITaggable
+	public class TotemContractResolver : CamelCasePropertyNamesContractResolver, ITaggable
 	{
 		internal TotemContractResolver()
 		{
@@ -26,28 +26,11 @@ namespace Totem.Runtime.Json
 		private Tags Tags;
 		private RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
-		public bool CamelCaseProperties { get; set; } = true;
-
-		protected override string ResolvePropertyName(string propertyName)
-		{
-			if(!CamelCaseProperties || propertyName.Length == 0 || !Char.IsUpper(propertyName[0]))
-			{
-				return propertyName;
-			}
-
-			return Char.ToLower(propertyName[0]) + propertyName.Substring(1);
-		}
-
-		protected override JsonObjectContract CreateObjectContract(Type objectType)
-		{
-			return CamelCaseProperties
-				? GetCachedJsonObjectContract(_jsonObjectContractCamelCaseCache, objectType)
-				: GetCachedJsonObjectContract(_jsonObjectContractNoCamelCaseCache, objectType);
-		}
-
 		protected override JsonArrayContract CreateArrayContract(Type objectType)
 		{
 			var contract = base.CreateArrayContract(objectType);
+
+			// I don't recall why this is needed - hrm
 
 			if(typeof(Many<>).IsAssignableFromGeneric(objectType))
 			{
@@ -61,9 +44,9 @@ namespace Totem.Runtime.Json
 			return contract;
 		}
 
-		private JsonObjectContract GetCachedJsonObjectContract(ConcurrentDictionary<Type, JsonObjectContract> cache, Type objectType)
+		protected override JsonObjectContract CreateObjectContract(Type objectType)
 		{
-			return cache.GetOrAdd(objectType, _ =>
+			return _objectContractCache.GetOrAdd(objectType, _ =>
 			{
 				var contract = base.CreateObjectContract(objectType);
 
@@ -78,8 +61,7 @@ namespace Totem.Runtime.Json
 			});
 		}
 
-		private static readonly ConcurrentDictionary<Type, JsonObjectContract> _jsonObjectContractCamelCaseCache = new ConcurrentDictionary<Type, JsonObjectContract>();
-		private static readonly ConcurrentDictionary<Type, JsonObjectContract> _jsonObjectContractNoCamelCaseCache = new ConcurrentDictionary<Type, JsonObjectContract>();
+		private static readonly ConcurrentDictionary<Type, JsonObjectContract> _objectContractCache = new ConcurrentDictionary<Type, JsonObjectContract>();
 
 		//
 		// Properties
