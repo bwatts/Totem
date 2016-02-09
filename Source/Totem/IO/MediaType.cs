@@ -12,7 +12,7 @@ namespace Totem.IO
 	[TypeConverter(typeof(Converter))]
 	public sealed class MediaType : Notion, IEquatable<MediaType>, IComparable<MediaType>
 	{
-		public MediaType(string name)
+		private MediaType(string name)
 		{
 			Name = name;
 		}
@@ -93,11 +93,22 @@ namespace Totem.IO
 		public static readonly Many<MediaType> AllKnown = Many.Of(Css, Html, Javascript, Json, Plain);
 		public static readonly Many<MediaType> AllText = Many.Of(Css, Html, Javascript, Json, Plain);
 
+		public static MediaType From(string mediaType, bool strict = true)
+		{
+			var name = mediaType?.Split(';')[0].Trim();
+
+			var blank = Check(name).IsNullOrWhiteSpace();
+
+			ExpectNot(strict && blank, "Media type is blank");
+
+			return blank ? null : new MediaType(name);
+		}
+
 		public sealed class Converter : TextConverter
 		{
 			protected override object ConvertFrom(TextValue value)
 			{
-				return new MediaType(value);
+				return From(value);
 			}
 		}
 	}

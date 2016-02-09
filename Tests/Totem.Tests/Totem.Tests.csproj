@@ -45,6 +45,7 @@
       <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CmpSpecs.cs" />
+    <Compile Include="IO\MediaTypeSpecs.cs" />
     <Compile Include="LinkPathSpecs.cs" />
     <Compile Include="LinkTextSpecs.cs" />
     <Compile Include="EqSpecs.cs" />

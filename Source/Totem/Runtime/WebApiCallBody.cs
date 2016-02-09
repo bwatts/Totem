@@ -47,7 +47,7 @@ namespace Totem.Runtime
 
 		public static WebApiCallBody From(string mediaType, Func<string> readAsString, Func<Stream> readAsStream)
 		{
-			return From(new MediaType(mediaType), readAsString, readAsStream);
+			return From(MediaType.From(mediaType), readAsString, readAsStream);
 		}
 
 		public static WebApiCallBody From(MediaType mediaType, Func<Stream> readAsStream)
@@ -65,7 +65,7 @@ namespace Totem.Runtime
 
 		public static WebApiCallBody From(string mediaType, Func<Stream> readAsStream)
 		{
-			return From(new MediaType(mediaType), readAsStream);
+			return From(MediaType.From(mediaType), readAsStream);
 		}
 	}
 }
