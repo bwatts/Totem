@@ -82,9 +82,29 @@ namespace Totem
 			return check.IsTrue(t => t == "");
 		}
 
+		public static Check<string> IsNullOrEmpty(this Check<string> check)
+		{
+			return check.IsTrue(string.IsNullOrEmpty);
+		}
+
+		public static Check<string> IsNullOrWhiteSpace(this Check<string> check)
+		{
+			return check.IsTrue(string.IsNullOrWhiteSpace);
+		}
+
 		public static Check<string> IsNotEmpty(this Check<string> check)
 		{
 			return check.IsTrue(t => t != "");
+		}
+
+		public static Check<string> IsNotNullOrEmpty(this Check<string> check)
+		{
+			return check.IsFalse(string.IsNullOrWhiteSpace);
+		}
+
+		public static Check<string> IsNotNullOrWhiteSpace(this Check<string> check)
+		{
+			return check.IsFalse(string.IsNullOrWhiteSpace);
 		}
 
 		//

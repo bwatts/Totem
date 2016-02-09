@@ -158,9 +158,33 @@ namespace Totem
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static Expect<string> IsNullOrEmpty(this Expect<string> expect, Text issue = null)
+		{
+			return expect.IsTrue(string.IsNullOrEmpty, issue, "null or empty");
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static Expect<string> IsNullOrWhiteSpace(this Expect<string> expect, Text issue = null)
+		{
+			return expect.IsTrue(string.IsNullOrWhiteSpace, issue, "null or whitespace");
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static Expect<string> IsNotEmpty(this Expect<string> expect, Text issue = null)
 		{
 			return expect.IsTrue(t => t != "", issue, "not empty", t => "empty");
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static Expect<string> IsNotNullOrEmpty(this Expect<string> expect, Text issue = null)
+		{
+			return expect.IsFalse(string.IsNullOrEmpty, issue, "not null or empty");
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static Expect<string> IsNotNullOrWhiteSpace(this Expect<string> expect, Text issue = null)
+		{
+			return expect.IsFalse(string.IsNullOrWhiteSpace, issue, "not null or whitespace");
 		}
 
 		//

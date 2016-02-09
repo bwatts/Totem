@@ -45,6 +45,12 @@ namespace Totem
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		public static void Throws(Action action, Text issue = null)
+		{
+			Throws<Exception>(action, issue);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
 		public static void Throws<TException>(Action action, Text issue = null) where TException : Exception
 		{
 			try

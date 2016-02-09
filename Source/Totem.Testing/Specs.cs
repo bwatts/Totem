@@ -65,6 +65,12 @@ namespace Totem
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+		protected void ExpectThrows(Action action, Text issue = null)
+		{
+			Totem.Expect.Throws(action, issue);
+		}
+
+		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
     protected void ExpectThrows<TException>(Action action, Text issue = null) where TException : Exception
 		{
 			Totem.Expect.Throws<TException>(action, issue);
