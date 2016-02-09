@@ -12,12 +12,14 @@ namespace Totem.IO
 	[TypeConverter(typeof(Converter))]
 	public sealed class MediaType : Notion, IEquatable<MediaType>, IComparable<MediaType>
 	{
-		private MediaType(string name)
+		public MediaType(string name)
 		{
-			Name = name;
+			Name = name?.Split(';')[0].Trim() ?? "";
+			IsNone = Name == Names.None;
 		}
 
 		public readonly string Name;
+		public readonly bool IsNone;
 
 		public override Text ToText() => ToText();
 
@@ -77,6 +79,7 @@ namespace Totem.IO
 
 		public static class Names
 		{
+			public const string None = "";
 			public const string Css = "text/css";
 			public const string Html = "text/html";
 			public const string Javascript = "application/javascript";
@@ -84,6 +87,7 @@ namespace Totem.IO
 			public const string Plain = "text/plain";
 		}
 
+		public static readonly MediaType None = new MediaType(Names.None);
 		public static readonly MediaType Css = new MediaType(Names.Css);
 		public static readonly MediaType Html = new MediaType(Names.Html);
 		public static readonly MediaType Javascript = new MediaType(Names.Javascript);
@@ -93,22 +97,11 @@ namespace Totem.IO
 		public static readonly Many<MediaType> AllKnown = Many.Of(Css, Html, Javascript, Json, Plain);
 		public static readonly Many<MediaType> AllText = Many.Of(Css, Html, Javascript, Json, Plain);
 
-		public static MediaType From(string mediaType, bool strict = true)
-		{
-			var name = mediaType?.Split(';')[0].Trim();
-
-			var blank = Check(name).IsNullOrWhiteSpace();
-
-			ExpectNot(strict && blank, "Media type is blank");
-
-			return blank ? null : new MediaType(name);
-		}
-
 		public sealed class Converter : TextConverter
 		{
 			protected override object ConvertFrom(TextValue value)
 			{
-				return From(value);
+				return new MediaType(value);
 			}
 		}
 	}

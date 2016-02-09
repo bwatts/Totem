@@ -14,46 +14,42 @@ namespace Totem.IO
 
 		void FromNull()
 		{
-			Expect(MediaType.From(null, strict: false)).IsNull();
+			var mediaType = new MediaType(null);
+
+			Expect(mediaType.Name).Is(MediaType.Names.None);
+			Expect(mediaType.IsNone);
 		}
 
 		void FromEmpty()
 		{
-			Expect(MediaType.From("", strict: false)).IsNull();
+			var mediaType = new MediaType("");
+
+			Expect(mediaType.Name).Is(MediaType.Names.None);
+			Expect(mediaType.IsNone);
 		}
 
 		void FromWhiteSpace()
 		{
-			Expect(MediaType.From(" \t ", strict: false)).IsNull();
+			var mediaType = new MediaType(" \t\n ");
+
+			Expect(mediaType.Name).Is(MediaType.Names.None);
+			Expect(mediaType.IsNone);
 		}
 
-		void FromNullStrict()
+		void FromName()
 		{
-			ExpectThrows(() => MediaType.From(null));
-		}
-
-		void FromEmptyStrict()
-		{
-			ExpectThrows(() => MediaType.From(""));
-		}
-
-		void FromWhiteSpaceStrict()
-		{
-			ExpectThrows(() => MediaType.From(" \t "));
-		}
-
-		void From()
-		{
-			var mediaType = MediaType.From(_name);
+			var mediaType = new MediaType(_name);
 
 			Expect(mediaType.Name).Is(_name);
+			ExpectNot(mediaType.IsNone);
 		}
 
-		void FromWithCharset()
+		void FromNameWithCharset()
 		{
-			var mediaType = MediaType.From(_nameWithCharset);
+			var mediaType = new MediaType(_nameWithCharset);
 
 			Expect(mediaType.Name).Is(_name);
+			ExpectNot(mediaType.IsNone);
 		}
 	}
 }
