@@ -178,7 +178,7 @@ namespace Totem.Runtime.Map
 
 			internal RuntimeRegion GetRegion(Type declaredType, bool strict)
 			{
-				var key = _cache.GetOrAdd(declaredType.Assembly, _ => RuntimeRegionKey.From(declaredType.Assembly));
+				var key = _cache.GetOrAdd(declaredType.Assembly, _ => RuntimeRegionKey.From(declaredType.Assembly, strict: false));
 
 				return key == null ? null : _regions.Get(key, strict);
 			}
