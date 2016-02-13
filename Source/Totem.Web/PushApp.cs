@@ -58,7 +58,7 @@ namespace Totem.Web
 		{
 			GlobalHost.HubPipeline.AddModule(new LoggingPipelineModule());
 
-			builder.MapHubs(new HubConfiguration
+			builder.MapSignalR(new HubConfiguration
 			{
 				EnableDetailedErrors = _enableDetailedErrors,
 				Resolver = new PushDependencyResolver(_context.Scope)
@@ -75,11 +75,11 @@ namespace Totem.Web
 			public Tags Tags { get; private set; }
 			private ILog Log => Traits.Log.Get(this);
 
-			protected override void OnIncomingError(Exception ex, IHubIncomingInvokerContext context)
+			protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext invokerContext)
 			{
-				Log.Error(ex, "An exception occurred in the SignalR pipeline");
+				Log.Error(exceptionContext.Error, "An exception occurred in the SignalR pipeline");
 
-				base.OnIncomingError(ex, context);
+				base.OnIncomingError(exceptionContext, invokerContext);
 			}
 		}
 
