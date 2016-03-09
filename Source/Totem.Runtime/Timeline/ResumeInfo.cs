@@ -9,9 +9,9 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public class ResumeInfo
 	{
-		public ResumeInfo(Many<ResumePoint> points)
+		public ResumeInfo(Many<ResumePoint> points = null)
 		{
-			Points = points;
+			Points = points ?? new Many<ResumePoint>();
 		}
 
 		public readonly Many<ResumePoint> Points;

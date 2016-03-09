@@ -142,6 +142,8 @@
     <Compile Include="Timeline\IFlowDb.cs" />
     <Compile Include="Timeline\IFlowScope.cs" />
     <Compile Include="Timeline\IViewDb.cs" />
+    <Compile Include="Timeline\LocalFlowDb.cs" />
+    <Compile Include="Timeline\LocalTimelineDb.cs" />
     <Compile Include="Timeline\TimelineFlowSet.cs" />
     <Compile Include="Timeline\TimelineRequestSet.cs" />
     <Compile Include="Timeline\ITimelineDb.cs" />

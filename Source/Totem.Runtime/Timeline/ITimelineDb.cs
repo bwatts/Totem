@@ -5,7 +5,7 @@ using System.Linq;
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// Describes the database persisting timeline data
+	/// Describes a database persisting timeline data
 	/// </summary>
 	public interface ITimelineDb
 	{
