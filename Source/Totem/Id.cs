@@ -77,12 +77,29 @@ namespace Totem
 			return new Id(Guid.NewGuid().ToString());
 		}
 
+		public static Id FromMany(IEnumerable<string> ids)
+		{
+			return From(ids.ToTextSeparatedBy("/").ToString());
+		}
+
+		public static Id FromMany(params string[] ids)
+		{
+			return FromMany(ids as IEnumerable<string>);
+		}
+
+		public static Id FromMany(IEnumerable<Id> ids)
+		{
+			return From(ids.ToTextSeparatedBy("/").ToString());
+		}
+
+		public static Id FromMany(params Id[] ids)
+		{
+			return FromMany(ids as IEnumerable<Id>);
+		}
+
 		public sealed class Converter : TextConverter
 		{
-			protected override object ConvertFrom(TextValue value)
-			{
-				return From(value);
-			}
+			protected override object ConvertFrom(TextValue value) => From(value);
 		}
 	}
 }
