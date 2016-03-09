@@ -56,6 +56,16 @@ namespace Totem.Http
 			return new HttpResource(Path.Then(resource.Path), resource.Query);
 		}
 
+		public HttpResource WithQuery(LinkText key, LinkText value)
+		{
+			return new HttpResource(Path, Query.Set(key, value));
+		}
+
+		public HttpResource WithoutQuery(LinkText key)
+		{
+			return new HttpResource(Path, Query.Clear(key));
+		}
+
 		//
 		// Equality
 		//
