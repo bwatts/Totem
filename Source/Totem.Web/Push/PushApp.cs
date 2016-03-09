@@ -8,7 +8,7 @@ using Microsoft.Owin.Hosting;
 using Owin;
 using Totem.Runtime;
 
-namespace Totem.Web
+namespace Totem.Web.Push
 {
 	/// <summary>
 	/// An HTTP-bound push application composed by OWIN and SignalR
@@ -54,12 +54,15 @@ namespace Totem.Web
 			return options;
 		}
 
-		protected virtual void Startup(IAppBuilder builder)
+		protected virtual void Startup(IAppBuilder app)
 		{
 			GlobalHost.HubPipeline.AddModule(new LoggingPipelineModule());
 
-			builder.MapSignalR(new HubConfiguration
+			//app.UseErrorPage();		// Uncomment when debugging server errors
+
+			app.MapSignalR(new HubConfiguration
 			{
+				EnableJavaScriptProxies = false,
 				EnableDetailedErrors = _enableDetailedErrors,
 				Resolver = new PushDependencyResolver(_context.Scope)
 			});

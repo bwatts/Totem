@@ -154,12 +154,12 @@ namespace Totem.Web
 			IViewDb views;
 			ITimeline timeline;
 
-      if(container.TryResolve<IViewDb>(out views))
+      if(container.TryResolve(out views))
       {
         context.Items[WebApi.ViewsItemKey] = views;
       }
 
-      if(container.TryResolve<ITimeline>(out timeline))
+      if(container.TryResolve(out timeline))
 			{
 				context.Items[WebApi.TimelineItemKey] = timeline;
 			}
