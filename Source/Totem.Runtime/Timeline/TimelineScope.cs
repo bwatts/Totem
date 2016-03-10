@@ -10,7 +10,7 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// The scope of timeline activity in a runtime
   /// </summary>
-  public sealed class TimelineScope : PushScope, ITimelineScope
+  public sealed class TimelineScope : Connection, ITimelineScope
 	{
     private readonly ILifetimeScope _lifetime;
     private readonly ITimelineDb _timelineDb;
@@ -36,8 +36,6 @@ namespace Totem.Runtime.Timeline
       Track(_flows);
       Track(_requests);
 
-      base.Open();
-
       ResumeTimeline();
     }
 
@@ -47,18 +45,21 @@ namespace Totem.Runtime.Timeline
 
       _schedule.ResumeWith(resumeInfo);
 
-      resumeInfo.Push(this);
+			foreach(var resumePoint in resumeInfo.Points)
+			{
+				Push(resumePoint.Point);
+			}
     }
 
     //
     // Runtime
     //
 
-    protected override void Push()
+    public void Push(TimelinePoint point)
     {
-      _schedule.Push(Point);
-      _flows.Push(Point);
-      _requests.Push(Point);
+      _schedule.Push(point);
+      _flows.Push(point);
+      _requests.Push(point);
     }
 
     internal void PushScheduled(TimelinePoint point)

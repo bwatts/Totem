@@ -35,21 +35,18 @@ namespace Totem
 			private readonly T _y;
 			private readonly bool _yNull;
 			private bool _checked;
-			private bool _result = true;
+			private bool _result;
 
 			internal Equatable(T x, T y)
 			{
 				_x = x;
 				_y = y;
-				_yNull = ReferenceEquals(y, null);
+				_result = !ReferenceEquals(y, null);
 			}
 
 			public Equatable<T> Check<TValue>(Func<T, TValue> get)
 			{
-				if(!_result && !_yNull)
-				{
-					_result = EqualityComparer<TValue>.Default.Equals(get(_x), get(_y));
-				}
+				_result = _result && EqualityComparer<TValue>.Default.Equals(get(_x), get(_y));
 
 				_checked = true;
 

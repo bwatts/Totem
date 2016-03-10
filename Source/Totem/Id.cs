@@ -41,7 +41,7 @@ namespace Totem
 
 		public override int GetHashCode()
 		{
-			return IsUnassigned ? 0 : _value.GetHashCode();
+			return ToString().GetHashCode();
 		}
 
 		public int CompareTo(Id other)

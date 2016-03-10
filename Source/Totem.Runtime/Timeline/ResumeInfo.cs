@@ -15,13 +15,5 @@ namespace Totem.Runtime.Timeline
 		}
 
 		public readonly Many<ResumePoint> Points;
-
-    public void Push(PushScope scope)
-    {
-      foreach(var point in Points)
-      {
-        point.Push(scope);
-      }
-    }
 	}
 }

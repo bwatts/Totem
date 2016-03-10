@@ -154,7 +154,7 @@
     <Compile Include="Timeline\TimelineScope.cs" />
     <Compile Include="Timeline\TimelineRequest.cs" />
     <Compile Include="Timeline\ResumePoint.cs" />
-    <Compile Include="Timeline\PushScope.cs" />
+    <Compile Include="Timeline\FlowQueue.cs" />
     <Compile Include="Timeline\ViewDbOperations.cs" />
   </ItemGroup>
   <ItemGroup>
