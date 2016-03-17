@@ -37,42 +37,42 @@ namespace Totem.Web.Push
 			return _groups.Remove(connectionId.ToString(), groupId.ToString());
 		}
 
-		public Task PushToAll(Event e)
+		public Task ToAll(Event e)
 		{
 			return CallPush(e, () => _clients.All);
 		}
 
-		public Task PushToAllExcept(Event e, Many<Id> excludeConnectionIds)
+		public Task ToAllExcept(Event e, Many<Id> excludeConnectionIds)
 		{
 			return CallPush(e, () => _clients.AllExcept(ToStrings(excludeConnectionIds)));
 		}
 
-		public Task PushToClient(Event e, Id connectionId)
+		public Task ToClient(Event e, Id connectionId)
 		{
 			return CallPush(e, () => _clients.Client(connectionId.ToString()));
 		}
 
-		public Task PushToClients(Event e, Many<Id> connectionIds)
+		public Task ToClients(Event e, Many<Id> connectionIds)
 		{
 			return CallPush(e, () => _clients.Clients(ToStrings(connectionIds)));
 		}
 
-		public Task PushToGroup(Event e, Id groupId, Many<Id> excludeConnectionIds)
+		public Task ToGroup(Event e, Id groupId, Many<Id> excludeConnectionIds)
 		{
 			return CallPush(e, () => _clients.Group(groupId.ToString(), ToStrings(excludeConnectionIds)));
 		}
 
-		public Task PushToGroups(Event e, Many<Id> groupIds, Many<Id> excludeConnectionIds)
+		public Task ToGroups(Event e, Many<Id> groupIds, Many<Id> excludeConnectionIds)
 		{
 			return CallPush(e, () => _clients.Groups(ToStrings(groupIds), ToStrings(excludeConnectionIds)));
 		}
 
-		public Task PushToUser(Event e, Id userId)
+		public Task ToUser(Event e, Id userId)
 		{
 			return CallPush(e, () => _clients.User(userId.ToString()));
 		}
 
-		public Task PushToUsers(Event e, Many<Id> userIds)
+		public Task ToUsers(Event e, Many<Id> userIds)
 		{
 			return CallPush(e, () => _clients.Users(ToStrings(userIds)));
 		}

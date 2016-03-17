@@ -64,7 +64,7 @@ namespace Totem.Web
 		{
       // This could be async all the way back to the API classes...but it doesn't read nearly as well there :-)
 
-      // TODO: Look into effects of blocking threads here and in the timeline/flow hosts
+      // TODO: Look into effects of blocking threads here
 
       var flow = Timeline.MakeRequest<T>(e).Result;
 

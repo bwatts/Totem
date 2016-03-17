@@ -76,7 +76,7 @@ namespace Totem.Runtime.Timeline
 			{
         StartCall(call);
 
-        await call.Make();
+				await InvokeCall(call);
 			}
 			finally
 			{
@@ -94,6 +94,11 @@ namespace Totem.Runtime.Timeline
       Event = call.Point.Event;
       EventType = call.Point.EventType;
     }
+
+		protected virtual Task InvokeCall(WhenCall call)
+		{
+			return call.Make();
+		}
 
     private void EndCall()
     {
