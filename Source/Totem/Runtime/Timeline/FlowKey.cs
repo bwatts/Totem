@@ -21,6 +21,8 @@ namespace Totem.Runtime.Timeline
 
     public override string ToString() => Text.Of(Type).WriteIf(Id.IsAssigned, $"/{Id}");
 
+		public Flow New() => Type.New(this);
+
 		//
 		// Equality
 		//

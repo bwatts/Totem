@@ -43,7 +43,7 @@ namespace Totem.Runtime.Map.Timeline
       IsRouted = true;
     }
 
-    public FlowKey CreateKey(Id id)
+		public FlowKey CreateKey(Id id)
     {
       ExpectNot(IsSingleInstance && id.IsAssigned, Text.Of("Flow {0} is single-instance and cannot have an assigned id of {1}", this, id));
 			ExpectNot(IsRouted && id.IsUnassigned, Text.Of("Flow {0} is routed and must have an assigned id", this));
@@ -51,9 +51,13 @@ namespace Totem.Runtime.Map.Timeline
       return new FlowKey(this, id);
     }
 
-    public Flow New()
+		public Flow New(FlowKey key)
 		{
-      return Constructor.Call();
+			var flow = Constructor.Call();
+
+			Flow.Initialize(flow, key);
+
+			return flow;
 		}
 
 		public bool CanCall(EventType e)
@@ -61,7 +65,7 @@ namespace Totem.Runtime.Map.Timeline
 			return Events.Contains(e);
 		}
 
-    public Many<Id> CallRoute(TimelinePoint point)
+    public Many<TimelineRoute> CallRoute(TimelinePoint point)
     {
       return Events.CallRoute(point);
     }

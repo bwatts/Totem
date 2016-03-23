@@ -54,7 +54,10 @@ namespace Totem.Runtime
           case "Route":
             TryRegisterMethod(method, e => RegisterRoute(method, e), expectStatic: true);
             break;
-          case "Given":
+					case "RouteFirst":
+						TryRegisterMethod(method, e => RegisterRoute(method, e, isFirst: true), expectStatic: true);
+						break;
+					case "Given":
             TryRegisterMethod(method, e => RegisterGiven(method, e));
             break;
           case "GivenScheduled":
@@ -131,25 +134,25 @@ namespace Totem.Runtime
       return e != null;
     }
 
-    private void RegisterRoute(MethodInfo method, EventType e)
+    private void RegisterRoute(MethodInfo method, EventType e, bool isFirst = false)
     {
       // Take only the first route method we see for a type - RegisterMethods calls in order of most-to-least derived
 
       if(!_routesByEvent.ContainsKey(e))
       {
-        TryRegisterRoute(method, e);
+        TryRegisterRoute(method, e, isFirst);
       }
     }
 
-    private void TryRegisterRoute(MethodInfo method, EventType e)
+    private void TryRegisterRoute(MethodInfo method, EventType e, bool isFirst)
     {
       if(_flow.IsRequest)
       {
-        Log.Warning("[timeline] {Type} is a request andcannot have Route methods", method.DeclaringType.FullName);
+        Log.Warning("[timeline] {Type} is a request and cannot have Route methods", method.DeclaringType.FullName);
       }
       else if(method.ReturnType == typeof(Id) || typeof(IEnumerable<Id>).IsAssignableFrom(method.ReturnType))
       {
-        _routesByEvent.Add(e, new FlowRoute(method, e));
+				_routesByEvent.Add(e, new FlowRoute(method, e, isFirst));
       }
       else
       {
@@ -259,10 +262,19 @@ namespace Totem.Runtime
         throw new Exception($"Flow {_flow} specifies routes but is missing some: {unroutedEvents.ToTextSeparatedBy(", ")}");
       }
 
-      if(_flow.IsRequest || (_events.Count > 0 && unroutedEvents.Count == 0))
-      {
-        _flow.SetRouted();
-      }
+			if(_flow.IsRequest)
+			{
+				_flow.SetRouted();
+			}
+			else if(_events.Count > 0 && unroutedEvents.Count == 0)
+			{
+				if(!_flow.Events.Any(e => e.Route.IsFirst))
+				{
+					throw new Exception($"Flow {_flow} specifies routes but no RouteFirst methods");
+				}
+
+				_flow.SetRouted();
+			}
       else
       {
         _flow.SetSingleInstance();

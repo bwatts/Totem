@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -12,33 +13,32 @@ namespace Totem.Runtime.Timeline
 	public sealed class FlowScope : PushScope, IFlowScope
 	{
 		private readonly TaskCompletionSource<Flow> _taskCompletionSource = new TaskCompletionSource<Flow>();
-		private readonly ILifetimeScope _scope;
+		private readonly ILifetimeScope _lifetime;
 		private readonly IFlowDb _db;
+		private TimelineRoute _route;
     private Flow _instance;
 
-		public FlowScope(FlowKey key, ILifetimeScope scope, IFlowDb db)
+		public FlowScope(ILifetimeScope lifetime, IFlowDb db, FlowType type, TimelineRoute route)
 		{
-      Key = key;
-			_scope = scope;
+			_lifetime = lifetime;
 			_db = db;
+			_route = route;
+			Key = type.CreateKey(route.Id);
 		}
 
     public FlowKey Key { get; }
     public Task<Flow> Task => _taskCompletionSource.Task;
 
-		protected override void Open()
+		internal bool TryRoute()
 		{
-      _instance = _db.ReadInstance(Key);
+			var isFirst = _route.IsFirst;
 
-      base.Open();
+			_route = null;
+
+			return isFirst
+				? _db.TryReadFirstInstance(Key, out _instance)
+				: _db.TryReadInstance(Key, out _instance);
 		}
-
-		protected override void Close()
-		{
-			base.Close();
-
-			_instance = null;
-    }
 
 		protected override void Push()
 		{
@@ -69,7 +69,7 @@ namespace Totem.Runtime.Timeline
 
 		private async Task MakeCallAsync()
 		{
-			using(var callScope = _scope.BeginCallScope())
+			using(var callScope = _lifetime.BeginCallScope())
 			{
         var call = CreateCall(callScope);
 

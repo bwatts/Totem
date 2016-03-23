@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Totem.Runtime.Timeline;
 
 namespace Totem.Runtime.Map.Timeline
 {
@@ -13,12 +14,19 @@ namespace Totem.Runtime.Map.Timeline
   {
     private readonly Lazy<Func<Event, Many<Id>>> _call;
 
-    public FlowRoute(MethodInfo info, EventType eventType) : base(info, eventType)
+    public FlowRoute(MethodInfo info, EventType eventType, bool isFirst) : base(info, eventType)
     {
+			IsFirst = isFirst;
+
       _call = new Lazy<Func<Event, Many<Id>>>(CompileCall);
     }
 
-    public Func<Event, Many<Id>> Call => _call.Value;
+		public readonly bool IsFirst;
+
+		public Many<TimelineRoute> Call(Event e)
+		{
+			return _call.Value(e).ToMany(id => new TimelineRoute(id, IsFirst));
+		}
 
     private Func<Event, Many<Id>> CompileCall()
     {

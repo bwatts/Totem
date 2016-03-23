@@ -75,11 +75,11 @@ namespace Totem.Runtime.Map.Timeline
 			return Get(e.GetType(), strict);
 		}
 
-    public Many<Id> CallRoute(TimelinePoint point)
+    public Many<TimelineRoute> CallRoute(TimelinePoint point)
     {
       var e = Get(point.EventType.Key, strict: false);
 
-      return e?.CallRoute(point) ?? new Many<Id>();
+      return e?.CallRoute(point) ?? new Many<TimelineRoute>();
     }
 
     public void CallGiven(Flow flow, TimelinePoint point)

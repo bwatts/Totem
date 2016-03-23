@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Totem.Runtime.Map.Timeline;
@@ -11,7 +10,7 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class FlowRouter : PushScope
   {
-    private readonly ConcurrentDictionary<Id, IFlowScope> _scopesById = new ConcurrentDictionary<Id, IFlowScope>();
+    private readonly Dictionary<Id, IFlowScope> _scopesById = new Dictionary<Id, IFlowScope>();
     private readonly FlowType _flow;
     private readonly ITimelineScope _timeline;
 
@@ -28,42 +27,48 @@ namespace Totem.Runtime.Timeline
 
     protected override void Push()
     {
-      foreach(var flow in GetOrAddScopes())
-      {
-        flow.Push(Point);
-      }
+			foreach(var route in _flow.CallRoute(Point))
+			{
+				IFlowScope scope;
+
+				if(_scopesById.TryGetValue(route.Id, out scope))
+				{
+					if(!route.IsFirst)
+					{
+						scope.Push(Point);
+					}
+				}
+				else
+				{
+					if(TryOpenScope(route, out scope))
+					{
+						scope.Push(Point);
+					}
+				}
+			}
     }
 
-    private IEnumerable<IFlowScope> GetOrAddScopes()
-    {
-      return
-        from id in _flow.CallRoute(Point)
-        select _scopesById.GetOrAdd(id, AddScope);
-    }
+		private bool TryOpenScope(TimelineRoute route, out IFlowScope scope)
+		{
+			scope = null;
 
-    private IFlowScope AddScope(Id id)
-    {
-      var scope = OpenScope(id);
+			if(_timeline.TryOpenFlowScope(_flow, route, out scope))
+			{
+				var connection = scope.Connect(this);
 
-      var connection = scope.Connect(this);
+				_scopesById[route.Id] = scope;
 
-      RemoveWhenDone(scope, connection);
+				RemoveWhenDone(scope, connection);
+			}
 
-      return scope;
-    }
+			return scope != null;
+		}
 
-    private IFlowScope OpenScope(Id id)
-    {
-      return _timeline.OpenFlowScope(new FlowKey(_flow, id));
-    }
-
-    private void RemoveWhenDone(IFlowScope scope, IDisposable connection)
+		private void RemoveWhenDone(IFlowScope scope, IDisposable connection)
     {
       scope.Task.ContinueWith(_ =>
       {
-        IFlowScope removed;
-
-        _scopesById.TryRemove(scope.Key.Id, out removed);
+        _scopesById.Remove(scope.Key.Id);
 
         connection.Dispose();
       },

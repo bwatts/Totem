@@ -35,9 +35,9 @@ namespace Totem.Runtime.Map.Timeline
 
 		public override string ToString() => $"{EventType} => {FlowType}";
 
-		public Many<Id> CallRoute(TimelinePoint point)
+		public Many<TimelineRoute> CallRoute(TimelinePoint point)
     {
-      return HasRoute ? Route.Call(point.Event) : Many.Of(Id.Unassigned);
+			return HasRoute ? Route.Call(point.Event) : Many.Of(TimelineRoute.SingleInstance);
     }
 
     public void CallGiven(Flow flow, TimelinePoint point)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -14,6 +15,6 @@ namespace Totem.Runtime.Timeline
 
 		Task<T> MakeRequest<T>(Id id) where T : Request;
 
-    IFlowScope OpenFlowScope(FlowKey key);
+    bool TryOpenFlowScope(FlowType type, TimelineRoute route, out IFlowScope scope);
   }
 }

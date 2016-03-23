@@ -12,7 +12,9 @@ namespace Totem.Runtime.Timeline
   {
     ClaimsPrincipal ReadPrincipal(TimelinePoint point);
 
-    Flow ReadInstance(FlowKey key);
+		bool TryReadFirstInstance(FlowKey key, out Flow instance);
+
+		bool TryReadInstance(FlowKey key, out Flow instance);
 
     void WriteCall(WhenCall call);
 

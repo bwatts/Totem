@@ -86,7 +86,13 @@ namespace Totem.Runtime.Timeline
     {
       var type = Runtime.GetRequest(typeof(T));
 
-      return _scope.OpenFlowScope(type.CreateKey(id));
+			IFlowScope scope;
+
+			Expect(
+				_scope.TryOpenFlowScope(type, new TimelineRoute(id), out scope),
+				Text.Of("Failed to open scope for request \"{0}\" of type {1}", id, type));
+
+			return scope;
     }
 
     private void RemoveRequest(Id id)

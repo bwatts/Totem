@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -11,16 +12,16 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   public sealed class TimelineScope : PushScope, ITimelineScope
 	{
-    private readonly ILifetimeScope _scope;
+    private readonly ILifetimeScope _lifetime;
     private readonly ITimelineDb _timelineDb;
     private readonly IFlowDb _flowDb;
     private TimelineSchedule _schedule;
     private TimelineFlowSet _flows;
     private TimelineRequestSet _requests;
 
-    public TimelineScope(ILifetimeScope scope, ITimelineDb timelineDb, IFlowDb flowDb)
+    public TimelineScope(ILifetimeScope lifetime, ITimelineDb timelineDb, IFlowDb flowDb)
 		{
-      _scope = scope;
+      _lifetime = lifetime;
       _timelineDb = timelineDb;
       _flowDb = flowDb;
 
@@ -70,9 +71,13 @@ namespace Totem.Runtime.Timeline
       return _requests.MakeRequest<T>(id);
     }
 
-    public IFlowScope OpenFlowScope(FlowKey key)
-    {
-      return new FlowScope(key, _scope, _flowDb);
+    public bool TryOpenFlowScope(FlowType type, TimelineRoute route, out IFlowScope scope)
+		{
+			var unroutedScope = new FlowScope(_lifetime, _flowDb, type, route);
+
+			scope = unroutedScope.TryRoute() ? unroutedScope : null;
+
+			return scope != null;
     }
 	}
 }
