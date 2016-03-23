@@ -33,23 +33,39 @@ namespace Totem.Runtime.Timeline
 		// Read instance
 		//
 
-		public Flow ReadInstance(FlowKey key)
+		public bool TryReadFirstInstance(FlowKey key, out Flow instance)
 		{
-			return key.Type.IsRequest ? CreateInstance(key) : ReadOrCreateInstance(key);
+			ExpectNot(key.Type.IsSingleInstance, "Single-instance flows do not have Route methods");
+			ExpectNot(key.Type.IsRequest, "Request flows do not have Route methods");
+
+			if(_flowsByKey.ContainsKey(key))
+			{
+				instance = null;
+			}
+			else
+			{
+				instance = key.New();
+
+				_flowsByKey[key] = instance;
+			}
+
+			return instance != null;
 		}
 
-		private Flow CreateInstance(FlowKey key)
+		public bool TryReadInstance(FlowKey key, out Flow instance)
 		{
-			var flow = key.Type.New();
+			if(!_flowsByKey.TryGetValue(key, out instance)
+				&& (key.Type.IsSingleInstance || key.Type.IsRequest))
+			{
+				instance = key.Type.New(key);
 
-			Flow.Initialize(flow, key);
+				if(key.Type.IsSingleInstance)
+				{
+					_flowsByKey[key] = instance;
+				}
+			}
 
-			return flow;
-		}
-
-		private Flow ReadOrCreateInstance(FlowKey key)
-		{
-			return _flowsByKey.GetOrAdd(key, _ => CreateInstance(key));
+			return instance != null;
 		}
 
 		//
