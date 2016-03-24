@@ -44,7 +44,9 @@ namespace Totem.Runtime.Timeline
 			}
 			else
 			{
-				instance = key.New();
+				instance = key.Type.New();
+
+				Flow.Initialize(instance, key);
 
 				_flowsByKey[key] = instance;
 			}
@@ -57,7 +59,9 @@ namespace Totem.Runtime.Timeline
 			if(!_flowsByKey.TryGetValue(key, out instance)
 				&& (key.Type.IsSingleInstance || key.Type.IsRequest))
 			{
-				instance = key.Type.New(key);
+				instance = key.Type.New();
+
+				Flow.Initialize(instance, key);
 
 				if(key.Type.IsSingleInstance)
 				{
