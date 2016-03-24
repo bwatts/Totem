@@ -35,13 +35,11 @@ namespace Totem.Runtime.Timeline
 
 		internal bool TryRoute()
 		{
-			var isFirst = _route.IsFirst;
+			var route = _route;
 
 			_route = null;
 
-			return isFirst
-				? _db.TryReadFirstInstance(Key, out _flow)
-				: _db.TryReadInstance(Key, out _flow);
+			return _db.TryReadFlow(Key.Type, route, out _flow);
 		}
 
 		protected override void Open()

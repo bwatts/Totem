@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using Totem.Runtime.Json;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -29,47 +30,24 @@ namespace Totem.Runtime.Timeline
 			return new ClaimsPrincipal();
 		}
 
-		//
-		// Read instance
-		//
-
-		public bool TryReadFirstInstance(FlowKey key, out Flow instance)
+		public bool TryReadFlow(FlowType type, TimelineRoute route, out Flow flow)
 		{
-			ExpectNot(key.Type.IsSingleInstance, "Single-instance flows do not have Route methods");
-			ExpectNot(key.Type.IsRequest, "Request flows do not have Route methods");
+			var key = type.CreateKey(route.Id);
 
-			if(_flowsByKey.ContainsKey(key))
+			if(!_flowsByKey.TryGetValue(key, out flow)
+				&& (route.IsFirst || type.IsSingleInstance || type.IsRequest))
 			{
-				instance = null;
-			}
-			else
-			{
-				instance = key.Type.New();
+				flow = type.New();
 
-				Flow.Initialize(instance, key);
+				Flow.Initialize(flow, key);
 
-				_flowsByKey[key] = instance;
-			}
-
-			return instance != null;
-		}
-
-		public bool TryReadInstance(FlowKey key, out Flow instance)
-		{
-			if(!_flowsByKey.TryGetValue(key, out instance)
-				&& (key.Type.IsSingleInstance || key.Type.IsRequest))
-			{
-				instance = key.Type.New();
-
-				Flow.Initialize(instance, key);
-
-				if(key.Type.IsSingleInstance)
+				if(!type.IsRequest)
 				{
-					_flowsByKey[key] = instance;
+					_flowsByKey[key] = flow;
 				}
 			}
 
-			return instance != null;
+			return flow != null;
 		}
 
 		//
