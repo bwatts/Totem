@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -12,9 +13,7 @@ namespace Totem.Runtime.Timeline
   {
     ClaimsPrincipal ReadPrincipal(TimelinePoint point);
 
-		bool TryReadFirstInstance(FlowKey key, out Flow instance);
-
-		bool TryReadInstance(FlowKey key, out Flow instance);
+		bool TryReadFlow(FlowType type, TimelineRoute route, out Flow flow);
 
     void WriteCall(WhenCall call);
 

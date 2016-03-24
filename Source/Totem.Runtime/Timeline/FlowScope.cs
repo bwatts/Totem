@@ -15,13 +15,15 @@ namespace Totem.Runtime.Timeline
 		private readonly TaskCompletionSource<Flow> _taskCompletionSource = new TaskCompletionSource<Flow>();
 		private readonly ILifetimeScope _lifetime;
 		private readonly IFlowDb _db;
+		private readonly FlowType _type;
 		private TimelineRoute _route;
-    private Flow _instance;
+    private Flow _flow;
 
 		public FlowScope(ILifetimeScope lifetime, IFlowDb db, FlowType type, TimelineRoute route)
 		{
 			_lifetime = lifetime;
 			_db = db;
+			_type = type;
 			_route = route;
 			Key = type.CreateKey(route.Id);
 		}
@@ -31,13 +33,11 @@ namespace Totem.Runtime.Timeline
 
 		internal bool TryRoute()
 		{
-			var isFirst = _route.IsFirst;
+			var route = _route;
 
 			_route = null;
 
-			return isFirst
-				? _db.TryReadFirstInstance(Key, out _instance)
-				: _db.TryReadInstance(Key, out _instance);
+			return _db.TryReadFlow(_type, route, out _flow);
 		}
 
 		protected override void Push()
@@ -51,7 +51,7 @@ namespace Totem.Runtime.Timeline
 			}
 			catch(Exception error)
 			{
-				if(Key.Type.IsRequest)
+				if(_type.IsRequest)
 				{
 					throw;
 				}
@@ -60,7 +60,7 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-    private bool PointIsPastCheckpoint => Point.Position > _instance.Checkpoint;
+    private bool PointIsPastCheckpoint => Point.Position > _flow.Checkpoint;
 
     private void MakeCall()
     {
@@ -73,7 +73,7 @@ namespace Totem.Runtime.Timeline
 			{
         var call = CreateCall(callScope);
 
-        await _instance.MakeCall(call);
+        await _flow.MakeCall(call);
 
         _db.WriteCall(call);
 
@@ -93,10 +93,10 @@ namespace Totem.Runtime.Timeline
       var dependencies = scope.Resolve<IDependencySource>();
       var principal = _db.ReadPrincipal(Point);
 
-      if(_instance.Type.IsTopic)
+      if(_type.IsTopic)
       {
         return new TopicWhenCall(
-          (Topic) _instance,
+          (Topic) _flow,
           Point,
           dependencies,
           principal,
@@ -104,7 +104,7 @@ namespace Totem.Runtime.Timeline
       }
 
       return new WhenCall(
-				_instance,
+				_flow,
 				Point,
         dependencies,
         principal,
@@ -113,7 +113,7 @@ namespace Totem.Runtime.Timeline
 
 		private bool CheckDone()
 		{
-			if(_instance.Done)
+			if(_flow.Done)
 			{
 				CompleteTask();
 
@@ -125,7 +125,7 @@ namespace Totem.Runtime.Timeline
 
 		private void WriteError(Exception error)
 		{
-			Log.Error(error, "[timeline] Flow {Flow:l} stopped", _instance);
+			Log.Error(error, "[timeline] Flow {Flow:l} stopped", _flow);
 
 			try
 			{
@@ -139,7 +139,7 @@ namespace Totem.Runtime.Timeline
 
 		private void CompleteTask()
 		{
-			_taskCompletionSource.TrySetResult(_instance);
+			_taskCompletionSource.TrySetResult(_flow);
 
 			Disconnect();
 		}
