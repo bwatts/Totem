@@ -31,22 +31,17 @@ namespace Totem.Runtime.Timeline
 			{
 				IFlowScope scope;
 
-				if(_scopesById.TryGetValue(route.Id, out scope))
+				if(TryGetScope(route, out scope) || TryOpenScope(route, out scope))
 				{
-					if(!route.IsFirst)
-					{
-						scope.Push(Point);
-					}
-				}
-				else
-				{
-					if(TryOpenScope(route, out scope))
-					{
-						scope.Push(Point);
-					}
+					scope.Push(Point);
 				}
 			}
     }
+
+		private bool TryGetScope(TimelineRoute route, out IFlowScope scope)
+		{
+			return _scopesById.TryGetValue(route.Id, out scope);
+		}
 
 		private bool TryOpenScope(TimelineRoute route, out IFlowScope scope)
 		{
