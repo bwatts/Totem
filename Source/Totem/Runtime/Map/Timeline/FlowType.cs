@@ -51,13 +51,9 @@ namespace Totem.Runtime.Map.Timeline
       return new FlowKey(this, id);
     }
 
-		public Flow New(FlowKey key)
+		public Flow New()
 		{
-			var flow = Constructor.Call();
-
-			Flow.Initialize(flow, key);
-
-			return flow;
+			return Constructor.Call();
 		}
 
 		public bool CanCall(EventType e)
