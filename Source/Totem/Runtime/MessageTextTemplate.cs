@@ -43,7 +43,7 @@ namespace Totem.Runtime
 
 			foreach(var parameter in invoke.GetParameters())
 			{
-				expansion.AddNamespace(parameter.ParameterType);
+				expansion.AddNamespace(parameter.ParameterType, recurse: true);
 
 				fields.Add(new ExpansionField(parameter));
 			}
@@ -93,6 +93,19 @@ namespace Totem.Runtime
 			return fields.ToTextSeparatedBy(Text.Line, field => field.ToDeclarationText());
 		}
 
+		private static IEnumerable<Type> RecurseGenericTypes(this IEnumerable<Type> types)
+		{
+			foreach (var type in types)
+			{
+				yield return type;
+				var generics = type.GenericTypeArguments;
+				foreach (var generic in generics.RecurseGenericTypes())
+				{
+					yield return generic;
+				}
+			}
+		}
+
 		//
 		// Expansion
 		//
@@ -110,11 +123,25 @@ namespace Totem.Runtime
 
 			internal Type DeclaringType { get; private set; }
 
-			internal void AddNamespace(Type type)
+			internal void AddNamespace(Type type, bool recurse = false)
 			{
 				if(type.Namespace != DeclaringType.Namespace)
 				{
 					_using.Add(new ExpansionNamespace(type.Namespace));
+				}
+
+				if(!recurse)
+				{
+					return;
+				}
+
+				var genericTypes = (from genericType in type.GenericTypeArguments.RecurseGenericTypes()
+														where genericType.Namespace != DeclaringType.Namespace
+														select genericType).Distinct();
+
+				foreach (var genericType in genericTypes)
+				{
+					_using.Add(new ExpansionNamespace(genericType.Namespace));
 				}
 			}
 
