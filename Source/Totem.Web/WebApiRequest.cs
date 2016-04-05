@@ -48,7 +48,7 @@ namespace Totem.Web
 
 		protected void RespondError(string reason, string error)
 		{
-			Log.Error("[web] Internal server error: {Reason:l} {Error}", reason, error);
+			Log.Error("[web] 500 Internal server error: {Reason:l} {Error}", reason, error);
 
 			Respond(new Response
 			{
@@ -67,7 +67,7 @@ namespace Totem.Web
 
 		protected void RespondUnprocessableEntity(string reasonPhrase)
 		{
-			Log.Error("[web] Unprocessable entity: {Reason:l}", reasonPhrase);
+			Log.Error("[web] 422 Unprocessable entity: {Reason:l}", reasonPhrase);
 
 			Respond(new Response { StatusCode = HttpStatusCode.UnprocessableEntity, ReasonPhrase = reasonPhrase });
 		}
