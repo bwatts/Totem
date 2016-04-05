@@ -10,7 +10,7 @@ namespace Totem
 	/// Identifies a persistent object by a string. May be assigned or unassigned.
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public struct Id : IEquatable<Id>, IComparable<Id>
+	public struct Id : IWritable, IEquatable<Id>, IComparable<Id>
 	{
 		private readonly string _value;
 
@@ -23,6 +23,7 @@ namespace Totem
 		public bool IsAssigned => !string.IsNullOrEmpty(_value);
 
     public override string ToString() => _value ?? "";
+		public Text ToText() => ToString();
 
 		//
 		// Equality
