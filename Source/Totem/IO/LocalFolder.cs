@@ -33,7 +33,7 @@ namespace Totem.IO
 		// Write
 		//
 
-		public void Write(FileResource file, Stream data, bool overwrite = true, bool createFolders = false)
+		public Stream Write(FileResource file, bool overwrite = true, bool createFolders = false)
 		{
 			var filePath = Link.Then(file).ToString();
 
@@ -42,9 +42,16 @@ namespace Totem.IO
 				Write(file.Folder, overwrite);
 			}
 
-			using(var writeStream = File.OpenWrite(filePath))
+			var mode = overwrite ? FileMode.Create : FileMode.Append;
+
+			return File.Open(filePath, mode, FileAccess.Write);
+		}
+
+		public void Write(FileResource file, Stream data, bool overwrite = true, bool createFolders = false)
+		{
+			using(var openFile = Write(file, overwrite, createFolders))
 			{
-				data.CopyTo(writeStream);
+				data.CopyTo(openFile);
 			}
 		}
 
