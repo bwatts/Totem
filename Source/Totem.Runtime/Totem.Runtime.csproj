@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5A8E9B26-2368-4121-ACD5-B7FB2A0088D5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Totem.Runtime</RootNamespace>
+    <AssemblyName>Totem.Runtime</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac">
+      <HintPath>..\..\Packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="NDesk.Options">
+      <HintPath>..\..\Packages\NDesk.Options.0.2.1\lib\NDesk.Options.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Serilog, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Packages\Serilog.1.4.204\lib\net45\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Extras.Topshelf">
+      <HintPath>..\..\Packages\Serilog.Extras.Topshelf.1.4.204\lib\net45\Serilog.Extras.Topshelf.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.FullNetFx, Version=1.4.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Packages\Serilog.1.4.204\lib\net45\Serilog.FullNetFx.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Sinks.Seq">
+      <HintPath>..\..\Packages\Serilog.Sinks.Seq.1.4.168\lib\net45\Serilog.Sinks.Seq.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\..\Packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces">
+      <HintPath>..\..\Packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq">
+      <HintPath>..\..\Packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices">
+      <HintPath>..\..\Packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Topshelf">
+      <HintPath>..\..\Packages\Topshelf.3.1.4\lib\net40-full\Topshelf.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BuilderModule.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Hosting\Commands\DeployCommand.cs" />
+    <Compile Include="Hosting\Commands\HostCommand.cs" />
+    <Compile Include="Hosting\Commands\IssueCommand.cs" />
+    <Compile Include="Hosting\Commands\PassThroughCommand.cs" />
+    <Compile Include="Hosting\Commands\RunCommand.cs" />
+    <Compile Include="Hosting\Commands\HostCommandLine.cs" />
+    <Compile Include="Hosting\Commands\RunCommandBridge.cs" />
+    <Compile Include="Hosting\CompositionRoot.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Hosting\DependencySource.cs" />
+    <Compile Include="DependsOnAttribute.cs" />
+    <Compile Include="DeployedResourceAttribute.cs" />
+    <Compile Include="Hosting\IRuntimeBuild.cs" />
+    <Compile Include="Hosting\Commands\IHostCommand.cs" />
+    <Compile Include="Hosting\IRuntimeProgram.cs" />
+    <Compile Include="Hosting\IRuntimeService.cs" />
+    <Compile Include="Hosting\RuntimeBuild.cs" />
+    <Compile Include="Json\BinaryJson.cs" />
+    <Compile Include="Json\TextJson.cs" />
+    <Compile Include="Json\TotemContractResolver.cs" />
+    <Compile Include="Json\JsonFormat.cs" />
+    <Compile Include="Json\TotemSerializationBinder.cs" />
+    <Compile Include="Json\TotemSerializerSettings.cs" />
+    <Compile Include="RuntimeReaderFlow.cs" />
+    <Compile Include="RuntimeReader.cs" />
+    <Compile Include="Configuration\ColumnsElement.cs" />
+    <Compile Include="Configuration\ConsoleElement.cs" />
+    <Compile Include="Configuration\LogElement.cs" />
+    <Compile Include="Configuration\RowsElement.cs" />
+    <Compile Include="Configuration\RuntimeSection.cs" />
+    <Compile Include="CallScope.cs" />
+    <Compile Include="Hosting\RuntimeService.cs" />
+    <Compile Include="IRuntimeArea.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RuntimeArea.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Hosting\RuntimeHost.cs" />
+    <Compile Include="Hosting\SerilogAdapter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Timeline\EventRouter.cs" />
+    <Compile Include="Timeline\FlowRouter.cs" />
+    <Compile Include="Timeline\FlowScope.cs" />
+    <Compile Include="Timeline\IFlowDb.cs" />
+    <Compile Include="Timeline\IFlowScope.cs" />
+    <Compile Include="Timeline\IViewDb.cs" />
+    <Compile Include="Timeline\TimelineFlowSet.cs" />
+    <Compile Include="Timeline\TimelineRequestSet.cs" />
+    <Compile Include="Timeline\ITimelineDb.cs" />
+    <Compile Include="Timeline\ITimelineScope.cs" />
+    <Compile Include="Timeline\TimelineSchedule.cs" />
+    <Compile Include="Timeline\ResumeInfo.cs" />
+    <Compile Include="Timeline\Timeline.cs" />
+    <Compile Include="Timeline\TimelineScope.cs" />
+    <Compile Include="Timeline\TimelineRequest.cs" />
+    <Compile Include="Timeline\ResumePoint.cs" />
+    <Compile Include="Timeline\PushScope.cs" />
+    <Compile Include="Timeline\ViewDbOperations.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
+      <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Totem\Totem.csproj">
+      <Project>{7fa55c94-884e-42b1-83a3-3c4611549789}</Project>
+      <Name>Totem</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
