@@ -34,7 +34,7 @@ namespace Totem.Runtime.Timeline
 
 		protected void ThenSchedule(Event e, IEnumerable<TimeSpan> timesOfDay)
 		{
-			ThenSchedule(e, timesOfDay.Select(timeOfDay => GetWhenOccursNext(timeOfDay)).Min());
+			ThenSchedule(e, timesOfDay.Select(GetWhenOccursNext).Min());
 		}
 
 		protected void ThenSchedule(Event e, params TimeSpan[] timesOfDay)
@@ -42,7 +42,29 @@ namespace Totem.Runtime.Timeline
 			ThenSchedule(e, timesOfDay as IEnumerable<TimeSpan>);
 		}
 
-		private DateTime GetWhenOccursNext(TimeSpan timeOfDay)
+        protected void ThenScheduleRepeating(Event e, TimeSpan interval)
+        {
+            ThenScheduleRepeating(e, interval, TimeSpan.FromMinutes(0));
+        }
+
+        protected void ThenScheduleRepeating(Event e, TimeSpan interval, TimeSpan offset)
+        {
+            ThenSchedule(e, GetIntervalRange(interval, offset));
+        }
+
+        private IEnumerable<TimeSpan> GetIntervalRange(TimeSpan interval, TimeSpan offset)
+        {
+            //ensure offset starts as < 1 day 
+            var nextRun = offset - TimeSpan.FromDays(offset.Days);
+
+            while (nextRun < TimeSpan.FromDays(1))
+            {
+                yield return nextRun;
+                nextRun += interval;
+            }
+        }
+
+        private DateTime GetWhenOccursNext(TimeSpan timeOfDay)
 		{
 			// The time of day is relative to the timezone of the principal
 
