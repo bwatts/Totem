@@ -65,7 +65,7 @@ namespace Totem.Runtime.Timeline
                 startTime += interval;
                 if(startTime > today.AddDays(1))
                 {
-                    return today.AddDays(1) + offset;
+                    return (today.AddDays(1) + offset).ToUniversalTime();
                 }
             }
 
