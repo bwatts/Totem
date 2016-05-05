@@ -44,24 +44,32 @@ namespace Totem.Runtime.Timeline
 
         protected void ThenScheduleRepeating(Event e, TimeSpan interval)
         {
-            ThenScheduleRepeating(e, interval, TimeSpan.FromMinutes(0));
+            ThenScheduleRepeating(e, interval, TimeSpan.Zero);
         }
 
         protected void ThenScheduleRepeating(Event e, TimeSpan interval, TimeSpan offset)
         {
-            ThenSchedule(e, GetIntervalRange(interval, offset));
+            Expect(offset).IsLessThan(TimeSpan.FromDays(1));
+
+            ThenSchedule(e, GetNextOccurence(interval, offset));
         }
 
-        private IEnumerable<TimeSpan> GetIntervalRange(TimeSpan interval, TimeSpan offset)
+        private DateTime GetNextOccurence(TimeSpan interval, TimeSpan offset)
         {
-            //ensure offset starts as < 1 day 
-            var nextRun = offset - TimeSpan.FromDays(offset.Days);
+            var now = Clock.Now.ToLocalTime();
+            var today = now.Date;
+            var startTime = today + offset;
 
-            while (nextRun < TimeSpan.FromDays(1))
+            while(startTime < now)
             {
-                yield return nextRun;
-                nextRun += interval;
+                startTime += interval;
+                if(startTime > today.AddDays(1))
+                {
+                    return today.AddDays(1) + offset;
+                }
             }
+
+            return startTime.ToUniversalTime();
         }
 
         private DateTime GetWhenOccursNext(TimeSpan timeOfDay)
