@@ -151,21 +151,25 @@ namespace Totem
         // Comparison
         //
 
+        [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
         public static Expect<T> IsGreaterThan<T>(this Expect<T> expect, T other, Text issue = null) where T : IComparable<T>
         {
             return expect.IsTrue(t => Check.True(t).IsGreaterThan(other), issue ?? "greater than", "not greater than");
         }
 
+        [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
         public static Expect<T> IsGreaterThanOrEqualTo<T>(this Expect<T> expect, T other, Text issue = null) where T : IComparable<T>
         {
             return expect.IsTrue(t => Check.True(t).IsGreaterThanOrEqualTo(other), issue ?? "greater than or equal to", "not greater than or equal to");
         }
 
+        [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
         public static Expect<T> IsLessThan<T>(this Expect<T> expect, T other, Text issue = null) where T : IComparable<T>
         {
             return expect.IsTrue(t => Check.True(t).IsLessThan(other), issue ?? "less than", "not less than");
         }
 
+        [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
         public static Expect<T> IsLessThanOrEqualTo<T>(this Expect<T> expect, T other, Text issue = null) where T : IComparable<T>
         {
             return expect.IsTrue(t => Check.True(t).IsLessThanOrEqualTo(other), issue ?? "less than or equal to", "not less than or equal to");
