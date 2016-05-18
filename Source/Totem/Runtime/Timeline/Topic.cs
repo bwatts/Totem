@@ -80,7 +80,7 @@ namespace Totem.Runtime.Timeline
                 whenOccursNext += interval;
             }
 
-			var whenOccurs = whenOccursNext.Date == now.Date ? whenOccursNext : now.Date.AddDays(1) + offset;
+			var whenOccurs = whenOccursNext.Date == today ? whenOccursNext : today.AddDays(1) + offset;
 
 			return whenOccurs.ToUniversalTime();
 		}
