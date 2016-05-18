@@ -16,7 +16,7 @@ Some highlights:
 
 # Community
 
-At the moment, I ([Bryan](https://github.com/bwatts)) am the founder and sole contributor. I am always looking for like-minded individuals who share my enthusiasm for collaboration.
+I ([Bryan](https://github.com/bwatts)) build things with the excellent team at [DealerOn](http://www.dealeron.com). I welcome contributions and am always looking for like-minded individuals who share my enthusiasm for collaboration.
 
 I can usually be found in the [DDD/CQRS/ES](https://ddd-cqrs-es.slack.com/) Slack room and am always up for a discussion. You can [self-register here](http://ddd-cqrs-es.herokuapp.com/).
 
