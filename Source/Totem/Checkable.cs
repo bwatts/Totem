@@ -73,11 +73,35 @@ namespace Totem
 			return check.IsNot(other, EqualityComparer<T>.Default);
 		}
 
-		//
-		// String
-		//
+        //
+        // Comparison
+        //
 
-		public static Check<string> IsEmpty(this Check<string> check)
+        public static Check<T> IsGreaterThan<T>(this Check<T> check, T other) where T : IComparable<T>
+        {
+            return check.IsTrue(t => t.CompareTo(other) > 0);
+        }
+
+        public static Check<T> IsGreaterThanOrEqualTo<T>(this Check<T> check, T other) where T : IComparable<T>
+        {
+            return check.IsTrue(t => t.CompareTo(other) >= 0);
+        }
+
+        public static Check<T> IsLessThan<T>(this Check<T> check, T other) where T : IComparable<T>
+        {
+            return check.IsTrue(t => t.CompareTo(other) < 0);
+        }
+
+        public static Check<T> IsLessThanOrEqualTo<T>(this Check<T> check, T other) where T : IComparable<T>
+        {
+            return check.IsTrue(t => t.CompareTo(other) <= 0);
+        }
+
+        //
+        // String
+        //
+
+        public static Check<string> IsEmpty(this Check<string> check)
 		{
 			return check.IsTrue(t => t == "");
 		}

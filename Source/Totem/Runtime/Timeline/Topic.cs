@@ -5,13 +5,13 @@ using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
-  /// <summary>
-  /// A timeline presence that makes decisions
-  /// </summary>
-  public abstract class Topic : Flow
+	/// <summary>
+	/// A timeline presence that makes decisions
+	/// </summary>
+	public abstract class Topic : Flow
 	{
 		[Transient] public new TopicType Type => (TopicType) base.Type;
-    [Transient] protected new TopicWhenCall WhenCall => (TopicWhenCall) base.WhenCall;
+		[Transient] protected new TopicWhenCall WhenCall => (TopicWhenCall) base.WhenCall;
 
 		protected void Then(Event e)
 		{
@@ -34,7 +34,7 @@ namespace Totem.Runtime.Timeline
 
 		protected void ThenSchedule(Event e, IEnumerable<TimeSpan> timesOfDay)
 		{
-			ThenSchedule(e, timesOfDay.Select(timeOfDay => GetWhenOccursNext(timeOfDay)).Min());
+			ThenSchedule(e, timesOfDay.Select(GetWhenOccursNext).Min());
 		}
 
 		protected void ThenSchedule(Event e, params TimeSpan[] timesOfDay)
@@ -42,10 +42,20 @@ namespace Totem.Runtime.Timeline
 			ThenSchedule(e, timesOfDay as IEnumerable<TimeSpan>);
 		}
 
+		protected void ThenScheduleInterval(Event e, TimeSpan interval)
+		{
+			ThenScheduleInterval(e, interval, TimeSpan.Zero);
+		}
+
+		protected void ThenScheduleInterval(Event e, TimeSpan interval, TimeSpan offset)
+		{
+			ThenSchedule(e, GetWhenIntervalOccursNext(interval, offset));
+		}
+
+		// The time of day is relative to the timezone of the principal
+
 		private DateTime GetWhenOccursNext(TimeSpan timeOfDay)
 		{
-			// The time of day is relative to the timezone of the principal
-
 			var now = Clock.Now.ToLocalTime();
 			var today = now.Date;
 
@@ -54,6 +64,23 @@ namespace Totem.Runtime.Timeline
 			var whenOccurs = whenToday > now
 				? whenToday
 				: today.AddDays(1) + timeOfDay;
+
+			return whenOccurs.ToUniversalTime();
+		}
+
+		private DateTime GetWhenIntervalOccursNext(TimeSpan interval, TimeSpan offset)
+		{
+			var now = Clock.Now.ToLocalTime();
+            var today = now.Date;
+
+			var whenOccursNext = today + offset;
+
+            while(whenOccursNext < now)
+            {
+                whenOccursNext += interval;
+            }
+
+			var whenOccurs = whenOccursNext.Date == now.Date ? whenOccursNext : now.Date.AddDays(1) + offset;
 
 			return whenOccurs.ToUniversalTime();
 		}
