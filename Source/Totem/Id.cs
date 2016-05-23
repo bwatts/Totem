@@ -60,6 +60,8 @@ namespace Totem
 		// Factory
 		//
 
+		public const string Separator = "/";
+
 		public static readonly Id Unassigned = new Id();
 
 		public static Id From(string value)
@@ -79,7 +81,7 @@ namespace Totem
 
 		public static Id FromMany(IEnumerable<string> ids)
 		{
-			return From(ids.ToTextSeparatedBy("/").ToString());
+			return From(ids.ToTextSeparatedBy(Separator).ToString());
 		}
 
 		public static Id FromMany(params string[] ids)
@@ -89,7 +91,7 @@ namespace Totem
 
 		public static Id FromMany(IEnumerable<Id> ids)
 		{
-			return From(ids.ToTextSeparatedBy("/").ToString());
+			return From(ids.ToTextSeparatedBy(Separator).ToString());
 		}
 
 		public static Id FromMany(params Id[] ids)
