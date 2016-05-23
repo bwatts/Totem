@@ -33,7 +33,6 @@ namespace Totem
 		{
 			private readonly T _x;
 			private readonly T _y;
-			private readonly bool _yNull;
 			private bool _checked;
 			private bool _result;
 
