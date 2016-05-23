@@ -102,6 +102,8 @@ namespace Totem.Runtime.Timeline
 
     private void EndCall()
     {
+			Checkpoint = WhenCall.Point.Position;
+
       WhenCall = null;
       Cause = default(TimelinePosition);
       Event = null;
