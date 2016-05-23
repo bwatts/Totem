@@ -80,6 +80,12 @@ namespace Totem.Web
 			return new NancyOptions { Bootstrapper = this };
 		}
 
+		protected override NancyInternalConfiguration InternalConfiguration
+		{
+			// Regain control of headers in 404 responses
+			get { return NancyInternalConfiguration.WithOverrides(c => c.StatusCodeHandlers.Clear()); }
+		}
+
 		//
 		// Composition
 		//

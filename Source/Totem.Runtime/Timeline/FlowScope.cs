@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using Totem.Runtime.Json;
 using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
@@ -15,16 +16,23 @@ namespace Totem.Runtime.Timeline
 		private readonly TaskCompletionSource<Flow> _taskCompletionSource = new TaskCompletionSource<Flow>();
 		private readonly ILifetimeScope _lifetime;
 		private readonly IFlowDb _db;
+		private readonly IViewExchange _viewExchange;
 		private readonly FlowType _type;
 		private TimelineRoute _route;
 		private Flow _flow;
 		private FlowQueue _queue;
 		private Task _pushQueueTask;
 
-		public FlowScope(ILifetimeScope lifetime, IFlowDb db, FlowType type, TimelineRoute route)
+		public FlowScope(
+			ILifetimeScope lifetime,
+			IFlowDb db,
+			IViewExchange viewExchange,
+			FlowType type,
+			TimelineRoute route)
 		{
 			_lifetime = lifetime;
 			_db = db;
+			_viewExchange = viewExchange;
 			_type = type;
 			_route = route;
 			Key = type.CreateKey(route.Id);
@@ -118,6 +126,11 @@ namespace Totem.Runtime.Timeline
 
 				_db.WriteCall(call);
 
+				if(_type.IsView)
+				{
+					PushViewUpdate();
+				}
+
 				if(_flow.Done)
 				{
 					CompleteTask();
@@ -146,6 +159,15 @@ namespace Totem.Runtime.Timeline
 				dependencies,
 				principal,
 				State.CancellationToken);
+		}
+
+		private void PushViewUpdate()
+		{
+			// TODO: Only if subscribed (maybe put the serialization behind a lambda)
+
+			_viewExchange.PushUpdate(
+				ViewETag.From(_flow.Key, _flow.Checkpoint),
+				JsonFormat.Text.SerializeJson(_flow));
 		}
 
 		private void WriteError(TimelinePoint point, Exception error)

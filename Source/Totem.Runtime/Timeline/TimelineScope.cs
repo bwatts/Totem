@@ -15,15 +15,21 @@ namespace Totem.Runtime.Timeline
     private readonly ILifetimeScope _lifetime;
     private readonly ITimelineDb _timelineDb;
     private readonly IFlowDb _flowDb;
+		private readonly IViewExchange _viewExchange;
     private TimelineSchedule _schedule;
     private TimelineFlowSet _flows;
     private TimelineRequestSet _requests;
 
-    public TimelineScope(ILifetimeScope lifetime, ITimelineDb timelineDb, IFlowDb flowDb)
+    public TimelineScope(
+			ILifetimeScope lifetime,
+			ITimelineDb timelineDb,
+			IFlowDb flowDb,
+			IViewExchange viewExchange)
 		{
       _lifetime = lifetime;
       _timelineDb = timelineDb;
       _flowDb = flowDb;
+			_viewExchange = viewExchange;
 
       _schedule = new TimelineSchedule(this);
       _flows = new TimelineFlowSet(this);
@@ -74,7 +80,7 @@ namespace Totem.Runtime.Timeline
 
     public bool TryOpenFlowScope(FlowType type, TimelineRoute route, out IFlowScope scope)
 		{
-			var unroutedScope = new FlowScope(_lifetime, _flowDb, type, route);
+			var unroutedScope = new FlowScope(_lifetime, _flowDb, _viewExchange, type, route);
 
 			scope = unroutedScope.TryRoute() ? unroutedScope : null;
 

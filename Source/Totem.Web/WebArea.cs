@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Autofac;
+using Microsoft.AspNet.SignalR;
 using Nancy;
 using Nancy.Serialization.JsonNet;
 using Totem.Runtime;
 using Totem.Runtime.Json;
+using Totem.Runtime.Timeline;
 using Totem.Web.Push;
 
 namespace Totem.Web
@@ -30,7 +32,14 @@ namespace Totem.Web
 
 			RegisterType<PushHub>().InstancePerDependency().ExternallyOwned();
 
-			RegisterType<PushContext>().As<IPushContext>().SingleInstance();
+			RegisterType<ViewExchange>().As<IViewExchange>().SingleInstance();
+
+			RegisterType<PushChannel>().As<IPushChannel>().SingleInstance();
+
+			Register(c => GlobalHost.ConnectionManager.GetHubContext<PushHub>())
+			.As<IHubContext>()
+			.SingleInstance()
+			.ExternallyOwned();
 
 			// Do not explicitly register an implementation of IBodyDeserializer.
 			//

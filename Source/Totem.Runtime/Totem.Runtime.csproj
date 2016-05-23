@@ -142,6 +142,7 @@
     <Compile Include="Timeline\IFlowDb.cs" />
     <Compile Include="Timeline\IFlowScope.cs" />
     <Compile Include="Timeline\IViewDb.cs" />
+    <Compile Include="Timeline\IViewExchange.cs" />
     <Compile Include="Timeline\LocalFlowDb.cs" />
     <Compile Include="Timeline\LocalTimelineDb.cs" />
     <Compile Include="Timeline\TimelineFlowSet.cs" />
@@ -155,7 +156,10 @@
     <Compile Include="Timeline\TimelineRequest.cs" />
     <Compile Include="Timeline\ResumePoint.cs" />
     <Compile Include="Timeline\FlowQueue.cs" />
+    <Compile Include="Timeline\ViewETag.cs" />
+    <Compile Include="Timeline\ViewSnapshot.cs" />
     <Compile Include="Timeline\ViewDbOperations.cs" />
+    <Compile Include="Timeline\ViewSubscription.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">

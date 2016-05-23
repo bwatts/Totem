@@ -99,9 +99,11 @@
     <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
       <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Push\IPushContext.cs" />
-    <Compile Include="Push\PushContext.cs" />
+    <Compile Include="Push\IPushChannel.cs" />
+    <Compile Include="Push\PushChannel.cs" />
     <Compile Include="Push\PushHub.cs" />
+    <Compile Include="Push\ViewExchange.cs" />
+    <Compile Include="Push\ViewUpdated.cs" />
     <Compile Include="WebApiRequest.cs" />
     <Compile Include="WebAppContext.cs" />
     <Compile Include="ErrorDetail.cs" />

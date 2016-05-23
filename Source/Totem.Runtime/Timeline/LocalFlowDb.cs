@@ -101,42 +101,37 @@ namespace Totem.Runtime.Timeline
 		// Views
 		//
 
-		public View Read(Type viewType, Id id, bool strict = true)
+		public ViewSnapshot<View> ReadSnapshot(Type type, Id id, TimelinePosition checkpoint)
 		{
-			var runtimeType = Runtime.GetView(viewType, strict);
+			return ReadView(type, id, checkpoint, view => (View) view);
+		}
 
-			if(runtimeType == null)
-			{
-				return null;
-			}
+		public ViewSnapshot<T> ReadSnapshot<T>(Id id, TimelinePosition checkpoint) where T : View
+		{
+			return ReadView(typeof(T), id, checkpoint, view => (T) view);
+		}
 
-			var key = runtimeType.CreateKey(id);
+		public ViewSnapshot<string> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint)
+		{
+			return ReadView(type, id, checkpoint, view => JsonFormat.Text.Serialize(view).ToString());
+		}
+
+		private ViewSnapshot<T> ReadView<T>(Type type, Id id, TimelinePosition checkpoint, Func<Flow, T> selectContent)
+		{
+			var key = Runtime.GetView(type).CreateKey(id);
 
 			Flow view;
 
-			if(_flowsByKey.TryGetValue(key, out view))
+			if(!_flowsByKey.TryGetValue(key, out view))
 			{
-				ExpectNot(strict && view.Done, Text
-					.Of("View is done and marked for removal: ")
-					.Write(runtimeType)
-					.WriteIf(id.IsAssigned, $"/{id}"));
-
-				return (View) view;
+				return ViewSnapshot<T>.OfNotFound(key);
 			}
 
-			ExpectNot(strict, Text
-				.Of("View not found: ")
-				.Write(runtimeType)
-				.WriteIf(id.IsAssigned, $"/{id}"));
+			ExpectNot(view.Done, "View is done and marked for removal: " + key.ToText());
 
-			return null;
-		}
-
-		public string ReadJson(Type viewType, Id id, bool strict = true)
-		{
-			var view = Read(viewType, id, strict);
-
-			return view == null ? null : JsonFormat.Text.Serialize(view).ToString();
+			return view.Checkpoint == checkpoint
+				? ViewSnapshot<T>.OfNotModified(key, checkpoint)
+				: ViewSnapshot<T>.OfContent(key, view.Checkpoint, selectContent(view));
 		}
 	}
 }

@@ -56,15 +56,46 @@ namespace Totem.Web.Push
 
 		protected virtual void Startup(IAppBuilder app)
 		{
-			GlobalHost.HubPipeline.AddModule(new LoggingPipelineModule());
-
 			//app.UseErrorPage();		// Uncomment when debugging server errors
+
+			var resolver = new PushDependencyResolver(_context.Scope);
 
 			app.MapSignalR(new HubConfiguration
 			{
 				EnableJavaScriptProxies = false,
-				EnableDetailedErrors = _enableDetailedErrors
+				EnableDetailedErrors = _enableDetailedErrors,
+				Resolver = resolver
 			});
+
+			GlobalHost.DependencyResolver = resolver;
+
+			GlobalHost.HubPipeline.AddModule(new LoggingPipelineModule());
+		}
+
+		// Adapted from http://code.google.com/p/autofac/source/browse/Core/Source/Autofac.Integration.SignalR/AutofacDependencyResolver.cs
+
+		private sealed class PushDependencyResolver : DefaultDependencyResolver
+		{
+			private readonly ILifetimeScope _scope;
+
+			internal PushDependencyResolver(ILifetimeScope scope)
+			{
+				_scope = scope;
+			}
+
+			public override object GetService(Type serviceType)
+			{
+				return _scope.ResolveOptional(serviceType) ?? base.GetService(serviceType);
+			}
+
+			public override IEnumerable<object> GetServices(Type serviceType)
+			{
+				var enumerableServiceType = typeof(IEnumerable<>).MakeGenericType(serviceType);
+
+				var instance = (IEnumerable<object>) _scope.Resolve(enumerableServiceType);
+
+				return instance.Any() ? instance : base.GetServices(serviceType);
+			}
 		}
 
 		private sealed class LoggingPipelineModule : HubPipelineModule, ITaggable
