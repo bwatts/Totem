@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
@@ -10,11 +11,11 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public sealed class LocalTimelineDb : Notion, ITimelineDb
 	{
-		private readonly List<TimelinePoint> _points = new List<TimelinePoint>();
+		private long _position = -1;
 
 		public ResumeInfo ReadResumeInfo()
 		{
-			return new ResumeInfo();
+			return new ResumeInfo(new TimelinePosition(0));
 		}
 
 		public Many<TimelinePoint> Write(TimelinePosition cause, Many<Event> events)
@@ -45,9 +46,7 @@ namespace Totem.Runtime.Timeline
 
 		private TimelinePoint Write(TimelinePosition cause, EventType type, Event e, bool scheduled)
 		{
-			var newPoint = new TimelinePoint(cause, new TimelinePosition(_points.Count), type, e, scheduled);
-
-			_points.Add(newPoint);
+			var newPoint = new TimelinePoint(cause, NextPosition(), type, e, scheduled);
 
 			if(scheduled)
 			{
@@ -59,6 +58,11 @@ namespace Totem.Runtime.Timeline
 			}
 
 			return newPoint;
+		}
+
+		private TimelinePosition NextPosition()
+		{
+			return new TimelinePosition(Interlocked.Increment(ref _position));
 		}
 	}
 }

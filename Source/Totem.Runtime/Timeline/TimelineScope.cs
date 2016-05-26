@@ -16,6 +16,7 @@ namespace Totem.Runtime.Timeline
     private readonly ITimelineDb _timelineDb;
     private readonly IFlowDb _flowDb;
 		private readonly IViewExchange _viewExchange;
+		private TimelineQueue _queue;
     private TimelineSchedule _schedule;
     private TimelineFlowSet _flows;
     private TimelineRequestSet _requests;
@@ -42,20 +43,16 @@ namespace Totem.Runtime.Timeline
       Track(_flows);
       Track(_requests);
 
-      ResumeTimeline();
-    }
+			var resumeInfo = _timelineDb.ReadResumeInfo();
 
-    private void ResumeTimeline()
-    {
-      var resumeInfo = _timelineDb.ReadResumeInfo();
+			_schedule.ResumeWith(resumeInfo);
 
-      _schedule.ResumeWith(resumeInfo);
+			_queue = new TimelineQueue(_schedule, _flows, _requests);
 
-			foreach(var resumePoint in resumeInfo.Points)
-			{
-				Push(resumePoint.Point);
-			}
-    }
+			_queue.ResumeWith(resumeInfo);
+
+			Track(_queue);
+		}
 
     //
     // Runtime
@@ -63,12 +60,10 @@ namespace Totem.Runtime.Timeline
 
     public void Push(TimelinePoint point)
     {
-      _schedule.Push(point);
-      _flows.Push(point);
-      _requests.Push(point);
+			_queue.Enqueue(point);
     }
 
-    internal void PushScheduled(TimelinePoint point)
+		internal void PushScheduled(TimelinePoint point)
     {
       Push(_timelineDb.WriteScheduled(point));
     }

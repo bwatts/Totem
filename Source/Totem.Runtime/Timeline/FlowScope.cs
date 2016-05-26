@@ -47,7 +47,7 @@ namespace Totem.Runtime.Timeline
 
 			_route = null;
 
-			return _db.TryReadFlow(Key.Type, route, out _flow);
+			return route != null && _db.TryReadFlow(Key.Type, route, out _flow);
 		}
 
 		protected override void Open()
@@ -60,8 +60,6 @@ namespace Totem.Runtime.Timeline
 
 		protected override void Close()
 		{
-			base.Close();
-
 			_flow = null;
 			_queue = null;
 			_pushQueueTask = null;
