@@ -10,6 +10,7 @@ using Totem.Runtime.Json;
 using Totem.Runtime.Map;
 using Totem.Runtime.Map.Timeline;
 using Totem.Runtime.Timeline;
+using Totem.Web.Push;
 
 namespace Totem.Web
 {
@@ -64,16 +65,12 @@ namespace Totem.Web
 		{
       // This could be async all the way back to the API classes...but it doesn't read nearly as well there :-)
 
-      // TODO: Look into effects of blocking threads here and in the timeline/flow hosts
+      // TODO: Look into effects of blocking threads here
 
       var flow = Timeline.MakeRequest<T>(e).Result;
 
       return flow.ToResponse();
 		}
-
-		//
-		// Body
-		//
 
 		protected T ReadBody<T>() where T : class
 		{
@@ -95,202 +92,134 @@ namespace Totem.Web
     // Views
     //
 
-    protected View ReadView(Type type, Id id, bool strict = true)
-    {
-      return Views.Read(type, id, strict);
-    }
-
-    protected TView ReadView<TView>(Id id, bool strict = true) where TView : View
-    {
-      return Views.Read<TView>(id, strict);
-    }
-
-    protected View ReadView(ViewType type, Id id, bool strict = true)
-    {
-      return Views.Read(type, id, strict);
-    }
-
-    protected View ReadView(Type type, bool strict = true)
-    {
-      return Views.Read(type, strict);
-    }
-
-    protected TView ReadView<TView>(bool strict = true) where TView : View
-    {
-      return Views.Read<TView>(strict);
-    }
-
-    protected View ReadView(ViewType type, bool strict = true)
-    {
-      return Views.Read(type, strict);
-    }
-
-    //
-    // Views (JSON)
-    //
-
-    protected string ReadViewJson(Type type, Id id, bool strict = true)
-    {
-      return Views.ReadJson(type, id, strict);
-    }
-
-    protected string ReadViewJson<TView>(Id id, bool strict = true) where TView : View
-    {
-      return Views.ReadJson<TView>(id, strict);
-    }
-
-    protected string ReadViewJson(ViewType type, Id id, bool strict = true)
-    {
-      return Views.ReadJson(type, id, strict);
-    }
-
-    protected string ReadViewJson(Type type, bool strict = true)
-    {
-      return Views.ReadJson(type, strict);
-    }
-
-    protected string ReadViewJson<TView>(bool strict = true) where TView : View
-    {
-      return Views.ReadJson<TView>(strict);
-    }
-
-    protected string ReadViewJson(ViewType type, bool strict = true)
-    {
-      return Views.ReadJson(type, strict);
-    }
-
-    //
-    // Views (GET)
-    //
-
-    protected dynamic GetView(Type type, Id id)
+		protected dynamic GetView(Type type, Id id)
     {
       return GetView(Runtime.GetView(type), id);
     }
 
-    protected dynamic GetView<T>(Id id) where T : View
+		protected dynamic GetView(Type type)
+		{
+			return GetView(type, Id.Unassigned);
+		}
+
+		protected dynamic GetView<T>(Id id) where T : View
     {
       return GetView(typeof(T), id);
     }
 
-    protected dynamic GetView(ViewType type, Id id)
-    {
-      var view = ReadView(type, id, strict: false);
+		protected dynamic GetView<T>() where T : View
+		{
+			return GetView(typeof(T));
+		}
 
-      if(view != null)
-      {
-        return view;
-      }
+		protected dynamic GetView(ViewType type)
+		{
+			return GetView(FlowKey.From(type));
+		}
 
-      return new Response
-      {
-        StatusCode = HttpStatusCode.NotFound,
-        ReasonPhrase = "Failed to read " + type.ToText().WriteIf(id.IsAssigned, $"/{id}")
-      };
+		protected dynamic GetView(ViewType type, Id id)
+		{
+			return GetView(FlowKey.From(type, id));
+		}
+
+		protected dynamic GetView(FlowKey key)
+		{
+			var view = ReadJsonView(key);
+
+			if(view.NotFound)
+			{
+				return RespondNotFound(view);
+			}
+			else if(view.NotModified)
+			{
+				return RespondNotModified(view);
+			}
+			else
+			{
+				return RespondOK(view);
+			}
+		}
+
+		private ViewSnapshot<string> ReadJsonView(FlowKey key)
+		{
+			return Views.ReadJsonSnapshot(key, ReadRequestCheckpoint(key));
+		}
+
+		private TimelinePosition ReadRequestCheckpoint(FlowKey key)
+		{
+			var etag = Request.Headers["If-None-Match"].FirstOrDefault();
+
+			if(!string.IsNullOrWhiteSpace(etag))
+			{
+				var checkpoint = ViewETag.From(etag, strict: false);
+
+				if(checkpoint != null && checkpoint.Key == key)
+				{
+					return checkpoint.Checkpoint;
+				}
+			}
+
+			return TimelinePosition.None;
+		}
+
+		private static Response RespondNotFound(ViewSnapshot<string> view)
+		{
+			return new Response
+			{
+				StatusCode = HttpStatusCode.NotFound,
+#if DEBUG
+				ReasonPhrase = $"View not found: {view.Key}",
+#endif
+				Headers = new Dictionary<string, string>
+				{
+					["ETag"] = view.Key.ToString()
+				},
+				ContentType = MediaType.Json.ToString()
+			};
+		}
+
+		private static Response RespondNotModified(ViewSnapshot<string> view)
+		{
+			return new Response
+			{
+				StatusCode = HttpStatusCode.NotModified,
+#if DEBUG
+				ReasonPhrase = $"View not modified: {view.Key}",
+#endif
+				Headers = new Dictionary<string, string>
+				{
+					["ETag"] = GetETag(view)
+				},
+				ContentType = MediaType.Json.ToString()
+			};
+		}
+
+		private static Response RespondOK(ViewSnapshot<string> view)
+		{
+			return new Response
+			{
+				StatusCode = HttpStatusCode.OK,
+#if DEBUG
+				ReasonPhrase = $"View found: {view.Key}",
+#endif
+				Headers = new Dictionary<string, string>
+				{
+					["ETag"] = GetETag(view)
+				},
+				ContentType = MediaType.Json.ToString(),
+				Contents = body =>
+				{
+					using(var writer = new StreamWriter(body))
+					{
+						writer.Write(view.ReadContent());
+					}
+				}
+			};
+		}
+
+		private static string GetETag(ViewSnapshot<string> view)
+		{
+			return view.Key.ToText().WriteIf(view.Checkpoint.IsSome, $"@{view.Checkpoint.ToInt64()}");
     }
-
-    protected dynamic GetView(Type type)
-    {
-      return GetView(Runtime.GetView(type));
-    }
-
-    protected dynamic GetView<T>() where T : View
-    {
-      return GetView(typeof(T));
-    }
-
-    protected dynamic GetView(ViewType type)
-    {
-      var view = ReadView(type, strict: false);
-
-      if(view != null)
-      {
-        return view;
-      }
-
-      return new Response
-      {
-        StatusCode = HttpStatusCode.NotFound,
-        ReasonPhrase = "Failed to read " + type.ToString()
-      };
-    }
-
-    //
-    // Views (GET JSON)
-    //
-
-    protected dynamic GetViewJson(Type type, Id id)
-    {
-      return GetViewJson(Runtime.GetView(type), id);
-    }
-
-    protected dynamic GetViewJson<T>(Id id) where T : View
-    {
-      return GetViewJson(typeof(T), id);
-    }
-
-    protected dynamic GetViewJson(ViewType type, Id id)
-    {
-      var json = ReadViewJson(type, id, strict: false);
-
-      if(json != null)
-      {
-        return new Response
-        {
-          StatusCode = HttpStatusCode.OK,
-          ContentType = MediaType.Json.ToString(),
-          Contents = body =>
-          {
-            using(var writer = new StreamWriter(body))
-            {
-              writer.Write(json);
-            }
-          }
-        };
-      }
-
-      return new Response
-      {
-        StatusCode = HttpStatusCode.NotFound,
-        ReasonPhrase = "Failed to read " + type.ToText().WriteIf(id.IsAssigned, $"/{id}")
-      };
-    }
-
-    protected dynamic GetViewJson(Type type)
-    {
-      return GetViewJson(Runtime.GetView(type));
-    }
-
-    protected dynamic GetViewJson<T>() where T : View
-    {
-      return GetViewJson(typeof(T));
-    }
-
-    protected dynamic GetViewJson(ViewType type)
-    {
-      var json = ReadViewJson(type, strict: false);
-
-      if(json != null)
-      {
-        return new Response
-        {
-          StatusCode = HttpStatusCode.OK,
-          ContentType = MediaType.Json.ToString(),
-          Contents = body =>
-          {
-            using(var writer = new StreamWriter(body))
-            {
-              writer.Write(json);
-            }
-          }
-        };
-      }
-
-      return new Response
-      {
-        StatusCode = HttpStatusCode.NotFound,
-        ReasonPhrase = "Failed to read " + type.ToString()
-      };
-    }
-  }
+	}
 }

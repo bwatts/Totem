@@ -95,6 +95,11 @@ namespace Totem
 				Runtime.SetDefault(runtime);
 			}
 
+			public static RuntimeMap ResolveRuntime()
+			{
+				return (RuntimeMap) Runtime.ResolveDefault();
+			}
+
 			//
 			// Log
 			//

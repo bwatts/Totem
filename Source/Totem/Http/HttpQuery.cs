@@ -52,13 +52,31 @@ namespace Totem.Http
 			return _pairsByKey.ContainsKey(key);
 		}
 
-		public LinkText GetValue(LinkText key, bool strict = true)
+		public LinkText Get(LinkText key, bool strict = true)
 		{
 			HttpQueryPair pair;
 
 			Expect(_pairsByKey.TryGetValue(key, out pair) || !strict, "Unknown key: " + Text.Of(key));
 
 			return pair == null ? null : pair.Value;
+		}
+
+		public HttpQuery Set(LinkText key, LinkText value)
+		{
+			var newPairsByKey = _pairsByKey.ToDictionary();
+
+			newPairsByKey[key] = HttpQueryPair.From(key, value);
+
+			return new HttpQuery(newPairsByKey);
+		}
+
+		public HttpQuery Clear(LinkText key)
+		{
+			var newPairsByKey = _pairsByKey.ToDictionary();
+
+			newPairsByKey.Remove(key);
+
+			return new HttpQuery(newPairsByKey);
 		}
 
 		//

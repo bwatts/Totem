@@ -7,4 +7,4 @@ using Totem.Runtime.Map;
 
 [assembly: Guid("df7c0a2c-2c7f-492c-a34a-5393024d00b1")]
 
-[assembly: RuntimePackage(region: "web")]
+[assembly: RuntimePackage(region: "runtime")]

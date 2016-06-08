@@ -9,7 +9,7 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// Schedules points on the timeline to occur in the future
 	/// </summary>
-	internal sealed class TimelineSchedule : PushScope
+	internal sealed class TimelineSchedule : Connection
 	{
 		private readonly HashSet<TimelinePosition> _resumedPositions = new HashSet<TimelinePosition>();
 		private readonly TimelineScope _scope;
@@ -40,31 +40,29 @@ namespace Totem.Runtime.Timeline
 			_resumedPositions.Clear();
 		}
 
-		protected override void Push()
+		internal void Push(TimelinePoint point)
 		{
-			if(Point.Scheduled && CanPush())
+			if(point.Scheduled && CanPush(point))
 			{
-				AddTimer();
+				AddTimer(point);
 			}
 		}
 
-		private bool CanPush()
+		private bool CanPush(TimelinePoint point)
 		{
-			return _resumedPositions.Remove(Point.Position) || Point.Position > _resumeCheckpoint;
+			return _resumedPositions.Remove(point.Position) || point.Position > _resumeCheckpoint;
 		}
 
-		private void AddTimer()
+		private void AddTimer(TimelinePoint point)
 		{
-			var point = Point;
-
 			Observable
 				.Timer(new DateTimeOffset(point.Event.When))
 				.Take(1)
 				.ObserveOn(ThreadPoolScheduler.Instance)
-				.Subscribe(_ => Push(point));
+				.Subscribe(_ => PushScheduled(point));
 		}
 
-		private void Push(TimelinePoint point)
+		private void PushScheduled(TimelinePoint point)
 		{
 			if(State.IsConnecting || State.IsConnected)
 			{

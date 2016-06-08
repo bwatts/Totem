@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Autofac;
+using Microsoft.AspNet.SignalR;
 using Nancy;
 using Nancy.Serialization.JsonNet;
 using Totem.Runtime;
 using Totem.Runtime.Json;
+using Totem.Runtime.Timeline;
+using Totem.Web.Push;
 
 namespace Totem.Web
 {
@@ -22,9 +25,21 @@ namespace Totem.Web
 
 			Register(c => ErrorDetail.StackTrace).SingleInstance();
 
-			Register(c => new JsonNetSerializer(new TotemSerializerSettings().CreateSerializer()))
-			.As<ISerializer>()
-			.SingleInstance();
+			// https://code.google.com/p/autofac/wiki/SignalRIntegration
+			//
+			// "Hub registrations should be marked with ExternallyOwned to inform the container that the hubs
+			// will be disposed by SignalR and not the container."
+
+			RegisterType<PushHub>().InstancePerDependency().ExternallyOwned();
+
+			RegisterType<ViewExchange>().As<IViewExchange>().SingleInstance();
+
+			RegisterType<PushChannel>().As<IPushChannel>().SingleInstance();
+
+			Register(c => GlobalHost.ConnectionManager.GetHubContext<PushHub>())
+			.As<IHubContext>()
+			.SingleInstance()
+			.ExternallyOwned();
 
 			// Do not explicitly register an implementation of IBodyDeserializer.
 			//
@@ -37,6 +52,10 @@ namespace Totem.Web
 			// essentially skipped the binding pipeline; I chose not to bend the abstraction to my will.
 			//
 			// If an API type chooses to use it, the Totem.Runtime.Json namespace will not be in effect.
+
+			Register(c => new JsonNetSerializer(new TotemSerializerSettings().CreateSerializer()))
+			.As<ISerializer>()
+			.SingleInstance();
 		}
 
 		public override IConnectable Compose(ILifetimeScope scope)

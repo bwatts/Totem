@@ -17,6 +17,8 @@ namespace Totem.Runtime.Timeline
 
     void WriteCall(WhenCall call);
 
+    void WritePending(FlowKey key, TimelinePoint point);
+
     void WriteError(FlowKey key, TimelinePoint point, Exception error);
   }
 }

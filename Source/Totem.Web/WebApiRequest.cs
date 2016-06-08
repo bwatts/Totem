@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Nancy;
+using Totem.Http;
 using Totem.IO;
 using Totem.Runtime.Timeline;
 
@@ -31,19 +32,89 @@ namespace Totem.Web
 			ThenDone();
 		}
 
-		protected void RespondOK(string reason)
+		protected void Respond(HttpStatusCode statusCode, string reason)
 		{
-			Respond(new Response { StatusCode = HttpStatusCode.OK, ReasonPhrase = reason });
+			Respond(new Response { StatusCode = statusCode, ReasonPhrase = reason });
 		}
 
-    protected void RespondCreated(string reason)
+		// 200
+
+		protected void RespondOK(string reason)
+		{
+			Respond(HttpStatusCode.OK, reason);
+		}
+
+		// 201
+
+    protected void RespondCreated(string reason, string location)
     {
-      Respond(new Response { StatusCode = HttpStatusCode.Created, ReasonPhrase = reason });
+      Respond(new Response
+			{
+				StatusCode = HttpStatusCode.Created,
+				ReasonPhrase = reason,
+				Headers =
+				{
+					["Location"] = location
+				}
+			});
     }
 
-    protected void RespondError(string reason)
+		// 202
+
+		protected void RespondAccepted(string reason, string location)
 		{
-			Respond(new Response { StatusCode = HttpStatusCode.InternalServerError, ReasonPhrase = reason });
+			Respond(new Response
+			{
+				StatusCode = HttpStatusCode.Accepted,
+				ReasonPhrase = reason,
+				Headers =
+				{
+					["Location"] = location
+				}
+			});
+		}
+
+		// 204
+
+		protected void RespondNoContent(string reason)
+		{
+			Respond(HttpStatusCode.NoContent, reason);
+		}
+
+		// 404
+
+		protected void RespondNotFound(string reason)
+		{
+			Log.Error("[web] 404 Not Found: {Reason:l}", reason);
+
+			Respond(HttpStatusCode.NotFound, reason);
+		}
+
+		// 409
+
+		protected void RespondConflict(string reason)
+		{
+			Log.Error("[web] 409 Conflict: {Reason:l}", reason);
+
+			Respond(HttpStatusCode.Conflict, reason);
+		}
+
+		// 422
+
+		protected void RespondUnprocessableEntity(string reason)
+		{
+			Log.Error("[web] 422 Unprocessable entity: {Reason:l}", reason);
+
+			Respond(HttpStatusCode.UnprocessableEntity, reason);
+		}
+
+		// 500
+
+		protected void RespondError(string reason)
+		{
+			Log.Error("[web] 500 Internal server error: {Reason:l}", reason);
+
+			Respond(HttpStatusCode.InternalServerError, reason);
 		}
 
 		protected void RespondError(string reason, string error)
@@ -65,16 +136,11 @@ namespace Totem.Web
       });
 		}
 
-		protected void RespondUnprocessableEntity(string reasonPhrase)
-		{
-			Log.Error("[web] 422 Unprocessable entity: {Reason:l}", reasonPhrase);
-
-			Respond(new Response { StatusCode = HttpStatusCode.UnprocessableEntity, ReasonPhrase = reasonPhrase });
-		}
-
 		void When(FlowStopped e)
 		{
-			RespondError("[web] Flow stopped: " + Text.Of(e.Type), e.Error);
+			RespondError(
+				"Flow stopped: " + Text.Of(e.Type).WriteIf(e.Id.IsAssigned, $"/{e.Id}"),
+				e.Error);
 		}
 	}
 }

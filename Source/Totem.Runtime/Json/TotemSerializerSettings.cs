@@ -12,13 +12,13 @@ namespace Totem.Runtime.Json
 	/// </summary>
 	public class TotemSerializerSettings : JsonSerializerSettings
 	{
-		public TotemSerializerSettings()
+		public TotemSerializerSettings(bool serializePrivate = false)
 		{
 			Formatting = Formatting.Indented;
 
 			TypeNameHandling = TypeNameHandling.Auto;
 
-			ContractResolver = new TotemContractResolver();
+			ContractResolver = new TotemContractResolver(serializePrivate);
 
 			Binder = new TotemSerializationBinder();
 

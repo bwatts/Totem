@@ -19,7 +19,7 @@ namespace Totem
 
 		public LinkText(string value)
 		{
-			Value = value;
+			Value = value ?? "";
 
 			_isTemplate = value.StartsWith(TemplateStart) && value.EndsWith(TemplateEnd);
 		}
@@ -51,8 +51,8 @@ namespace Totem
 		public static bool operator ==(LinkText x, LinkText y) => Eq.Op(x, y);
 		public static bool operator !=(LinkText x, LinkText y) => Eq.OpNot(x, y);
 
-		public static bool operator ==(LinkText x, string y) => Eq.Op(x.Value, y);
-		public static bool operator !=(LinkText x, string y) => Eq.OpNot(x.Value, y);
+		public static bool operator ==(LinkText x, string y) => Eq.Op(x?.Value ?? "", y);
+		public static bool operator !=(LinkText x, string y) => Eq.OpNot(x?.Value ?? "", y);
 
 		public static implicit operator LinkText(char text) => new LinkText(text.ToString());
 		public static implicit operator LinkText(string value) => new LinkText(value);
@@ -60,10 +60,7 @@ namespace Totem
 
 		public sealed class Converter : TextConverter
 		{
-			protected override object ConvertFrom(TextValue value)
-			{
-				return new LinkText(value);
-			}
+			protected override object ConvertFrom(TextValue value) => new LinkText(value);
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using Totem.Runtime.Json;
 using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
@@ -10,26 +11,35 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// The scope of a flow's activity on the timeline
 	/// </summary>
-	public sealed class FlowScope : PushScope, IFlowScope
+	public sealed class FlowScope : Connection, IFlowScope
 	{
 		private readonly TaskCompletionSource<Flow> _taskCompletionSource = new TaskCompletionSource<Flow>();
 		private readonly ILifetimeScope _lifetime;
 		private readonly IFlowDb _db;
+		private readonly IViewExchange _viewExchange;
 		private readonly FlowType _type;
 		private TimelineRoute _route;
-    private Flow _flow;
+		private Flow _flow;
+		private FlowQueue _queue;
+		private Task _pushQueueTask;
 
-		public FlowScope(ILifetimeScope lifetime, IFlowDb db, FlowType type, TimelineRoute route)
+		public FlowScope(
+			ILifetimeScope lifetime,
+			IFlowDb db,
+			IViewExchange viewExchange,
+			FlowType type,
+			TimelineRoute route)
 		{
 			_lifetime = lifetime;
 			_db = db;
+			_viewExchange = viewExchange;
 			_type = type;
 			_route = route;
 			Key = type.CreateKey(route.Id);
 		}
 
-    public FlowKey Key { get; }
-    public Task<Flow> Task => _taskCompletionSource.Task;
+		public FlowKey Key { get; }
+		public Task<Flow> Task => _taskCompletionSource.Task;
 
 		internal bool TryRoute()
 		{
@@ -37,99 +47,135 @@ namespace Totem.Runtime.Timeline
 
 			_route = null;
 
-			return _db.TryReadFlow(_type, route, out _flow);
+			return route != null && _db.TryReadFlow(Key.Type, route, out _flow);
 		}
 
-		protected override void Push()
+		protected override void Open()
+		{
+			Expect(_flow).IsNotNull("Routing failed - cannot connect scope");
+
+			_queue = new FlowQueue();
+			_pushQueueTask = PushQueue();
+		}
+
+		protected override void Close()
+		{
+			_flow = null;
+			_queue = null;
+			_pushQueueTask = null;
+		}
+
+		public void Push(TimelinePoint point)
+		{
+			if(PushingQueue)
+			{
+				_db.WritePending(_flow.Key, point);
+				_queue.Enqueue(point);
+			}
+			else
+			{
+				Log.Warning(
+					"[timeline] Cannot push to scope in phase {Phase} - ignoring {Point:l}",
+					State.Phase,
+					point);
+			}
+		}
+
+		private bool PushingQueue => State.IsConnecting || State.IsConnected;
+
+		private async Task PushQueue()
+		{
+			while(PushingQueue)
+			{
+				var point = await _queue.Dequeue();
+
+				if(PushingQueue && point.Position > _flow.Checkpoint)
+				{
+					await PushFromQueue(point);
+				}
+			}
+		}
+
+		private async Task PushFromQueue(TimelinePoint point)
 		{
 			try
 			{
-				if(PointIsPastCheckpoint)
-				{
-          MakeCall();
-				}
+				await MakeCall(point);
 			}
 			catch(Exception error)
 			{
-				if(_type.IsRequest)
+				if(Key.Type.IsRequest)
 				{
 					throw;
 				}
 
-				WriteError(error);
+				WriteError(point, error);
 			}
 		}
 
-    private bool PointIsPastCheckpoint => Point.Position > _flow.Checkpoint;
-
-    private void MakeCall()
-    {
-      MakeCallAsync().Wait(State.CancellationToken);
-    }
-
-		private async Task MakeCallAsync()
+		private async Task MakeCall(TimelinePoint point)
 		{
+			Log.Verbose("[timeline] {Position:l} => {Flow:l}", point.Position, Key);
+
 			using(var callScope = _lifetime.BeginCallScope())
 			{
-        var call = CreateCall(callScope);
+				var call = CreateCall(point, callScope);
 
-        await _flow.MakeCall(call);
+				await _flow.MakeCall(call);
 
-        _db.WriteCall(call);
+				_db.WriteCall(call);
 
-        if(CheckDone())
-        {
-          Log.Verbose("[timeline] {Position:l} /> {Flow:l}", Point.Position, Key);
-        }
-        else
-        {
-          Log.Verbose("[timeline] {Position:l} => {Flow:l}", Point.Position, Key);
-        }
-      }
+				if(_type.IsView)
+				{
+					PushViewUpdate();
+				}
+
+				if(_flow.Done)
+				{
+					CompleteTask();
+				}
+			}
 		}
 
-		private WhenCall CreateCall(ILifetimeScope scope)
+		private WhenCall CreateCall(TimelinePoint point, ILifetimeScope scope)
 		{
-      var dependencies = scope.Resolve<IDependencySource>();
-      var principal = _db.ReadPrincipal(Point);
+			var dependencies = scope.Resolve<IDependencySource>();
+			var principal = _db.ReadPrincipal(point);
 
-      if(_type.IsTopic)
-      {
-        return new TopicWhenCall(
-          (Topic) _flow,
-          Point,
-          dependencies,
-          principal,
-          State.CancellationToken);
-      }
+			if(_flow.Type.IsTopic)
+			{
+				return new TopicWhenCall(
+					(Topic) _flow,
+					point,
+					dependencies,
+					principal,
+					State.CancellationToken);
+			}
 
-      return new WhenCall(
+			return new WhenCall(
 				_flow,
-				Point,
-        dependencies,
-        principal,
+				point,
+				dependencies,
+				principal,
 				State.CancellationToken);
 		}
 
-		private bool CheckDone()
+		private void PushViewUpdate()
 		{
-			if(_flow.Done)
-			{
-				CompleteTask();
+			// TODO: Only if subscribed (maybe put the serialization behind a lambda)
 
-				return true;
-			}
-
-			return false;
+			_viewExchange.PushUpdate(
+				ViewETag.From(_flow.Key, _flow.Checkpoint),
+				JsonFormat.Text.SerializeJson(_flow));
 		}
 
-		private void WriteError(Exception error)
+		private void WriteError(TimelinePoint point, Exception error)
 		{
 			Log.Error(error, "[timeline] Flow {Flow:l} stopped", _flow);
 
 			try
 			{
-				_db.WriteError(Key, Point, error);
+				_db.WriteError(Key, point, error);
 			}
 			finally
 			{

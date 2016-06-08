@@ -19,10 +19,5 @@ namespace Totem.Runtime.Timeline
 		public readonly bool OnSchedule;
 
     public override string ToString() => Point.ToString();
-
-    public void Push(PushScope scope)
-    {
-      scope.Push(Point);
-    }
   }
 }

@@ -10,20 +10,27 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// The scope of timeline activity in a runtime
   /// </summary>
-  public sealed class TimelineScope : PushScope, ITimelineScope
+  public sealed class TimelineScope : Connection, ITimelineScope
 	{
     private readonly ILifetimeScope _lifetime;
     private readonly ITimelineDb _timelineDb;
     private readonly IFlowDb _flowDb;
+		private readonly IViewExchange _viewExchange;
+		private TimelineQueue _queue;
     private TimelineSchedule _schedule;
     private TimelineFlowSet _flows;
     private TimelineRequestSet _requests;
 
-    public TimelineScope(ILifetimeScope lifetime, ITimelineDb timelineDb, IFlowDb flowDb)
+    public TimelineScope(
+			ILifetimeScope lifetime,
+			ITimelineDb timelineDb,
+			IFlowDb flowDb,
+			IViewExchange viewExchange)
 		{
       _lifetime = lifetime;
       _timelineDb = timelineDb;
       _flowDb = flowDb;
+			_viewExchange = viewExchange;
 
       _schedule = new TimelineSchedule(this);
       _flows = new TimelineFlowSet(this);
@@ -36,32 +43,27 @@ namespace Totem.Runtime.Timeline
       Track(_flows);
       Track(_requests);
 
-      base.Open();
+			var resumeInfo = _timelineDb.ReadResumeInfo();
 
-      ResumeTimeline();
-    }
+			_schedule.ResumeWith(resumeInfo);
 
-    private void ResumeTimeline()
-    {
-      var resumeInfo = _timelineDb.ReadResumeInfo();
+			_queue = new TimelineQueue(_schedule, _flows, _requests);
 
-      _schedule.ResumeWith(resumeInfo);
+			_queue.ResumeWith(resumeInfo);
 
-      resumeInfo.Push(this);
-    }
+			Track(_queue);
+		}
 
     //
     // Runtime
     //
 
-    protected override void Push()
+    public void Push(TimelinePoint point)
     {
-      _schedule.Push(Point);
-      _flows.Push(Point);
-      _requests.Push(Point);
+			_queue.Enqueue(point);
     }
 
-    internal void PushScheduled(TimelinePoint point)
+		internal void PushScheduled(TimelinePoint point)
     {
       Push(_timelineDb.WriteScheduled(point));
     }
@@ -73,7 +75,7 @@ namespace Totem.Runtime.Timeline
 
     public bool TryOpenFlowScope(FlowType type, TimelineRoute route, out IFlowScope scope)
 		{
-			var unroutedScope = new FlowScope(_lifetime, _flowDb, type, route);
+			var unroutedScope = new FlowScope(_lifetime, _flowDb, _viewExchange, type, route);
 
 			scope = unroutedScope.TryRoute() ? unroutedScope : null;
 

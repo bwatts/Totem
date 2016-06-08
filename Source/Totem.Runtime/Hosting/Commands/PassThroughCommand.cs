@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Serilog.Extras.Topshelf;
 using Topshelf;
 
 namespace Totem.Runtime.Hosting.Commands

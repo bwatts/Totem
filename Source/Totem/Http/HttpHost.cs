@@ -91,6 +91,16 @@ namespace Totem.Http
 			return From(secure, HttpDomain.From(domain));
 		}
 
+		public static HttpHost FromHttp(HttpDomain domain)
+		{
+			return From(false, domain);
+		}
+
+		public static HttpHost FromHttps(HttpDomain domain)
+		{
+			return From(true, domain);
+		}
+
 		public static HttpHost FromHttp(string domain)
 		{
 			return From(false, domain);
@@ -103,32 +113,51 @@ namespace Totem.Http
 
 		public static HttpHost From(string value, bool strict = true)
 		{
-			var schemeParts = value.Split(new[] { Uri.SchemeDelimiter }, StringSplitOptions.None);
+			var parts = value.Split(new[] { Uri.SchemeDelimiter }, StringSplitOptions.None);
 
-			if(schemeParts.Length == 2 && (schemeParts[0] == Uri.UriSchemeHttp || schemeParts[0] == Uri.UriSchemeHttps))
+			if(parts.Length > 0)
 			{
-				var secure = schemeParts[0] == Uri.UriSchemeHttps;
+				var isHttp = parts[0] == Uri.UriSchemeHttp;
+				var isHttps = parts[0] == Uri.UriSchemeHttps;
 
-				var hostnameParts = schemeParts[1].Split(PortSeparator);
+				string domain;
 
-				if(hostnameParts.Length == 1)
+				if(parts.Length == 1 && !isHttp && !isHttps)
 				{
-					return From(secure, HttpDomain.From(hostnameParts[0]));
+					domain = parts[0];
+				}
+				else if(parts.Length == 2 && (isHttp || isHttps))
+				{
+					domain = parts[1];
 				}
 				else
 				{
-					var portText = hostnameParts[1];
+					domain = null;
+				}
 
-					if(portText.EndsWith("/"))
+				if(domain != null)
+				{
+					var domainParts = domain.Split(PortSeparator);
+
+					if(domainParts.Length == 1)
 					{
-						portText = portText.Substring(0, portText.Length - 1);
+						return From(isHttps, domainParts[0]);
 					}
-
-					int port;
-
-					if(Int32.TryParse(portText, out port))
+					else
 					{
-						return From(secure, hostnameParts[0], port);
+						var portText = domainParts[1];
+
+						if(portText.EndsWith("/"))
+						{
+							portText = portText.Substring(0, portText.Length - 1);
+						}
+
+						int port;
+
+						if(int.TryParse(portText, out port))
+						{
+							return From(isHttps, domainParts[0], port);
+						}
 					}
 				}
 			}

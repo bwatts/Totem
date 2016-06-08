@@ -20,6 +20,13 @@ namespace Totem.Runtime.Timeline
 			WhenCall.Append(e);
 		}
 
+		protected void ThenDone(Event e)
+		{
+			Then(e);
+
+			ThenDone();
+		}
+
 		protected void ThenSchedule(Event e, DateTime whenOccurs)
 		{
 			Message.Traits.When.Set(e, whenOccurs);
