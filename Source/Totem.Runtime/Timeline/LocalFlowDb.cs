@@ -133,5 +133,10 @@ namespace Totem.Runtime.Timeline
 				? ViewSnapshot<T>.OfNotModified(key, checkpoint)
 				: ViewSnapshot<T>.OfContent(key, view.Checkpoint, selectContent(view));
 		}
+
+		public void WritePending(FlowKey key, TimelinePoint point)
+		{
+			// No need to write
+		}
 	}
 }

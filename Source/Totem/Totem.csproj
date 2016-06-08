@@ -109,6 +109,10 @@
     <Compile Include="Runtime\Timeline\FlowCall.cs" />
     <Compile Include="Runtime\Timeline\FlowKey.cs" />
     <Compile Include="Runtime\Timeline\IdCounter.cs" />
+    <Compile Include="Runtime\Timeline\ISnapshotCondition.cs" />
+    <Compile Include="Runtime\Timeline\SnapshotAfterEventsAttribute.cs" />
+    <Compile Include="Runtime\Timeline\SnapshotAlwaysAttribute.cs" />
+    <Compile Include="Runtime\Timeline\SnapshotAfterAttribute.cs" />
     <Compile Include="Runtime\Timeline\TimelineRoute.cs" />
     <Compile Include="Runtime\Timeline\Topic.cs" />
     <Compile Include="Runtime\Timeline\TimelineOperations.cs" />

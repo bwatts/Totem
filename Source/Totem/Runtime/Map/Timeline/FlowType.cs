@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Totem.Runtime.Timeline;
 
@@ -17,39 +18,44 @@ namespace Totem.Runtime.Map.Timeline
 			Events = new FlowEventSet();
 			IsTopic = this is TopicType;
 			IsQuery = this is QueryType;
-      IsView = this is ViewType;
+			IsView = this is ViewType;
 			IsRequest = this is RequestType;
+			SnapshotConditions = (from attribute in type.DeclaredType.GetCustomAttributes(inherit: true)
+														let condition = attribute as ISnapshotCondition
+														where condition != null
+														select condition).ToMany();
 		}
 
 		public readonly FlowConstructor Constructor;
 		public readonly FlowEventSet Events;
 		public readonly bool IsTopic;
 		public readonly bool IsQuery;
-    public readonly bool IsView;
-    public readonly bool IsRequest;
-    
-    public bool IsSingleInstance { get; private set; }
-    public bool IsRouted { get; private set; }
+		public readonly bool IsView;
+		public readonly bool IsRequest;
+		public readonly Many<ISnapshotCondition> SnapshotConditions;
 
-    internal void SetSingleInstance()
-    {
-      IsSingleInstance = true;
-      IsRouted = false;
-    }
+		public bool IsSingleInstance { get; private set; }
+		public bool IsRouted { get; private set; }
 
-    internal void SetRouted()
-    {
-      IsSingleInstance = false;
-      IsRouted = true;
-    }
+		internal void SetSingleInstance()
+		{
+			IsSingleInstance = true;
+			IsRouted = false;
+		}
+
+		internal void SetRouted()
+		{
+			IsSingleInstance = false;
+			IsRouted = true;
+		}
 
 		public FlowKey CreateKey(Id id)
-    {
-      ExpectNot(IsSingleInstance && id.IsAssigned, Text.Of("Flow {0} is single-instance and cannot have an assigned id of {1}", this, id));
+		{
+			ExpectNot(IsSingleInstance && id.IsAssigned, Text.Of("Flow {0} is single-instance and cannot have an assigned id of {1}", this, id));
 			ExpectNot(IsRouted && id.IsUnassigned, Text.Of("Flow {0} is routed and must have an assigned id", this));
 
-      return FlowKey.From(this, id);
-    }
+			return FlowKey.From(this, id);
+		}
 
 		public Flow New()
 		{
@@ -61,10 +67,10 @@ namespace Totem.Runtime.Map.Timeline
 			return Events.Contains(e);
 		}
 
-    public Many<TimelineRoute> CallRoute(TimelinePoint point)
-    {
-      return Events.CallRoute(point);
-    }
+		public Many<TimelineRoute> CallRoute(TimelinePoint point)
+		{
+			return Events.CallRoute(point);
+		}
 
 		public void CallGiven(Flow flow, TimelinePoint point)
 		{

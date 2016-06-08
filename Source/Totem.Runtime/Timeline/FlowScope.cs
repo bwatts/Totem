@@ -69,6 +69,7 @@ namespace Totem.Runtime.Timeline
 		{
 			if(PushingQueue)
 			{
+				_db.WritePending(_flow.Key, point);
 				_queue.Enqueue(point);
 			}
 			else
