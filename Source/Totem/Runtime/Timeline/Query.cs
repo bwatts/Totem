@@ -11,5 +11,7 @@ namespace Totem.Runtime.Timeline
 	public abstract class Query : Flow
 	{
 		[Transient] protected new QueryType Type => (QueryType) base.Type;
+
+		protected override bool ShouldSnapshot() => true;
 	}
 }

@@ -51,8 +51,13 @@ namespace Totem.Runtime.Timeline
 		}
 
 		//
-		// Write call
+		// Write
 		//
+
+		public void WriteRoute(FlowKey key, TimelinePoint point)
+		{
+			// Local flow db does not reconstruct the timeline upon startup
+		}
 
 		public void WriteCall(WhenCall call)
 		{
