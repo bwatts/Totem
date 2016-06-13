@@ -17,16 +17,14 @@ namespace Totem.Runtime.Json
 	/// </summary>
 	public class TotemContractResolver : CamelCasePropertyNamesContractResolver, ITaggable
 	{
-		internal TotemContractResolver(bool serializePrivate = false)
+		internal TotemContractResolver()
 		{
-			_serializePrivate = serializePrivate;
 			Tags = new Tags();
 		}
 
 		Tags ITaggable.Tags => Tags;
 		private Tags Tags;
 		private RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
-		private readonly bool _serializePrivate;
 
 		protected override JsonArrayContract CreateArrayContract(Type objectType)
 		{
@@ -69,26 +67,6 @@ namespace Totem.Runtime.Json
 		// Properties
 		//
 
-		protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-		{
-
-			var durableType = Runtime.GetDurable(type, strict: false);
-			if (durableType == null)
-			{
-				return base.CreateProperties(type, memberSerialization);
-			}
-
-			var flags = _serializePrivate ?
-				(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) :
-				(BindingFlags.Instance | BindingFlags.Public);
-
-			return(Enumerable.Empty<MemberInfo>()
-				.Concat(durableType.DeclaredType.GetProperties(flags))
-				.Concat(durableType.DeclaredType.GetFields(flags))
-				.Where(member => IsDurableProperty(member))
-				.Select(member => CreateProperty(member, memberSerialization))).ToList();
-		}
-
 		protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
 		{
 			var property = base.CreateProperty(member, memberSerialization);
@@ -96,7 +74,6 @@ namespace Totem.Runtime.Json
 			if(IsDurableProperty(member))
 			{
 				property.Writable = CanSet(member);
-				property.Readable = CanGet(member);
 			}
 			else
 			{
@@ -137,27 +114,6 @@ namespace Totem.Runtime.Json
 			}
 
 			return canSet;
-		}
-
-		private static bool CanGet(MemberInfo member)
-		{
-			var canGet = false;
-
-			if (member is FieldInfo)
-			{
-				canGet = true;
-			}
-			else
-			{
-				var property = member as PropertyInfo;
-
-				if (property != null)
-				{
-					canGet = property.CanRead || property.GetGetMethod(nonPublic: true) != null;
-				}
-			}
-
-			return canGet;
 		}
 	}
 }
