@@ -51,8 +51,13 @@ namespace Totem.Runtime.Timeline
 		}
 
 		//
-		// Write call
+		// Write
 		//
+
+		public void WriteRoute(FlowKey key, TimelinePoint point)
+		{
+			// Local flow db does not reconstruct the timeline upon startup
+		}
 
 		public void WriteCall(WhenCall call)
 		{
@@ -132,11 +137,6 @@ namespace Totem.Runtime.Timeline
 			return view.Checkpoint == checkpoint
 				? ViewSnapshot<T>.OfNotModified(key, checkpoint)
 				: ViewSnapshot<T>.OfContent(key, view.Checkpoint, selectContent(view));
-		}
-
-		public void WritePending(FlowKey key, TimelinePoint point)
-		{
-			// No need to write
 		}
 	}
 }

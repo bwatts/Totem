@@ -20,10 +20,6 @@ namespace Totem.Runtime.Map.Timeline
 			IsQuery = this is QueryType;
 			IsView = this is ViewType;
 			IsRequest = this is RequestType;
-			SnapshotConditions = (from attribute in type.DeclaredType.GetCustomAttributes(inherit: true)
-														let condition = attribute as ISnapshotCondition
-														where condition != null
-														select condition).ToMany();
 		}
 
 		public readonly FlowConstructor Constructor;
@@ -32,7 +28,6 @@ namespace Totem.Runtime.Map.Timeline
 		public readonly bool IsQuery;
 		public readonly bool IsView;
 		public readonly bool IsRequest;
-		public readonly Many<ISnapshotCondition> SnapshotConditions;
 
 		public bool IsSingleInstance { get; private set; }
 		public bool IsRouted { get; private set; }

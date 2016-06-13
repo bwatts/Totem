@@ -8,9 +8,10 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// A timeline presence that maintains some form of read model
 	/// </summary>
-	[SnapshotAlways]
 	public abstract class Query : Flow
 	{
 		[Transient] protected new QueryType Type => (QueryType) base.Type;
+
+		protected override bool ShouldSnapshot() => true;
 	}
 }

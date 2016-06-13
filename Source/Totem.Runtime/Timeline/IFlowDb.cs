@@ -15,9 +15,9 @@ namespace Totem.Runtime.Timeline
 
 		bool TryReadFlow(FlowType type, TimelineRoute route, out Flow flow);
 
-    void WriteCall(WhenCall call);
+		void WriteRoute(FlowKey key, TimelinePoint point);
 
-    void WritePending(FlowKey key, TimelinePoint point);
+		void WriteCall(WhenCall call);
 
     void WriteError(FlowKey key, TimelinePoint point, Exception error);
   }
