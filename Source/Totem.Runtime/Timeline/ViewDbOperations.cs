@@ -151,8 +151,7 @@ namespace Totem.Runtime.Timeline
 		private static T ReadContent<T>(this ViewSnapshot<T> view, bool strict)
 		{
 			Expect.False(strict && view.NotFound, "View not found");
-
-			return view.ReadContent();
+			return view.NotFound ? default(T) : view.ReadContent();
 		}
 	}
 }
