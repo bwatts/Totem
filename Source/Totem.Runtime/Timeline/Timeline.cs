@@ -8,9 +8,6 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// The chronological context of a domain
 	/// </summary>
-  /// <remarks>
-  /// This is a naive but working implementation of domain + persistence
-  /// </remarks>
 	public sealed class Timeline : ITimeline
 	{
 		private readonly ITimelineDb _db;

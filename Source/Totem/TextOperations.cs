@@ -765,7 +765,7 @@ namespace Totem
 		// Compact
 		//
 
-		public static Text Compact(this Text text)
+		public static Text Compact(this Text text, string ellipsis = Text.Ellipsis)
 		{
 			return Text.Of(() =>
 			{
@@ -776,11 +776,11 @@ namespace Totem
 					return source;
 				}
 
-				return source.ToText().Compact(source.Length / 2);
+				return source.ToText().Compact(source.Length / 2, ellipsis);
 			});
 		}
 
-		public static Text Compact(this Text text, int maxLength)
+		public static Text Compact(this Text text, int maxLength, string ellipsis = Text.Ellipsis)
 		{
 			return Text.Of(() =>
 			{
@@ -796,66 +796,52 @@ namespace Totem
 				var leftPart = source.Substring(0, partLength);
 				var rightPart = source.Substring(source.Length - partLength + 1);
 
-				return leftPart + Text.Ellipsis + rightPart;
+				return leftPart + ellipsis + rightPart;
 			});
 		}
 
-		public static Text CompactLeft(this Text text, int maxLength)
+		public static Text CompactLeft(this Text text, int maxLength, string ellipsis = Text.Ellipsis)
 		{
 			return Text.Of(() =>
 			{
 				var source = text.ToString();
 
-				if(source.Length <= maxLength)
-				{
-					return source;
-				}
-
-				var partLength = maxLength / 2;
-
-				var rightPart = source.Substring(source.Length - partLength + 1);
-
-				return Text.Ellipsis + rightPart;
+				return source.Length <= maxLength
+					? source
+					: ellipsis + source.Substring(source.Length - maxLength + 1);
 			});
 		}
 
-		public static Text CompactRight(this Text text, int maxLength)
+		public static Text CompactRight(this Text text, int maxLength, string ellipsis = Text.Ellipsis)
 		{
 			return Text.Of(() =>
 			{
 				var source = text.ToString();
-
-				if(source.Length <= maxLength)
-				{
-					return source;
-				}
-
-				var partLength = maxLength / 2;
-
-				var leftPart = source.Substring(0, partLength - 1);
-
-				return leftPart + Text.Ellipsis;
+				
+				return source.Length <= maxLength
+					? source
+					: source.Substring(0, maxLength) + ellipsis;
 			});
 		}
 
-		public static Text WriteCompacted(this Text text, Text value)
+		public static Text WriteCompacted(this Text text, Text value, string ellipsis = Text.Ellipsis)
 		{
-			return text + value.Compact();
+			return text + value.Compact(ellipsis);
 		}
 
-		public static Text WriteCompacted(this Text text, Text value, int maxLength)
+		public static Text WriteCompacted(this Text text, Text value, int maxLength, string ellipsis = Text.Ellipsis)
 		{
-			return text + value.Compact(maxLength);
+			return text + value.Compact(maxLength, ellipsis);
 		}
 
-		public static Text WriteCompactedLeft(this Text text, Text value, int maxLength)
+		public static Text WriteCompactedLeft(this Text text, Text value, int maxLength, string ellipsis = Text.Ellipsis)
 		{
-			return text + value.CompactLeft(maxLength);
+			return text + value.CompactLeft(maxLength, ellipsis);
 		}
 
-		public static Text WriteCompactedRight(this Text text, Text value, int maxLength)
+		public static Text WriteCompactedRight(this Text text, Text value, int maxLength, string ellipsis = Text.Ellipsis)
 		{
-			return text + value.CompactRight(maxLength);
+			return text + value.CompactRight(maxLength, ellipsis);
 		}
 	}
 }

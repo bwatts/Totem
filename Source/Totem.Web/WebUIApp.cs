@@ -14,20 +14,11 @@ namespace Totem.Web
 		protected WebUIApp(WebUIContext context) : base(context)
 		{}
 
-		public new WebUIContext Context
-		{
-			get { return (WebUIContext) base.Context; }
-		}
+		public new WebUIContext Context => (WebUIContext) base.Context;
 
-		protected override IRootPathProvider RootPathProvider
-		{
-			get { return this; }
-		}
+		protected override IRootPathProvider RootPathProvider => this;
 
-		public string GetRootPath()
-		{
-			return Context.ContentFolder.ToString();
-		}
+		public string GetRootPath() => Context.ContentFolder.ToString();
 
 		protected override void ConfigureConventions(NancyConventions nancyConventions)
 		{
@@ -49,20 +40,20 @@ namespace Totem.Web
 
 			internal void Configure()
 			{
-				FindHtmlViews();
+				LocateViews();
 
 				CoerceAcceptHeaders();
 
 				ServeStaticContent();
 			}
 
-			private void FindHtmlViews()
+			private void LocateViews()
 			{
 				_conventions.ViewLocationConventions.Clear();
 
 				_conventions.ViewLocationConventions.Add((viewName, model, context) =>
 				{
-					return viewName;
+					return "dist/" + viewName;
 				});
 			}
 
@@ -83,18 +74,16 @@ namespace Totem.Web
 			{
 				_conventions.StaticContentsConventions.Clear();
 
-				ServeStaticContent("css");
-				ServeStaticContent("js");
-				ServeStaticContent("refs");
-
-				// Not serving /html - APIs map URLs to .html files
+				ServeStaticContent("images");
+				ServeStaticContent("css", "dist/css");
+				ServeStaticContent("js", "dist/js");
 			}
 
-			private void ServeStaticContent(string path)
+			private void ServeStaticContent(string requestedPath, string contentPath = null)
 			{
 				_conventions
 					.StaticContentsConventions
-					.Add(StaticContentConventionBuilder.AddDirectory(path));
+					.Add(StaticContentConventionBuilder.AddDirectory(requestedPath, contentPath));
 			}
 		}
 	}

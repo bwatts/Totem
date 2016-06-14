@@ -8,7 +8,7 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// Routes timeline points to a type of flow
   /// </summary>
-  internal sealed class FlowRouter : PushScope
+  internal sealed class FlowRouter : Connection
   {
     private readonly Dictionary<Id, IFlowScope> _scopesById = new Dictionary<Id, IFlowScope>();
     private readonly FlowType _flow;
@@ -25,15 +25,15 @@ namespace Totem.Runtime.Timeline
       return $"{_flow} ({Text.Count(_scopesById.Count, "scope")})";
     }
 
-    protected override void Push()
+    internal void Push(TimelinePoint point)
     {
-			foreach(var route in _flow.CallRoute(Point))
+			foreach(var route in _flow.CallRoute(point))
 			{
 				IFlowScope scope;
 
 				if(TryGetScope(route, out scope) || TryOpenScope(route, out scope))
 				{
-					scope.Push(Point);
+					scope.Push(point);
 				}
 			}
     }
@@ -41,7 +41,7 @@ namespace Totem.Runtime.Timeline
 		private bool TryGetScope(TimelineRoute route, out IFlowScope scope)
 		{
 			return _scopesById.TryGetValue(route.Id, out scope);
-		}
+    }
 
 		private bool TryOpenScope(TimelineRoute route, out IFlowScope scope)
 		{

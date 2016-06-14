@@ -19,19 +19,25 @@ namespace Totem.Runtime.Timeline
 		}
 
 		public bool IsNone => _point == null;
+		public bool IsSome => _point != null;
 
 		public override string ToString() => "#" + (IsNone ? "-" : _point.ToString());
 
 		public long ToInt64()
 		{
-			Expect.False(IsNone, "Position has no Int64 value");
+			Expect.False(IsNone, "Position is before the start of the timeline");
 
 			return _point.Value;
 		}
 
-		public long? ToInt64OrNone()
+		public long? ToInt64OrNull()
 		{
 			return _point;
+		}
+
+		public TimelinePosition Next()
+		{
+			return new TimelinePosition(_point + 1 ?? 0);
 		}
 
 		//

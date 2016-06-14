@@ -18,7 +18,8 @@ namespace Totem.Runtime.Timeline
     [Transient] public FlowType Type { get; private set; }
     [Transient] public Id Id { get; private set; }
     [Transient] public TimelinePosition Checkpoint { get; private set; }
-    [Transient] public bool Done { get; private set; }
+		[Transient] public TimelinePosition SnapshotPosition { get; private set; }
+		[Transient] public bool Done { get; private set; }
 
     public override Text ToText() => Key.ToString();
 
@@ -30,10 +31,16 @@ namespace Totem.Runtime.Timeline
       flow.Type = key.Type;
       flow.Id = key.Id;
       flow.Checkpoint = TimelinePosition.None;
+			flow.SnapshotPosition = TimelinePosition.None;
       flow.Done = false;
     }
 
-    public static void Initialize(Flow flow, FlowKey key, TimelinePosition checkpoint, bool done)
+    public static void Initialize(
+			Flow flow,
+			FlowKey key,
+			TimelinePosition checkpoint,
+			TimelinePosition snapshotPosition,
+			bool done)
     {
       Expect(flow.Key).IsNull("Flow is already initialized");
 
@@ -41,6 +48,7 @@ namespace Totem.Runtime.Timeline
       flow.Type = key.Type;
       flow.Id = key.Id;
       flow.Checkpoint = checkpoint;
+			flow.SnapshotPosition = snapshotPosition;
       flow.Done = done;
     }
 
@@ -76,7 +84,7 @@ namespace Totem.Runtime.Timeline
 			{
         StartCall(call);
 
-        await call.Make();
+				await InvokeCall(call);
 			}
 			finally
 			{
@@ -95,8 +103,20 @@ namespace Totem.Runtime.Timeline
       EventType = call.Point.EventType;
     }
 
+		protected virtual Task InvokeCall(WhenCall call)
+		{
+			return call.Make();
+		}
+
     private void EndCall()
     {
+			Checkpoint = WhenCall.Point.Position;
+
+			if(ShouldSnapshot())
+			{
+				SnapshotPosition = Checkpoint;
+			}
+
       WhenCall = null;
       Cause = default(TimelinePosition);
       Event = null;
@@ -120,6 +140,8 @@ namespace Totem.Runtime.Timeline
 
       Done = true;
 		}
+
+		protected virtual bool ShouldSnapshot() => false;
 
 		public new static class Traits
 		{

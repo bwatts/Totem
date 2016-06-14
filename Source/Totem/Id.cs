@@ -41,7 +41,7 @@ namespace Totem
 
 		public override int GetHashCode()
 		{
-			return IsUnassigned ? 0 : _value.GetHashCode();
+			return ToString().GetHashCode();
 		}
 
 		public int CompareTo(Id other)
@@ -60,6 +60,8 @@ namespace Totem
 		// Factory
 		//
 
+		public const string Separator = "/";
+
 		public static readonly Id Unassigned = new Id();
 
 		public static Id From(string value)
@@ -77,12 +79,29 @@ namespace Totem
 			return new Id(Guid.NewGuid().ToString());
 		}
 
+		public static Id FromMany(IEnumerable<string> ids)
+		{
+			return From(ids.ToTextSeparatedBy(Separator).ToString());
+		}
+
+		public static Id FromMany(params string[] ids)
+		{
+			return FromMany(ids as IEnumerable<string>);
+		}
+
+		public static Id FromMany(IEnumerable<Id> ids)
+		{
+			return From(ids.ToTextSeparatedBy(Separator).ToString());
+		}
+
+		public static Id FromMany(params Id[] ids)
+		{
+			return FromMany(ids as IEnumerable<Id>);
+		}
+
 		public sealed class Converter : TextConverter
 		{
-			protected override object ConvertFrom(TextValue value)
-			{
-				return From(value);
-			}
+			protected override object ConvertFrom(TextValue value) => From(value);
 		}
 	}
 }

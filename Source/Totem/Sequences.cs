@@ -119,11 +119,25 @@ namespace Totem
 			return items.Select(selectItem).ToHashSet(comparer);
 		}
 
-    //
-    // Reads
-    //
+		//
+		// ToDictionary
+		//
 
-    public static IEnumerable<T> Except<T>(this IEnumerable<T> source, params T[] items)
+		public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IDictionary<TKey, TValue> source)
+		{
+			return new Dictionary<TKey, TValue>(source);
+		}
+
+		public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IDictionary<TKey, TValue> source, IEqualityComparer<TKey> comparer)
+		{
+			return new Dictionary<TKey, TValue>(source, comparer);
+		}
+
+		//
+		// Reads
+		//
+
+		public static IEnumerable<T> Except<T>(this IEnumerable<T> source, params T[] items)
     {
       return source.Except(items as IEnumerable<T>);
     }

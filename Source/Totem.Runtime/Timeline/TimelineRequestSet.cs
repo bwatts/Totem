@@ -9,7 +9,7 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// The set of pending requests in a runtime
   /// </summary>
-  internal sealed class TimelineRequestSet : PushScope
+  internal sealed class TimelineRequestSet : Connection
   {
     private readonly ConcurrentDictionary<Id, TimelineRequest> _requestsById = new ConcurrentDictionary<Id, TimelineRequest>();
     private readonly ITimelineScope _scope;
@@ -26,9 +26,9 @@ namespace Totem.Runtime.Timeline
       _requestsById.Clear();
     }
 
-    protected override void Push()
+    public void Push(TimelinePoint point)
     {
-      var requestId = Flow.Traits.RequestId.Get(Point.Event);
+      var requestId = Flow.Traits.RequestId.Get(point.Event);
 
       if(requestId.IsAssigned)
       {
@@ -36,7 +36,7 @@ namespace Totem.Runtime.Timeline
 
         if(_requestsById.TryGetValue(requestId, out request))
         {
-          request.Push(Point);
+          request.Push(point);
         }
       }
     }
