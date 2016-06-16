@@ -77,15 +77,17 @@ namespace Totem.Runtime.Timeline
 
 		private DateTime GetWhenIntervalOccursNext(TimeSpan interval, TimeSpan offset)
 		{
+			Expect(interval).IsGreaterThan(TimeSpan.Zero, "Interval must indicate a time in the future.");
+
 			var now = Clock.Now.ToLocalTime();
-            var today = now.Date;
+			var today = now.Date;
 
 			var whenOccursNext = today + offset;
 
-            while(whenOccursNext < now)
-            {
-                whenOccursNext += interval;
-            }
+			while(whenOccursNext < now)
+			{
+				whenOccursNext += interval;
+			}
 
 			var whenOccurs = whenOccursNext.Date == now.Date ? whenOccursNext : now.Date.AddDays(1) + offset;
 
