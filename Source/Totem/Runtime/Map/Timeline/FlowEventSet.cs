@@ -12,35 +12,18 @@ namespace Totem.Runtime.Map.Timeline
 	/// </summary>
 	public sealed class FlowEventSet : Notion, IReadOnlyCollection<FlowEvent>
 	{
-		private sealed class EventDictionary<TKey> : Dictionary<TKey, FlowEvent> {}
-
-		private readonly EventDictionary<RuntimeTypeKey> _eventsByKey = new EventDictionary<RuntimeTypeKey>();
-		private readonly EventDictionary<Type> _eventsByDeclaredType = new EventDictionary<Type>();
+		private readonly Dictionary<RuntimeTypeKey, FlowEvent> _eventsByKey = new Dictionary<RuntimeTypeKey, FlowEvent>();
+		private readonly Dictionary<Type, FlowEvent> _eventsByDeclaredType = new Dictionary<Type, FlowEvent>();
 
 		public IEnumerator<FlowEvent> GetEnumerator() => _eventsByKey.Values.GetEnumerator();
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
 		public int Count => _eventsByKey.Count;
 
-		public bool Contains(EventType e)
-		{
-			return Contains(e.DeclaredType);
-		}
-
-		public bool Contains(RuntimeTypeKey key)
-		{
-			return _eventsByKey.ContainsKey(key);
-		}
-
-		public bool Contains(Type declaredType)
-		{
-			return _eventsByDeclaredType.ContainsKey(declaredType);
-		}
-
-		public bool Contains(Event e)
-		{
-			return Contains(e.GetType());
-		}
+		public bool Contains(EventType e) => Contains(e.DeclaredType);
+		public bool Contains(RuntimeTypeKey key) => _eventsByKey.ContainsKey(key);
+		public bool Contains(Type declaredType) => _eventsByDeclaredType.ContainsKey(declaredType);
+		public bool Contains(Event e) => Contains(e.GetType());
 
 		public FlowEvent Get(RuntimeTypeKey key, bool strict = true)
 		{
@@ -75,11 +58,11 @@ namespace Totem.Runtime.Map.Timeline
 			return Get(e.GetType(), strict);
 		}
 
-    public Many<TimelineRoute> CallRoute(TimelinePoint point)
+    public IEnumerable<TimelineRoute> CallRoute(Event e)
     {
-      var e = Get(point.EventType.Key, strict: false);
+      var flowEvent = Get(e, strict: false);
 
-      return e?.CallRoute(point) ?? new Many<TimelineRoute>();
+      return flowEvent?.CallRoute(e) ?? new Many<TimelineRoute>();
     }
 
     public void CallGiven(Flow flow, TimelinePoint point)
@@ -104,7 +87,9 @@ namespace Totem.Runtime.Map.Timeline
 
 		internal void Register(FlowEvent e)
 		{
-			if(_eventsByKey.ContainsKey(e.EventType.Key))
+			FlowEvent knownEvent;
+
+			if(_eventsByKey.TryGetValue(e.EventType.Key, out knownEvent) && knownEvent != e)
 			{
 				throw new Exception(Text.Of("Event {0} is already registered", e.EventType.Key));
 			}

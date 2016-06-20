@@ -9,17 +9,15 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public class TimelineRoute
 	{
-		public TimelineRoute(Id id, bool isFirst = false)
+		public TimelineRoute(FlowKey key, bool isFirst = false)
 		{
-			Id = id;
+			Key = key;
 			IsFirst = isFirst;
 		}
 
-		public readonly Id Id;
+		public readonly FlowKey Key;
 		public readonly bool IsFirst;
 
-		public override string ToString() => Text.Of(Id).WriteIf(IsFirst, " (first)");
-
-		public static readonly TimelineRoute SingleInstance = new TimelineRoute(Id.Unassigned);
+		public override string ToString() => Text.Of(Key).WriteIf(IsFirst, " (first)");
 	}
 }

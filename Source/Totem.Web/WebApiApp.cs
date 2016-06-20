@@ -158,7 +158,7 @@ namespace Totem.Web
 			context.Items[WebApi.CallItemKey] = container.Resolve<WebApiCall>();
 
 			IViewDb views;
-			ITimeline timeline;
+			ITimelineScope timeline;
 
       if(container.TryResolve(out views))
       {

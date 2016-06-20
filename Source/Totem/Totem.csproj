@@ -111,7 +111,6 @@
     <Compile Include="Runtime\Timeline\IdCounter.cs" />
     <Compile Include="Runtime\Timeline\TimelineRoute.cs" />
     <Compile Include="Runtime\Timeline\Topic.cs" />
-    <Compile Include="Runtime\Timeline\TimelineOperations.cs" />
     <Compile Include="Runtime\Timeline\EventScheduled.cs" />
     <Compile Include="Runtime\Timeline\TopicWhenCall.cs" />
     <Compile Include="Runtime\Timeline\View.cs" />
@@ -168,7 +167,6 @@
     <Compile Include="Runtime\Timeline\Flow.cs" />
     <Compile Include="Runtime\Timeline\WhenCall.cs" />
     <Compile Include="Runtime\Timeline\FlowStopped.cs" />
-    <Compile Include="Runtime\Timeline\ITimeline.cs" />
     <Compile Include="Runtime\Timeline\Query.cs" />
     <Compile Include="Runtime\Timeline\Request.cs" />
     <Compile Include="Runtime\Timeline\TimelinePoint.cs" />

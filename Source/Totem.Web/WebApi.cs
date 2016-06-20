@@ -36,7 +36,7 @@ namespace Totem.Web
 
 		public WebApiCall Call => ReadContextItem<WebApiCall>(CallItemKey);
 		protected IViewDb Views => ReadContextItem<IViewDb>(ViewsItemKey);
-		protected ITimeline Timeline => ReadContextItem<ITimeline>(TimelineItemKey);
+		protected ITimelineScope Timeline => ReadContextItem<ITimelineScope>(TimelineItemKey);
 
 		public sealed override string ToString() => ToText();
 		public virtual Text ToText() => Call.Link.ToText();
@@ -219,7 +219,7 @@ namespace Totem.Web
 
 		private static string GetETag(ViewSnapshot<string> view)
 		{
-			return view.Key.ToText().WriteIf(view.Checkpoint.IsSome, $"@{view.Checkpoint.ToInt64()}");
+			return view.Key.ToText().WriteIf(view.Checkpoint.IsSome, $"@{view.Checkpoint.ToInt64OrNull()}");
     }
 	}
 }

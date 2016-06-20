@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
-using Totem.Runtime.Json;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -15,52 +13,31 @@ namespace Totem.Runtime.Timeline
 	{
 		private readonly TaskCompletionSource<Flow> _taskCompletionSource = new TaskCompletionSource<Flow>();
 		private readonly ILifetimeScope _lifetime;
-		private readonly IFlowDb _db;
+		private readonly TimelineScope _timeline;
 		private readonly IViewExchange _viewExchange;
-		private readonly FlowType _type;
-		private TimelineRoute _route;
 		private Flow _flow;
 		private FlowQueue _queue;
 		private Task _pushQueueTask;
 
-		public FlowScope(
-			ILifetimeScope lifetime,
-			IFlowDb db,
-			IViewExchange viewExchange,
-			FlowType type,
-			TimelineRoute route)
+		public FlowScope(ILifetimeScope lifetime, TimelineScope timeline, IViewExchange viewExchange, Flow flow)
 		{
 			_lifetime = lifetime;
-			_db = db;
+			_timeline = timeline;
 			_viewExchange = viewExchange;
-			_type = type;
-			_route = route;
-			Key = type.CreateKey(route.Id);
+			_flow = flow;
 		}
 
-		public FlowKey Key { get; }
+		public FlowKey Key => _flow.Key;
 		public Task<Flow> Task => _taskCompletionSource.Task;
-
-		internal bool TryRoute()
-		{
-			var route = _route;
-
-			_route = null;
-
-			return route != null && _db.TryReadFlow(Key.Type, route, out _flow);
-		}
 
 		protected override void Open()
 		{
-			Expect(_flow).IsNotNull("Routing failed - cannot connect scope");
-
 			_queue = new FlowQueue();
 			_pushQueueTask = PushQueue();
 		}
 
 		protected override void Close()
 		{
-			_flow = null;
 			_queue = null;
 			_pushQueueTask = null;
 		}
@@ -69,19 +46,11 @@ namespace Totem.Runtime.Timeline
 		{
 			if(PushingQueue)
 			{
-				if(point.Position > _flow.Checkpoint)
-				{
-					_db.WriteRoute(_flow.Key, point);
-
-					_queue.Enqueue(point);
-				}
+				_queue.Enqueue(point);
 			}
 			else
 			{
-				Log.Warning(
-					"[timeline] Cannot push to scope in phase {Phase} - ignoring {Point:l}",
-					State.Phase,
-					point);
+				Log.Warning("[timeline] Flow {Flow:l} is done - ignoring {Point:l}", _flow, point);
 			}
 		}
 
@@ -95,12 +64,12 @@ namespace Totem.Runtime.Timeline
 
 				if(PushingQueue)
 				{
-					await PushFromQueue(point);
+					await PushNext(point);
 				}
 			}
 		}
 
-		private async Task PushFromQueue(TimelinePoint point)
+		private async Task PushNext(TimelinePoint point)
 		{
 			try
 			{
@@ -113,7 +82,7 @@ namespace Totem.Runtime.Timeline
 					throw;
 				}
 
-				WriteError(point, error);
+				PushFlowStopped(point, error);
 			}
 		}
 
@@ -127,9 +96,12 @@ namespace Totem.Runtime.Timeline
 
 				await _flow.MakeCall(call);
 
-				_db.WriteCall(call);
+				if(!Key.Type.IsRequest)
+				{
+					_timeline.PushCall(call);
+				}
 
-				if(_type.IsView)
+				if(Key.Type.IsView)
 				{
 					PushViewUpdate();
 				}
@@ -144,7 +116,7 @@ namespace Totem.Runtime.Timeline
 		private WhenCall CreateCall(TimelinePoint point, ILifetimeScope scope)
 		{
 			var dependencies = scope.Resolve<IDependencySource>();
-			var principal = _db.ReadPrincipal(point);
+			var principal = _timeline.ReadPrincipal(point);
 
 			if(_flow.Type.IsTopic)
 			{
@@ -166,20 +138,16 @@ namespace Totem.Runtime.Timeline
 
 		private void PushViewUpdate()
 		{
-			// TODO: Only if subscribed (maybe put the serialization behind a lambda)
-
-			_viewExchange.PushUpdate(
-				ViewETag.From(_flow.Key, _flow.Checkpoint),
-				JsonFormat.Text.SerializeJson(_flow));
+			_viewExchange.PushUpdate((View) _flow);
 		}
 
-		private void WriteError(TimelinePoint point, Exception error)
+		private void PushFlowStopped(TimelinePoint point, Exception error)
 		{
 			Log.Error(error, "[timeline] Flow {Flow:l} stopped", _flow);
 
 			try
 			{
-				_db.WriteError(Key, point, error);
+				_timeline.PushFlowStopped(Key, point, error);
 			}
 			finally
 			{

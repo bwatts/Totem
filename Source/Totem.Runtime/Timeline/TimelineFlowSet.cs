@@ -11,79 +11,62 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class TimelineFlowSet : Connection
 	{
-    private readonly Dictionary<EventType, EventRouter> _eventRoutersByType = new Dictionary<EventType, EventRouter>();
-    private readonly ITimelineScope _scope;
+		private readonly Dictionary<FlowKey, IFlowScope> _flowsByKey = new Dictionary<FlowKey, IFlowScope>();
 
-    internal TimelineFlowSet(ITimelineScope scope)
+		private readonly TimelineScope _timeline;
+
+    internal TimelineFlowSet(TimelineScope timeline)
     {
-      _scope = scope;
+      _timeline = timeline;
     }
 
-    protected override void Open()
+    internal void Push(TimelineMessage message)
     {
-      var packages = ReadPackages();
-
-      AddEventRouters(packages);
-
-      AddFlowRouters(packages);
+			foreach(var route in message.Routes)
+			{
+				Push(message.Point, route);
+			}
     }
 
-    protected override void Close()
-    {
-      base.Close();
+		private void Push(TimelinePoint point, TimelineRoute route)
+		{
+			IFlowScope flow;
 
-      _eventRoutersByType.Clear();
-    }
+			if(!TryGetFlow(route, out flow))
+			{
+				flow = ReadFlow(route);
+			}
 
-    public void Push(TimelinePoint point)
-    {
-      EventRouter eventRouter;
+			flow.Push(point);
+		}
 
-      if(!_eventRoutersByType.TryGetValue(point.EventType, out eventRouter))
-      {
-        throw new InvalidOperationException($"Cannot push to unknown event type {point.EventType}");
-      }
+		private bool TryGetFlow(TimelineRoute route, out IFlowScope flow)
+		{
+			return _flowsByKey.TryGetValue(route.Key, out flow);
+		}
 
-      eventRouter.Push(point);
-    }
+		private IFlowScope ReadFlow(TimelineRoute route)
+		{
+			var flow = _timeline.ReadFlow(route);
 
-    private List<RuntimePackage> ReadPackages()
-    {
-      return Runtime.Regions.SelectMany(region => region.Packages).ToList();
-    }
+			var connection = flow.Connect(this);
 
-    private void AddEventRouters(List<RuntimePackage> packages)
-    {
-      foreach(var e in
-        from package in packages
-        from e in package.Events
-        select e)
-      {
-        _eventRoutersByType.Add(e, new EventRouter(e));
-      }
-    }
+			_flowsByKey[route.Key] = flow;
 
-    private void AddFlowRouters(List<RuntimePackage> packages)
-    {
-      // Requests are handled by a separate pipeline defined by TimelineRequestSet
+			RemoveWhenDone(flow, connection);
 
-      foreach(var flow in
-        from package in packages
-        from flow in package.Flows
-        where !flow.IsRequest
-        select new
-        {
-          Router = new FlowRouter(flow, _scope),
-          Events = flow.Events.Select(e => e.EventType)
-        })
-      {
-        foreach(var e in flow.Events)
-        {
-          _eventRoutersByType[e].RegisterFlow(flow.Router);
-        }
+			return flow;
+		}
 
-        Track(flow.Router);
-      }
-    }
-  }
+		private void RemoveWhenDone(IFlowScope flow, IDisposable connection)
+		{
+			flow.Task.ContinueWith(_ =>
+			{
+				_flowsByKey.Remove(flow.Key);
+
+				connection.Dispose();
+			},
+			State.CancellationToken);
+		}
+	}
 }

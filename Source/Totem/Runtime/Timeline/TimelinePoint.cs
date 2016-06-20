@@ -10,7 +10,7 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public sealed class TimelinePoint
 	{
-		public TimelinePoint(TimelinePosition cause, TimelinePosition position, EventType eventType, Event e, bool scheduled)
+		public TimelinePoint(TimelinePosition cause, TimelinePosition position, EventType eventType, Event e, bool scheduled = false)
 		{
 			Cause = cause;
 			Position = position;

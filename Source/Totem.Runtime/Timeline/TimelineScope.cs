@@ -1,49 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Autofac;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
-	/// <summary>
-	/// The scope of timeline activity in a runtime
-	/// </summary>
-	public sealed class TimelineScope : Connection, ITimelineScope
+  /// <summary>
+  /// The scope of timeline activity in a runtime
+  /// </summary>
+  public sealed class TimelineScope : Connection, ITimelineScope
 	{
-		private readonly ILifetimeScope _lifetime;
-		private readonly ITimelineDb _timelineDb;
-		private readonly IFlowDb _flowDb;
+    private readonly ILifetimeScope _lifetime;
+    private readonly ITimelineDb _timelineDb;
 		private readonly IViewExchange _viewExchange;
 		private readonly TimelineSchedule _schedule;
 		private readonly TimelineFlowSet _flows;
 		private readonly TimelineRequestSet _requests;
 		private readonly TimelineQueue _queue;
 
-		public TimelineScope(
-			ILifetimeScope lifetime,
-			ITimelineDb timelineDb,
-			IFlowDb flowDb,
-			IViewExchange viewExchange)
+    public TimelineScope(ILifetimeScope lifetime, ITimelineDb timelineDb, IViewExchange viewExchange)
 		{
-			_lifetime = lifetime;
-			_timelineDb = timelineDb;
-			_flowDb = flowDb;
+      _lifetime = lifetime;
+      _timelineDb = timelineDb;
 			_viewExchange = viewExchange;
 
-			_schedule = new TimelineSchedule(this);
-			_flows = new TimelineFlowSet(this);
-			_requests = new TimelineRequestSet(this);
+      _schedule = new TimelineSchedule(this);
+      _flows = new TimelineFlowSet(this);
+      _requests = new TimelineRequestSet(this);
 
 			_queue = new TimelineQueue(_schedule, _flows, _requests);
-		}
+    }
 
-		protected override void Open()
+    protected override void Open()
 		{
-			Track(_schedule);
-			Track(_flows);
-			Track(_requests);
+      Track(_schedule);
+      Track(_flows);
+      Track(_requests);
 			Track(_queue);
 
 			var resumeInfo = _timelineDb.ReadResumeInfo();
@@ -52,32 +46,58 @@ namespace Totem.Runtime.Timeline
 			_queue.ResumeWith(resumeInfo);
 		}
 
-		//
-		// Runtime
-		//
-
-		public void Push(TimelinePoint point)
+		public Task<T> MakeRequest<T>(Event e) where T : Request
 		{
-			_queue.Enqueue(point);
+			var id = Flow.Traits.EnsureRequestId(e);
+
+			var task = _requests.MakeRequest<T>(id);
+
+			Push(Many.Of(e));
+
+			return task;
 		}
 
-		internal void PushScheduled(TimelinePoint point)
+		public void Push(Many<Event> events)
 		{
-			Push(_timelineDb.WriteScheduled(point));
+			_queue.Enqueue(_timelineDb.Push(events));
 		}
 
-		public Task<T> MakeRequest<T>(Id id) where T : Request
+		internal void PushFromSchedule(TimelineMessage message)
 		{
-			return _requests.MakeRequest<T>(id);
+			_queue.Enqueue(_timelineDb.PushFromSchedule(message));
 		}
 
-		public bool TryOpenFlowScope(FlowType type, TimelineRoute route, out IFlowScope scope)
+		internal void PushCall(WhenCall call)
 		{
-			var unroutedScope = new FlowScope(_lifetime, _flowDb, _viewExchange, type, route);
+			_queue.Enqueue(_timelineDb.PushCall(call));
+		}
 
-			scope = unroutedScope.TryRoute() ? unroutedScope : null;
+		internal ClaimsPrincipal ReadPrincipal(TimelinePoint point)
+		{
+			return new ClaimsPrincipal();
+		}
 
-			return scope != null;
+		internal IFlowScope ReadFlow(TimelineRoute route)
+		{
+			var flow = _timelineDb.ReadFlow(route);
+
+			return new FlowScope(_lifetime, this, _viewExchange, flow);
+		}
+
+		internal TimelineRequest<T> CreateRequest<T>(Id id) where T : Request
+		{
+			var type = Runtime.GetRequest(typeof(T));
+
+			var request = type.New();
+
+			Flow.Initialize(request, FlowKey.From(type, id));
+
+			return new TimelineRequest<T>(new FlowScope(_lifetime, this, _viewExchange, request));
+		}
+
+		internal void PushFlowStopped(FlowKey key, TimelinePoint point, Exception error)
+		{
+			_queue.Enqueue(_timelineDb.PushFlowStopped(key, point, error));
 		}
 	}
 }

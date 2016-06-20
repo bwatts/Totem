@@ -12,18 +12,11 @@ namespace Totem.Runtime.Timeline
   internal sealed class TimelineRequestSet : Connection
   {
     private readonly ConcurrentDictionary<Id, TimelineRequest> _requestsById = new ConcurrentDictionary<Id, TimelineRequest>();
-    private readonly ITimelineScope _scope;
+    private readonly TimelineScope _timeline;
 
-    internal TimelineRequestSet(ITimelineScope scope)
+    internal TimelineRequestSet(TimelineScope timeline)
     {
-      _scope = scope;
-    }
-
-    protected override void Close()
-    {
-      base.Close();
-
-      _requestsById.Clear();
+      _timeline = timeline;
     }
 
     public void Push(TimelinePoint point)
@@ -67,32 +60,14 @@ namespace Totem.Runtime.Timeline
 
     private TimelineRequest<T> AddRequest<T>(Id id) where T : Request
     {
-      var request = CreateRequest<T>(id);
+			var request = _timeline.CreateRequest<T>(id);
 
-      _requestsById[id] = request;
+			_requestsById[id] = request;
 
       // No need to track the connection - the request closes when its task completes
       request.Connect(this);
 
       return request;
-    }
-
-    private TimelineRequest<T> CreateRequest<T>(Id id) where T : Request
-    {
-      return new TimelineRequest<T>(OpenScope<T>(id));
-    }
-
-    private IFlowScope OpenScope<T>(Id id)
-    {
-      var type = Runtime.GetRequest(typeof(T));
-
-			IFlowScope scope;
-
-			Expect(
-				_scope.TryOpenFlowScope(type, new TimelineRoute(id), out scope),
-				Text.Of("Failed to open scope for request \"{0}\" of type {1}", id, type));
-
-			return scope;
     }
 
     private void RemoveRequest(Id id)

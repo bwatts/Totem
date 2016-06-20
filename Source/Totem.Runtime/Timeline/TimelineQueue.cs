@@ -12,8 +12,8 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	internal sealed class TimelineQueue : Connection
 	{
-		private readonly Subject<TimelinePoint> _points = new Subject<TimelinePoint>();
-		private readonly SortedDictionary<TimelinePosition, TimelinePoint> _futurePoints = new SortedDictionary<TimelinePosition, TimelinePoint>();
+		private readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
+		private readonly SortedDictionary<TimelinePosition, TimelineMessage> _futureMessages = new SortedDictionary<TimelinePosition, TimelineMessage>();
 		private readonly TimelineSchedule _schedule;
 		private readonly TimelineFlowSet _flows;
 		private readonly TimelineRequestSet _requests;
@@ -28,13 +28,13 @@ namespace Totem.Runtime.Timeline
 
 		protected override void Open()
 		{
-			Track(_points
+			Track(_messages
 				.ObserveOn(ThreadPoolScheduler.Instance)
-				.Subscribe(point =>
+				.Subscribe(message =>
 				{
-					_schedule.Push(point);
-					_flows.Push(point);
-					_requests.Push(point);
+					_schedule.Push(message);
+					_flows.Push(message);
+					_requests.Push(message.Point);
 				}));
 		}
 
@@ -44,72 +44,92 @@ namespace Totem.Runtime.Timeline
 
 			foreach(var pointInfo in info.Points)
 			{
-				_points.OnNext(pointInfo.Point);
+				_messages.OnNext(pointInfo.Message);
 			}
 		}
 
-		internal void Enqueue(TimelinePoint point)
+		internal void Enqueue(TimelineMessage message)
 		{
 			State.ExpectConnected();
 
-			lock(_points)
+			lock(_messages)
 			{
-				ExpectNotPushed(point);
+				EnqueueNowOrInFuture(message);
+			}
+		}
 
-				if(CheckNext(point))
+		internal void Enqueue(IEnumerable<TimelineMessage> messages)
+		{
+			State.ExpectConnected();
+
+			lock(_messages)
+			{
+				foreach(var message in messages)
 				{
-					EnqueueNext(point);
-
-					EnqueueFuturePoints();
+					EnqueueNowOrInFuture(message);
 				}
 			}
 		}
 
-		private void ExpectNotPushed(TimelinePoint point)
+		private void EnqueueNowOrInFuture(TimelineMessage message)
 		{
-			if(point.Position < _nextPosition)
+			ExpectNotInPast(message);
+
+			if(IsNext(message))
 			{
-				throw new InvalidOperationException($"Cannot enqueue previously-pushed position {point.Position}; expected {_nextPosition}");
+				EnqueueNext(message);
+
+				EnqueueFutureMessages();
+			}
+			else
+			{
+				AddFutureMessage(message);
 			}
 		}
 
-		private bool CheckNext(TimelinePoint point)
+		private void ExpectNotInPast(TimelineMessage message)
 		{
-			if(point.Position == _nextPosition)
+			if(message.Point.Position < _nextPosition)
 			{
-				return true;
+				throw new InvalidOperationException($"Cannot enqueue previously-pushed position {message.Point.Position}; expected {_nextPosition}");
 			}
-
-			_futurePoints.Add(point.Position, point);
-
-			return false;
 		}
 
-		private void EnqueueNext(TimelinePoint point)
+		private bool IsNext(TimelineMessage message)
 		{
-			_nextPosition = point.Position.Next();
-
-			_points.OnNext(point);
+			return message.Point.Position == _nextPosition;
 		}
 
-		private void EnqueueFuturePoints()
+		private void EnqueueNext(TimelineMessage message)
 		{
-			foreach(var futurePoint in _futurePoints.ToList())
+			_nextPosition = message.Point.Position.Next();
+
+			_messages.OnNext(message);
+		}
+
+		private void EnqueueFutureMessages()
+		{
+			foreach(var futureMessage in _futureMessages.ToList())
 			{
-				var position = futurePoint.Key;
-				var point = futurePoint.Value;
+				var position = futureMessage.Key;
+				var message = futureMessage.Value;
 
 				if(position != _nextPosition)
 				{
 					break;
 				}
 
-				_futurePoints.Remove(position);
+				_futureMessages.Remove(position);
 
 				_nextPosition = position.Next();
 
-				_points.OnNext(point);
+				_messages.OnNext(message);
 			}
+		}
+
+		private void AddFutureMessage(TimelineMessage message)
+		{
+			_futureMessages.Add(message.Point.Position, message);
 		}
 	}
 }

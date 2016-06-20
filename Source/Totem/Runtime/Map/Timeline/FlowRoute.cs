@@ -14,18 +14,22 @@ namespace Totem.Runtime.Map.Timeline
   {
     private readonly Lazy<Func<Event, Many<Id>>> _call;
 
-    public FlowRoute(MethodInfo info, EventType eventType, bool isFirst) : base(info, eventType)
+    public FlowRoute(MethodInfo info, EventType eventType, FlowType flowType, bool isFirst) : base(info, eventType)
     {
+			FlowType = flowType;
 			IsFirst = isFirst;
 
       _call = new Lazy<Func<Event, Many<Id>>>(CompileCall);
     }
 
+		public readonly FlowType FlowType;
 		public readonly bool IsFirst;
 
-		public Many<TimelineRoute> Call(Event e)
+		public IEnumerable<TimelineRoute> Call(Event e)
 		{
-			return _call.Value(e).ToMany(id => new TimelineRoute(id, IsFirst));
+			return
+				from id in _call.Value(e)
+				select new TimelineRoute(FlowKey.From(FlowType, id), IsFirst);
 		}
 
     private Func<Event, Many<Id>> CompileCall()

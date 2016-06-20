@@ -54,12 +54,16 @@ namespace Totem.Web.Push
 			}
 		}
 
-		public void PushUpdate(ViewETag etag, JObject diff)
+		public void PushUpdate(View view)
 		{
+			SubscribedView subscribedView;
+
 			lock(_connectionsById)
 			{
-				GetViewOrNull(etag.Key)?.PushUpdate(etag, diff);
+				subscribedView = GetViewOrNull(view.Key);
 			}
+
+			subscribedView?.PushUpdate(view);
 		}
 
 		private void SubscribeView(Id connectionId, ViewETag etag)
@@ -217,9 +221,12 @@ namespace Totem.Web.Push
 				}
 			}
 
-			internal void PushUpdate(ViewETag etag, JObject diff)
+			internal void PushUpdate(View view)
 			{
-				_updates.OnNext(new ViewUpdated(etag.Key.ToString(), etag.ToString(), diff));
+				var etag = ViewETag.From(view.Key, view.Checkpoint);
+				var diff = JsonFormat.Text.SerializeJson(view);
+
+				_updates.OnNext(new ViewUpdated(view.Key.ToString(), etag.ToString(), diff));
 			}
 
 			private void WhenUpdated(ViewUpdated e)

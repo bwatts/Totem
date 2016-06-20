@@ -16,6 +16,6 @@ namespace Totem.Runtime.Timeline
 
 		void Unsubscribe(Id connectionId, FlowKey key);
 
-		void PushUpdate(ViewETag etag, JObject diff);
+		void PushUpdate(View view);
 	}
 }

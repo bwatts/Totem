@@ -9,15 +9,15 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public class ResumePoint
 	{
-		public ResumePoint(TimelinePoint point, bool onSchedule)
+		public ResumePoint(TimelineMessage message, bool onSchedule)
 		{
-			Point = point;
+			Message = message;
 			OnSchedule = onSchedule;
 		}
 
-		public readonly TimelinePoint Point;
+		public readonly TimelineMessage Message;
 		public readonly bool OnSchedule;
 
-    public override string ToString() => Point.ToString();
+    public override string ToString() => Message.Point.ToString();
   }
 }

@@ -136,23 +136,19 @@
     <Compile Include="Hosting\SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Timeline\EventRouter.cs" />
-    <Compile Include="Timeline\FlowRouter.cs" />
     <Compile Include="Timeline\FlowScope.cs" />
-    <Compile Include="Timeline\IFlowDb.cs" />
     <Compile Include="Timeline\IFlowScope.cs" />
     <Compile Include="Timeline\IViewDb.cs" />
     <Compile Include="Timeline\IViewExchange.cs" />
-    <Compile Include="Timeline\LocalFlowDb.cs" />
     <Compile Include="Timeline\LocalTimelineDb.cs" />
     <Compile Include="Timeline\TimelineFlowSet.cs" />
+    <Compile Include="Timeline\TimelineMessage.cs" />
     <Compile Include="Timeline\TimelineQueue.cs" />
     <Compile Include="Timeline\TimelineRequestSet.cs" />
     <Compile Include="Timeline\ITimelineDb.cs" />
     <Compile Include="Timeline\ITimelineScope.cs" />
     <Compile Include="Timeline\TimelineSchedule.cs" />
     <Compile Include="Timeline\ResumeInfo.cs" />
-    <Compile Include="Timeline\Timeline.cs" />
     <Compile Include="Timeline\TimelineScope.cs" />
     <Compile Include="Timeline\TimelineRequest.cs" />
     <Compile Include="Timeline\ResumePoint.cs" />

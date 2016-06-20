@@ -11,6 +11,8 @@ namespace Totem.Runtime.Map.Timeline
 	/// </summary>
 	public sealed class FlowEvent
 	{
+		private readonly Many<TimelineRoute> _singleInstanceRoute;
+
 		internal FlowEvent(
 			FlowType flowType,
 			EventType eventType,
@@ -24,6 +26,11 @@ namespace Totem.Runtime.Map.Timeline
 			When = when;
       Route = route;
       HasRoute = route != null;
+
+			if(route == null)
+			{
+				_singleInstanceRoute = Many.Of(new TimelineRoute(FlowKey.From(flowType, Id.Unassigned)));
+			}
     }
 
     public readonly FlowType FlowType;
@@ -35,9 +42,9 @@ namespace Totem.Runtime.Map.Timeline
 
 		public override string ToString() => $"{EventType} => {FlowType}";
 
-		public Many<TimelineRoute> CallRoute(TimelinePoint point)
+		public IEnumerable<TimelineRoute> CallRoute(Event e)
     {
-			return HasRoute ? Route.Call(point.Event) : Many.Of(TimelineRoute.SingleInstance);
+			return HasRoute ? Route.Call(e) : _singleInstanceRoute;
     }
 
     public void CallGiven(Flow flow, TimelinePoint point)

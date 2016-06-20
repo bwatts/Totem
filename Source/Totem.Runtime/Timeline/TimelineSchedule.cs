@@ -12,24 +12,26 @@ namespace Totem.Runtime.Timeline
 	internal sealed class TimelineSchedule : Connection
 	{
 		private readonly HashSet<TimelinePosition> _resumedPositions = new HashSet<TimelinePosition>();
-		private readonly TimelineScope _scope;
+		private readonly TimelineScope _timeline;
 		private TimelinePosition _resumeCheckpoint;
 
-		internal TimelineSchedule(TimelineScope scope)
+		internal TimelineSchedule(TimelineScope timeline)
 		{
-			_scope = scope;
+			_timeline = timeline;
 		}
 
 		internal void ResumeWith(ResumeInfo info)
 		{
 			foreach(var pointInfo in info.Points)
 			{
+				var position = pointInfo.Message.Point.Position;
+
 				if(pointInfo.OnSchedule)
 				{
-					_resumedPositions.Add(pointInfo.Point.Position);
+					_resumedPositions.Add(position);
 				}
 
-				_resumeCheckpoint = pointInfo.Point.Position;
+				_resumeCheckpoint = position;
 			}
 		}
 
@@ -40,37 +42,37 @@ namespace Totem.Runtime.Timeline
 			_resumedPositions.Clear();
 		}
 
-		internal void Push(TimelinePoint point)
+		internal void Push(TimelineMessage message)
 		{
-			if(point.Scheduled && CanPush(point))
+			if(message.Point.Scheduled && CanPush(message.Point.Position))
 			{
-				AddTimer(point);
+				StartTimer(message);
 			}
 		}
 
-		private bool CanPush(TimelinePoint point)
+		private bool CanPush(TimelinePosition position)
 		{
-			return _resumedPositions.Remove(point.Position) || point.Position > _resumeCheckpoint;
+			return _resumedPositions.Remove(position) || position > _resumeCheckpoint;
 		}
 
-		private void AddTimer(TimelinePoint point)
+		private void StartTimer(TimelineMessage message)
 		{
 			Observable
-				.Timer(new DateTimeOffset(point.Event.When))
+				.Timer(new DateTimeOffset(message.Point.Event.When))
 				.Take(1)
 				.ObserveOn(ThreadPoolScheduler.Instance)
-				.Subscribe(_ => PushScheduled(point));
+				.Subscribe(_ => PushFromSchedule(message));
 		}
 
-		private void PushScheduled(TimelinePoint point)
+		private void PushFromSchedule(TimelineMessage message)
 		{
 			if(State.IsConnecting || State.IsConnected)
 			{
-				_scope.PushScheduled(point);
+				_timeline.PushFromSchedule(message);
 			}
 			else
 			{
-				Log.Warning("[timeline] Cannot push to schedule when {Phase:l} - ignoring {Point:l}", State.Phase, point);
+				Log.Warning("[timeline] Cannot push to schedule when {Phase:l} - ignoring {Point:l}", State.Phase, message.Point);
 			}
 		}
 	}

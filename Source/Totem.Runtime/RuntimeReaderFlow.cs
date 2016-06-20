@@ -152,7 +152,7 @@ namespace Totem.Runtime
       }
       else if(method.ReturnType == typeof(Id) || typeof(IEnumerable<Id>).IsAssignableFrom(method.ReturnType))
       {
-				_routesByEvent.Add(e, new FlowRoute(method, e, isFirst));
+				_routesByEvent.Add(e, new FlowRoute(method, e, _flow, isFirst));
       }
       else
       {
@@ -254,7 +254,11 @@ namespace Totem.Runtime
           unroutedEvents.Add(e);
         }
 
-        _flow.Events.Register(new FlowEvent(_flow, e, given, when, route));
+				var flowEvent = new FlowEvent(_flow, e, given, when, route);
+
+				_flow.Events.Register(flowEvent);
+
+				e.RegisterFlow(flowEvent);
 			}
 
       if(unroutedEvents.Count > 0 && unroutedEvents.Count < _events.Count)
