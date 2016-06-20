@@ -33,8 +33,11 @@ namespace Totem.Runtime.Timeline
 				.Subscribe(point =>
 				{
 					_schedule.Push(point);
-					_flows.Push(point);
-					_requests.Push(point);
+					if (!point.Scheduled)
+					{
+						_flows.Push(point);
+						_requests.Push(point);
+					}
 				}));
 		}
 
