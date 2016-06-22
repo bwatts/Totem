@@ -51,8 +51,8 @@ namespace Totem
 		public static bool operator ==(LinkText x, LinkText y) => Eq.Op(x, y);
 		public static bool operator !=(LinkText x, LinkText y) => Eq.OpNot(x, y);
 
-		public static bool operator ==(LinkText x, string y) => Eq.Op(x?.Value ?? "", y);
-		public static bool operator !=(LinkText x, string y) => Eq.OpNot(x?.Value ?? "", y);
+		public static bool operator ==(LinkText x, string y) => Eq.Op(x?.Value, y);
+		public static bool operator !=(LinkText x, string y) => Eq.OpNot(x?.Value, y);
 
 		public static implicit operator LinkText(char text) => new LinkText(text.ToString());
 		public static implicit operator LinkText(string value) => new LinkText(value);
