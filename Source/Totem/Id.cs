@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Totem.Http;
 using Totem.IO;
 
 namespace Totem
@@ -24,6 +25,9 @@ namespace Totem
 
     public override string ToString() => _value ?? "";
 		public Text ToText() => ToString();
+		public HttpResource ToHttpResource(bool strict = true) => HttpResource.From(ToString(), strict);
+		public FolderResource ToFolderResource(bool strict = true) => FolderResource.From(ToString(), strict);
+		public FileResource ToFileResource(bool strict = true, bool extensionOptional = true) => FileResource.From(ToString(), strict, extensionOptional);
 
 		//
 		// Equality
