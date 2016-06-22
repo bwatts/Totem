@@ -44,26 +44,26 @@ namespace Totem.IO
 
 		Stream ReadFile(FileResource file, bool strict = true);
 
-		Many<FileResource> ReadFiles(bool recursive = false);
+		Many<FileResource> ReadFiles(bool recursive = false, string pattern = "*.*");
 
-		Many<FolderResource> ReadFolders(bool recursive = false);
+		Many<FolderResource> ReadFolders(bool recursive = false, string pattern = "*.*");
 
-		Many<IOLink> ReadLinks(bool recursive = false);
+		Many<IOLink> ReadLinks(bool recursive = false, string pattern = "*.*");
 
-		Many<FileLink> ReadFileLinks(bool recursive = false);
+		Many<FileLink> ReadFileLinks(bool recursive = false, string pattern = "*.*");
 
-		Many<FolderLink> ReadFolderLinks(bool recursive = false);
+		Many<FolderLink> ReadFolderLinks(bool recursive = false, string pattern = "*.*");
 
-		Many<IOResource> ReadFolder(FolderResource subfolder, bool recursive = false);
+		Many<IOResource> ReadFolder(FolderResource subfolder, bool recursive = false, string pattern = "*.*");
 
-		Many<FileResource> ReadFiles(FolderResource subfolder, bool recursive = false);
+		Many<FileResource> ReadFiles(FolderResource subfolder, bool recursive = false, string pattern = "*.*");
 
-		Many<FolderResource> ReadFolders(FolderResource subfolder, bool recursive = false);
+		Many<FolderResource> ReadFolders(FolderResource subfolder, bool recursive = false, string pattern = "*.*");
 
-		Many<IOLink> ReadLinks(FolderResource subfolder, bool recursive = false);
+		Many<IOLink> ReadLinks(FolderResource subfolder, bool recursive = false, string pattern = "*.*");
 
-		Many<FileLink> ReadFileLinks(FolderResource subfolder, bool recursive = false);
+		Many<FileLink> ReadFileLinks(FolderResource subfolder, bool recursive = false, string pattern = "*.*");
 
-		Many<FolderLink> ReadFolderLinks(FolderResource subfolder, bool recursive = false);
+		Many<FolderLink> ReadFolderLinks(FolderResource subfolder, bool recursive = false, string pattern = "*.*");
 	}
 }
