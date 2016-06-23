@@ -255,7 +255,7 @@ namespace Totem.IO
 			var folderPath = Link.Then(subfolder).ToString();
 			var option = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-			var files = Directory.GetFiles(folderPath, pattern, option).Select(file => FileLink.From(file));
+			var files = Directory.GetFiles(folderPath, pattern, option).Select(file => FileLink.From(file, extensionOptional: true));
 			var directories = Directory.GetDirectories(folderPath, pattern, option).Select(subdirectory => FolderLink.From(subdirectory));
 
 			return files.Concat<IOLink>(directories);
@@ -266,7 +266,7 @@ namespace Totem.IO
 			var folderPath = Link.Then(subfolder).ToString();
 			var option = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-			return Directory.GetFiles(folderPath, pattern, option).Select(file => FileLink.From(file));
+			return Directory.GetFiles(folderPath, pattern, option).Select(file => FileLink.From(file, extensionOptional: true));
 		}
 
 		private IEnumerable<FolderLink> ReadFolderLinksCore(FolderResource subfolder, bool recursive, string pattern)

@@ -18,9 +18,9 @@ namespace Totem.IO
 
 		public abstract Text ToText(bool altSlash = false);
 
-		public static IOLink From(string value, bool strict = true)
+		public static IOLink From(string value, bool strict = true, bool extensionOptional = false)
 		{
-			var link = FileLink.From(value, strict: false) ?? FolderLink.From(value, strict: false) as IOLink;
+			var link = FileLink.From(value, strict: false, extensionOptional: extensionOptional) ?? FolderLink.From(value, strict: false) as IOLink;
 
       ExpectNot(strict && link == null, "Value is not an I/O link");
 
