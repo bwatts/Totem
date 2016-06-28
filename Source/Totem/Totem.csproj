@@ -142,7 +142,6 @@
     <Compile Include="Runtime\Map\RuntimePackageSet.cs" />
     <Compile Include="Runtime\Map\RuntimeRegionSet.cs" />
     <Compile Include="Runtime\Map\RuntimeSetBase.cs" />
-    <Compile Include="Runtime\MessageTextTemplate.cs" />
     <Compile Include="Runtime\Map\RuntimeState.cs" />
     <Compile Include="Runtime\Map\RuntimeStatePart.cs" />
     <Compile Include="Runtime\Map\RuntimeTypeRef.cs" />
