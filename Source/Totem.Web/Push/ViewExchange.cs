@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Newtonsoft.Json.Linq;
 using Totem.Runtime.Json;
 using Totem.Runtime.Timeline;
@@ -16,11 +19,13 @@ namespace Totem.Web.Push
 		private readonly Dictionary<FlowKey, SubscribedView> _viewsByKey = new Dictionary<FlowKey, SubscribedView>();
 		private readonly IViewDb _viewDb;
 		private readonly IPushChannel _push;
+		private readonly TimeSpan _updateThrottle;
 
-		public ViewExchange(IViewDb viewDb, IPushChannel push)
+		public ViewExchange(IViewDb viewDb, IPushChannel push, TimeSpan updateThrottle)
 		{
 			_viewDb = viewDb;
 			_push = push;
+			_updateThrottle = updateThrottle;
 		}
 
 		public ViewSubscription Subscribe(Id connectionId, ViewETag etag)
@@ -178,12 +183,19 @@ namespace Totem.Web.Push
 		private sealed class SubscribedView
 		{
 			private readonly Many<Id> _connectionIds = new Many<Id>();
+			private readonly Subject<ViewUpdated> _updates = new Subject<ViewUpdated>();
 			private readonly ViewExchange _exchange;
+			private readonly IDisposable _updateSubscription;
 
 			internal SubscribedView(FlowKey key, ViewExchange exchange)
 			{
 				Key = key;
 				_exchange = exchange;
+
+				_updateSubscription = _updates
+					.Throttle(_exchange._updateThrottle)
+					.ObserveOn(ThreadPoolScheduler.Instance)
+					.Subscribe(WhenUpdated);
 			}
 
 			internal readonly FlowKey Key;
@@ -199,15 +211,20 @@ namespace Totem.Web.Push
 
 				if(_connectionIds.Count == 0)
 				{
+					_updateSubscription.Dispose();
+
 					_exchange.RemoveView(this);
 				}
 			}
 
 			internal void PushUpdate(ViewETag etag, JObject diff)
 			{
-				var e = new ViewUpdated(etag.Key.ToString(), etag.ToString(), diff);
+				_updates.OnNext(new ViewUpdated(etag.Key.ToString(), etag.ToString(), diff));
+			}
 
-				// Not awaiting the task: http://stackoverflow.com/a/19193493/37815
+			private void WhenUpdated(ViewUpdated e)
+			{
+				// This returns a task, but does not need to be awaited (yet): http://stackoverflow.com/a/19193493/37815
 
 				_exchange._push.PushToClients(e, _connectionIds);
 			}
