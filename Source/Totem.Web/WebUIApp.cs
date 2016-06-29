@@ -77,6 +77,7 @@ namespace Totem.Web
 				ServeStaticContent("images");
 				ServeStaticContent("css", "dist/css");
 				ServeStaticContent("js", "dist/js");
+				ServeStaticContent("fonts", "dist/fonts");
 			}
 
 			private void ServeStaticContent(string requestedPath, string contentPath = null)
