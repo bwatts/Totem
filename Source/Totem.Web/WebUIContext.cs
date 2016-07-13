@@ -12,10 +12,15 @@ namespace Totem.Web
 	/// </summary>
 	public class WebUIContext : WebAppContext
 	{
-		public WebUIContext(Many<HttpLink> bindings, ILifetimeScope scope, bool enableCors, FolderLink contentFolder) : base(bindings, scope, enableCors)
+		public WebUIContext(Many<HttpLink> bindings, ILifetimeScope scope, bool enableCors, FolderLink contentFolder)
+			: base(bindings, scope, enableCors)
 		{
 			ContentFolder = contentFolder;
 		}
+
+		public WebUIContext(HttpLink binding, ILifetimeScope scope, bool enableCors, FolderLink contentFolder)
+			: this(Many.Of(binding), scope, enableCors, contentFolder)
+		{}
 
 		public readonly FolderLink ContentFolder;
 	}
