@@ -16,6 +16,8 @@ namespace Totem.IO
 
 		IFolder Then(FolderResource folder);
 
+		void Write(bool overwrite = true);
+
 		Stream Write(FileResource file, bool overwrite = true, bool createFolders = false);
 
 		void Write(FileResource file, Stream data, bool overwrite = true, bool createFolders = false);

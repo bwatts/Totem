@@ -33,6 +33,11 @@ namespace Totem.IO
 		// Write
 		//
 
+		public void Write(bool overwrite = true)
+		{
+			Write(FolderResource.Root, overwrite);
+		}
+
 		public Stream Write(FileResource file, bool overwrite = true, bool createFolders = false)
 		{
 			var filePath = Link.Then(file).ToString();
