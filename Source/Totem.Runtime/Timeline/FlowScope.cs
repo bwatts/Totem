@@ -69,9 +69,12 @@ namespace Totem.Runtime.Timeline
 		{
 			if(PushingQueue)
 			{
-				_db.WriteRoute(_flow.Key, point);
+				if(point.Position > _flow.Checkpoint)
+				{
+					_db.WriteRoute(_flow.Key, point);
 
-				_queue.Enqueue(point);
+					_queue.Enqueue(point);
+				}
 			}
 			else
 			{
@@ -90,7 +93,7 @@ namespace Totem.Runtime.Timeline
 			{
 				var point = await _queue.Dequeue();
 
-				if(PushingQueue && point.Position > _flow.Checkpoint)
+				if(PushingQueue)
 				{
 					await PushFromQueue(point);
 				}
