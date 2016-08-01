@@ -50,7 +50,7 @@ namespace Totem.Runtime.Timeline
 
 			if(scheduled)
 			{
-				Log.Info("[timeline] {Cause:l} @@ {When} ++ {EventType:l}", cause, e.When, type);
+				Log.Info("[timeline] {Cause:l} ++ {Position:l} >> {EventType:l} @ {When}", cause, newPoint.Position, type, e.When);
 			}
 			else
 			{
