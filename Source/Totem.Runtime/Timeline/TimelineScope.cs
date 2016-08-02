@@ -16,10 +16,10 @@ namespace Totem.Runtime.Timeline
 		private readonly ITimelineDb _timelineDb;
 		private readonly IFlowDb _flowDb;
 		private readonly IViewExchange _viewExchange;
-		private TimelineQueue _queue;
-		private TimelineSchedule _schedule;
-		private TimelineFlowSet _flows;
-		private TimelineRequestSet _requests;
+		private readonly TimelineSchedule _schedule;
+		private readonly TimelineFlowSet _flows;
+		private readonly TimelineRequestSet _requests;
+		private readonly TimelineQueue _queue;
 
 		public TimelineScope(
 			ILifetimeScope lifetime,
@@ -35,6 +35,8 @@ namespace Totem.Runtime.Timeline
 			_schedule = new TimelineSchedule(this);
 			_flows = new TimelineFlowSet(this);
 			_requests = new TimelineRequestSet(this);
+
+			_queue = new TimelineQueue(_schedule, _flows, _requests);
 		}
 
 		protected override void Open()
@@ -42,18 +44,12 @@ namespace Totem.Runtime.Timeline
 			Track(_schedule);
 			Track(_flows);
 			Track(_requests);
+			Track(_queue);
 
 			var resumeInfo = _timelineDb.ReadResumeInfo();
 
-			_queue = new TimelineQueue(_schedule, _flows, _requests);
-
-			Track(_queue);
-
 			_schedule.ResumeWith(resumeInfo);
-
 			_queue.ResumeWith(resumeInfo);
-
-			
 		}
 
 		//
