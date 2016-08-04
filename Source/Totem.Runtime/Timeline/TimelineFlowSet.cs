@@ -24,42 +24,30 @@ namespace Totem.Runtime.Timeline
     {
 			foreach(var route in message.Routes)
 			{
-				Push(message.Point, route);
+				IFlowScope flow;
+
+				if(_flowsByKey.TryGetValue(route.Key, out flow))
+				{
+					flow.Push(message.Point);
+				}
+				else
+				{
+					if(_timeline.TryReadFlow(route, out flow))
+					{
+						_flowsByKey[route.Key] = flow;
+
+						Connect(flow);
+
+						flow.Push(message.Point);
+					}
+				}
 			}
     }
 
-		private void Push(TimelinePoint point, TimelineRoute route)
+		private void Connect(IFlowScope flow)
 		{
-			IFlowScope flow;
-
-			if(!TryGetFlow(route, out flow))
-			{
-				flow = ReadFlow(route);
-			}
-
-			flow.Push(point);
-		}
-
-		private bool TryGetFlow(TimelineRoute route, out IFlowScope flow)
-		{
-			return _flowsByKey.TryGetValue(route.Key, out flow);
-		}
-
-		private IFlowScope ReadFlow(TimelineRoute route)
-		{
-			var flow = _timeline.ReadFlow(route);
-
 			var connection = flow.Connect(this);
 
-			_flowsByKey[route.Key] = flow;
-
-			RemoveWhenDone(flow, connection);
-
-			return flow;
-		}
-
-		private void RemoveWhenDone(IFlowScope flow, IDisposable connection)
-		{
 			flow.Task.ContinueWith(_ =>
 			{
 				_flowsByKey.Remove(flow.Key);

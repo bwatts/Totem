@@ -21,30 +21,9 @@ namespace Totem.Runtime.Timeline
 			return new ResumeInfo(new TimelinePosition(0));
 		}
 
-		public Flow ReadFlow(TimelineRoute route)
+		public bool TryReadFlow(TimelineRoute route, out Flow flow)
 		{
-			var key = route.Key;
-			var type = key.Type;
-
-			Flow flow;
-
-			if(_flowsByKey.TryGetValue(key, out flow))
-			{
-				return flow;
-			}
-
-			if(type.IsRouted && !route.IsFirst)
-			{
-				throw new ArgumentException($"Unknown flow {key}", nameof(route));
-			}
-
-			flow = type.New();
-
-			Flow.Initialize(flow, key);
-
-			_flowsByKey[key] = flow;
-
-			return flow;
+			return _flowsByKey.TryGetValue(route.Key, out flow);
 		}
 
 		public Many<TimelineMessage> Push(Many<Event> events)
@@ -93,16 +72,14 @@ namespace Totem.Runtime.Timeline
 
 		private TimelineMessage PushLocal(TimelinePosition cause, Event e)
 		{
-			var type = Runtime.GetEvent(e.GetType());
-
 			var scheduled = e as EventScheduled;
 
 			if(scheduled != null)
 			{
-				type = Runtime.GetEvent(scheduled.Event.GetType());
-
 				e = scheduled.Event;
 			}
+
+			var type = Runtime.GetEvent(e.GetType());
 
 			return PushLocal(cause, type, e, scheduled != null);
 		}
@@ -120,12 +97,31 @@ namespace Totem.Runtime.Timeline
 				Log.Info("[timeline] {Cause:l} ++ {Point:l}", cause, newPoint);
 			}
 
-			return new TimelineMessage(newPoint, type.CallRoute(e).ToMany());
+			return new TimelineMessage(newPoint, RouteEvent(type, e));
 		}
 
 		private TimelinePosition NextPosition()
 		{
 			return new TimelinePosition(Interlocked.Increment(ref _position));
+		}
+
+		private Many<TimelineRoute> RouteEvent(EventType type, Event e)
+		{
+			var routes = type.CallRoute(e).ToMany();
+
+			foreach(var route in routes)
+			{
+				if(!_flowsByKey.ContainsKey(route.Key) && (route.IsFirst || route.Key.Type.IsSingleInstance))
+				{
+					var flow = route.Key.Type.New();
+
+					Flow.Initialize(flow, route.Key);
+
+					_flowsByKey[route.Key] = flow;
+				}
+			}
+
+			return routes;
 		}
 
 		//

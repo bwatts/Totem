@@ -11,7 +11,7 @@ namespace Totem.Runtime.Timeline
 	{
 		ResumeInfo ReadResumeInfo();
 
-		Flow ReadFlow(TimelineRoute route);
+		bool TryReadFlow(TimelineRoute route, out Flow flow);
 
 		Many<TimelineMessage> Push(Many<Event> events);
 

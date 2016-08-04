@@ -77,11 +77,15 @@ namespace Totem.Runtime.Timeline
 			return new ClaimsPrincipal();
 		}
 
-		internal IFlowScope ReadFlow(TimelineRoute route)
+		internal bool TryReadFlow(TimelineRoute route, out IFlowScope flow)
 		{
-			var flow = _timelineDb.ReadFlow(route);
+			Flow instance;
 
-			return new FlowScope(_lifetime, this, _viewExchange, flow);
+			flow = !_timelineDb.TryReadFlow(route, out instance)
+				? null
+				: new FlowScope(_lifetime, this, _viewExchange, instance);
+
+			return flow != null;
 		}
 
 		internal TimelineRequest<T> CreateRequest<T>(Id id) where T : Request

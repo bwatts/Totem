@@ -54,7 +54,7 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		private bool PushingQueue => State.IsConnecting || State.IsConnected;
+		private bool PushingQueue => State.IsConnecting || State.IsConnected || State.IsReconnected;
 
 		private async Task PushQueue()
 		{
