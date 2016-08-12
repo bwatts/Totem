@@ -49,12 +49,7 @@ namespace Totem.Web
 
 			private void LocateViews()
 			{
-				_conventions.ViewLocationConventions.Clear();
-
-				_conventions.ViewLocationConventions.Add((viewName, model, context) =>
-				{
-					return "dist/" + viewName;
-				});
+				_conventions.ViewLocationConventions.Replace((viewName, model, context) => "dist/" + viewName);
 			}
 
 			private void CoerceAcceptHeaders()
@@ -74,17 +69,17 @@ namespace Totem.Web
 			{
 				_conventions.StaticContentsConventions.Clear();
 
-				ServeStaticContent("images");
-				ServeStaticContent("css", "dist/css");
-				ServeStaticContent("js", "dist/js");
-				ServeStaticContent("fonts", "dist/fonts");
+				ServeDistContent("images");
+				ServeDistContent("css");
+				ServeDistContent("js");
+				ServeDistContent("fonts");
 			}
 
-			private void ServeStaticContent(string requestedPath, string contentPath = null)
+			private void ServeDistContent(string path)
 			{
 				_conventions
 					.StaticContentsConventions
-					.Add(StaticContentConventionBuilder.AddDirectory(requestedPath, contentPath));
+					.Add(StaticContentConventionBuilder.AddDirectory(path, "dist/" + path));
 			}
 		}
 	}
