@@ -64,12 +64,10 @@ namespace Totem.IO
 		{
 			var folderPath = Link.Then(folder).ToString();
 
-			if(Directory.Exists(folderPath))
+			if(overwrite && Directory.Exists(folderPath))
 			{
-				return;
+				Directory.Delete(folderPath, recursive: true);
 			}
-
-			Expect(overwrite, "Folder exists and overwrite option is not set");
 
 			Directory.CreateDirectory(folderPath);
 		}
