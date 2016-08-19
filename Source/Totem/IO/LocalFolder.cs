@@ -44,7 +44,7 @@ namespace Totem.IO
 
 			if(createFolders)
 			{
-				Write(file.Folder, overwrite);
+				Directory.CreateDirectory(Link.Then(file.Folder).ToString());
 			}
 
 			var mode = overwrite ? FileMode.Create : FileMode.Append;
