@@ -44,17 +44,23 @@ namespace Totem.Runtime.Json
 			return contract;
 		}
 
-		protected override List<MemberInfo> GetSerializableMembers(Type objectType)
-		{
-			const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-			return Enumerable.Empty<MemberInfo>()
-				.Concat(objectType.GetFields(flags))
-				.Concat(objectType.GetProperties(flags))
-				.Where(property => IsDurableProperty(property))
-				.ToList();
-		}
+    protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+    {
+      const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+      return Enumerable.Empty<MemberInfo>()
+        .Concat(type.GetFields(flags))
+        .Concat(type.GetProperties(flags))
+        .Where(property => IsDurableProperty(property))
+        .Select(member => {
+          var prop = base.CreateProperty(member, memberSerialization);
+          prop.Writable = true;
+          prop.Readable = true;
+          return prop;
+        })
+        .ToList();
+    }
 
-		protected override JsonObjectContract CreateObjectContract(Type objectType)
+    protected override JsonObjectContract CreateObjectContract(Type objectType)
 		{
 			return _objectContractCache.GetOrAdd(objectType, _ =>
 			{
