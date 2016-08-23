@@ -53,8 +53,9 @@ namespace Totem.Runtime.Json
         .Where(property => IsDurableProperty(property))
         .Select(member => {
           var prop = base.CreateProperty(member, memberSerialization);
-          prop.Writable = true;
-          prop.Readable = true;
+          var asProperty = member as PropertyInfo;
+          prop.Writable = asProperty == null || asProperty.CanWrite;
+          prop.Readable = asProperty == null || asProperty.CanRead;
           return prop;
         })
         .ToList();
