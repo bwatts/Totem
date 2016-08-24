@@ -35,6 +35,27 @@ namespace Totem.Http
 			return new HttpLink(Host, Resource.Then(resource));
 		}
 
+		public HttpLink ResolveHostWildcard(HttpDomain domain)
+		{
+			var resolved = Host.ResolveDomainWildcard(domain);
+
+			return resolved == Host ? this : From(resolved, Resource);
+		}
+
+		public HttpLink ResolveHostWildcard(string domain)
+		{
+			var resolved = Host.ResolveDomainWildcard(domain);
+
+			return resolved == Host ? this : From(resolved, Resource);
+		}
+
+		public HttpLink ResolveHostWildcard()
+		{
+			var resolved = Host.ResolveDomainWildcard();
+
+			return resolved == Host ? this : From(resolved, Resource);
+		}
+
 		//
 		// Equality
 		//

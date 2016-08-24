@@ -45,6 +45,27 @@ namespace Totem.Http
 
 		public HttpLink ToLink() => HttpLink.From(this);
 
+		public HttpHost ResolveDomainWildcard(HttpDomain domain)
+		{
+			var resolved = Domain.ResolveWildcard(domain);
+
+			return resolved == Domain ? this : From(Secure, resolved, Port);
+		}
+
+		public HttpHost ResolveDomainWildcard(string domain)
+		{
+			var resolved = Domain.ResolveWildcard(domain);
+
+			return resolved == Domain ? this : From(Secure, resolved, Port);
+		}
+
+		public HttpHost ResolveDomainWildcard()
+		{
+			var resolved = Domain.ResolveWildcard();
+
+			return resolved == Domain ? this : From(Secure, resolved, Port);
+		}
+
 		//
 		// Equality
 		//

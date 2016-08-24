@@ -41,6 +41,21 @@ namespace Totem.Http
 
 		public override Text ToText() => Name.ToText();
 
+		public HttpDomain ResolveWildcard(HttpDomain domain)
+		{
+			return IsWeakWildcard || IsStrongWildcard ? domain : this;
+		}
+
+		public HttpDomain ResolveWildcard(string domain)
+		{
+			return IsWeakWildcard || IsStrongWildcard ? From(domain) : this;
+		}
+
+		public HttpDomain ResolveWildcard()
+		{
+			return IsWeakWildcard || IsStrongWildcard ? Localhost : this;
+		}
+
 		//
 		// Equality
 		//
