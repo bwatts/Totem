@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using Totem.Http;
 using Totem.IO;
 
 namespace Totem
@@ -24,6 +25,9 @@ namespace Totem
 
     public override string ToString() => _value ?? "";
 		public Text ToText() => ToString();
+		public HttpResource ToHttpResource(bool strict = true) => HttpResource.From(ToString(), strict);
+		public FolderResource ToFolderResource(bool strict = true) => FolderResource.From(ToString(), strict);
+		public FileResource ToFileResource(bool strict = true, bool extensionOptional = true) => FileResource.From(ToString(), strict, extensionOptional);
 
 		//
 		// Equality
@@ -41,7 +45,7 @@ namespace Totem
 
 		public override int GetHashCode()
 		{
-			return IsUnassigned ? 0 : _value.GetHashCode();
+			return ToString().GetHashCode();
 		}
 
 		public int CompareTo(Id other)
@@ -60,6 +64,8 @@ namespace Totem
 		// Factory
 		//
 
+		public const string Separator = "/";
+
 		public static readonly Id Unassigned = new Id();
 
 		public static Id From(string value)
@@ -77,12 +83,29 @@ namespace Totem
 			return new Id(Guid.NewGuid().ToString());
 		}
 
+		public static Id FromMany(IEnumerable<string> ids)
+		{
+			return From(ids.ToTextSeparatedBy(Separator).ToString());
+		}
+
+		public static Id FromMany(params string[] ids)
+		{
+			return FromMany(ids as IEnumerable<string>);
+		}
+
+		public static Id FromMany(IEnumerable<Id> ids)
+		{
+			return From(ids.ToTextSeparatedBy(Separator).ToString());
+		}
+
+		public static Id FromMany(params Id[] ids)
+		{
+			return FromMany(ids as IEnumerable<Id>);
+		}
+
 		public sealed class Converter : TextConverter
 		{
-			protected override object ConvertFrom(TextValue value)
-			{
-				return From(value);
-			}
+			protected override object ConvertFrom(TextValue value) => From(value);
 		}
 	}
 }

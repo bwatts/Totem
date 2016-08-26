@@ -7,21 +7,22 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// The information necessary to resume the timeline
 	/// </summary>
-	public class ResumeInfo
+	public class ResumeInfo : Notion
 	{
-		public ResumeInfo(Many<ResumePoint> points)
+		public ResumeInfo(TimelinePosition nextPosition, Many<ResumePoint> points = null)
 		{
-			Points = points;
+			Expect(nextPosition.IsSome, "Cannot resume without a next position");
+
+			NextPosition = nextPosition;
+			Points = points ?? new Many<ResumePoint>();
 		}
 
+		public readonly TimelinePosition NextPosition;
 		public readonly Many<ResumePoint> Points;
 
-    public void Push(PushScope scope)
-    {
-      foreach(var point in Points)
-      {
-        point.Push(scope);
-      }
-    }
+		public override Text ToText() => Text
+			.Of(NextPosition)
+			.Write(" ")
+			.WriteInParentheses(Text.Count(Points.Count, "point"));
 	}
 }

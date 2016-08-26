@@ -18,6 +18,9 @@ namespace Totem.Web
 			EnableCors = enableCors;
 		}
 
+		public WebAppContext(HttpLink binding, ILifetimeScope scope, bool enableCors) : this(Many.Of(binding), scope, enableCors)
+		{}
+
 		public readonly Many<HttpLink> Bindings;
 		public readonly ILifetimeScope Scope;
 		public readonly bool EnableCors;

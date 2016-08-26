@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Serilog.Extras.Topshelf;
 using Topshelf;
 
 namespace Totem.Runtime.Hosting.Commands

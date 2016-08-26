@@ -7,77 +7,77 @@ using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
-  /// <summary>
-  /// The scope of timeline activity in a runtime
-  /// </summary>
-  public sealed class TimelineScope : PushScope, ITimelineScope
+	/// <summary>
+	/// The scope of timeline activity in a runtime
+	/// </summary>
+	public sealed class TimelineScope : Connection, ITimelineScope
 	{
-    private readonly ILifetimeScope _lifetime;
-    private readonly ITimelineDb _timelineDb;
-    private readonly IFlowDb _flowDb;
-    private TimelineSchedule _schedule;
-    private TimelineFlowSet _flows;
-    private TimelineRequestSet _requests;
+		private readonly ILifetimeScope _lifetime;
+		private readonly ITimelineDb _timelineDb;
+		private readonly IFlowDb _flowDb;
+		private readonly IViewExchange _viewExchange;
+		private readonly TimelineSchedule _schedule;
+		private readonly TimelineFlowSet _flows;
+		private readonly TimelineRequestSet _requests;
+		private readonly TimelineQueue _queue;
 
-    public TimelineScope(ILifetimeScope lifetime, ITimelineDb timelineDb, IFlowDb flowDb)
+		public TimelineScope(
+			ILifetimeScope lifetime,
+			ITimelineDb timelineDb,
+			IFlowDb flowDb,
+			IViewExchange viewExchange)
 		{
-      _lifetime = lifetime;
-      _timelineDb = timelineDb;
-      _flowDb = flowDb;
+			_lifetime = lifetime;
+			_timelineDb = timelineDb;
+			_flowDb = flowDb;
+			_viewExchange = viewExchange;
 
-      _schedule = new TimelineSchedule(this);
-      _flows = new TimelineFlowSet(this);
-      _requests = new TimelineRequestSet(this);
-    }
+			_schedule = new TimelineSchedule(this);
+			_flows = new TimelineFlowSet(this);
+			_requests = new TimelineRequestSet(this);
 
-    protected override void Open()
+			_queue = new TimelineQueue(_schedule, _flows, _requests);
+		}
+
+		protected override void Open()
 		{
-      Track(_schedule);
-      Track(_flows);
-      Track(_requests);
+			Track(_schedule);
+			Track(_flows);
+			Track(_requests);
+			Track(_queue);
 
-      base.Open();
+			var resumeInfo = _timelineDb.ReadResumeInfo();
 
-      ResumeTimeline();
-    }
+			_schedule.ResumeWith(resumeInfo);
+			_queue.ResumeWith(resumeInfo);
+		}
 
-    private void ResumeTimeline()
-    {
-      var resumeInfo = _timelineDb.ReadResumeInfo();
+		//
+		// Runtime
+		//
 
-      _schedule.ResumeWith(resumeInfo);
-
-      resumeInfo.Push(this);
-    }
-
-    //
-    // Runtime
-    //
-
-    protected override void Push()
-    {
-      _schedule.Push(Point);
-      _flows.Push(Point);
-      _requests.Push(Point);
-    }
-
-    internal void PushScheduled(TimelinePoint point)
-    {
-      Push(_timelineDb.WriteScheduled(point));
-    }
-
-    public Task<T> MakeRequest<T>(Id id) where T : Request
-    {
-      return _requests.MakeRequest<T>(id);
-    }
-
-    public bool TryOpenFlowScope(FlowType type, TimelineRoute route, out IFlowScope scope)
+		public void Push(TimelinePoint point)
 		{
-			var unroutedScope = new FlowScope(_lifetime, _flowDb, type, route);
+			_queue.Enqueue(point);
+		}
+
+		internal void PushScheduled(TimelinePoint point)
+		{
+			Push(_timelineDb.WriteScheduled(point));
+		}
+
+		public Task<T> MakeRequest<T>(Id id) where T : Request
+		{
+			return _requests.MakeRequest<T>(id);
+		}
+
+		public bool TryOpenFlowScope(FlowType type, TimelineRoute route, out IFlowScope scope)
+		{
+			var unroutedScope = new FlowScope(_lifetime, _flowDb, _viewExchange, type, route);
 
 			scope = unroutedScope.TryRoute() ? unroutedScope : null;
 
 			return scope != null;
-    }
+		}
 	}
 }

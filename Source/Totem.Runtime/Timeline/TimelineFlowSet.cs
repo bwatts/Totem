@@ -9,8 +9,8 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// The set of flows acting in a runtime
   /// </summary>
-  internal sealed class TimelineFlowSet : PushScope
-  {
+  internal sealed class TimelineFlowSet : Connection
+	{
     private readonly Dictionary<EventType, EventRouter> _eventRoutersByType = new Dictionary<EventType, EventRouter>();
     private readonly ITimelineScope _scope;
 
@@ -26,8 +26,6 @@ namespace Totem.Runtime.Timeline
       AddEventRouters(packages);
 
       AddFlowRouters(packages);
-
-      base.Open();
     }
 
     protected override void Close()
@@ -37,16 +35,16 @@ namespace Totem.Runtime.Timeline
       _eventRoutersByType.Clear();
     }
 
-    protected override void Push()
+    public void Push(TimelinePoint point)
     {
       EventRouter eventRouter;
 
-      if(!_eventRoutersByType.TryGetValue(Point.EventType, out eventRouter))
+      if(!_eventRoutersByType.TryGetValue(point.EventType, out eventRouter))
       {
-        throw new InvalidOperationException($"Cannot push to unknown event type {Point.EventType}");
+        throw new InvalidOperationException($"Cannot push to unknown event type {point.EventType}");
       }
 
-      eventRouter.Push(Point);
+      eventRouter.Push(point);
     }
 
     private List<RuntimePackage> ReadPackages()

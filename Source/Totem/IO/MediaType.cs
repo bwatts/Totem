@@ -85,6 +85,7 @@ namespace Totem.IO
 			public const string Javascript = "application/javascript";
 			public const string Json = "application/json";
 			public const string Plain = "text/plain";
+			public const string Xml = "text/xml";
 		}
 
 		public static readonly MediaType None = new MediaType(Names.None);
@@ -93,9 +94,10 @@ namespace Totem.IO
 		public static readonly MediaType Javascript = new MediaType(Names.Javascript);
 		public static readonly MediaType Json = new MediaType(Names.Json);
 		public static readonly MediaType Plain = new MediaType(Names.Plain);
+		public static readonly MediaType Xml = new MediaType(Names.Xml);
 
-		public static readonly Many<MediaType> AllKnown = Many.Of(Css, Html, Javascript, Json, Plain);
-		public static readonly Many<MediaType> AllText = Many.Of(Css, Html, Javascript, Json, Plain);
+		public static readonly Many<MediaType> AllKnown = Many.Of(Css, Html, Javascript, Json, Plain, Xml);
+		public static readonly Many<MediaType> AllText = Many.Of(Css, Html, Javascript, Json, Plain, Xml);
 
 		public sealed class Converter : TextConverter
 		{

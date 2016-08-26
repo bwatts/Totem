@@ -106,7 +106,7 @@ namespace Totem.IO
 			return parsedResource == null ? null : From(root, resource);
 		}
 
-		public new static FolderLink From(string value, bool strict = true)
+		public static FolderLink From(string value, bool strict = true)
 		{
 			var folder = FromUnc(value, strict: false) ?? FromLocal(value, strict: false);
 

@@ -8,7 +8,7 @@ using Microsoft.Owin.Hosting;
 using Owin;
 using Totem.Runtime;
 
-namespace Totem.Web
+namespace Totem.Web.Push
 {
 	/// <summary>
 	/// An HTTP-bound push application composed by OWIN and SignalR
@@ -54,33 +54,22 @@ namespace Totem.Web
 			return options;
 		}
 
-		protected virtual void Startup(IAppBuilder builder)
+		protected virtual void Startup(IAppBuilder app)
 		{
-			GlobalHost.HubPipeline.AddModule(new LoggingPipelineModule());
+			//app.UseErrorPage();		// Uncomment when debugging server errors
 
-			builder.MapHubs(new HubConfiguration
+			var resolver = new PushDependencyResolver(_context.Scope);
+
+			app.MapSignalR(new HubConfiguration
 			{
+				EnableJavaScriptProxies = false,
 				EnableDetailedErrors = _enableDetailedErrors,
-				Resolver = new PushDependencyResolver(_context.Scope)
+				Resolver = resolver
 			});
-		}
 
-		private sealed class LoggingPipelineModule : HubPipelineModule, ITaggable
-		{
-			public LoggingPipelineModule()
-			{
-				Tags = new Tags();
-			}
+			GlobalHost.DependencyResolver = resolver;
 
-			public Tags Tags { get; private set; }
-			private ILog Log => Traits.Log.Get(this);
-
-			protected override void OnIncomingError(Exception ex, IHubIncomingInvokerContext context)
-			{
-				Log.Error(ex, "An exception occurred in the SignalR pipeline");
-
-				base.OnIncomingError(ex, context);
-			}
+			GlobalHost.HubPipeline.AddModule(new LoggingPipelineModule());
 		}
 
 		// Adapted from http://code.google.com/p/autofac/source/browse/Core/Source/Autofac.Integration.SignalR/AutofacDependencyResolver.cs
@@ -106,6 +95,24 @@ namespace Totem.Web
 				var instance = (IEnumerable<object>) _scope.Resolve(enumerableServiceType);
 
 				return instance.Any() ? instance : base.GetServices(serviceType);
+			}
+		}
+
+		private sealed class LoggingPipelineModule : HubPipelineModule, ITaggable
+		{
+			public LoggingPipelineModule()
+			{
+				Tags = new Tags();
+			}
+
+			public Tags Tags { get; private set; }
+			private ILog Log => Traits.Log.Get(this);
+
+			protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext invokerContext)
+			{
+				Log.Error(exceptionContext.Error, "An exception occurred in the SignalR pipeline");
+
+				base.OnIncomingError(exceptionContext, invokerContext);
 			}
 		}
 	}

@@ -20,6 +20,13 @@ namespace Totem.Runtime.Timeline
 			WhenCall.Append(e);
 		}
 
+		protected void ThenDone(Event e)
+		{
+			Then(e);
+
+			ThenDone();
+		}
+
 		protected void ThenSchedule(Event e, DateTime whenOccurs)
 		{
 			Message.Traits.When.Set(e, whenOccurs);
@@ -70,17 +77,19 @@ namespace Totem.Runtime.Timeline
 
 		private DateTime GetWhenIntervalOccursNext(TimeSpan interval, TimeSpan offset)
 		{
+			Expect(interval).IsGreaterThan(TimeSpan.Zero, "Interval must indicate a time in the future.");
+
 			var now = Clock.Now.ToLocalTime();
-            var today = now.Date;
+			var today = now.Date;
 
 			var whenOccursNext = today + offset;
 
-            while(whenOccursNext < now)
-            {
-                whenOccursNext += interval;
-            }
+			while(whenOccursNext < now)
+			{
+				whenOccursNext += interval;
+			}
 
-			var whenOccurs = whenOccursNext.Date == today ? whenOccursNext : today.AddDays(1) + offset;
+			var whenOccurs = whenOccursNext.Date == now.Date ? whenOccursNext : now.Date.AddDays(1) + offset;
 
 			return whenOccurs.ToUniversalTime();
 		}

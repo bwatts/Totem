@@ -33,13 +33,18 @@ namespace Totem.IO
 		// Write
 		//
 
+		public void Write(bool overwrite = true)
+		{
+			Write(FolderResource.Root, overwrite);
+		}
+
 		public Stream Write(FileResource file, bool overwrite = true, bool createFolders = false)
 		{
 			var filePath = Link.Then(file).ToString();
 
 			if(createFolders)
 			{
-				Write(file.Folder, overwrite);
+				Directory.CreateDirectory(Link.Then(file.Folder).ToString());
 			}
 
 			var mode = overwrite ? FileMode.Create : FileMode.Append;
@@ -59,12 +64,10 @@ namespace Totem.IO
 		{
 			var folderPath = Link.Then(folder).ToString();
 
-			if(Directory.Exists(folderPath))
+			if(overwrite && Directory.Exists(folderPath))
 			{
-				return;
+				Directory.Delete(folderPath, recursive: true);
 			}
-
-			Expect(overwrite, "Folder exists and overwrite option is not set");
 
 			Directory.CreateDirectory(folderPath);
 		}
@@ -184,101 +187,94 @@ namespace Totem.IO
 			return data;
 		}
 
-		public Many<FileResource> ReadFiles(bool recursive = false)
+		public Many<FileResource> ReadFiles(bool recursive = false, string pattern = "*.*")
 		{
-			return ReadFiles(FolderResource.Root, recursive);
+			return ReadFiles(FolderResource.Root, recursive, pattern);
 		}
 
-		public Many<FolderResource> ReadFolders(bool recursive = false)
+		public Many<FolderResource> ReadFolders(bool recursive = false, string pattern = "*.*")
 		{
-			return ReadFolders(FolderResource.Root, recursive);
+			return ReadFolders(FolderResource.Root, recursive, pattern);
 		}
 
-		public Many<IOLink> ReadLinks(bool recursive = false)
+		public Many<IOLink> ReadLinks(bool recursive = false, string pattern = "*.*")
 		{
-			return ReadLinks(FolderResource.Root, recursive);
+			return ReadLinks(FolderResource.Root, recursive, pattern);
 		}
 
-		public Many<FileLink> ReadFileLinks(bool recursive = false)
+		public Many<FileLink> ReadFileLinks(bool recursive = false, string pattern = "*.*")
 		{
-			return ReadFileLinks(FolderResource.Root, recursive);
+			return ReadFileLinks(FolderResource.Root, recursive, pattern);
 		}
 
-		public Many<FolderLink> ReadFolderLinks(bool recursive = false)
+		public Many<FolderLink> ReadFolderLinks(bool recursive = false, string pattern = "*.*")
 		{
-			return ReadFolderLinks(FolderResource.Root, recursive);
+			return ReadFolderLinks(FolderResource.Root, recursive, pattern);
 		}
 
 		//
 		// Subfolder reads
 		//
 
-		public Many<IOResource> ReadFolder(FolderResource subfolder, bool recursive = false)
+		public Many<IOResource> ReadFolder(FolderResource subfolder, bool recursive = false, string pattern = "*.*")
 		{
-			return ReadLinksCore(subfolder, recursive)
-				.Select(link =>
-				{
-					return link is FolderLink
-						? ((FolderLink) link).RelativeTo(Link)
-						: ((FileLink) link).RelativeTo(Link) as IOResource;
-				})
-				.ToMany();
+			return ReadLinksCore(subfolder, recursive, pattern).ToMany(link =>
+				link is FolderLink
+					? ((FolderLink) link).RelativeTo(Link)
+					: ((FileLink) link).RelativeTo(Link) as IOResource);
 		}
 
-		public Many<FileResource> ReadFiles(FolderResource subfolder, bool recursive = false)
+		public Many<FileResource> ReadFiles(FolderResource subfolder, bool recursive = false, string pattern = "*.*")
 		{
-			return ReadFileLinksCore(subfolder, recursive).Select(fileLink => fileLink.RelativeTo(Link)).ToMany();
+			return ReadFileLinksCore(subfolder, recursive, pattern).ToMany(fileLink => fileLink.RelativeTo(Link));
 		}
 
-		public Many<FolderResource> ReadFolders(FolderResource subfolder, bool recursive = false)
+		public Many<FolderResource> ReadFolders(FolderResource subfolder, bool recursive = false, string pattern = "*.*")
 		{
-			return ReadFolderLinksCore(subfolder, recursive).Select(folderLink => folderLink.RelativeTo(Link)).ToMany();
+			return ReadFolderLinksCore(subfolder, recursive, pattern).ToMany(folderLink => folderLink.RelativeTo(Link));
 		}
 
 		//
 		// Read links
 		//
 
-		public Many<IOLink> ReadLinks(FolderResource subfolder, bool recursive = false)
+		public Many<IOLink> ReadLinks(FolderResource subfolder, bool recursive = false, string pattern = "*.*")
 		{
-			return ReadLinksCore(subfolder, recursive).ToMany();
+			return ReadLinksCore(subfolder, recursive, pattern).ToMany();
 		}
 
-		public Many<FileLink> ReadFileLinks(FolderResource subfolder, bool recursive = false)
+		public Many<FileLink> ReadFileLinks(FolderResource subfolder, bool recursive = false, string pattern = "*.*")
 		{
-			return ReadFileLinksCore(subfolder, recursive).ToMany();
+			return ReadFileLinksCore(subfolder, recursive, pattern).ToMany();
 		}
 
-		public Many<FolderLink> ReadFolderLinks(FolderResource subfolder, bool recursive = false)
+		public Many<FolderLink> ReadFolderLinks(FolderResource subfolder, bool recursive = false, string pattern = "*.*")
 		{
-			return ReadFolderLinksCore(subfolder, recursive).ToMany();
+			return ReadFolderLinksCore(subfolder, recursive, pattern).ToMany();
 		}
 
-		private IEnumerable<IOLink> ReadLinksCore(FolderResource subfolder, bool recursive = false)
+		private IEnumerable<IOLink> ReadLinksCore(FolderResource subfolder, bool recursive, string pattern)
 		{
 			var folderPath = Link.Then(subfolder).ToString();
-			var pattern = "*.*";
 			var option = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-			var files = Directory.GetFiles(folderPath, pattern, option).Select(file => FileLink.From(file));
+			var files = Directory.GetFiles(folderPath, pattern, option).Select(file => FileLink.From(file, extensionOptional: true));
 			var directories = Directory.GetDirectories(folderPath, pattern, option).Select(subdirectory => FolderLink.From(subdirectory));
 
 			return files.Concat<IOLink>(directories);
 		}
 
-		private IEnumerable<FileLink> ReadFileLinksCore(FolderResource subfolder, bool recursive = false)
+		private IEnumerable<FileLink> ReadFileLinksCore(FolderResource subfolder, bool recursive, string pattern)
 		{
 			var folderPath = Link.Then(subfolder).ToString();
-			var pattern = "*.*";
 			var option = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
-			return Directory.GetFiles(folderPath, pattern, option).Select(file => FileLink.From(file));
+			return Directory.GetFiles(folderPath, pattern, option).Select(file => FileLink.From(file, extensionOptional: true));
 		}
 
-		private IEnumerable<FolderLink> ReadFolderLinksCore(FolderResource subfolder, bool recursive = false)
+		private IEnumerable<FolderLink> ReadFolderLinksCore(FolderResource subfolder, bool recursive, string pattern)
 		{
 			var folderPath = Link.Then(subfolder).ToString();
-			var pattern = "*.*";
 			var option = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
 
 			return Directory.GetDirectories(folderPath, pattern, option).Select(subdirectory => FolderLink.From(subdirectory));

@@ -72,9 +72,9 @@ namespace Totem.IO
 			return new FileResource(FolderResource.Root, name);
 		}
 
-		public static FileResource From(FolderResource folder, string name, bool strict = true)
+		public static FileResource From(FolderResource folder, string name, bool strict = true, bool extensionOptional = false)
 		{
-			var parsedName = FileName.From(name, strict);
+			var parsedName = FileName.From(name, strict, extensionOptional);
 
 			return parsedName == null ? null : new FileResource(folder, parsedName);
 		}
@@ -86,14 +86,14 @@ namespace Totem.IO
 			return parsedFolder == null ? null : new FileResource(parsedFolder, name);
 		}
 
-		public static FileResource From(string folder, string name, bool strict = true)
+		public static FileResource From(string folder, string name, bool strict = true, bool extensionOptional = false)
 		{
 			var parsedFolder = FolderResource.From(folder, strict);
 
-			return parsedFolder == null ? null : From(parsedFolder, name, strict);
+			return parsedFolder == null ? null : From(parsedFolder, name, strict, extensionOptional);
 		}
 
-		public new static FileResource From(string value, bool strict = true)
+		public static FileResource From(string value, bool strict = true, bool extensionOptional = false)
 		{
 			var parsedFolder = FolderResource.From(value, strict);
 
@@ -103,7 +103,7 @@ namespace Totem.IO
 
 				if(fileSegment != null)
 				{
-					var parsedName = FileName.From(fileSegment.ToString(), strict);
+					var parsedName = FileName.From(fileSegment.ToString(), strict, extensionOptional);
 
 					if(parsedName != null)
 					{
