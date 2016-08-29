@@ -92,10 +92,11 @@ namespace Totem.Runtime.Map
 		}
 
 		private static readonly Regex _regex = new Regex(
-			// Start of string, then the context followed by ':'
-			@"^(?<region>[A-Za-z_]\w*):"
-			// The name, then the end of the string
-			+ @"(?<name>[A-Za-z_]\w*)$",
+			@"^(?<region>[A-Za-z_]\w*):"  // Start, then region, followed by ':'
+			+ @"(?<name>[A-Za-z_]"        // The first character of the name
+			+ @"\w*?"                     // The remainder of the first identifier in the name
+			+ @"(\.\w+?)*"								// The subsequent identifiers in the name, each preceded by '.'
+			+ @")$",											// End
 			RegexOptions.Compiled);
 
 		private static string GetCapture(Match match, string group)

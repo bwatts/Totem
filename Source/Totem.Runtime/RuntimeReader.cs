@@ -147,7 +147,7 @@ namespace Totem.Runtime
 				from region in _map.Regions
 				from package in region.Packages
 				from declaredType in package.Assembly.GetTypes()
-				where declaredType.IsPublic
+				where (declaredType.IsPublic || declaredType.IsNestedPublic)
 					&& declaredType.IsClass
 					&& !declaredType.IsAbstract
 					&& !declaredType.IsAnonymous()
@@ -311,10 +311,19 @@ namespace Totem.Runtime
 
 		private void TryRegisterDurable()
 		{
-			if(_declaredType.IsDefined(typeof(DurableAttribute), inherit: true))
+			if(IsDurable(_declaredType))
 			{
 				_package.Durable.Register(new DurableType(ReadType()));
 			}
+		}
+
+		private bool IsDurable(Type type)
+		{
+			var defined = _declaredType.IsDefined(typeof(DurableAttribute), inherit: true);
+
+			var definedNested = !defined && type.IsNestedPublic && IsDurable(type.DeclaringType);
+
+			return defined || definedNested;
 		}
 
 		//

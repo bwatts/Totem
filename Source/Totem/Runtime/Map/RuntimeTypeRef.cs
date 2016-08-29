@@ -14,7 +14,7 @@ namespace Totem.Runtime.Map
 			Package = package;
 			DeclaredType = declaredType;
 			State = new RuntimeState(declaredType);
-			Key = RuntimeTypeKey.From(package.RegionKey, declaredType.Name);
+			Key = RuntimeTypeKey.From(package.RegionKey, ReadName());
 		}
 
 		public readonly RuntimePackage Package;
@@ -23,5 +23,20 @@ namespace Totem.Runtime.Map
 		public readonly RuntimeTypeKey Key;
 
 		public override string ToString() => Key.ToString();
+
+		private string ReadName()
+		{
+			var type = DeclaredType;
+			var name = DeclaredType.Name;
+
+			while(type.IsNestedPublic)
+			{
+				type = type.DeclaringType;
+
+				name = $"{type.Name}.{name}";
+			}
+
+			return name;
+		}
 	}
 }
