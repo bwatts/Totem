@@ -47,17 +47,12 @@ namespace Totem.Runtime.Json
     protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
     {
       const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
       return Enumerable.Empty<MemberInfo>()
         .Concat(type.GetFields(flags))
         .Concat(type.GetProperties(flags))
-        .Where(property => IsDurableProperty(property))
-        .Select(member => {
-          var prop = base.CreateProperty(member, memberSerialization);
-          var asProperty = member as PropertyInfo;
-          prop.Writable = asProperty == null || asProperty.CanWrite;
-          prop.Readable = asProperty == null || asProperty.CanRead;
-          return prop;
-        })
+        .Where(IsDurableProperty)
+				.Select(member => CreateProperty(member, memberSerialization))
         .ToList();
     }
 
@@ -86,18 +81,9 @@ namespace Totem.Runtime.Json
 
 		protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
 		{
-			var property = base.CreateProperty(member, memberSerialization);
-
-			if(IsDurableProperty(member))
-			{
-				property.Writable = CanSet(member);
-			}
-			else
-			{
-				property = null;
-			}
-
-			return property;
+			return !IsDurableProperty(member)
+				? null
+				: CreateDurableProperty(member, memberSerialization, base.CreateProperty(member, memberSerialization));
 		}
 
 		private static bool IsDurableProperty(MemberInfo member)
@@ -112,25 +98,26 @@ namespace Totem.Runtime.Json
 				&& member.DeclaringType != typeof(Notion);
 		}
 
-		private static bool CanSet(MemberInfo member)
+		private JsonProperty CreateDurableProperty(MemberInfo member, MemberSerialization memberSerialization, JsonProperty baseProperty)
 		{
-			var canSet = false;
-
 			if(member is FieldInfo)
 			{
-				canSet = true;
+				baseProperty.Writable = true;
+				baseProperty.Readable = true;
+			}
+			else if(member.ReflectedType != member.DeclaringType)
+			{
+				baseProperty = CreateProperty(member.DeclaringType.GetProperty(member.Name), memberSerialization);
 			}
 			else
 			{
-				var property = member as PropertyInfo;
+				var propertyMember = (PropertyInfo) member;
 
-				if(property != null)
-				{
-					canSet = property.CanWrite || property.GetSetMethod(nonPublic: true) != null;
-				}
+				baseProperty.Writable = propertyMember.CanWrite || propertyMember.GetSetMethod(nonPublic: true) != null;
+				baseProperty.Readable = propertyMember.CanRead || propertyMember.GetGetMethod(nonPublic: true) != null;
 			}
 
-			return canSet;
+			return baseProperty;
 		}
 	}
 }
