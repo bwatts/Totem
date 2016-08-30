@@ -17,7 +17,6 @@ namespace Totem.Runtime.Map.Timeline
 			Constructor = constructor;
 			Events = new FlowEventSet();
 			IsTopic = this is TopicType;
-			IsQuery = this is QueryType;
 			IsView = this is ViewType;
 			IsRequest = this is RequestType;
 		}
@@ -25,7 +24,6 @@ namespace Totem.Runtime.Map.Timeline
 		public readonly FlowConstructor Constructor;
 		public readonly FlowEventSet Events;
 		public readonly bool IsTopic;
-		public readonly bool IsQuery;
 		public readonly bool IsView;
 		public readonly bool IsRequest;
 

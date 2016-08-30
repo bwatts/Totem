@@ -211,9 +211,7 @@ namespace Totem.Runtime
 
     private void WarnIfPossiblyMisspelled(MethodInfo method)
 		{
-      if(method.DeclaringType == typeof(Topic)
-        || method.DeclaringType == typeof(Query)
-        || method.DeclaringType == typeof(View))
+      if(method.DeclaringType == typeof(Topic) || method.DeclaringType == typeof(View))
       {
         return;
       }

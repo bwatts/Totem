@@ -76,16 +76,6 @@ namespace Totem.Runtime.Map
       return Packages.GetTopic(declaredType, strict);
     }
 
-    public QueryType GetQuery(RuntimeTypeKey key, bool strict = true)
-    {
-      return Packages.GetQuery(key, strict);
-    }
-
-    public QueryType GetQuery(Type declaredType, bool strict = true)
-    {
-      return Packages.GetQuery(declaredType, strict);
-    }
-
     public ViewType GetView(RuntimeTypeKey key, bool strict = true)
     {
       return Packages.GetView(key, strict);

@@ -8,7 +8,7 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// A timeline presence that maintains a persistent structure
   /// </summary>
-  public abstract class View : Query
+  public abstract class View : Flow
   {
     protected View()
     {

@@ -26,7 +26,6 @@ namespace Totem.Runtime.Map
       Events = new RuntimeTypeSet<EventType>();
 			Flows = new RuntimeTypeSet<FlowType>();
       Topics = new RuntimeTypeSet<TopicType>();
-      Queries = new RuntimeTypeSet<QueryType>();
       Views = new RuntimeTypeSet<ViewType>();
       Requests = new RuntimeTypeSet<RequestType>();
 			WebApis = new RuntimeTypeSet<WebApiType>();
@@ -43,7 +42,6 @@ namespace Totem.Runtime.Map
     public readonly RuntimeTypeSet<EventType> Events;
 		public readonly RuntimeTypeSet<FlowType> Flows;
     public readonly RuntimeTypeSet<TopicType> Topics;
-    public readonly RuntimeTypeSet<QueryType> Queries;
     public readonly RuntimeTypeSet<ViewType> Views;
     public readonly RuntimeTypeSet<RequestType> Requests;
 		public readonly RuntimeTypeSet<WebApiType> WebApis;

@@ -7,7 +7,7 @@ namespace Totem.Runtime.Map.Timeline
   /// <summary>
   /// A .NET type representing a persistent structure on the timeline
   /// </summary>
-  public sealed class ViewType : QueryType
+  public sealed class ViewType : FlowType
 	{
 		internal ViewType(RuntimeTypeRef type, FlowConstructor constructor) : base(type, constructor)
 		{}

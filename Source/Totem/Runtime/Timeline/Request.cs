@@ -8,7 +8,7 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// A timeline presence that responds to a pending request
 	/// </summary>
-	public abstract class Request : Query
+	public abstract class Request : Flow
 	{
     [Transient] public new RequestType Type => (RequestType) base.Type;
   }

@@ -259,7 +259,6 @@ namespace Totem.Runtime
       {
         var view = new ViewType(type, constructor);
 
-        _package.Queries.Register(view);
         _package.Views.Register(view);
 
         RegisterFlow(view);
@@ -268,18 +267,9 @@ namespace Totem.Runtime
       {
         var request = new RequestType(type, constructor);
 
-        _package.Queries.Register(request);
         _package.Requests.Register(request);
 
         RegisterFlow(request);
-      }
-      else if(DeclaredTypeIs<Query>())
-      {
-        var query = new QueryType(type, constructor);
-
-        _package.Queries.Register(query);
-
-        RegisterFlow(query);
       }
       else
       {

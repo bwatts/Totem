@@ -102,7 +102,6 @@
     <Compile Include="Runtime\Map\Timeline\FlowRoute.cs" />
     <Compile Include="Runtime\Map\Timeline\ViewType.cs" />
     <Compile Include="Runtime\Map\Timeline\TopicType.cs" />
-    <Compile Include="Runtime\Map\Timeline\QueryType.cs" />
     <Compile Include="Runtime\Map\Timeline\RequestType.cs" />
     <Compile Include="Runtime\Map\DurableType.cs" />
     <Compile Include="Runtime\Map\WebApiType.cs" />
@@ -167,7 +166,6 @@
     <Compile Include="Runtime\Timeline\Flow.cs" />
     <Compile Include="Runtime\Timeline\WhenCall.cs" />
     <Compile Include="Runtime\Timeline\FlowStopped.cs" />
-    <Compile Include="Runtime\Timeline\Query.cs" />
     <Compile Include="Runtime\Timeline\Request.cs" />
     <Compile Include="Runtime\Timeline\TimelinePoint.cs" />
     <Compile Include="Runtime\Timeline\TimelinePosition.cs" />

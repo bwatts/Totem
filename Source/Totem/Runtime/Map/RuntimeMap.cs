@@ -78,16 +78,6 @@ namespace Totem.Runtime.Map
       return Regions.GetTopic(declaredType, strict);
     }
 
-    public QueryType GetQuery(RuntimeTypeKey key, bool strict = true)
-    {
-      return Regions.GetQuery(key, strict);
-    }
-
-    public QueryType GetQuery(Type declaredType, bool strict = true)
-    {
-      return Regions.GetQuery(declaredType, strict);
-    }
-
     public ViewType GetView(RuntimeTypeKey key, bool strict = true)
     {
       return Regions.GetView(key, strict);
