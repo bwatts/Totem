@@ -33,6 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,6 +46,7 @@
       <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CmpSpecs.cs" />
+    <Compile Include="IdCounterSpecs.cs" />
     <Compile Include="IO\MediaTypeSpecs.cs" />
     <Compile Include="LinkPathSpecs.cs" />
     <Compile Include="LinkTextSpecs.cs" />
@@ -61,6 +63,10 @@
     <Compile Include="TextSpecs.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Source\Totem.Runtime\Totem.Runtime.csproj">
+      <Project>{5A8E9B26-2368-4121-ACD5-B7FB2A0088D5}</Project>
+      <Name>Totem.Runtime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Source\Totem\Totem.csproj">
       <Project>{7fa55c94-884e-42b1-83a3-3c4611549789}</Project>
       <Name>Totem</Name>
