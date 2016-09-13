@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{260CF321-5532-41BF-B3E7-8F74438505C4}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,6 +19,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Runtime", "Source\Totem.Runtime\Totem.Runtime.csproj", "{5A8E9B26-2368-4121-ACD5-B7FB2A0088D5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Web", "Source\Totem.Web\Totem.Web.csproj", "{01763457-40D1-4C7D-9327-2A2976FFC90F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Runtime.Tests", "Tests\Totem.Runtime.Tests\Totem.Runtime.Tests.csproj", "{F8FC92FA-E41E-4F0B-B7DF-400905F5FE15}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,11 +48,16 @@ Global
 		{01763457-40D1-4C7D-9327-2A2976FFC90F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01763457-40D1-4C7D-9327-2A2976FFC90F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01763457-40D1-4C7D-9327-2A2976FFC90F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8FC92FA-E41E-4F0B-B7DF-400905F5FE15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8FC92FA-E41E-4F0B-B7DF-400905F5FE15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8FC92FA-E41E-4F0B-B7DF-400905F5FE15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8FC92FA-E41E-4F0B-B7DF-400905F5FE15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A35B1A06-F8E7-40CE-AE75-4A21DF58F7BA} = {79EA098B-B4FF-4E56-BB81-B74098B9B4B7}
+		{F8FC92FA-E41E-4F0B-B7DF-400905F5FE15} = {79EA098B-B4FF-4E56-BB81-B74098B9B4B7}
 	EndGlobalSection
 EndGlobal
