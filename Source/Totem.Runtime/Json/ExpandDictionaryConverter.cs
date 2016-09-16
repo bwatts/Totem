@@ -10,21 +10,11 @@ namespace Totem.Runtime.Json
   /// <summary>
   /// Converts dictionaries to and from JSON as key/value pairs
   /// </summary>
-  /// <remarks>
-  /// JSON.NET serializes dictionaries to objects by default:
-  /// 
-  /// { "foo": 1, "bar": 2 }
-  /// 
-  /// However, when combined with camel-case property names, an upper-case key would be converted to
-  /// lower-case property name, then deserialized back with the incorrect lower-case.
-  /// 
-  /// Opened an issue with JSON.NET: https://github.com/JamesNK/Newtonsoft.Json/issues/1023
-  /// </remarks>
-  public class TotemDictionaryConverter : JsonConverter
+  public class ExpandDictionaryConverter : JsonConverter
   {
     private readonly JsonDictionaryContract _contract;
 
-    public TotemDictionaryConverter(JsonDictionaryContract contract)
+    public ExpandDictionaryConverter(JsonDictionaryContract contract)
     {
       _contract = contract;
     }

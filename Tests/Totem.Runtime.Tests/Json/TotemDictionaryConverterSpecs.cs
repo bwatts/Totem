@@ -3,44 +3,43 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Totem.Runtime.Json;
-using Totem.Runtime.Timeline;
 
 namespace Totem.Runtime
 {
   /// <summary>
-  /// Scenarios involving the <see cref="TotemDictionaryConverter"/> class
+  /// Scenarios involving the <see cref="ExpandDictionaryConverter"/> class
   /// </summary>
   public class TotemDictionaryConverterSpecs : Specs
   {
     void SerializeEmpty()
     {
-      var pairs = new List<KeyValuePair<string, int>>();
       var dictionary = new Dictionary<string, int>();
 
-      var pairsJson = JsonFormat.Text.Serialize(pairs).ToString();
       var dictionaryJson = JsonFormat.Text.Serialize(dictionary).ToString();
 
-      Expect(pairsJson).Is(dictionaryJson);
+			Expect(dictionaryJson).Is("[]");
     }
 
     void Serialize()
 		{
-      var pairs = new List<KeyValuePair<string, int>>
-      {
-        new KeyValuePair<string, int>("Foo", 1),
-        new KeyValuePair<string, int>("Bar", 2)
-      };
-
       var dictionary = new Dictionary<string, int>
       {
         ["Foo"] = 1,
         ["Bar"] = 2
       };
 
-      var pairsJson = JsonFormat.Text.Serialize(pairs).ToString();
       var dictionaryJson = JsonFormat.Text.Serialize(dictionary).ToString();
 
-      Expect(pairsJson).Is(dictionaryJson);
+      Expect(dictionaryJson).Is(@"[
+  {
+    ""key"": ""Foo"",
+    ""value"": 1
+  },
+  {
+    ""key"": ""Bar"",
+    ""value"": 2
+  }
+]");
 		}
 
     //

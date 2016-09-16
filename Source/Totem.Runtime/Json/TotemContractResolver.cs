@@ -14,22 +14,29 @@ namespace Totem.Runtime.Json
 	/// <summary>
 	/// Resolves contracts describing the serialization and deserialization of objects to JSON in the Totem runtime
 	/// </summary>
-	public class TotemContractResolver : CamelCasePropertyNamesContractResolver, ITaggable
+	public class TotemContractResolver : DefaultContractResolver, ITaggable
 	{
-		internal TotemContractResolver()
+		public TotemContractResolver()
 		{
 			Tags = new Tags();
+
+			ExpandDictionaries = true;
 		}
 
 		Tags ITaggable.Tags => Tags;
 		private Tags Tags;
 		private RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
+		public bool ExpandDictionaries;
+
     protected override JsonDictionaryContract CreateDictionaryContract(Type objectType)
     {
       var contract = base.CreateDictionaryContract(objectType);
 
-      contract.Converter = new TotemDictionaryConverter(contract);
+			if(ExpandDictionaries)
+			{
+				contract.Converter = new ExpandDictionaryConverter(contract);
+			}
 
       return contract;
     }
