@@ -46,6 +46,7 @@
       <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="IdCounterSpecs.cs" />
+    <Compile Include="Json\TotemDictionaryConverterSpecs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

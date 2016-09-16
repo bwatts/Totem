@@ -114,6 +114,7 @@
     <Compile Include="Json\TextJson.cs" />
     <Compile Include="Json\TotemContractResolver.cs" />
     <Compile Include="Json\JsonFormat.cs" />
+    <Compile Include="Json\TotemDictionaryConverter.cs" />
     <Compile Include="Json\TotemSerializationBinder.cs" />
     <Compile Include="Json\TotemSerializerSettings.cs" />
     <Compile Include="RuntimeReaderFlow.cs" />

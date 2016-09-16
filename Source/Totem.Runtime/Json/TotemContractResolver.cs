@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -26,98 +25,117 @@ namespace Totem.Runtime.Json
 		private Tags Tags;
 		private RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
-		protected override JsonArrayContract CreateArrayContract(Type objectType)
-		{
-			var contract = base.CreateArrayContract(objectType);
+    protected override JsonDictionaryContract CreateDictionaryContract(Type objectType)
+    {
+      var contract = base.CreateDictionaryContract(objectType);
 
-			// I don't recall why this is needed - hrm
+      contract.Converter = new TotemDictionaryConverter(contract);
 
-			if(typeof(Many<>).IsAssignableFromGeneric(objectType))
-			{
-				var callOf = Expression.Call(typeof(Many), "Of", new[] { contract.CollectionItemType });
+      return contract;
+    }
 
-				var lambda = Expression.Lambda<Func<object>>(callOf);
+    protected override JsonArrayContract CreateArrayContract(Type objectType)
+    {
+      var contract = base.CreateArrayContract(objectType);
 
-				contract.DefaultCreator = lambda.Compile();
-			}
+      if(typeof(Many<>).IsAssignableFromGeneric(objectType))
+      {
+        var callOf = Expression.Call(typeof(Many), "Of", new[] { contract.CollectionItemType });
 
-			return contract;
-		}
+        var lambda = Expression.Lambda<Func<object>>(callOf);
+
+        contract.DefaultCreator = lambda.Compile();
+      }
+
+      return contract;
+    }
+
+    protected override JsonObjectContract CreateObjectContract(Type objectType)
+    {
+      var contract = base.CreateObjectContract(objectType);
+
+      var mapType = Runtime.GetDurable(objectType, strict: false);
+
+      if(mapType != null)
+      {
+        contract.DefaultCreator = mapType.CreateToDeserialize;
+      }
+
+      return contract;
+    }
 
     protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
     {
+      if(!IsDurableType(type))
+      {
+        return base.CreateProperties(type, memberSerialization);
+      }
+
       const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
       return Enumerable.Empty<MemberInfo>()
         .Concat(type.GetFields(flags))
         .Concat(type.GetProperties(flags))
         .Where(IsDurableProperty)
-				.Select(member => CreateProperty(member, memberSerialization))
+        .Select(member => CreateProperty(member, memberSerialization))
         .ToList();
     }
 
-    protected override JsonObjectContract CreateObjectContract(Type objectType)
-		{
-			return _objectContractCache.GetOrAdd(objectType, _ =>
-			{
-				var contract = base.CreateObjectContract(objectType);
+    protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+    {
+      if(!IsDurableType(member.DeclaringType))
+      {
+        return base.CreateProperty(member, memberSerialization);
+      }
+      else if(!IsDurableProperty(member))
+      {
+        return null;
+      }
+      else
+      {
+        return CreateDurableProperty(member, memberSerialization);
+      }
+    }
 
-				var mapType = Runtime.GetDurable(objectType, strict: false);
+    private bool IsDurableType(Type type)
+    {
+      return Runtime.GetDurable(type, strict: false) != null;
+    }
 
-				if(mapType != null)
-				{
-					contract.DefaultCreator = mapType.CreateToDeserialize;
-				}
+    private static bool IsDurableProperty(MemberInfo member)
+    {
+      if(member.IsDefined(typeof(DurableAttribute)))
+      {
+        return true;
+      }
 
-				return contract;
-			});
-		}
+      return !member.IsDefined(typeof(TransientAttribute))
+        && !member.IsDefined(typeof(CompilerGeneratedAttribute))
+        && member.DeclaringType != typeof(Notion);
+    }
 
-		private static readonly ConcurrentDictionary<Type, JsonObjectContract> _objectContractCache = new ConcurrentDictionary<Type, JsonObjectContract>();
+    private JsonProperty CreateDurableProperty(MemberInfo member, MemberSerialization memberSerialization)
+    {
+      var property = base.CreateProperty(member, memberSerialization);
 
-		//
-		// Properties
-		//
+      if(member is FieldInfo)
+      {
+        property.Writable = true;
+        property.Readable = true;
+      }
+      else if(member.ReflectedType != member.DeclaringType)
+      {
+        property = CreateProperty(member.DeclaringType.GetProperty(member.Name), memberSerialization);
+      }
+      else
+      {
+        var propertyMember = (PropertyInfo) member;
 
-		protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-		{
-			return !IsDurableProperty(member)
-				? null
-				: CreateDurableProperty(member, memberSerialization, base.CreateProperty(member, memberSerialization));
-		}
+        property.Writable = propertyMember.CanWrite || propertyMember.GetSetMethod(nonPublic: true) != null;
+        property.Readable = propertyMember.CanRead || propertyMember.GetGetMethod(nonPublic: true) != null;
+      }
 
-		private static bool IsDurableProperty(MemberInfo member)
-		{
-			if(member.IsDefined(typeof(DurableAttribute)))
-			{
-				return true;
-			}
-
-			return !member.IsDefined(typeof(TransientAttribute))
-				&& !member.IsDefined(typeof(CompilerGeneratedAttribute))
-				&& member.DeclaringType != typeof(Notion);
-		}
-
-		private JsonProperty CreateDurableProperty(MemberInfo member, MemberSerialization memberSerialization, JsonProperty baseProperty)
-		{
-			if(member is FieldInfo)
-			{
-				baseProperty.Writable = true;
-				baseProperty.Readable = true;
-			}
-			else if(member.ReflectedType != member.DeclaringType)
-			{
-				baseProperty = CreateProperty(member.DeclaringType.GetProperty(member.Name), memberSerialization);
-			}
-			else
-			{
-				var propertyMember = (PropertyInfo) member;
-
-				baseProperty.Writable = propertyMember.CanWrite || propertyMember.GetSetMethod(nonPublic: true) != null;
-				baseProperty.Readable = propertyMember.CanRead || propertyMember.GetGetMethod(nonPublic: true) != null;
-			}
-
-			return baseProperty;
-		}
-	}
+      return property;
+    }
+  }
 }
