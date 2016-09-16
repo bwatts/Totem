@@ -20,7 +20,9 @@ namespace Totem.Runtime.Json
 		{
 			Tags = new Tags();
 
-			ExpandDictionaries = true;
+      NamingStrategy = new CamelCaseNamingStrategy();
+
+      ExpandDictionaries = true;
 		}
 
 		Tags ITaggable.Tags => Tags;
