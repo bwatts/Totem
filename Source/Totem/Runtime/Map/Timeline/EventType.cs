@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Totem.Runtime.Timeline;
 
 namespace Totem.Runtime.Map.Timeline
@@ -15,18 +16,24 @@ namespace Totem.Runtime.Map.Timeline
 
 		public readonly Many<FlowEvent> Flows = new Many<FlowEvent>();
 
-		public IEnumerable<TimelineRoute> CallRoute(Event e)
+		internal void RegisterFlow(FlowEvent flow)
 		{
-			return
-				from flowEvent in Flows
-				where !flowEvent.FlowType.IsRequest
-				from route in flowEvent.CallRoute(e)
-				select route;
+			Flows.Write.Add(flow);
 		}
 
-		internal void RegisterFlow(FlowEvent e)
+		public IEnumerable<FlowRoute> RouteWhen(Event e, bool scheduled = false)
 		{
-			Flows.Write.Add(e);
+			return Flows
+				.Where(flow => !flow.FlowType.IsRequest)
+				.SelectMany(flow => flow.RouteWhen(e, scheduled));
+		}
+
+		public IEnumerable<FlowRoute> RouteGiven(Event e, bool scheduled = false)
+		{
+			return Flows
+				.Where(flow => flow.FlowType.IsTopic)
+				.Cast<TopicEvent>()
+				.SelectMany(topic => topic.RouteGiven(e, scheduled));
 		}
 	}
 }

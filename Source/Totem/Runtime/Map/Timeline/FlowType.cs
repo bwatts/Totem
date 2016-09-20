@@ -50,24 +50,8 @@ namespace Totem.Runtime.Map.Timeline
 			return FlowKey.From(this, id);
 		}
 
-		public Flow New()
-		{
-			return Constructor.Call();
-		}
+		public Flow New() => Constructor.Call();
 
-		public bool CanCall(EventType e)
-		{
-			return Events.Contains(e);
-		}
-
-		public void CallGiven(Flow flow, TimelinePoint point)
-		{
-			Events.CallGiven(flow, point);
-		}
-
-		public Task CallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
-		{
-			return Events.CallWhen(flow, point, dependencies);
-		}
+		internal void RegisterEvent(FlowEvent e) => Events.Register(e);
 	}
 }

@@ -61,15 +61,20 @@ namespace Totem.Web
 			return default(T);
 		}
 
-		protected Response MakeRequest<T>(Event e) where T : WebApiRequest
+		protected Response MakeRequest<T>(TimelinePosition cause, Event e) where T : WebApiRequest
 		{
       // This could be async all the way back to the API classes...but it doesn't read nearly as well there :-)
 
       // TODO: Look into effects of blocking threads here
 
-      var flow = Timeline.MakeRequest<T>(e).Result;
+      var flow = Timeline.MakeRequest<T>(cause, e).Result;
 
       return flow.ToResponse();
+		}
+
+		protected Response MakeRequest<T>(Event e) where T : WebApiRequest
+		{
+			return MakeRequest<T>(TimelinePosition.None, e);
 		}
 
 		protected T ReadBody<T>() where T : class

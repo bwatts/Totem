@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,7 +12,7 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public sealed class LocalTimelineDb : Notion, ITimelineDb, IViewDb
 	{
-		private readonly ConcurrentDictionary<FlowKey, Flow> _flowsByKey = new ConcurrentDictionary<FlowKey, Flow>();
+		private readonly Dictionary<FlowKey, Flow> _flowsByKey = new Dictionary<FlowKey, Flow>();
 		private long _position = -1;
 
 		public ResumeInfo ReadResumeInfo()
@@ -21,112 +20,185 @@ namespace Totem.Runtime.Timeline
 			return new ResumeInfo(new TimelinePosition(0));
 		}
 
-		public bool TryReadFlow(TimelineRoute route, out Flow flow)
+		public bool TryReadFlow(FlowRoute route, out Flow flow)
 		{
 			return _flowsByKey.TryGetValue(route.Key, out flow);
 		}
 
-		public Many<TimelineMessage> Push(Many<Event> events)
+		public TimelineMessage Push(TimelinePosition cause, Event e)
 		{
-			return events.ToMany(e => PushLocal(TimelinePosition.None, e));
+			return PushNext(new PendingPoint(cause, e));
 		}
 
-		public Many<TimelineMessage> PushCall(WhenCall call)
+		public TimelineMessage PushScheduled(TimelineMessage message)
 		{
-			if(call.Flow.Done)
-			{
-				Flow removedFlow;
-
-				_flowsByKey.TryRemove(call.Flow.Key, out removedFlow);
-			}
-
-			var topicCall = call as TopicWhenCall;
-
-			if(topicCall == null)
-			{
-				return new Many<TimelineMessage>();
-			}
-
-			return topicCall
-				.RetrieveNewEvents()
-				.ToMany(e => PushLocal(topicCall.Point.Position, e));
+			return Push(message.Point.Position, message.Point.Event);
 		}
 
-		public TimelineMessage PushFromSchedule(TimelineMessage message)
+		public TimelineMessage PushStopped(FlowPoint point, Exception error)
 		{
-			return PushLocal(message.Point.Position, message.Point.Event);
-		}
-
-		public TimelineMessage PushFlowStopped(FlowKey key, TimelinePoint point, Exception error)
-		{
-			var stopped = new FlowStopped(key.Type.Key, key.Id, error.ToString());
+			var stopped = new FlowStopped(
+				point.Route.Key.Type.Key,
+				point.Route.Key.Id,
+				error.ToString());
 
 			Flow.Traits.ForwardRequestId(point.Event, stopped);
 
-			return PushLocal(point.Position, stopped);
+			return Push(point.Position, stopped);
 		}
 
-		//
-		// Push local
-		//
+    public PushWhenResult PushWhen(Flow flow, FlowCall.When call)
+    {
+      lock(_flowsByKey)
+      {
+        var topicCall = call as FlowCall.TopicWhen;
 
-		private TimelineMessage PushLocal(TimelinePosition cause, Event e)
+        var result = topicCall != null
+          ? PushTopicWhen((Topic) flow, topicCall)
+          : new PushWhenResult();
+
+        if(result.FlowStopped || flow.Context.Done)
+        {
+          _flowsByKey.Remove(flow.Context.Key);
+        }
+
+        return result;
+      }
+    }
+
+    //
+    // PushNext
+    //
+
+    private TimelineMessage PushNext(PendingPoint point)
 		{
-			var scheduled = e as EventScheduled;
-
-			if(scheduled != null)
+			lock(_flowsByKey)
 			{
-				e = scheduled.Event;
+				var message = PushNewPoint(point);
+
+				if(point.Scheduled)
+				{
+					Log.Info("[timeline] {Cause:l} ++ {Position:l} >> {EventType:l} @ {When}", point.Cause, message.Point.Position, point.EventType, point.ScheduledEvent.When);
+				}
+				else if(point.HasTopicKey)
+				{
+					Log.Info("[timeline] {Cause:l} ++ {Point:l} << {Topic:l}", point.Cause, message.Point, point.TopicKey);
+				}
+				else
+				{
+					Log.Info("[timeline] {Cause:l} ++ {Point:l}", point.Cause, message.Point);
+				}
+
+				return message;
 			}
-
-			var type = Runtime.GetEvent(e.GetType());
-
-			return PushLocal(cause, type, e, scheduled != null);
 		}
 
-		private TimelineMessage PushLocal(TimelinePosition cause, EventType type, Event e, bool scheduled)
+		private Many<TimelineMessage> PushNext(IEnumerable<PendingPoint> points)
 		{
-			var newPoint = new TimelinePoint(cause, NextPosition(), type, e, scheduled);
-
-			if(scheduled)
+			lock(_flowsByKey)
 			{
-				Log.Info("[timeline] {Cause:l} ++ {Position:l} >> {EventType:l} @ {When}", cause, newPoint.Position, type, e.When);
+				return points.ToMany(PushNext);
 			}
-			else
-			{
-				Log.Info("[timeline] {Cause:l} ++ {Point:l}", cause, newPoint);
-			}
-
-			return new TimelineMessage(newPoint, RouteEvent(type, e));
 		}
 
-		private TimelinePosition NextPosition()
+    //
+    // Push topic when
+    //
+
+		private PushWhenResult PushTopicWhen(Topic topic, FlowCall.TopicWhen call)
+		{
+      var newPoints = call
+        .RetrieveNewEvents()
+        .ToMany(e => new PendingPoint(topic.Context.Key, call.Point.Position, e));
+
+      var messages = new Many<TimelineMessage>();
+      var flowStopped = false;
+
+			lock(_flowsByKey)
+			{
+				foreach(var newPoint in newPoints)
+				{
+					var message = PushNext(newPoint);
+
+          messages.Write.Add(message);
+
+          if(newPoint.HasThenRoute
+            && !flowStopped
+            && !CallGiven(topic, newPoint, message))
+          {
+            flowStopped = true;
+          }
+				}
+			}
+
+      return new PushWhenResult(messages, flowStopped);
+    }
+
+    private bool CallGiven(Topic topic, PendingPoint newPoint, TimelineMessage message)
+    {
+      var thenPoint = new FlowPoint(newPoint.ThenRoute, message.Point);
+
+      try
+      {
+        var topicEvent = (TopicEvent) topic.Context.Type.Events.Get(message.Point.EventType);
+
+        var call = new FlowCall.Given(thenPoint, topicEvent);
+
+        call.Make(topic);
+
+        return true;
+      }
+      catch(Exception error)
+      {
+        Log.Error(error, "[timeline] Flow {Flow:l} stopped", topic.Context.Key);
+
+        PushStopped(thenPoint, error);
+
+        return false;
+      }
+    }
+
+    //
+    // Push new point
+    //
+
+    private TimelineMessage PushNewPoint(PendingPoint point)
+		{
+			var message = point.ToMessage(IncrementPosition());
+
+			InitializeNewFlows(message);
+
+			return message;
+		}
+
+		private TimelinePosition IncrementPosition()
 		{
 			return new TimelinePosition(Interlocked.Increment(ref _position));
 		}
 
-		private Many<TimelineRoute> RouteEvent(EventType type, Event e)
+		private void InitializeNewFlows(TimelineMessage message)
 		{
-			var routes = type.CallRoute(e).ToMany();
-
-			foreach(var route in routes)
+			foreach(var route in message.Routes)
 			{
-				if(!_flowsByKey.ContainsKey(route.Key) && (route.IsFirst || route.Key.Type.IsSingleInstance))
+				if(!_flowsByKey.ContainsKey(route.Key) && (route.First || route.Key.Type.IsSingleInstance))
 				{
 					var flow = route.Key.Type.New();
 
-					Flow.Initialize(flow, route.Key);
+          FlowContext.Bind(flow, route.Key);
 
 					_flowsByKey[route.Key] = flow;
 				}
 			}
-
-			return routes;
 		}
 
 		//
 		// Views
 		//
+
+		public ViewSnapshot<string> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint)
+		{
+			return ReadView(type, id, checkpoint, view => JsonFormat.Text.Serialize(view).ToString());
+		}
 
 		public ViewSnapshot<View> ReadSnapshot(Type type, Id id, TimelinePosition checkpoint)
 		{
@@ -136,11 +208,6 @@ namespace Totem.Runtime.Timeline
 		public ViewSnapshot<T> ReadSnapshot<T>(Id id, TimelinePosition checkpoint) where T : View
 		{
 			return ReadView(typeof(T), id, checkpoint, view => (T) view);
-		}
-
-		public ViewSnapshot<string> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint)
-		{
-			return ReadView(type, id, checkpoint, view => JsonFormat.Text.Serialize(view).ToString());
 		}
 
 		private ViewSnapshot<T> ReadView<T>(Type type, Id id, TimelinePosition checkpoint, Func<Flow, T> selectContent)
@@ -153,12 +220,14 @@ namespace Totem.Runtime.Timeline
 			{
 				return ViewSnapshot<T>.OfNotFound(key);
 			}
-
-			ExpectNot(view.Done, "View is done and marked for removal: " + key.ToText());
-
-			return view.Checkpoint == checkpoint
-				? ViewSnapshot<T>.OfNotModified(key, checkpoint)
-				: ViewSnapshot<T>.OfContent(key, view.Checkpoint, selectContent(view));
+			else if(view.Context.CheckpointPosition == checkpoint)
+			{
+				return ViewSnapshot<T>.OfNotModified(key, checkpoint);
+			}
+			else
+			{
+				return ViewSnapshot<T>.OfContent(key, view.Context.CheckpointPosition, selectContent(view));
+			}
 		}
 	}
 }

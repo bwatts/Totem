@@ -19,9 +19,9 @@ namespace Totem.Runtime.Timeline
       _timeline = timeline;
     }
 
-    public void Push(TimelinePoint point)
+    public void Push(TimelineMessage message)
     {
-      var requestId = Flow.Traits.RequestId.Get(point.Event);
+      var requestId = Flow.Traits.RequestId.Get(message.Point.Event);
 
       if(requestId.IsAssigned)
       {
@@ -29,8 +29,18 @@ namespace Totem.Runtime.Timeline
 
         if(_requestsById.TryGetValue(requestId, out request))
         {
-          request.Push(point);
+          request.Push(message);
         }
+      }
+    }
+
+    internal void TryPushError(Id requestId, Exception error)
+    {
+      TimelineRequest request;
+
+      if(_requestsById.TryGetValue(requestId, out request))
+      {
+        request.PushError(error);
       }
     }
 

@@ -10,19 +10,18 @@ using Totem.Runtime.Timeline;
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// Registers <see cref="FlowEvent"/> instances for a specific flow type
+	/// Registers <see cref="WhenObservation"/> instances for a specific flow type
 	/// </summary>
 	internal sealed class RuntimeReaderFlow : Notion
 	{
-		private sealed class MethodLookup<TMethod> : Dictionary<EventType, FlowMethodSet<TMethod>> where TMethod : FlowMethod
-		{}
-
 		private readonly HashSet<EventType> _events = new HashSet<EventType>();
-		private readonly MethodLookup<FlowGiven> _givenLookup = new MethodLookup<FlowGiven>();
-		private readonly MethodLookup<FlowWhen> _whenLookup = new MethodLookup<FlowWhen>();
-    private readonly Dictionary<EventType, FlowRoute> _routesByEvent = new Dictionary<EventType, FlowRoute>();
+    private readonly Dictionary<EventType, RouteMethod> _routesByEvent = new Dictionary<EventType, RouteMethod>();
+		private readonly Dictionary<EventType, FlowMethodSet<WhenMethod>> _whensByEvent = new Dictionary<EventType, FlowMethodSet<WhenMethod>>();
+		private readonly Dictionary<EventType, FlowMethodSet<GivenMethod>> _givensByEvent = new Dictionary<EventType, FlowMethodSet<GivenMethod>>();
     private readonly RuntimeMap _map;
     private readonly FlowType _flow;
+		private MethodInfo _method;
+		private EventType _event;
 
 		internal RuntimeReaderFlow(RuntimeMap map, FlowType flow)
 		{
@@ -47,240 +46,300 @@ namespace Totem.Runtime
           | BindingFlags.Static
           | BindingFlags.Instance
           | BindingFlags.DeclaredOnly)
+				orderby method.Name.StartsWith("Route")
         select method)
       {
+				_method = method;
+
         switch(method.Name)
         {
           case "Route":
-            TryRegisterMethod(method, e => RegisterRoute(method, e), expectStatic: true);
+            TryRegisterMethod(() => RegisterRoute(), expectStatic: true);
             break;
 					case "RouteFirst":
-						TryRegisterMethod(method, e => RegisterRoute(method, e, isFirst: true), expectStatic: true);
+						TryRegisterMethod(() => RegisterRoute(isFirst: true), expectStatic: true);
+						break;
+					case "When":
+						TryRegisterMethod(() => RegisterWhen());
+						break;
+					case "WhenScheduled":
+						TryRegisterMethod(() => RegisterWhen(scheduled: true));
 						break;
 					case "Given":
-            TryRegisterMethod(method, e => RegisterGiven(method, e));
+            TryRegisterMethod(() => RegisterGiven());
             break;
           case "GivenScheduled":
-            TryRegisterMethod(method, e => RegisterGiven(method, e, scheduled: true));
-            break;
-          case "When":
-            TryRegisterMethod(method, e => RegisterWhen(method, e));
-            break;
-          case "WhenScheduled":
-            TryRegisterMethod(method, e => RegisterWhen(method, e, scheduled: true));
+            TryRegisterMethod(() => RegisterGiven(scheduled: true));
             break;
           default:
-            WarnIfPossiblyMisspelled(method);
+            WarnIfMethodPossiblyMisspelled();
             break;
         }
       }
     }
 
-    private void TryRegisterMethod(MethodInfo method, Action<EventType> register, bool expectStatic = false)
+    private void TryRegisterMethod(Action register, bool expectStatic = false)
     {
-      if(expectStatic && !method.IsStatic)
+      if(expectStatic && !_method.IsStatic)
       {
-        Log.Warning("[runtime] Flow method is not static: {Type}.{Name}", method.DeclaringType.FullName, method.Name);
+        Log.Warning("[runtime] Flow method is not static: {Type}.{Method}", _method.DeclaringType.FullName, _method.Name);
       }
-      else if(!expectStatic && method.IsStatic)
+      else if(!expectStatic && _method.IsStatic)
       {
-        Log.Warning("[runtime] Flow method is static: {Type}.{Name}", method.DeclaringType.FullName, method.Name);
+        Log.Warning("[runtime] Flow method is static: {Type}.{Method}", _method.DeclaringType.FullName, _method.Name);
       }
-      else if(!method.IsPrivate)
+      else if(!_method.IsPrivate)
       {
-        Log.Warning("[runtime] Flow method is not private: {Type}.{Name}", method.DeclaringType.FullName, method.Name);
+        Log.Warning("[runtime] Flow method is not private: {Type}.{Method}", _method.DeclaringType.FullName, _method.Name);
       }
       else
       {
-        EventType e;
-
-        if(TryReadEvent(method, out e))
+        if(TryReadEvent())
         {
-          register(e);
+          register();
         }
       }
     }
 
-    private bool TryReadEvent(MethodInfo method, out EventType e)
+    private bool TryReadEvent()
     {
-      e = null;
-
-      var firstParameter = method.GetParameters().FirstOrDefault();
+      var firstParameter = _method.GetParameters().FirstOrDefault();
       var firstParameterType = firstParameter?.ParameterType;
 
       if(firstParameterType == null || !typeof(Event).IsAssignableFrom(firstParameterType))
       {
-        Log.Warning("[runtime] Flow method {Type}.{Name} does not have an event as the first parameter", method.DeclaringType.FullName, method.Name);
+        Log.Warning("[runtime] {Type}.{Method} does not have an event as the first parameter", _method.DeclaringType.FullName, _method.Name);
       }
       else
       {
-        e = _map.GetEvent(firstParameterType, strict: false);
+				_event = _map.GetEvent(firstParameterType, strict: false);
 
-        if(e != null)
+        if(_event != null)
         {
-          _events.Add(e);
+          _events.Add(_event);
         }
         else
         {
           Log.Warning(
-            "[runtime] Flow method {Type}.{Name} first parameter {Parameter} has event type {Event} that is not in the map",
-            method.DeclaringType.FullName,
-            method.Name,
+						"[runtime] Flow method {Type}.{Method} first parameter {Parameter} has event type {Event} that is not in the map",
+						_method.DeclaringType.FullName,
+						_method.Name,
             firstParameter.Name,
             firstParameterType);
         }
       }
 
-      return e != null;
+      return _event != null;
     }
 
-    private void RegisterRoute(MethodInfo method, EventType e, bool isFirst = false)
+    private void RegisterRoute(bool isFirst = false)
     {
       // Take only the first route method we see for a type - RegisterMethods calls in order of most-to-least derived
 
-      if(!_routesByEvent.ContainsKey(e))
+      if(!_routesByEvent.ContainsKey(_event))
       {
-        TryRegisterRoute(method, e, isFirst);
+        TryRegisterRoute(isFirst);
       }
     }
 
-    private void TryRegisterRoute(MethodInfo method, EventType e, bool isFirst)
+    private void TryRegisterRoute(bool isFirst)
     {
       if(_flow.IsRequest)
       {
-        Log.Warning("[timeline] {Type} is a request and cannot have Route methods", method.DeclaringType.FullName);
+        Log.Warning("[timeline] {Type} is a request and cannot have {Method} methods", _method.DeclaringType.FullName, _method.Name);
       }
-      else if(method.ReturnType == typeof(Id) || typeof(IEnumerable<Id>).IsAssignableFrom(method.ReturnType))
+      else if(_method.ReturnType == typeof(Id) || typeof(IEnumerable<Id>).IsAssignableFrom(_method.ReturnType))
       {
-				_routesByEvent.Add(e, new FlowRoute(method, e, _flow, isFirst));
+				_routesByEvent.Add(_event, new RouteMethod(_method, _event, _flow, isFirst));
       }
       else
       {
         Log.Warning(
-          "[timeline] Route method {Type}.{Name}({Event}) does not return one or many Id values",
-          method.DeclaringType.FullName,
-          method.Name,
-          e);
+          "[timeline] {Type}.{Method}({Event}) does not return one or many Id values",
+					_method.DeclaringType.FullName,
+					_method.Name,
+          _event);
       }
     }
 
-    private void RegisterGiven(MethodInfo method, EventType e, bool scheduled = false)
+    private void RegisterWhen(bool scheduled = false)
     {
-      RegisterMethod(e, _givenLookup, new FlowGiven(method, e), scheduled);
+			RegisterMethods(_whensByEvent, new WhenMethod(_method, _event, ReadWhenDependencies()), scheduled);
     }
 
-    private void RegisterWhen(MethodInfo method, EventType e, bool scheduled = false)
-    {
-      RegisterMethod(e, _whenLookup, new FlowWhen(method, e, ReadWhenDependencies(method)), scheduled);
-    }
-
-    private static void RegisterMethod<T>(EventType e, MethodLookup<T> lookup, T method, bool scheduled) where T : FlowMethod
-    {
-      FlowMethodSet<T> methods;
-
-      if(!lookup.TryGetValue(e, out methods))
-      {
-        methods = new FlowMethodSet<T>();
-
-        lookup.Add(e, methods);
-      }
-
-      if(scheduled)
-      {
-        methods.ScheduledMethods.Write.Add(method);
-      }
-      else
-      {
-        methods.Methods.Write.Add(method);
-      }
-    }
-
-    private static Many<WhenDependency> ReadWhenDependencies(MethodInfo method)
-    {
-      return method.GetParameters().Skip(1).Select(ReadWhenDependency).ToMany();
-    }
-
-    private static WhenDependency ReadWhenDependency(ParameterInfo parameter)
-    {
-      var attribute = parameter.GetCustomAttribute<WhenDependencyAttribute>(inherit: true);
-
-      return attribute != null
-        ? attribute.GetDependency(parameter)
-        : WhenDependency.Typed(parameter);
-    }
-
-    private void WarnIfPossiblyMisspelled(MethodInfo method)
+		private void RegisterGiven(bool scheduled = false)
 		{
-      if(method.DeclaringType == typeof(Topic) || method.DeclaringType == typeof(View))
-      {
-        return;
-      }
-
-      foreach(var knownName in Many.Of("Route", "Given", "GivenScheduled", "When", "WhenScheduled"))
-      {
-        if(Text.EditDistance(method.Name, knownName) <= 2)
-        {
-          Log.Warning("[runtime] Flow method '{Method}' possibly misspelled: {Type}.{Name}", knownName, method.DeclaringType.FullName, method.Name);
-
-          break;
-        }
-      }
+			if(!_flow.IsTopic)
+			{
+				Log.Warning("[timeline] {Type} is not a topic and cannot have {Method} methods", _method.DeclaringType.FullName, _method.Name);
+			}
+			else if(_method.GetParameters().Length > 1)
+			{
+				Log.Warning("[timeline] {Type}.{Method}({Event}, ...) is solely for state and cannot have dependencies", _method.DeclaringType.FullName, _method.Name, _event);
+			}
+			else
+			{
+				RegisterMethods(_givensByEvent, new GivenMethod(_method, _event), scheduled);
+			}
 		}
+
+		private void RegisterMethods<T>(Dictionary<EventType, FlowMethodSet<T>> methodsByEvent, T method, bool scheduled) where T : FlowMethod
+    {
+			FlowMethodSet<T> methods;
+
+      if(!methodsByEvent.TryGetValue(_event, out methods))
+      {
+				methods = new FlowMethodSet<T>();
+
+        methodsByEvent.Add(_event, methods);
+      }
+
+			methods.SelectMethods(scheduled).Write.Add(method);
+    }
+
+    private Many<WhenDependency> ReadWhenDependencies()
+    {
+			return _method.GetParameters().Skip(1).ToMany(parameter =>
+			{
+				var attribute = parameter.GetCustomAttribute<WhenDependencyAttribute>(inherit: true);
+
+				return attribute != null
+					? attribute.GetDependency(parameter)
+					: WhenDependency.Typed(parameter);
+			});
+    }
+
+		private void WarnIfMethodPossiblyMisspelled()
+		{
+			if(_method.DeclaringType == typeof(Topic) || _method.DeclaringType == typeof(View))
+			{
+				return;
+			}
+
+			foreach(var knownMethodName in GetKnownMethodNames())
+			{
+				if(Text.EditDistance(_method.Name, knownMethodName) <= 2)
+				{
+					Log.Warning("[runtime] Flow method \"{Method}\" possibly misspelled: {Type}.{Method}", knownMethodName, _method.DeclaringType.FullName, _method.Name);
+
+					break;
+				}
+			}
+		}
+
+		private IEnumerable<string> GetKnownMethodNames()
+		{
+			yield return "When";
+			yield return "WhenScheduled";
+
+			if(!_flow.IsRequest)
+			{
+				yield return "Route";
+				yield return "RouteFirst";
+			}
+
+			if(_flow.IsTopic)
+			{
+				yield return "Given";
+				yield return "GivenScheduled";
+			}
+		}
+
+		//
+		// Events
+		//
 
 		private void RegisterEvents()
 		{
-      var unroutedEvents = new List<EventType>();
+			var unrouted = RouteEvents().ToMany();
 
+			ExpectNoneOrAllUnrouted(unrouted);
+
+			SetRoutedOrSingleInstance(unrouted);
+    }
+
+		private IEnumerable<EventType> RouteEvents()
+		{
 			foreach(var e in _events)
 			{
-				FlowMethodSet<FlowGiven> given;
-				FlowMethodSet<FlowWhen> when;
-        FlowRoute route;
+				_event = e;
 
-				if(!_givenLookup.TryGetValue(e, out given))
+				if(!RouteEvent())
 				{
-					given = new FlowMethodSet<FlowGiven>();
+					yield return e;
 				}
+			}
+		}
 
-				if(!_whenLookup.TryGetValue(e, out when))
-				{
-					when = new FlowMethodSet<FlowWhen>();
-				}
+		private bool RouteEvent()
+		{
+			RouteMethod route;
+			FlowMethodSet<WhenMethod> when;
 
-        if(!_routesByEvent.TryGetValue(e, out route))
-        {
-          unroutedEvents.Add(e);
-        }
+			var hasRoute = _routesByEvent.TryGetValue(_event, out route);
 
-				var flowEvent = new FlowEvent(_flow, e, given, when, route);
-
-				_flow.Events.Register(flowEvent);
-
-				e.RegisterFlow(flowEvent);
+			if(!_whensByEvent.TryGetValue(_event, out when))
+			{
+				when = new FlowMethodSet<WhenMethod>();
 			}
 
-      if(unroutedEvents.Count > 0 && unroutedEvents.Count < _events.Count)
-      {
-        throw new Exception($"Flow {_flow} specifies routes but is missing some: {unroutedEvents.ToTextSeparatedBy(", ")}");
-      }
+			FlowEvent flowEvent;
 
+			if(_flow.IsTopic)
+			{
+				FlowMethodSet<GivenMethod> given;
+
+				if(!_givensByEvent.TryGetValue(_event, out given))
+				{
+					given = new FlowMethodSet<GivenMethod>();
+				}
+
+				flowEvent = new TopicEvent(_flow, _event, route, when, given);
+			}
+			else
+			{
+				flowEvent = new FlowEvent(_flow, _event, route, when);
+			}
+
+			_flow.RegisterEvent(flowEvent);
+
+			_event.RegisterFlow(flowEvent);
+
+			return hasRoute;
+		}
+
+		private void ExpectNoneOrAllUnrouted(Many<EventType> unrouted)
+		{
+			if(unrouted.Count > 0 && unrouted.Count < _events.Count)
+			{
+				throw new Exception($"Flow {_flow} specifies routes but is missing some: {unrouted.ToTextSeparatedBy(", ")}");
+			}
+		}
+
+		private void SetRoutedOrSingleInstance(Many<EventType> unrouted)
+		{
 			if(_flow.IsRequest)
 			{
 				_flow.SetRouted();
 			}
-			else if(_events.Count > 0 && unroutedEvents.Count == 0)
+			else if(_events.Count > 0 && unrouted.Count == 0)
 			{
-				if(!_flow.Events.Any(e => e.Route.IsFirst))
-				{
-					throw new Exception($"Flow {_flow} specifies routes but no RouteFirst methods");
-				}
+				ExpectRouteFirst();
 
 				_flow.SetRouted();
 			}
-      else
-      {
-        _flow.SetSingleInstance();
-      }
-    }
+			else
+			{
+				_flow.SetSingleInstance();
+			}
+		}
+
+		private void ExpectRouteFirst()
+		{
+			if(!_flow.Events.Any(e => e.Route.First))
+			{
+				throw new Exception($"Flow {_flow} specifies routes but no RouteFirst methods");
+			}
+		}
 	}
 }

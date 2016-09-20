@@ -15,7 +15,9 @@ namespace Totem.Runtime.Timeline
 			Flow = flow;
 		}
 
-    protected readonly IFlowScope Flow;
+    internal readonly IFlowScope Flow;
+
+    internal abstract bool Responded { get; }
 
     protected override void Open()
     {
@@ -26,16 +28,40 @@ namespace Totem.Runtime.Timeline
       base.Open();
     }
 
-		internal void Push(TimelinePoint point)
+		internal void Push(TimelineMessage message)
 		{
-      if(Flow.Key.Type.CanCall(point.EventType))
-      {
-        Flow.Push(point);
+			if(Flow.Key.Type.Events.Contains(message.Point.EventType))
+			{
+        var route = new FlowRoute(Flow.Key, first: false, when: true, given: false, then: false);
+
+        Flow.Push(new FlowPoint(route, message.Point));
       }
 		}
 
+    internal void PushError(Exception error)
+    {
+      if(Responded)
+      {
+        return;
+      }
+
+      try
+      {
+        RespondError(error);
+      }
+      finally
+      {
+        Close();
+      }
+    }
+
     private void Respond()
     {
+      if(Responded)
+      {
+        return;
+      }
+
       try
       {
         RespondFromTask();
@@ -50,7 +76,7 @@ namespace Totem.Runtime.Timeline
 		{
 			if(Flow.Task.IsCompleted)
 			{
-				RespondCompleted(Flow.Task.Result);
+				RespondCompleted(Flow.Instance);
 			}
 			else if(Flow.Task.IsFaulted)
 			{
@@ -62,7 +88,7 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		internal abstract void RespondCompleted(Flow instance);
+    internal abstract void RespondCompleted(Flow instance);
 
 		internal abstract void RespondError(Exception error);
 
@@ -81,6 +107,8 @@ namespace Totem.Runtime.Timeline
 		{}
 
 		internal Task<T> Task => _taskCompletionSource.Task;
+
+    internal override bool Responded => Task.IsCompleted || Task.IsFaulted || Task.IsCanceled;
 
 		internal override void RespondCompleted(Flow instance)
 		{

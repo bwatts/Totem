@@ -34,7 +34,7 @@ namespace Totem.Runtime.Timeline
 				{
 					_schedule.Push(message);
 					_flows.Push(message);
-					_requests.Push(message.Point);
+					_requests.Push(message);
 				}));
 		}
 

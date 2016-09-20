@@ -6,7 +6,7 @@ using System.Reflection;
 namespace Totem.Runtime.Map.Timeline
 {
 	/// <summary>
-	/// A method observing an event in a <see cref="Flow"/>
+	/// A method observing an event within a <see cref="Flow"/>
 	/// </summary>
 	public abstract class FlowMethod
 	{

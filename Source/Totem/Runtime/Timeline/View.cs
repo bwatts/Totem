@@ -19,11 +19,6 @@ namespace Totem.Runtime.Timeline
     public DateTime WhenCreated { get; }
     public DateTime WhenModified { get; private set; }
 
-    [Transient] public new ViewType Type => (ViewType) base.Type;
-
-    public void OnModified()
-    {
-      WhenModified = Clock.Now;
-    }
-  }
+    public void OnModified() => WhenModified = Clock.Now;
+	}
 }

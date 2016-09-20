@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -10,6 +9,6 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public abstract class Request : Flow
 	{
-    [Transient] public new RequestType Type => (RequestType) base.Type;
-  }
+    
+	}
 }

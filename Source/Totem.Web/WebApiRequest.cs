@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Nancy;
-using Totem.Http;
 using Totem.IO;
-using Totem.Runtime.Timeline;
 
 namespace Totem.Web
 {
@@ -85,8 +83,6 @@ namespace Totem.Web
 
 		protected void RespondNotFound(string reason)
 		{
-			Log.Error("[web] 404 Not Found: {Reason:l}", reason);
-
 			Respond(HttpStatusCode.NotFound, reason);
 		}
 
@@ -94,8 +90,6 @@ namespace Totem.Web
 
 		protected void RespondConflict(string reason)
 		{
-			Log.Error("[web] 409 Conflict: {Reason:l}", reason);
-
 			Respond(HttpStatusCode.Conflict, reason);
 		}
 
@@ -103,8 +97,6 @@ namespace Totem.Web
 
 		protected void RespondUnprocessableEntity(string reason)
 		{
-			Log.Error("[web] 422 Unprocessable entity: {Reason:l}", reason);
-
 			Respond(HttpStatusCode.UnprocessableEntity, reason);
 		}
 
@@ -134,13 +126,6 @@ namespace Totem.Web
           }
         }
       });
-		}
-
-		void When(FlowStopped e)
-		{
-			RespondError(
-				"Flow stopped: " + Text.Of(e.Type).WriteIf(e.Id.IsAssigned, $"/{e.Id}"),
-				e.Error);
 		}
 	}
 }

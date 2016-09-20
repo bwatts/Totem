@@ -9,14 +9,14 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public class TimelineMessage
 	{
-		public TimelineMessage(TimelinePoint point, Many<TimelineRoute> routes = null)
+		public TimelineMessage(TimelinePoint point, Many<FlowRoute> routes = null)
 		{
 			Point = point;
-			Routes = routes ?? new Many<TimelineRoute>();
+			Routes = routes ?? new Many<FlowRoute>();
 		}
 
 		public readonly TimelinePoint Point;
-		public readonly Many<TimelineRoute> Routes;
+		public readonly Many<FlowRoute> Routes;
 
 		public override string ToString() => Point.ToString();
 	}

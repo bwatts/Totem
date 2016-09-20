@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Totem.Runtime.Map;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -22,39 +20,78 @@ namespace Totem.Runtime.Timeline
 
     internal void Push(TimelineMessage message)
     {
+      var pushedRequestError = false;
+
 			foreach(var route in message.Routes)
 			{
-				IFlowScope flow;
+        try
+        {
+          Push(message, route);
+        }
+        catch(Exception error)
+        {
+          Log.Error("[timeline] Failed to push point {Point:l} to route {Route:l}", message.Point, route);
 
-				if(_flowsByKey.TryGetValue(route.Key, out flow))
-				{
-					flow.Push(message.Point);
-				}
-				else
-				{
-					if(_timeline.TryReadFlow(route, out flow))
-					{
-						_flowsByKey[route.Key] = flow;
+          if(!pushedRequestError)
+          {
+            pushedRequestError = true;
 
-						Connect(flow);
-
-						flow.Push(message.Point);
-					}
-				}
-			}
+            _timeline.TryPushRequestError(message.Point.RequestId, error);
+          }
+        }
+      }
     }
 
-		private void Connect(IFlowScope flow)
-		{
-			var connection = flow.Connect(this);
+    private void Push(TimelineMessage message, FlowRoute route)
+    {
+      IFlowScope flow;
 
-			flow.Task.ContinueWith(_ =>
-			{
-				_flowsByKey.Remove(flow.Key);
+      if(TryGetFlow(route, out flow) || TryReadFlow(route, out flow))
+      {
+        if(flow.Instance.Context.HasError)
+        {
+          _timeline.TryPushRequestError(message.Point.RequestId, new Exception($"Flow {flow.Key} is stopped"));
+        }
+        else
+        {
+          flow.Push(new FlowPoint(route, message.Point));
+        }
+      }
+    }
 
-				connection.Dispose();
-			},
-			State.CancellationToken);
-		}
+    private bool TryGetFlow(FlowRoute route, out IFlowScope flow)
+    {
+      return _flowsByKey.TryGetValue(route.Key, out flow);
+    }
+
+    private bool TryReadFlow(FlowRoute route, out IFlowScope flow)
+    {
+      if(_timeline.TryReadFlow(route, out flow))
+      {
+        _flowsByKey[route.Key] = flow;
+
+        var connection = flow.Connect(this);
+
+        var capturedFlow = flow;
+
+        flow.Task.ContinueWith(
+          _ => FinishFlow(capturedFlow, connection),
+          State.CancellationToken);
+      }
+
+      return flow != null;
+    }
+
+    private void FinishFlow(IFlowScope flow, IDisposable connection)
+    {
+      _flowsByKey.Remove(flow.Key);
+
+      connection.Dispose();
+
+      if(flow.Task.IsFaulted)
+      {
+        _timeline.TryPushRequestError(flow.Point.RequestId, flow.Task.Exception);
+      }
+    }
 	}
 }

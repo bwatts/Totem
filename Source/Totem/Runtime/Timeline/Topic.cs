@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -10,14 +9,15 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public abstract class Topic : Flow
 	{
-		[Transient] public new TopicType Type => (TopicType) base.Type;
-		[Transient] protected new TopicWhenCall WhenCall => (TopicWhenCall) base.WhenCall;
+		protected internal virtual bool ShouldSnapshot() => false;
 
 		protected void Then(Event e)
 		{
-			ExpectCallingWhen();
+			var whenCall = Call as FlowCall.TopicWhen;
 
-			WhenCall.Append(e);
+			Expect(whenCall).IsNotNull("Topic is not making a When call");
+
+			whenCall.Append(e);
 		}
 
 		protected void ThenDone(Event e)

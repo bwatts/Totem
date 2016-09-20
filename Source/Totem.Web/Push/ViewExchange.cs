@@ -60,7 +60,7 @@ namespace Totem.Web.Push
 
 			lock(_connectionsById)
 			{
-				subscribedView = GetViewOrNull(view.Key);
+				subscribedView = GetViewOrNull(view.Context.Key);
 			}
 
 			subscribedView?.PushUpdate(view);
@@ -223,10 +223,10 @@ namespace Totem.Web.Push
 
 			internal void PushUpdate(View view)
 			{
-				var etag = ViewETag.From(view.Key, view.Checkpoint);
+				var etag = ViewETag.From(view.Context.Key, view.Context.CheckpointPosition);
 				var diff = JsonFormat.Text.SerializeJson(view);
 
-				_updates.OnNext(new ViewUpdated(view.Key.ToString(), etag.ToString(), diff));
+				_updates.OnNext(new ViewUpdated(view.Context.Key.ToString(), etag.ToString(), diff));
 			}
 
 			private void WhenUpdated(ViewUpdated e)

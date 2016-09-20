@@ -10,12 +10,12 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	internal sealed class FlowQueue
 	{
-		private readonly Queue<TimelinePoint> _pendingPoints = new Queue<TimelinePoint>();
-		private TaskCompletionSource<TimelinePoint> _pendingDequeue;
+		private readonly Queue<FlowPoint> _pendingPoints = new Queue<FlowPoint>();
+		private TaskCompletionSource<FlowPoint> _pendingDequeue;
 
-		internal void Enqueue(TimelinePoint point)
+		internal void Enqueue(FlowPoint point)
 		{
-			TaskCompletionSource<TimelinePoint> pendingDequeue = null;
+			TaskCompletionSource<FlowPoint> pendingDequeue = null;
 			
 			lock(_pendingPoints)
 			{
@@ -37,7 +37,7 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		internal Task<TimelinePoint> Dequeue()
+		internal Task<FlowPoint> Dequeue()
 		{
 			lock(_pendingPoints)
 			{
@@ -46,7 +46,7 @@ namespace Totem.Runtime.Timeline
 					return Task.FromResult(_pendingPoints.Dequeue());
 				}
 
-				_pendingDequeue = new TaskCompletionSource<TimelinePoint>();
+				_pendingDequeue = new TaskCompletionSource<FlowPoint>();
 
 				return _pendingDequeue.Task;
 			}

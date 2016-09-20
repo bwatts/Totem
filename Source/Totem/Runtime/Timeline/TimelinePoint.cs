@@ -8,22 +8,30 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// An event at a position on the timeline
 	/// </summary>
-	public sealed class TimelinePoint
+	public class TimelinePoint
 	{
-		public TimelinePoint(TimelinePosition cause, TimelinePosition position, EventType eventType, Event e, bool scheduled = false)
+		public TimelinePoint(
+			TimelinePosition position,
+			TimelinePosition cause,
+			EventType eventType,
+			Event e,
+			bool scheduled = false)
 		{
-			Cause = cause;
 			Position = position;
+			Cause = cause;
 			EventType = eventType;
 			Event = e;
 			Scheduled = scheduled;
+
+      RequestId = Flow.Traits.RequestId.Get(e);
 		}
 
-		public readonly TimelinePosition Cause;
 		public readonly TimelinePosition Position;
+		public readonly TimelinePosition Cause;
 		public readonly EventType EventType;
 		public readonly Event Event;
 		public readonly bool Scheduled;
+    public readonly Id RequestId;
 
 		public override string ToString() => $"{Position} {EventType}";
 	}

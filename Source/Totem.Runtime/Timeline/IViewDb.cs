@@ -9,10 +9,10 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public interface IViewDb : IFluent
 	{
+		ViewSnapshot<string> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint);
+
 		ViewSnapshot<View> ReadSnapshot(Type type, Id id, TimelinePosition checkpoint);
 
 		ViewSnapshot<T> ReadSnapshot<T>(Id id, TimelinePosition checkpoint) where T : View;
-
-		ViewSnapshot<string> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint);
 	}
 }

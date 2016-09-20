@@ -46,38 +46,47 @@ namespace Totem.Runtime.Timeline
 			_queue.ResumeWith(resumeInfo);
 		}
 
-		public Task<T> MakeRequest<T>(Event e) where T : Request
+		public Task<T> MakeRequest<T>(TimelinePosition cause, Event e) where T : Request
 		{
 			var id = Flow.Traits.EnsureRequestId(e);
 
 			var task = _requests.MakeRequest<T>(id);
 
-			Push(Many.Of(e));
+			Push(cause, e);
 
 			return task;
 		}
 
-		public void Push(Many<Event> events)
+		public void Push(TimelinePosition cause, Event e)
 		{
-			_queue.Enqueue(_timelineDb.Push(events));
+			_queue.Enqueue(_timelineDb.Push(cause, e));
 		}
 
-		internal void PushFromSchedule(TimelineMessage message)
+    internal void PushFromSchedule(TimelineMessage message)
 		{
-			_queue.Enqueue(_timelineDb.PushFromSchedule(message));
+			_queue.Enqueue(_timelineDb.PushScheduled(message));
 		}
 
-		internal void PushCall(WhenCall call)
+		internal PushWhenResult PushWhen(Flow flow, FlowCall.When call)
 		{
-			_queue.Enqueue(_timelineDb.PushCall(call));
+      var result = _timelineDb.PushWhen(flow, call);
+
+      _queue.Enqueue(result.Messages);
+
+      return result;
 		}
 
-		internal ClaimsPrincipal ReadPrincipal(TimelinePoint point)
+    internal void TryPushRequestError(Id requestId, Exception error)
+    {
+      _requests.TryPushError(requestId, error);
+    }
+
+    internal ClaimsPrincipal ReadPrincipal(FlowPoint point)
 		{
 			return new ClaimsPrincipal();
 		}
 
-		internal bool TryReadFlow(TimelineRoute route, out IFlowScope flow)
+		internal bool TryReadFlow(FlowRoute route, out IFlowScope flow)
 		{
 			Flow instance;
 
@@ -94,14 +103,14 @@ namespace Totem.Runtime.Timeline
 
 			var request = type.New();
 
-			Flow.Initialize(request, FlowKey.From(type, id));
+      FlowContext.Bind(request, FlowKey.From(type, id));
 
 			return new TimelineRequest<T>(new FlowScope(_lifetime, this, _viewExchange, request));
 		}
 
-		internal void PushFlowStopped(FlowKey key, TimelinePoint point, Exception error)
+		internal void PushStopped(FlowPoint point, Exception error)
 		{
-			_queue.Enqueue(_timelineDb.PushFlowStopped(key, point, error));
+			_queue.Enqueue(_timelineDb.PushStopped(point, error));
 		}
 	}
 }

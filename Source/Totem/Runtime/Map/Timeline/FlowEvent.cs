@@ -7,61 +7,68 @@ using Totem.Runtime.Timeline;
 namespace Totem.Runtime.Map.Timeline
 {
 	/// <summary>
-	/// An event observed by a <see cref="Flow"/>
+	/// An event type observed within a flow
 	/// </summary>
-	public sealed class FlowEvent
+	public class FlowEvent
 	{
-		private readonly Many<TimelineRoute> _singleInstanceRoute;
-
-		internal FlowEvent(
-			FlowType flowType,
-			EventType eventType,
-      FlowMethodSet<FlowGiven> given,
-			FlowMethodSet<FlowWhen> when,
-      FlowRoute route = null)
+		internal FlowEvent(FlowType flowType, EventType eventType, RouteMethod route, FlowMethodSet<WhenMethod> when)
 		{
-      FlowType = flowType;
+			FlowType = flowType;
 			EventType = eventType;
-      Given = given;
+			Route = route;
+			HasRoute = route != null;
 			When = when;
-      Route = route;
-      HasRoute = route != null;
 
-			if(route == null)
+			if(!HasRoute)
 			{
-				_singleInstanceRoute = Many.Of(new TimelineRoute(FlowKey.From(flowType, Id.Unassigned)));
-			}
-    }
-
-    public readonly FlowType FlowType;
-		public readonly EventType EventType;
-    public readonly FlowMethodSet<FlowGiven> Given;
-		public readonly FlowMethodSet<FlowWhen> When;
-    public readonly FlowRoute Route;
-    public readonly bool HasRoute;
-
-		public override string ToString() => $"{EventType} => {FlowType}";
-
-		public IEnumerable<TimelineRoute> CallRoute(Event e)
-    {
-			return HasRoute ? Route.Call(e) : _singleInstanceRoute;
-    }
-
-    public void CallGiven(Flow flow, TimelinePoint point)
-		{
-			foreach(var given in Given.SelectMethods(point))
-			{
-        given.Call(flow, point.Event);
+				SingleInstanceRoute = new FlowRoute(
+					FlowKey.From(flowType),
+					first: false,
+					when: true,
+					given: false,
+					then: false);
 			}
 		}
 
-		public async Task CallWhen(Flow flow, TimelinePoint point, IDependencySource dependencies)
-		{
-			CallGiven(flow, point);
+		public readonly FlowType FlowType;
+		public readonly EventType EventType;
+		public readonly RouteMethod Route;
+		public readonly bool HasRoute;
+		public readonly FlowMethodSet<WhenMethod> When;
+		protected readonly FlowRoute SingleInstanceRoute;
 
-			foreach(var when in When.SelectMethods(point))
+		public override string ToString() => $"{EventType} => {FlowType}";
+
+		public IEnumerable<FlowRoute> RouteWhen(Event e, bool scheduled = false)
+		{
+			if(When.SelectMethods(scheduled).Count == 0)
 			{
-				await when.Call(flow, point.Event, dependencies);
+				yield break;
+			}
+
+			if(HasRoute)
+			{
+				foreach(var id in Route.Call(e))
+				{
+					yield return new FlowRoute(
+						FlowKey.From(Route.FlowType, id),
+						Route.First,
+						when: true,
+						given: false,
+						then: false);
+				}
+			}
+			else
+			{
+				yield return SingleInstanceRoute;
+			}
+		}
+
+		public async Task CallWhen(Flow flow, FlowCall.When call)
+		{
+			foreach(var whenMethod in When.SelectMethods(call.Point.Scheduled))
+			{
+				await whenMethod.Call(flow, call.Point.Event, call.Dependencies);
 			}
 		}
 	}

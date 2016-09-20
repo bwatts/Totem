@@ -11,14 +11,14 @@ namespace Totem.Runtime.Timeline
 	{
 		ResumeInfo ReadResumeInfo();
 
-		bool TryReadFlow(TimelineRoute route, out Flow flow);
+		bool TryReadFlow(FlowRoute route, out Flow flow);
 
-		Many<TimelineMessage> Push(Many<Event> events);
+    TimelineMessage Push(TimelinePosition cause, Event e);
 
-		Many<TimelineMessage> PushCall(WhenCall call);
+		TimelineMessage PushScheduled(TimelineMessage message);
 
-		TimelineMessage PushFromSchedule(TimelineMessage message);
+		TimelineMessage PushStopped(FlowPoint point, Exception error);
 
-		TimelineMessage PushFlowStopped(FlowKey key, TimelinePoint point, Exception error);
-	}
+    PushWhenResult PushWhen(Flow flow, FlowCall.When call);
+  }
 }

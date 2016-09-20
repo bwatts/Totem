@@ -136,11 +136,13 @@
     <Compile Include="Hosting\SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Timeline\FlowScope.cs" />
-    <Compile Include="Timeline\IFlowScope.cs" />
     <Compile Include="Timeline\IViewDb.cs" />
     <Compile Include="Timeline\IViewExchange.cs" />
     <Compile Include="Timeline\LocalTimelineDb.cs" />
+    <Compile Include="Timeline\FlowScope.cs" />
+    <Compile Include="Timeline\IFlowScope.cs" />
+    <Compile Include="Timeline\PendingPoint.cs" />
+    <Compile Include="Timeline\PushWhenResult.cs" />
     <Compile Include="Timeline\TimelineFlowSet.cs" />
     <Compile Include="Timeline\TimelineMessage.cs" />
     <Compile Include="Timeline\TimelineQueue.cs" />

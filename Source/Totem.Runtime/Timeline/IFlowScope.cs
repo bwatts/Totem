@@ -10,10 +10,14 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public interface IFlowScope : IConnectable
 	{
-		FlowKey Key { get; }
+    Flow Instance { get; }
 
-		Task<Flow> Task { get; }
+    FlowKey Key { get; }
 
-    void Push(TimelinePoint point);
+    FlowPoint Point { get; }
+
+    Task Task { get; }
+
+    void Push(FlowPoint point);
   }
 }
