@@ -17,7 +17,7 @@ namespace Totem.Runtime.Timeline
 
 		public ResumeInfo ReadResumeInfo()
 		{
-			return new ResumeInfo(new TimelinePosition(0));
+      return new ResumeInfo();
 		}
 
 		public bool TryReadFlow(FlowRoute route, out Flow flow)
@@ -57,7 +57,7 @@ namespace Totem.Runtime.Timeline
           ? PushTopicWhen((Topic) flow, topicCall)
           : new PushWhenResult();
 
-        if(result.FlowStopped || flow.Context.Done)
+        if(result.GivenError || flow.Context.Done)
         {
           _flowsByKey.Remove(flow.Context.Key);
         }
@@ -78,7 +78,12 @@ namespace Totem.Runtime.Timeline
 
 				if(point.Scheduled)
 				{
-					Log.Info("[timeline] {Cause:l} ++ {Position:l} >> {EventType:l} @ {When}", point.Cause, message.Point.Position, point.EventType, point.ScheduledEvent.When);
+					Log.Info(
+            "[timeline] {Cause:l} ++ {Position:l} >> {EventType:l} @ {When}",
+            point.Cause,
+            message.Point.Position,
+            point.ScheduledEventType,
+            point.ScheduledEvent.When);
 				}
 				else if(point.HasTopicKey)
 				{
@@ -112,7 +117,7 @@ namespace Totem.Runtime.Timeline
         .ToMany(e => new PendingPoint(topic.Context.Key, call.Point.Position, e));
 
       var messages = new Many<TimelineMessage>();
-      var flowStopped = false;
+      var givenError = false;
 
 			lock(_flowsByKey)
 			{
@@ -123,15 +128,15 @@ namespace Totem.Runtime.Timeline
           messages.Write.Add(message);
 
           if(newPoint.HasThenRoute
-            && !flowStopped
+            && !givenError
             && !CallGiven(topic, newPoint, message))
           {
-            flowStopped = true;
+            givenError = true;
           }
 				}
 			}
 
-      return new PushWhenResult(messages, flowStopped);
+      return new PushWhenResult(messages, givenError);
     }
 
     private bool CallGiven(Topic topic, PendingPoint newPoint, TimelineMessage message)

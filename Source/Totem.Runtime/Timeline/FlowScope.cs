@@ -192,7 +192,7 @@ namespace Totem.Runtime.Timeline
     {
       var result = _timeline.PushWhen(Instance, call);
 
-      if(result.FlowStopped)
+      if(result.GivenError)
       {
         CompleteTask();
       }

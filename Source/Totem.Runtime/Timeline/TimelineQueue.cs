@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -12,18 +13,19 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	internal sealed class TimelineQueue : Connection
 	{
-		private readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
-		private readonly SortedDictionary<TimelinePosition, TimelineMessage> _futureMessages = new SortedDictionary<TimelinePosition, TimelineMessage>();
-		private readonly TimelineSchedule _schedule;
-		private readonly TimelineFlowSet _flows;
+    private readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
+    private readonly TimelineSchedule _schedule;
+    private readonly TimelineFlowSet _flows;
 		private readonly TimelineRequestSet _requests;
-		private TimelinePosition _nextPosition;
+    private readonly EnqueueTransactionSet _transactions;
 
-		internal TimelineQueue(TimelineSchedule schedule, TimelineFlowSet flows, TimelineRequestSet requests)
+    internal TimelineQueue(TimelineSchedule schedule, TimelineFlowSet flows, TimelineRequestSet requests)
 		{
 			_schedule = schedule;
 			_flows = flows;
 			_requests = requests;
+
+      _transactions = new EnqueueTransactionSet(this);
 		}
 
 		protected override void Open()
@@ -38,98 +40,163 @@ namespace Totem.Runtime.Timeline
 				}));
 		}
 
-		internal void ResumeWith(ResumeInfo info)
-		{
-			_nextPosition = info.NextPosition;
+    internal void ResumeWith(ResumeInfo info)
+    {
+      foreach(var pointInfo in info.Points)
+      {
+        _messages.OnNext(pointInfo.Message);
+      }
+    }
 
-			foreach(var pointInfo in info.Points)
-			{
-				_messages.OnNext(pointInfo.Message);
-			}
-		}
+    internal EnqueueTransaction StartEnqueue()
+    {
+      lock(_transactions)
+      {
+        return _transactions.Start();
+      }
+    }
 
-		internal void Enqueue(TimelineMessage message)
-		{
-			State.ExpectConnected();
+    internal void RollbackEnqueue(EnqueueTransaction transaction)
+    {
+      lock(_transactions)
+      {
+        _transactions.Rollback(transaction);
+      }
+    }
 
-			lock(_messages)
-			{
-				EnqueueNowOrInFuture(message);
-			}
-		}
+    internal void CommitEnqueue(EnqueueTransaction transaction)
+    {
+      lock(_transactions)
+      {
+        _transactions.Commit(transaction);
+      }
+    }
 
-		internal void Enqueue(IEnumerable<TimelineMessage> messages)
-		{
-			State.ExpectConnected();
+    /// <summary>
+    /// The set of transactions to enqueue messages on the timeline
+    /// </summary>
+    private sealed class EnqueueTransactionSet : Notion
+    {
+      internal readonly List<EnqueueTransaction> _open = new List<EnqueueTransaction>();
+      internal readonly List<EnqueueTransaction> _concurrent = new List<EnqueueTransaction>();
+      internal readonly List<TimelineMessage> _nextMessages = new List<TimelineMessage>();
+      private readonly TimelineQueue _queue;
 
-			lock(_messages)
-			{
-				foreach(var message in messages)
-				{
-					EnqueueNowOrInFuture(message);
-				}
-			}
-		}
+      internal EnqueueTransactionSet(TimelineQueue queue)
+      {
+        _queue = queue;
+      }
 
-		private void EnqueueNowOrInFuture(TimelineMessage message)
-		{
-			ExpectNotInPast(message);
+      internal EnqueueTransaction Start()
+      {
+        var transaction = new EnqueueTransaction(_queue);
 
-			if(IsNext(message))
-			{
-				EnqueueNext(message);
+        _open.Add(transaction);
 
-				EnqueueFutureMessages();
-			}
-			else
-			{
-				AddFutureMessage(message);
-			}
-		}
+        return transaction;
+      }
 
-		private void ExpectNotInPast(TimelineMessage message)
-		{
-			if(message.Point.Position < _nextPosition)
-			{
-				throw new InvalidOperationException($"Cannot enqueue previously-pushed position {message.Point.Position}; expected {_nextPosition}");
-			}
-		}
+      internal void Rollback(EnqueueTransaction transaction)
+      {
+        _open.Remove(transaction);
+        _concurrent.Remove(transaction);
 
-		private bool IsNext(TimelineMessage message)
-		{
-			return message.Point.Position == _nextPosition;
-		}
+        if(_open.Count == 0 && _concurrent.Count == 0 && _nextMessages.Count > 0)
+        {
+          PushMessages(_nextMessages.RemoveAll());
+        }
+      }
 
-		private void EnqueueNext(TimelineMessage message)
-		{
-			_nextPosition = message.Point.Position.Next();
+      internal void Commit(EnqueueTransaction transaction)
+      {
+        _open.Remove(transaction);
 
-			_messages.OnNext(message);
-		}
+        if(_open.Count == 0 && _concurrent.Count == 0)
+        {
+          PushMessages(transaction);
+        }
+        else if(_concurrent.Count == 0)
+        {
+          _nextMessages.AddRange(transaction);
 
-		private void EnqueueFutureMessages()
-		{
-			foreach(var futureMessage in _futureMessages.ToList())
-			{
-				var position = futureMessage.Key;
-				var message = futureMessage.Value;
+          _concurrent.AddRange(_open);
 
-				if(position != _nextPosition)
-				{
-					break;
-				}
+          _open.Clear();
+        }
+        else
+        {
+          _nextMessages.AddRange(transaction);
 
-				_futureMessages.Remove(position);
+          _concurrent.Remove(transaction);
 
-				_nextPosition = position.Next();
+          if(_concurrent.Count == 0)
+          {
+            PushMessages(_nextMessages.RemoveAll());
+          }
+        }
+      }
 
-				_messages.OnNext(message);
-			}
-		}
+      private void PushMessages(IEnumerable<TimelineMessage> messages)
+      {
+        foreach(var message in messages.OrderBy(m => m.Point.Position))
+        {
+          _queue._messages.OnNext(message);
+        }
+      }
+    }
 
-		private void AddFutureMessage(TimelineMessage message)
-		{
-			_futureMessages.Add(message.Point.Position, message);
-		}
-	}
+    /// <summary>
+    /// The intent to enqueue one or more messages on the timeline
+    /// </summary>
+    internal sealed class EnqueueTransaction : IDisposable, IEnumerable<TimelineMessage>
+    {
+      private readonly TimelineQueue _queue;
+      private TimelineMessage _message;
+      private Many<TimelineMessage> _messages;
+
+      internal EnqueueTransaction(TimelineQueue queue)
+      {
+        _queue = queue;
+      }
+
+      internal void Commit(TimelineMessage message)
+      {
+        _message = message;
+
+        _queue.CommitEnqueue(this);
+      }
+
+      internal void Commit(Many<TimelineMessage> messages)
+      {
+        _messages = messages;
+
+        _queue.CommitEnqueue(this);
+      }
+
+      public void Dispose()
+      {
+        if(_message == null && _messages == null)
+        {
+          _queue.RollbackEnqueue(this);
+        }
+      }
+
+      public IEnumerator<TimelineMessage> GetEnumerator()
+      {
+        if(_message != null)
+        {
+          yield return _message;
+        }
+        else
+        {
+          foreach(var message in _messages)
+          {
+            yield return message;
+          }
+        }
+      }
+
+      IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+  }
 }

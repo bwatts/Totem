@@ -9,20 +9,13 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public class ResumeInfo : Notion
 	{
-		public ResumeInfo(TimelinePosition nextPosition, Many<ResumePoint> points = null)
+		public ResumeInfo(Many<ResumePoint> points = null)
 		{
-			Expect(nextPosition.IsSome, "Cannot resume without a next position");
-
-			NextPosition = nextPosition;
 			Points = points ?? new Many<ResumePoint>();
 		}
 
-		public readonly TimelinePosition NextPosition;
 		public readonly Many<ResumePoint> Points;
 
-		public override Text ToText() => Text
-			.Of(NextPosition)
-			.Write(" ")
-			.WriteInParentheses(Text.Count(Points.Count, "point"));
+    public override Text ToText() => Text.Count(Points.Count, "point");
 	}
 }

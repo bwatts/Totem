@@ -9,16 +9,16 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   public class PushWhenResult
   {
-    public PushWhenResult(Many<TimelineMessage> messages, bool flowStopped)
+    public PushWhenResult(Many<TimelineMessage> messages, bool givenError)
     {
       Messages = messages;
-      FlowStopped = flowStopped;
+      GivenError = givenError;
     }
 
     public PushWhenResult() : this(new Many<TimelineMessage>(), false)
     {}
 
     public readonly Many<TimelineMessage> Messages;
-    public readonly bool FlowStopped;
+    public readonly bool GivenError;
   }
 }

@@ -59,22 +59,39 @@ namespace Totem.Runtime.Timeline
 
 		public void Push(TimelinePosition cause, Event e)
 		{
-			_queue.Enqueue(_timelineDb.Push(cause, e));
-		}
+      using(var enqueue = _queue.StartEnqueue())
+      {
+        enqueue.Commit(_timelineDb.Push(cause, e));
+      }
+    }
 
     internal void PushFromSchedule(TimelineMessage message)
 		{
-			_queue.Enqueue(_timelineDb.PushScheduled(message));
-		}
+      using(var enqueue = _queue.StartEnqueue())
+      {
+        enqueue.Commit(_timelineDb.PushScheduled(message));
+      }
+    }
 
-		internal PushWhenResult PushWhen(Flow flow, FlowCall.When call)
+    internal void PushStopped(FlowPoint point, Exception error)
+    {
+      using(var enqueue = _queue.StartEnqueue())
+      {
+        enqueue.Commit(_timelineDb.PushStopped(point, error));
+      }
+    }
+
+    internal PushWhenResult PushWhen(Flow flow, FlowCall.When call)
 		{
-      var result = _timelineDb.PushWhen(flow, call);
+      using(var enqueue = _queue.StartEnqueue())
+      {
+        var result = _timelineDb.PushWhen(flow, call);
 
-      _queue.Enqueue(result.Messages);
+        enqueue.Commit(result.Messages);
 
-      return result;
-		}
+        return result;
+      }
+    }
 
     internal void TryPushRequestError(Id requestId, Exception error)
     {
@@ -106,11 +123,6 @@ namespace Totem.Runtime.Timeline
       FlowContext.Bind(request, FlowKey.From(type, id));
 
 			return new TimelineRequest<T>(new FlowScope(_lifetime, this, _viewExchange, request));
-		}
-
-		internal void PushStopped(FlowPoint point, Exception error)
-		{
-			_queue.Enqueue(_timelineDb.PushStopped(point, error));
 		}
 	}
 }

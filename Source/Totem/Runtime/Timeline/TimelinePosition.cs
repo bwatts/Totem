@@ -35,11 +35,6 @@ namespace Totem.Runtime.Timeline
 			return _point;
 		}
 
-		public TimelinePosition Next()
-		{
-			return new TimelinePosition(_point + 1 ?? 0);
-		}
-
 		//
 		// Equality
 		//
