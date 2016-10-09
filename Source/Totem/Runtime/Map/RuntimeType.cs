@@ -15,11 +15,13 @@ namespace Totem.Runtime.Map
 			Package = type.Package;
 			DeclaredType = type.DeclaredType;
 			Key = type.Key;
+      State = type.State;
 		}
 
 		public readonly RuntimePackage Package;
 		public readonly Type DeclaredType;
 		public readonly RuntimeTypeKey Key;
+    public readonly RuntimeState State;
 
 		public override Text ToText() => Key.ToText();
 

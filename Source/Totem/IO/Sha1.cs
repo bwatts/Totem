@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Totem.IO
 {
@@ -64,7 +65,7 @@ namespace Totem.IO
 		public static bool operator <=(Sha1 x, Sha1 y) => Cmp.Op(x, y) <= 0;
 
 		//
-		// Factory
+		// From
 		//
 
 		public static Sha1 From(Hex hex, bool strict = true)
@@ -96,14 +97,28 @@ namespace Totem.IO
 			return new Sha1(Hex.From(binary));
 		}
 
-		public static Sha1 Compute(Binary value)
-		{
-			var hash = new SHA1CryptoServiceProvider().ComputeHash(value.ToBytes());
+    //
+    // Compute
+    //
 
-			return Sha1.From(Hex.From(Binary.From(hash)));
-		}
+    public static Sha1 Compute(Binary value)
+    {
+      var hash = new SHA1CryptoServiceProvider().ComputeHash(value.ToBytes());
 
-		public sealed class Converter : BinaryConverter
+      return From(Hex.From(Binary.From(hash)));
+    }
+
+    public static Sha1 Compute(Hex value)
+    {
+      return Compute(value.ToBinary());
+    }
+
+    public static Sha1 Compute(string value, Encoding encoding = null)
+    {
+      return Compute(Binary.From(value, encoding));
+    }
+
+    public sealed class Converter : BinaryConverter
 		{
 			protected override object ConvertFromText(ITypeDescriptorContext context, CultureInfo culture, Text value)
 			{

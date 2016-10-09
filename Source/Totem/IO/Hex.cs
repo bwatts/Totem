@@ -70,6 +70,8 @@ namespace Totem.IO
 
 		public static Hex From(string value, bool strict = true)
 		{
+      value = value.ToLower();
+
 			if(value.Length % 2 != 0)
 			{
 				Expect.False(strict, "Value is not an even length: " + value);
@@ -104,7 +106,9 @@ namespace Totem.IO
 
 		public static Hex From(Binary value)
 		{
-			return new Hex(BitConverter.ToString(value.ToBytes()).Replace("-", ""), value);
+      var text = BitConverter.ToString(value.ToBytes()).Replace("-", "").ToLower();
+
+      return new Hex(text, value);
 		}
 
 		public sealed class Converter : BinaryConverter
