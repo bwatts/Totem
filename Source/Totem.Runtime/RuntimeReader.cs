@@ -246,10 +246,11 @@ namespace Totem.Runtime
     {
       var type = ReadType();
       var constructor = ReadConstructor();
+      var priorKeys = ReadPriorKeys().ToMany();
 
       if(DeclaredTypeIs<Topic>())
       {
-        var topic = new TopicType(type, constructor);
+        var topic = new TopicType(type, constructor, priorKeys);
 
         _package.Topics.Register(topic);
 
@@ -257,7 +258,7 @@ namespace Totem.Runtime
       }
       else if(DeclaredTypeIs<View>())
       {
-        var view = new ViewType(type, constructor);
+        var view = new ViewType(type, constructor, priorKeys);
 
         _package.Views.Register(view);
 
@@ -273,11 +274,11 @@ namespace Totem.Runtime
       }
       else
       {
-        RegisterFlow(new FlowType(type, constructor));
+        RegisterFlow(new FlowType(type, constructor, priorKeys));
       }
     }
 
-		private FlowConstructor ReadConstructor()
+    private FlowConstructor ReadConstructor()
 		{
 			var constructors = _declaredType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
 
@@ -296,6 +297,21 @@ namespace Totem.Runtime
 					throw new Exception($"Flow {_declaredType} has multiple constructors");
 			}
 		}
+
+    private IEnumerable<RuntimeTypeKey> ReadPriorKeys()
+    {
+      foreach(var attribute in _declaredType.GetCustomAttributes<PriorNameAttribute>(inherit: true))
+      {
+        var priorKey = RuntimeTypeKey.From(attribute.PriorName, strict: false);
+
+        if(priorKey == null)
+        {
+          priorKey = RuntimeTypeKey.From(_package.RegionKey, attribute.PriorName);
+        }
+
+        yield return priorKey;
+      }
+    }
 
     private void RegisterFlow(FlowType flow)
     {

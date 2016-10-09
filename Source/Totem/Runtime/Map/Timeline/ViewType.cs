@@ -9,7 +9,8 @@ namespace Totem.Runtime.Map.Timeline
   /// </summary>
   public sealed class ViewType : FlowType
 	{
-		internal ViewType(RuntimeTypeRef type, FlowConstructor constructor) : base(type, constructor)
+		internal ViewType(RuntimeTypeRef type, FlowConstructor constructor, Many<RuntimeTypeKey> priorKeys)
+      : base(type, constructor, priorKeys)
 		{}
 	}
 }

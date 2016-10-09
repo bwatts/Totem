@@ -65,6 +65,7 @@
     <Compile Include="Http\HttpQueryPair.cs" />
     <Compile Include="Http\HttpResource.cs" />
     <Compile Include="IClock.cs" />
+    <Compile Include="Runtime\Timeline\PriorNameAttribute.cs" />
     <Compile Include="Runtime\IConnectable.cs" />
     <Compile Include="IFluent.cs" />
     <Compile Include="IO\Binary.cs" />

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using Totem.Runtime.Timeline;
 
 namespace Totem.Runtime.Map.Timeline
@@ -12,9 +10,10 @@ namespace Totem.Runtime.Map.Timeline
 	/// </summary>
 	public class FlowType : DurableType
 	{
-		internal FlowType(RuntimeTypeRef type, FlowConstructor constructor) : base(type)
+		internal FlowType(RuntimeTypeRef type, FlowConstructor constructor, Many<RuntimeTypeKey> priorKeys) : base(type)
 		{
 			Constructor = constructor;
+      PriorKeys = priorKeys;
 			Events = new FlowEventSet();
 			IsTopic = this is TopicType;
 			IsView = this is ViewType;
@@ -22,6 +21,7 @@ namespace Totem.Runtime.Map.Timeline
 		}
 
 		public readonly FlowConstructor Constructor;
+    public readonly Many<RuntimeTypeKey> PriorKeys;
 		public readonly FlowEventSet Events;
 		public readonly bool IsTopic;
 		public readonly bool IsView;

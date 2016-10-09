@@ -9,7 +9,8 @@ namespace Totem.Runtime.Map.Timeline
 	/// </summary>
 	public sealed class RequestType : FlowType
 	{
-		internal RequestType(RuntimeTypeRef type, FlowConstructor constructor) : base(type, constructor)
+		internal RequestType(RuntimeTypeRef type, FlowConstructor constructor)
+      : base(type, constructor, new Many<RuntimeTypeKey>())
 		{}
 	}
 }

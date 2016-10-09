@@ -10,7 +10,8 @@ namespace Totem.Runtime.Map.Timeline
 	/// </summary>
 	public sealed class TopicType : FlowType
 	{
-		internal TopicType(RuntimeTypeRef type, FlowConstructor constructor) : base(type, constructor)
+		internal TopicType(RuntimeTypeRef type, FlowConstructor constructor, Many<RuntimeTypeKey> priorKeys)
+      : base(type, constructor, priorKeys)
 		{}
 
 		public IEnumerable<FlowRoute> RouteGiven(Event e, bool scheduled = false)

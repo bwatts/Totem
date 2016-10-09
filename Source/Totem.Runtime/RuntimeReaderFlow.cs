@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Totem.IO;
 using Totem.Reflection;
 using Totem.Runtime.Map;
 using Totem.Runtime.Map.Timeline;
@@ -316,7 +317,15 @@ namespace Totem.Runtime
 			}
 		}
 
-		private void SetRoutedOrSingleInstance(Many<EventType> unrouted)
+    private void ExpectRouteFirst()
+    {
+      if(!_flow.Events.Any(e => e.Route.First))
+      {
+        throw new Exception($"Flow {_flow} specifies routes but no RouteFirst methods");
+      }
+    }
+
+    private void SetRoutedOrSingleInstance(Many<EventType> unrouted)
 		{
 			if(_flow.IsRequest)
 			{
@@ -331,14 +340,6 @@ namespace Totem.Runtime
 			else
 			{
 				_flow.SetSingleInstance();
-			}
-		}
-
-		private void ExpectRouteFirst()
-		{
-			if(!_flow.Events.Any(e => e.Route.First))
-			{
-				throw new Exception($"Flow {_flow} specifies routes but no RouteFirst methods");
 			}
 		}
 	}
