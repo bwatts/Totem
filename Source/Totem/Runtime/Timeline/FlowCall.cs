@@ -76,7 +76,7 @@ namespace Totem.Runtime.Timeline
 
 			public new TopicEvent Event => (TopicEvent) base.Event;
 
-      public void Make(Topic topic)
+      public void Make(Topic topic, bool loading = false)
       {
         try
         {
@@ -84,7 +84,10 @@ namespace Totem.Runtime.Timeline
 
           Event.CallGiven(topic, this);
 
-          topic.Context.FinishCall(topic, this);
+          if(!loading)
+          {
+            topic.Context.FinishCall(topic, this);
+          }
         }
         finally
         {
