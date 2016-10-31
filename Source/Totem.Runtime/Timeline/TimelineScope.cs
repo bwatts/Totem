@@ -30,7 +30,7 @@ namespace Totem.Runtime.Timeline
       _flows = new TimelineFlowSet(this);
       _requests = new TimelineRequestSet(this);
 
-			_queue = new TimelineQueue(_schedule, _flows, _requests);
+			_queue = new TimelineQueue(_timelineDb, _schedule, _flows, _requests);
     }
 
     protected override void Open()
@@ -39,11 +39,6 @@ namespace Totem.Runtime.Timeline
       Track(_flows);
       Track(_requests);
 			Track(_queue);
-
-			var resumeInfo = _timelineDb.ReadResumeInfo();
-
-			_schedule.ResumeWith(resumeInfo);
-			_queue.ResumeWith(resumeInfo);
 		}
 
 		public Task<T> MakeRequest<T>(TimelinePosition cause, Event e) where T : Request

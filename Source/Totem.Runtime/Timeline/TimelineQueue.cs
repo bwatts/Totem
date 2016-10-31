@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
@@ -14,13 +15,19 @@ namespace Totem.Runtime.Timeline
 	internal sealed class TimelineQueue : Connection
 	{
     private readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
+    private readonly ITimelineDb _db;
     private readonly TimelineSchedule _schedule;
     private readonly TimelineFlowSet _flows;
 		private readonly TimelineRequestSet _requests;
     private readonly EnqueueTransactionSet _transactions;
 
-    internal TimelineQueue(TimelineSchedule schedule, TimelineFlowSet flows, TimelineRequestSet requests)
+    internal TimelineQueue(
+      ITimelineDb db,
+      TimelineSchedule schedule,
+      TimelineFlowSet flows,
+      TimelineRequestSet requests)
 		{
+      _db = db;
 			_schedule = schedule;
 			_flows = flows;
 			_requests = requests;
@@ -30,23 +37,60 @@ namespace Totem.Runtime.Timeline
 
 		protected override void Open()
 		{
-			Track(_messages
-				.ObserveOn(ThreadPoolScheduler.Instance)
-				.Subscribe(message =>
-				{
-					_schedule.Push(message);
-					_flows.Push(message);
-					_requests.Push(message);
-				}));
-		}
+      ObserveMessages();
 
-    internal void ResumeWith(ResumeInfo info)
+      RunResume();
+    }
+
+    private void ObserveMessages()
     {
-      foreach(var pointInfo in info.Points)
+      Track(_messages
+        .ObserveOn(ThreadPoolScheduler.Instance)
+        .Subscribe(message =>
+        {
+          _schedule.Push(message);
+          _flows.Push(message);
+          _requests.Push(message);
+        }));
+    }
+
+    private void RunResume()
+    {
+      Action resume = () =>
       {
-        _messages.OnNext(pointInfo.Message);
+        try
+        {
+          Resume();
+        }
+        catch(Exception error)
+        {
+          Log.Error(error, "[timeline] HALTED; failed to resume activity");
+        }
+      };
+
+      Task.Run(resume, State.CancellationToken);
+    }
+
+    private void Resume()
+    {
+      var info = _db.ReadResumeInfo();
+
+      _schedule.ResumeWith(info);
+
+      foreach(var point in info.Points)
+      {
+        _messages.OnNext(point.Message);
+      }
+
+      if(info.Points.Any())
+      {
+        Log.Info("[timeline] Resumed timeline with " + Text.Count(info.Points.Count, "point"));
       }
     }
+
+    //
+    // Enqueueing
+    //
 
     internal EnqueueTransaction StartEnqueue()
     {
