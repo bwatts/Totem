@@ -20,13 +20,13 @@ namespace Totem.Runtime.Timeline
 			_timeline = timeline;
 		}
 
-		internal void ResumeWith(ResumeInfo info)
+		internal void ResumeWith(ResumeInfo.Batch batch)
 		{
-			foreach(var pointInfo in info.Points)
+			foreach(var point in batch.Points)
 			{
-				var position = pointInfo.Message.Point.Position;
+				var position = point.Message.Point.Position;
 
-				if(pointInfo.OnSchedule)
+				if(point.OnSchedule)
 				{
 					_resumedPositions.Add(position);
 				}

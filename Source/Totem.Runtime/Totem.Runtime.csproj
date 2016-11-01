@@ -170,7 +170,6 @@
     <Compile Include="Timeline\ResumeInfo.cs" />
     <Compile Include="Timeline\TimelineScope.cs" />
     <Compile Include="Timeline\TimelineRequest.cs" />
-    <Compile Include="Timeline\ResumePoint.cs" />
     <Compile Include="Timeline\FlowQueue.cs" />
     <Compile Include="Timeline\ViewETag.cs" />
     <Compile Include="TypeHash.cs" />

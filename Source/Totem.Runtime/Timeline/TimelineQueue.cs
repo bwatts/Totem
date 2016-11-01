@@ -56,35 +56,57 @@ namespace Totem.Runtime.Timeline
 
     private void RunResume()
     {
-      Action resume = () =>
-      {
-        try
-        {
-          Resume();
-        }
-        catch(Exception error)
-        {
-          Log.Error(error, "[timeline] HALTED; failed to resume activity");
-        }
-      };
-
-      Task.Run(resume, State.CancellationToken);
+      Task.Run((Action) Resume, State.CancellationToken);
     }
 
     private void Resume()
     {
-      var info = _db.ReadResumeInfo();
+      var batchCount = 0;
+      var pointCount = 0;
+      var firstPosition = TimelinePosition.None;
+      var lastPosition = TimelinePosition.None;
 
-      _schedule.ResumeWith(info);
-
-      foreach(var point in info.Points)
+      try
       {
-        _messages.OnNext(point.Message);
+        foreach(var batch in _db.ReadResumeInfo())
+        {
+          batchCount += 1;
+          pointCount += batch.Points.Count;
+
+          if(firstPosition == TimelinePosition.None)
+          {
+            firstPosition = batch.FirstPosition;
+          }
+
+          lastPosition = batch.LastPosition;
+
+          _schedule.ResumeWith(batch);
+
+          foreach(var point in batch.Points)
+          {
+            _messages.OnNext(point.Message);
+          }
+
+          Log.Verbose(
+            "[timeline] Resuming a batch of {Size} spanning {First:l}-{Last:l}",
+            batch.Points.Count,
+            batch.FirstPosition,
+            batch.LastPosition);
+        }
+
+        if(pointCount > 0)
+        {
+          Log.Verbose(
+            "[timeline] Resumed activity with {Batches:l} ({Points:l}) spanning {First:l}-{Last:l}",
+            Text.Count(batchCount, "batch", "batches"),
+            Text.Count(pointCount, "point"),
+            firstPosition,
+            lastPosition);
+        }
       }
-
-      if(info.Points.Any())
+      catch(Exception error)
       {
-        Log.Info("[timeline] Resumed timeline with " + Text.Count(info.Points.Count, "point"));
+        Log.Error(error, "[timeline] HALTED; failed to resume activity");
       }
     }
 
