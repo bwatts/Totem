@@ -9,7 +9,7 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public sealed class ViewETag : Notion, IEquatable<ViewETag>
 	{
-		private ViewETag(FlowKey key, TimelinePosition checkpoint)
+		ViewETag(FlowKey key, TimelinePosition checkpoint)
 		{
 			Key = key;
 			Checkpoint = checkpoint;

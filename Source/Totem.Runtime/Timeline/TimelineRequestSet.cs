@@ -11,32 +11,34 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class TimelineRequestSet : Connection
   {
-    private readonly ConcurrentDictionary<Id, TimelineRequest> _requestsById = new ConcurrentDictionary<Id, TimelineRequest>();
-    private readonly TimelineScope _timeline;
+    readonly ConcurrentDictionary<Id, IRequestScope> _requestsById = new ConcurrentDictionary<Id, IRequestScope>();
+    readonly TimelineScope _timeline;
 
     internal TimelineRequestSet(TimelineScope timeline)
     {
       _timeline = timeline;
     }
 
-    public void Push(TimelineMessage message)
+    internal void Push(TimelineMessage message)
     {
       var requestId = Flow.Traits.RequestId.Get(message.Point.Event);
 
       if(requestId.IsAssigned)
       {
-        TimelineRequest request;
+        IRequestScope request;
 
         if(_requestsById.TryGetValue(requestId, out request))
         {
-          request.Push(message);
+          var route = new FlowRoute(request.Key, first: false, when: true, given: false, then: false);
+
+          request.Push(new FlowPoint(route, message.Point));
         }
       }
     }
 
     internal void TryPushError(Id requestId, Exception error)
     {
-      TimelineRequest request;
+      IRequestScope request;
 
       if(_requestsById.TryGetValue(requestId, out request))
       {
@@ -60,7 +62,7 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    private void CheckUniqueRequestId(Id id)
+    void CheckUniqueRequestId(Id id)
     {
       if(_requestsById.ContainsKey(id))
       {
@@ -68,21 +70,21 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    private TimelineRequest<T> AddRequest<T>(Id id) where T : Request
+    RequestScope<T> AddRequest<T>(Id id) where T : Request
     {
 			var request = _timeline.CreateRequest<T>(id);
 
 			_requestsById[id] = request;
 
-      // No need to track the connection - the request closes when its task completes
+      // No need to track the connection - the request disconnects when its task completes
       request.Connect(this);
 
       return request;
     }
 
-    private void RemoveRequest(Id id)
+    void RemoveRequest(Id id)
     {
-      TimelineRequest request;
+      IRequestScope request;
 
       _requestsById.TryRemove(id, out request);
     }

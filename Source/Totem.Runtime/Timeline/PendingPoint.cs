@@ -53,7 +53,7 @@ namespace Totem.Runtime.Timeline
     public readonly FlowRoute ThenRoute;
     public readonly bool HasThenRoute;
 
-		private Many<FlowRoute> Route(EventType type, Event e)
+		Many<FlowRoute> Route(EventType type, Event e)
 		{
 			var whenRoutes = type.RouteWhen(e, Scheduled).ToList();
 			var givenRoutes = type.RouteGiven(e, Scheduled).ToList();

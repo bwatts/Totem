@@ -12,13 +12,13 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   public sealed class TimelineScope : Connection, ITimelineScope
 	{
-    private readonly ILifetimeScope _lifetime;
-    private readonly ITimelineDb _timelineDb;
-		private readonly IViewExchange _viewExchange;
-		private readonly TimelineSchedule _schedule;
-		private readonly TimelineFlowSet _flows;
-		private readonly TimelineRequestSet _requests;
-		private readonly TimelineQueue _queue;
+    readonly ILifetimeScope _lifetime;
+    readonly ITimelineDb _timelineDb;
+		readonly IViewExchange _viewExchange;
+		readonly TimelineSchedule _schedule;
+		readonly TimelineFlowSet _flows;
+		readonly TimelineRequestSet _requests;
+		readonly TimelineQueue _queue;
 
     public TimelineScope(ILifetimeScope lifetime, ITimelineDb timelineDb, IViewExchange viewExchange)
 		{
@@ -102,22 +102,35 @@ namespace Totem.Runtime.Timeline
 		{
 			Flow instance;
 
-			flow = !_timelineDb.TryReadFlow(route, out instance)
-				? null
-				: new FlowScope(_lifetime, this, _viewExchange, instance);
+      if(!_timelineDb.TryReadFlow(route, out instance))
+      {
+        flow = null;
+      }
+      else if(route.Key.Type.IsTopic)
+      {
+        flow = new TopicScope(_lifetime, this, (Topic) instance);
+      }
+      else if(route.Key.Type.IsView)
+      {
+        flow = new ViewScope(_lifetime, this, (View) instance, _viewExchange);
+      }
+      else
+      {
+        throw new NotSupportedException($@"Flow type ""{route.Key.Type}"" has no associated scope type");
+      }
 
 			return flow != null;
 		}
 
-		internal TimelineRequest<T> CreateRequest<T>(Id id) where T : Request
+		internal RequestScope<T> CreateRequest<T>(Id id) where T : Request
 		{
 			var type = Runtime.GetRequest(typeof(T));
 
-			var request = type.New();
+			var request = (T) type.New();
 
       FlowContext.Bind(request, FlowKey.From(type, id));
 
-			return new TimelineRequest<T>(new FlowScope(_lifetime, this, _viewExchange, request));
+			return new RequestScope<T>(_lifetime, this, request);
 		}
 	}
 }

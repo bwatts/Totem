@@ -9,9 +9,9 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public class ViewSnapshot<TContent> : Notion
 	{
-		private readonly TContent _content;
+		readonly TContent _content;
 
-		private ViewSnapshot(
+		ViewSnapshot(
 			FlowKey key,
 			TimelinePosition checkpoint,
 			bool notFound = false,

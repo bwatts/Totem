@@ -9,9 +9,8 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class TimelineFlowSet : Connection
 	{
-		private readonly Dictionary<FlowKey, IFlowScope> _flowsByKey = new Dictionary<FlowKey, IFlowScope>();
-
-		private readonly TimelineScope _timeline;
+		readonly Dictionary<FlowKey, IFlowScope> _flowsByKey = new Dictionary<FlowKey, IFlowScope>();
+		readonly TimelineScope _timeline;
 
     internal TimelineFlowSet(TimelineScope timeline)
     {
@@ -42,7 +41,7 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    private void Push(TimelineMessage message, FlowRoute route)
+    void Push(TimelineMessage message, FlowRoute route)
     {
       IFlowScope flow;
 
@@ -59,12 +58,12 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    private bool TryGetFlow(FlowRoute route, out IFlowScope flow)
+    bool TryGetFlow(FlowRoute route, out IFlowScope flow)
     {
       return _flowsByKey.TryGetValue(route.Key, out flow);
     }
 
-    private bool TryReadFlow(FlowRoute route, out IFlowScope flow)
+    bool TryReadFlow(FlowRoute route, out IFlowScope flow)
     {
       if(_timeline.TryReadFlow(route, out flow))
       {
@@ -82,7 +81,7 @@ namespace Totem.Runtime.Timeline
       return flow != null;
     }
 
-    private void FinishFlow(IFlowScope flow, IDisposable connection)
+    void FinishFlow(IFlowScope flow, IDisposable connection)
     {
       _flowsByKey.Remove(flow.Key);
 

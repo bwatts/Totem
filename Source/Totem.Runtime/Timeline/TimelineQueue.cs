@@ -14,12 +14,12 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	internal sealed class TimelineQueue : Connection
 	{
-    private readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
-    private readonly ITimelineDb _db;
-    private readonly TimelineSchedule _schedule;
-    private readonly TimelineFlowSet _flows;
-		private readonly TimelineRequestSet _requests;
-    private readonly EnqueueTransactionSet _transactions;
+    readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
+    readonly ITimelineDb _db;
+    readonly TimelineSchedule _schedule;
+    readonly TimelineFlowSet _flows;
+		readonly TimelineRequestSet _requests;
+    readonly EnqueueTransactionSet _transactions;
 
     internal TimelineQueue(
       ITimelineDb db,
@@ -42,7 +42,7 @@ namespace Totem.Runtime.Timeline
       RunResume();
     }
 
-    private void ObserveMessages()
+    void ObserveMessages()
     {
       Track(_messages
         .ObserveOn(ThreadPoolScheduler.Instance)
@@ -54,12 +54,12 @@ namespace Totem.Runtime.Timeline
         }));
     }
 
-    private void RunResume()
+    void RunResume()
     {
       Task.Run((Action) Resume, State.CancellationToken);
     }
 
-    private void Resume()
+    void Resume()
     {
       var batchCount = 0;
       var pointCount = 0;
@@ -141,7 +141,7 @@ namespace Totem.Runtime.Timeline
     /// <summary>
     /// The set of transactions to enqueue messages on the timeline
     /// </summary>
-    private sealed class EnqueueTransactionSet : Notion
+    class EnqueueTransactionSet : Notion
     {
       internal readonly List<EnqueueTransaction> _open = new List<EnqueueTransaction>();
       internal readonly List<EnqueueTransaction> _concurrent = new List<EnqueueTransaction>();

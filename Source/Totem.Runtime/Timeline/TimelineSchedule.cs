@@ -50,12 +50,12 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		private bool CanPush(TimelinePosition position)
+		bool CanPush(TimelinePosition position)
 		{
 			return _resumedPositions.Remove(position) || position > _resumeCheckpoint;
 		}
 
-		private void StartTimer(TimelineMessage message)
+		void StartTimer(TimelineMessage message)
 		{
 			Observable
 				.Timer(new DateTimeOffset(message.Point.Event.When))
@@ -64,7 +64,7 @@ namespace Totem.Runtime.Timeline
 				.Subscribe(_ => PushFromSchedule(message));
 		}
 
-		private void PushFromSchedule(TimelineMessage message)
+		void PushFromSchedule(TimelineMessage message)
 		{
 			if(State.IsConnecting || State.IsConnected)
 			{

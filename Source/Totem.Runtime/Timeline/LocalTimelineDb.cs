@@ -12,8 +12,8 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public sealed class LocalTimelineDb : Notion, ITimelineDb, IViewDb
 	{
-		private readonly Dictionary<FlowKey, Flow> _flowsByKey = new Dictionary<FlowKey, Flow>();
-		private long _position = -1;
+		readonly Dictionary<FlowKey, Flow> _flowsByKey = new Dictionary<FlowKey, Flow>();
+		long _position = -1;
 
 		public ResumeInfo ReadResumeInfo()
 		{
@@ -70,7 +70,7 @@ namespace Totem.Runtime.Timeline
     // PushNext
     //
 
-    private TimelineMessage PushNext(PendingPoint point)
+    TimelineMessage PushNext(PendingPoint point)
 		{
 			lock(_flowsByKey)
 			{
@@ -98,7 +98,7 @@ namespace Totem.Runtime.Timeline
 			}
 		}
 
-		private Many<TimelineMessage> PushNext(IEnumerable<PendingPoint> points)
+		Many<TimelineMessage> PushNext(IEnumerable<PendingPoint> points)
 		{
 			lock(_flowsByKey)
 			{
@@ -110,7 +110,7 @@ namespace Totem.Runtime.Timeline
     // Push topic when
     //
 
-		private PushWhenResult PushTopicWhen(Topic topic, FlowCall.TopicWhen call)
+		PushWhenResult PushTopicWhen(Topic topic, FlowCall.TopicWhen call)
 		{
       var newPoints = call
         .RetrieveNewEvents()
@@ -139,7 +139,7 @@ namespace Totem.Runtime.Timeline
       return new PushWhenResult(messages, givenError);
     }
 
-    private bool CallGiven(Topic topic, PendingPoint newPoint, TimelineMessage message)
+    bool CallGiven(Topic topic, PendingPoint newPoint, TimelineMessage message)
     {
       var thenPoint = new FlowPoint(newPoint.ThenRoute, message.Point);
 
@@ -167,7 +167,7 @@ namespace Totem.Runtime.Timeline
     // Push new point
     //
 
-    private TimelineMessage PushNewPoint(PendingPoint point)
+    TimelineMessage PushNewPoint(PendingPoint point)
 		{
 			var message = point.ToMessage(IncrementPosition());
 
@@ -176,12 +176,12 @@ namespace Totem.Runtime.Timeline
 			return message;
 		}
 
-		private TimelinePosition IncrementPosition()
+		TimelinePosition IncrementPosition()
 		{
 			return new TimelinePosition(Interlocked.Increment(ref _position));
 		}
 
-		private void InitializeNewFlows(TimelineMessage message)
+		void InitializeNewFlows(TimelineMessage message)
 		{
 			foreach(var route in message.Routes)
 			{
@@ -215,7 +215,7 @@ namespace Totem.Runtime.Timeline
 			return ReadView(typeof(T), id, checkpoint, view => (T) view);
 		}
 
-		private ViewSnapshot<T> ReadView<T>(Type type, Id id, TimelinePosition checkpoint, Func<Flow, T> selectContent)
+		ViewSnapshot<T> ReadView<T>(Type type, Id id, TimelinePosition checkpoint, Func<Flow, T> selectContent)
 		{
 			var key = Runtime.GetView(type).CreateKey(id);
 
