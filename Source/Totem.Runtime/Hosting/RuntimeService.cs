@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -77,10 +79,66 @@ namespace Totem.Runtime.Hosting
 
 		private void LoadInstance()
 		{
-			_instance = _container
-				.GetExportedValue<CompositionRoot>()
-				.Connect(_cancellationTokenSource.Token);
+      try
+      {
+        _instance = _container
+          .GetExportedValue<CompositionRoot>()
+          .Connect(_cancellationTokenSource.Token);
+      }
+      catch(Exception error)
+      {
+        throw new Exception("Failed to compose the runtime service", GetRootException(error));
+      }
 		}
+
+    private Exception GetRootException(Exception error)
+    {
+      // http://haacked.com/archive/2014/12/09/unwrap-mef-exception/
+
+      var compositionError = error as CompositionException;
+
+      if(compositionError == null)
+      {
+        return error;
+      }
+
+      var unwrapped = compositionError;
+
+      while(unwrapped != null)
+      {
+        var firstError = unwrapped.Errors.FirstOrDefault();
+
+        if(firstError == null)
+        {
+          break;
+        }
+
+        var currentError = firstError.Exception;
+
+        if(currentError == null)
+        {
+          break;
+        }
+
+        var composablePartError = currentError as ComposablePartException;
+
+        if(composablePartError != null && composablePartError.InnerException != null)
+        {
+          var innerCompositionError = composablePartError.InnerException as CompositionException;
+
+          if(innerCompositionError == null)
+          {
+            return currentError.InnerException ?? error;
+          }
+
+          currentError = innerCompositionError;
+        }
+
+        unwrapped = currentError as CompositionException;
+      }
+
+      return error;
+    }
 
 		//
 		// Stop
