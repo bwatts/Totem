@@ -74,6 +74,8 @@ namespace Totem.Runtime.Hosting.Commands
 			}
 			.Parse(_options);
 
+      Expect.True(location).IsNotNullOrWhiteSpace("Please provide the deployment location. For example: ' deploy -l:C:\\Foo'");
+
 			return new DeployCommand(_build, IOLink.From(location));
 		}
 
