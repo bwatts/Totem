@@ -92,18 +92,7 @@ namespace Totem.Runtime.Json
 
     protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
     {
-      if(!IsDurableType(member.DeclaringType))
-      {
-        return base.CreateProperty(member, memberSerialization);
-      }
-      else if(!IsDurableProperty(member))
-      {
-        return null;
-      }
-      else
-      {
-        return CreateDurableProperty(member, memberSerialization);
-      }
+      return !IsDurableProperty(member) ? null : CreateDurableProperty(member, memberSerialization);
     }
 
     private bool IsDurableType(Type type)
