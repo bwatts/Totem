@@ -158,7 +158,12 @@ namespace Totem.Http
 
 				if(domain != null)
 				{
-					var domainParts = domain.Split(PortSeparator);
+          if(domain.EndsWith("/"))
+          {
+            domain = domain.Substring(0, domain.Length - 1);
+          }
+
+          var domainParts = domain.Split(PortSeparator);
 
 					if(domainParts.Length == 1)
 					{
@@ -166,16 +171,9 @@ namespace Totem.Http
 					}
 					else
 					{
-						var portText = domainParts[1];
-
-						if(portText.EndsWith("/"))
-						{
-							portText = portText.Substring(0, portText.Length - 1);
-						}
-
 						int port;
 
-						if(int.TryParse(portText, out port))
+						if(int.TryParse(domainParts[1], out port))
 						{
 							return From(isHttps, domainParts[0], port);
 						}
