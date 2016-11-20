@@ -12,13 +12,38 @@ namespace Totem.Runtime.Timeline
 	{
     readonly IEnumerable<Batch> _batches;
 
-		public ResumeInfo(IEnumerable<Batch> batches = null)
+		public ResumeInfo()
 		{
-      _batches = batches ?? Enumerable.Empty<Batch>();
+      Flows = new Many<Flow>();
+      _batches = Enumerable.Empty<Batch>();
 		}
 
+    public ResumeInfo(Many<Flow> flows, IEnumerable<Batch> batches)
+    {
+      Flows = flows;
+      _batches = batches;
+    }
+
+    public readonly Many<Flow> Flows;
+
     public IEnumerator<Batch> GetEnumerator() => _batches.GetEnumerator();
+
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <summary>
+    /// The set of flows with which to resume the timeline
+    /// </summary>
+    public class Flow
+    {
+      public Flow(FlowKey key, TimelinePosition checkpoint)
+      {
+        Key = key;
+        Checkpoint = checkpoint;
+      }
+
+      public readonly FlowKey Key;
+      public readonly TimelinePosition Checkpoint;
+    }
 
     /// <summary>
     /// A batch of points with which to resume the timeline

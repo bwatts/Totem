@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -11,69 +12,44 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	internal sealed class TimelineSchedule : Connection
 	{
-		private readonly HashSet<TimelinePosition> _resumedPositions = new HashSet<TimelinePosition>();
-		private readonly TimelineScope _timeline;
-		private TimelinePosition _resumeCheckpoint;
+    readonly ConcurrentDictionary<IDisposable, bool> _timers = new ConcurrentDictionary<IDisposable, bool>();
+    readonly TimelineScope _timeline;
 
-		internal TimelineSchedule(TimelineScope timeline)
+    internal TimelineSchedule(TimelineScope timeline)
 		{
 			_timeline = timeline;
 		}
 
-		internal void ResumeWith(ResumeInfo.Batch batch)
+    protected override void Close()
+    {
+      foreach(var timer in _timers.Keys)
+      {
+        timer.Dispose();
+      }
+    }
+
+    internal void Push(TimelineMessage message)
 		{
-			foreach(var point in batch.Points)
-			{
-				var position = point.Message.Point.Position;
+      var timer = null as IDisposable;
 
-				if(point.OnSchedule)
-				{
-					_resumedPositions.Add(position);
-				}
-
-				_resumeCheckpoint = position;
-			}
-		}
-
-		protected override void Close()
-		{
-			base.Close();
-
-			_resumedPositions.Clear();
-		}
-
-		internal void Push(TimelineMessage message)
-		{
-			if(message.Point.Scheduled && CanPush(message.Point.Position))
-			{
-				StartTimer(message);
-			}
-		}
-
-		bool CanPush(TimelinePosition position)
-		{
-			return _resumedPositions.Remove(position) || position > _resumeCheckpoint;
-		}
-
-		void StartTimer(TimelineMessage message)
-		{
-			Observable
+      timer = Observable
 				.Timer(new DateTimeOffset(message.Point.Event.When))
 				.Take(1)
 				.ObserveOn(ThreadPoolScheduler.Instance)
-				.Subscribe(_ => PushFromSchedule(message));
+				.Subscribe(_ => PushToTimeline(message, timer));
+
+      _timers[timer] = true;
 		}
 
-		void PushFromSchedule(TimelineMessage message)
-		{
-			if(State.IsConnecting || State.IsConnected)
-			{
-				_timeline.PushFromSchedule(message);
-			}
-			else
-			{
-				Log.Warning("[timeline] Cannot push to schedule when {Phase:l} - ignoring {Point:l}", State.Phase, message.Point);
-			}
-		}
+    void PushToTimeline(TimelineMessage message, IDisposable timer)
+    {
+      bool ignored;
+
+      _timers.TryRemove(timer, out ignored);
+
+      timer.Dispose();
+
+      _timeline.PushFromSchedule(message);
+    }
 	}
 }

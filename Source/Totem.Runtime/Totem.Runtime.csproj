@@ -153,14 +153,14 @@
     <Compile Include="Hosting\SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Timeline\FlowScope.cs" />
     <Compile Include="Timeline\IRequestScope.cs" />
     <Compile Include="Timeline\IViewDb.cs" />
     <Compile Include="Timeline\IViewExchange.cs" />
     <Compile Include="Timeline\LocalTimelineDb.cs" />
-    <Compile Include="Timeline\FlowScope.cs" />
     <Compile Include="Timeline\IFlowScope.cs" />
     <Compile Include="Timeline\PendingPoint.cs" />
-    <Compile Include="Timeline\PushWhenResult.cs" />
+    <Compile Include="Timeline\PushTopicResult.cs" />
     <Compile Include="Timeline\RequestScope.cs" />
     <Compile Include="Timeline\TimelineFlowSet.cs" />
     <Compile Include="Timeline\TimelineMessage.cs" />
@@ -171,7 +171,6 @@
     <Compile Include="Timeline\TimelineSchedule.cs" />
     <Compile Include="Timeline\ResumeInfo.cs" />
     <Compile Include="Timeline\TimelineScope.cs" />
-    <Compile Include="Timeline\FlowQueue.cs" />
     <Compile Include="Timeline\TopicScope.cs" />
     <Compile Include="Timeline\ViewETag.cs" />
     <Compile Include="Timeline\ViewScope.cs" />

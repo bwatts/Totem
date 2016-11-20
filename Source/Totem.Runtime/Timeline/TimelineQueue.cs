@@ -15,6 +15,7 @@ namespace Totem.Runtime.Timeline
 	internal sealed class TimelineQueue : Connection
 	{
     readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
+    readonly Subject<TimelineMessage> _scheduleMessages = new Subject<TimelineMessage>();
     readonly ITimelineDb _db;
     readonly TimelineSchedule _schedule;
     readonly TimelineFlowSet _flows;
@@ -35,11 +36,11 @@ namespace Totem.Runtime.Timeline
       _transactions = new EnqueueTransactionSet(this);
 		}
 
-		protected override void Open()
-		{
+    protected override void Open()
+    {
       ObserveMessages();
 
-      RunResume();
+      Task.Delay(500).ContinueWith(_ => Resume());
     }
 
     void ObserveMessages()
@@ -48,65 +49,75 @@ namespace Totem.Runtime.Timeline
         .ObserveOn(ThreadPoolScheduler.Instance)
         .Subscribe(message =>
         {
-          _schedule.Push(message);
           _flows.Push(message);
           _requests.Push(message);
         }));
-    }
 
-    void RunResume()
-    {
-      Task.Run((Action) Resume, State.CancellationToken);
+      Track(_scheduleMessages
+        .ObserveOn(ThreadPoolScheduler.Instance)
+        .Subscribe(_schedule.Push));
     }
 
     void Resume()
+    {
+      try
+      {
+        var info = _db.ReadResumeInfo();
+
+        _flows.ResumeWith(info);
+
+        ResumeWith(info);
+      }
+      catch(Exception error)
+      {
+        Log.Error(error, "[timeline] HALTED; failed to resume activity");
+      }
+    }
+
+    void ResumeWith(ResumeInfo info)
     {
       var batchCount = 0;
       var pointCount = 0;
       var firstPosition = TimelinePosition.None;
       var lastPosition = TimelinePosition.None;
 
-      try
+      foreach(var batch in info)
       {
-        foreach(var batch in _db.ReadResumeInfo())
+        Log.Verbose(
+          "[timeline] Resuming a batch of {Size} spanning {First:l}-{Last:l}",
+          batch.Points.Count,
+          batch.FirstPosition,
+          batch.LastPosition);
+
+        batchCount += 1;
+        pointCount += batch.Points.Count;
+
+        if(firstPosition == TimelinePosition.None)
         {
-          batchCount += 1;
-          pointCount += batch.Points.Count;
-
-          if(firstPosition == TimelinePosition.None)
-          {
-            firstPosition = batch.FirstPosition;
-          }
-
-          lastPosition = batch.LastPosition;
-
-          _schedule.ResumeWith(batch);
-
-          foreach(var point in batch.Points)
-          {
-            _messages.OnNext(point.Message);
-          }
-
-          Log.Verbose(
-            "[timeline] Resuming a batch of {Size} spanning {First:l}-{Last:l}",
-            batch.Points.Count,
-            batch.FirstPosition,
-            batch.LastPosition);
+          firstPosition = batch.FirstPosition;
         }
 
-        if(pointCount > 0)
+        lastPosition = batch.LastPosition;
+
+        foreach(var point in batch.Points)
         {
-          Log.Verbose(
-            "[timeline] Resumed activity with {Batches:l} ({Points:l}) spanning {First:l}-{Last:l}",
-            Text.Count(batchCount, "batch", "batches"),
-            Text.Count(pointCount, "point"),
-            firstPosition,
-            lastPosition);
+          _messages.OnNext(point.Message);
+
+          if(point.OnSchedule)
+          {
+            _scheduleMessages.OnNext(point.Message);
+          }
         }
       }
-      catch(Exception error)
+
+      if(batchCount > 1)
       {
-        Log.Error(error, "[timeline] HALTED; failed to resume activity");
+        Log.Verbose(
+          "[timeline] Resumed activity with {Batches:l} ({Points:l}) spanning {First:l}-{Last:l}",
+          Text.Count(batchCount, "batch", "batches"),
+          Text.Count(pointCount, "point"),
+          firstPosition,
+          lastPosition);
       }
     }
 
@@ -138,15 +149,28 @@ namespace Totem.Runtime.Timeline
       }
     }
 
+    void Enqueue(IEnumerable<TimelineMessage> messages)
+    {
+      foreach(var message in messages.OrderBy(m => m.Point.Position))
+      {
+        _messages.OnNext(message);
+
+        if(message.Point.Scheduled)
+        {
+          _scheduleMessages.OnNext(message);
+        }
+      }
+    }
+
     /// <summary>
     /// The set of transactions to enqueue messages on the timeline
     /// </summary>
     class EnqueueTransactionSet : Notion
     {
-      internal readonly List<EnqueueTransaction> _open = new List<EnqueueTransaction>();
-      internal readonly List<EnqueueTransaction> _concurrent = new List<EnqueueTransaction>();
-      internal readonly List<TimelineMessage> _nextMessages = new List<TimelineMessage>();
-      private readonly TimelineQueue _queue;
+      readonly List<EnqueueTransaction> _open = new List<EnqueueTransaction>();
+      readonly List<EnqueueTransaction> _concurrent = new List<EnqueueTransaction>();
+      readonly List<TimelineMessage> _nextMessages = new List<TimelineMessage>();
+      readonly TimelineQueue _queue;
 
       internal EnqueueTransactionSet(TimelineQueue queue)
       {
@@ -169,7 +193,7 @@ namespace Totem.Runtime.Timeline
 
         if(_open.Count == 0 && _concurrent.Count == 0 && _nextMessages.Count > 0)
         {
-          PushMessages(_nextMessages.RemoveAll());
+          _queue.Enqueue(_nextMessages.RemoveAll());
         }
       }
 
@@ -179,7 +203,7 @@ namespace Totem.Runtime.Timeline
 
         if(_open.Count == 0 && _concurrent.Count == 0)
         {
-          PushMessages(transaction);
+          _queue.Enqueue(transaction);
         }
         else if(_concurrent.Count == 0)
         {
@@ -197,16 +221,8 @@ namespace Totem.Runtime.Timeline
 
           if(_concurrent.Count == 0)
           {
-            PushMessages(_nextMessages.RemoveAll());
+            _queue.Enqueue(_nextMessages.RemoveAll());
           }
-        }
-      }
-
-      private void PushMessages(IEnumerable<TimelineMessage> messages)
-      {
-        foreach(var message in messages.OrderBy(m => m.Point.Position))
-        {
-          _queue._messages.OnNext(message);
         }
       }
     }
@@ -216,9 +232,9 @@ namespace Totem.Runtime.Timeline
     /// </summary>
     internal sealed class EnqueueTransaction : IDisposable, IEnumerable<TimelineMessage>
     {
-      private readonly TimelineQueue _queue;
-      private TimelineMessage _message;
-      private Many<TimelineMessage> _messages;
+      readonly TimelineQueue _queue;
+      TimelineMessage _message;
+      Many<TimelineMessage> _messages;
 
       internal EnqueueTransaction(TimelineQueue queue)
       {

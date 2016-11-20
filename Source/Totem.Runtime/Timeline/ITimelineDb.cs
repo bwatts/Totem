@@ -17,8 +17,10 @@ namespace Totem.Runtime.Timeline
 
 		TimelineMessage PushScheduled(TimelineMessage message);
 
-		TimelineMessage PushStopped(FlowPoint point, Exception error);
+    TimelineMessage PushStopped(FlowPoint point, Exception error);
 
-    PushWhenResult PushWhen(Flow flow, FlowCall.When call);
+    PushTopicResult PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents);
+
+    void PushView(View view);
   }
 }

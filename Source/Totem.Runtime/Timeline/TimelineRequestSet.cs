@@ -21,26 +21,25 @@ namespace Totem.Runtime.Timeline
 
     internal void Push(TimelineMessage message)
     {
-      var requestId = Flow.Traits.RequestId.Get(message.Point.Event);
+      var requestId = message.Point.RequestId;
 
-      if(requestId.IsAssigned)
+      IRequestScope request;
+
+      if(requestId.IsAssigned && _requestsById.TryGetValue(requestId, out request))
       {
-        IRequestScope request;
+        var route = new FlowRoute(request.Key, first: false, when: true, given: false, then: false);
 
-        if(_requestsById.TryGetValue(requestId, out request))
-        {
-          var route = new FlowRoute(request.Key, first: false, when: true, given: false, then: false);
-
-          request.Push(new FlowPoint(route, message.Point));
-        }
+        request.Push(new FlowPoint(route, message.Point));
       }
     }
 
-    internal void TryPushError(Id requestId, Exception error)
+    internal void TryPushError(TimelinePoint point, Exception error)
     {
+      var requestId = point.RequestId;
+
       IRequestScope request;
 
-      if(_requestsById.TryGetValue(requestId, out request))
+      if(requestId.IsAssigned && _requestsById.TryGetValue(requestId, out request))
       {
         request.PushError(error);
       }
@@ -76,7 +75,6 @@ namespace Totem.Runtime.Timeline
 
 			_requestsById[id] = request;
 
-      // No need to track the connection - the request disconnects when its task completes
       request.Connect(this);
 
       return request;

@@ -1,152 +1,115 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
+using System.Reactive;
 using System.Threading.Tasks;
-using Autofac;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
   /// <summary>
   /// The scope of a flow's activity on the timeline
   /// </summary>
-  /// <typeparam name="T">The type of flow in the scope</typeparam>
-  public abstract class FlowScope<T> : Connection, IFlowScope where T : Flow
+  internal abstract class FlowScope : Connection, IFlowScope
   {
-    private readonly TaskCompletionSource<T> _taskCompletionSource = new TaskCompletionSource<T>();
-    private readonly ILifetimeScope _lifetime;
-    private readonly TimelineScope _timeline;
-    private FlowQueue _queue;
-    private Task _pushQueueTask;
+    readonly TaskCompletionSource<Unit> _task = new TaskCompletionSource<Unit>();
+    TimelinePosition _resumeCheckpoint;
+    List<FlowPoint> _postResumePoints;
 
-    protected FlowScope(ILifetimeScope lifetime, TimelineScope timeline, T instance)
+    protected FlowScope(FlowKey key)
     {
-      _lifetime = lifetime;
-      _timeline = timeline;
-
-      Instance = instance;
-      Key = instance.Context.Key;
+      Key = key;
     }
 
-    Flow IFlowScope.Instance => Instance;
-    Task IFlowScope.Task => Task;
-
-    public T Instance { get; }
     public FlowKey Key { get; }
-    public FlowPoint Point { get; private set; }
-    public Task<T> Task => _taskCompletionSource.Task;
+    public Task Task => _task.Task;
+    public FlowPoint Point { get; protected set; }
+
+    protected volatile bool Resuming;
+
+    public void ResumeTo(TimelinePosition checkpoint)
+    {
+      _resumeCheckpoint = checkpoint;
+
+      Resuming = true;
+    }
+
+    public void Push(FlowPoint point)
+    {
+      if(!TryEnqueue(point) && !TryFinishResume(point))
+      {
+        AddPostResumePoint(point);
+      }
+    }
+
+    bool TryEnqueue(FlowPoint point)
+    {
+      if(_resumeCheckpoint.IsNone || point.Position < _resumeCheckpoint)
+      {
+        Enqueue(point);
+
+        return true;
+      }
+
+      return false;
+    }
+
+    bool TryFinishResume(FlowPoint point)
+    {
+      if(point.Position == _resumeCheckpoint)
+      {
+        Enqueue(point);
+
+        if(_postResumePoints != null)
+        {
+          foreach(var postResumePoint in _postResumePoints)
+          {
+            Enqueue(postResumePoint);
+          }
+
+          _postResumePoints = null;
+        }
+
+        _resumeCheckpoint = TimelinePosition.None;
+
+        return true;
+      }
+
+      return false;
+    }
+
+    void AddPostResumePoint(FlowPoint point)
+    {
+      if(_postResumePoints == null)
+      {
+        _postResumePoints = new List<FlowPoint>();
+      }
+
+      _postResumePoints.Add(point);
+    }
+
+    protected abstract void Enqueue(FlowPoint point);
 
     //
     // Lifecycle
     //
 
-    protected override void Open()
-    {
-      _queue = new FlowQueue();
-      _pushQueueTask = PushQueue();
-    }
-
     protected override void Close()
     {
-      _queue = null;
-      _pushQueueTask = null;
-
-      CancelTaskIfWaiting();
-    }
-
-    void CancelTaskIfWaiting()
-    {
-      _taskCompletionSource.TrySetCanceled(State.CancellationToken);
+      _task.TrySetCanceled(State.CancellationToken);
     }
 
     protected void CompleteTask()
     {
-      _taskCompletionSource.TrySetResult(Instance);
+      _task.SetResult(Unit.Default);
 
       Disconnect();
     }
 
     protected void CompleteTask(Exception error)
     {
-      _taskCompletionSource.TrySetException(error);
+      _task.SetException(error);
 
       Disconnect();
-    }
-
-    protected void CompleteTaskIfDone()
-    {
-      if(Instance.Context.Done)
-      {
-        CompleteTask();
-      }
-    }
-
-    //
-    // Push
-    //
-
-    public void Push(FlowPoint point)
-    {
-      if(PushingQueue)
-      {
-        _queue.Enqueue(point);
-      }
-    }
-
-    bool PushingQueue => State.IsConnecting || State.IsConnected || State.IsReconnected;
-
-    async Task PushQueue()
-    {
-      while(PushingQueue)
-      {
-        Point = await _queue.Dequeue();
-
-        if(PushingQueue)
-        {
-          Log.Verbose("[timeline] {Position:l} => {Flow:l}", Point.Position, Key);
-
-          await PushPoint();
-        }
-      }
-    }
-
-    protected abstract Task PushPoint();
-
-    protected ILifetimeScope BeginCallScope()
-    {
-      return _lifetime.BeginCallScope();
-    }
-
-    protected FlowEvent GetFlowEvent(bool strict = true)
-    {
-      return Key.Type.Events.Get(Point.Event, strict);
-    }
-
-    protected ClaimsPrincipal ReadPrincipal()
-    {
-      return _timeline.ReadPrincipal(Point);
-    }
-
-    protected PushWhenResult PushWhen(FlowCall.When call)
-    {
-      return _timeline.PushWhen(Instance, call);
-    }
-
-    protected void PushStopped(Exception error)
-    {
-      Log.Error(error, "[timeline] Flow stopped: {Flow}", Key);
-
-      try
-      {
-        Instance.Context.SetError(Point.Position);
-
-        _timeline.PushStopped(Point, error);
-      }
-      finally
-      {
-        CompleteTask(error);
-      }
     }
   }
 }

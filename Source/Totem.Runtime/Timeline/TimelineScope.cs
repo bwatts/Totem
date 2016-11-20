@@ -76,11 +76,11 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    internal PushWhenResult PushWhen(Flow flow, FlowCall.When call)
+    internal PushTopicResult PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents)
 		{
       using(var enqueue = _queue.StartEnqueue())
       {
-        var result = _timelineDb.PushWhen(flow, call);
+        var result = _timelineDb.PushTopic(topic, point, newEvents);
 
         enqueue.Commit(result.Messages);
 
@@ -88,9 +88,14 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    internal void TryPushRequestError(Id requestId, Exception error)
+    internal void PushView(View view)
     {
-      _requests.TryPushError(requestId, error);
+      _timelineDb.PushView(view);
+    }
+
+    internal void TryPushRequestError(TimelinePoint point, Exception error)
+    {
+      _requests.TryPushError(point, error);
     }
 
     internal ClaimsPrincipal ReadPrincipal(FlowPoint point)
@@ -98,39 +103,34 @@ namespace Totem.Runtime.Timeline
 			return new ClaimsPrincipal();
 		}
 
-		internal bool TryReadFlow(FlowRoute route, out IFlowScope flow)
-		{
-			Flow instance;
-
-      if(!_timelineDb.TryReadFlow(route, out instance))
+    internal IFlowScope CreateDbFlow(FlowRoute route)
+    {
+      if(route.Key.Type.IsTopic)
       {
-        flow = null;
-      }
-      else if(route.Key.Type.IsTopic)
-      {
-        flow = new TopicScope(_lifetime, this, (Topic) instance);
+        return new TopicScope(_lifetime, this, route);
       }
       else if(route.Key.Type.IsView)
       {
-        flow = new ViewScope(_lifetime, this, (View) instance, _viewExchange);
+        return new ViewScope(_lifetime, this, _viewExchange, route);
       }
       else
       {
-        throw new NotSupportedException($@"Flow type ""{route.Key.Type}"" has no associated scope type");
+        throw new NotSupportedException($@"Flow type ""{route.Key.Type}"" is not a database flow");
       }
-
-			return flow != null;
-		}
+    }
 
 		internal RequestScope<T> CreateRequest<T>(Id id) where T : Request
 		{
 			var type = Runtime.GetRequest(typeof(T));
 
-			var request = (T) type.New();
+      var key = FlowKey.From(type, id);
 
-      FlowContext.Bind(request, FlowKey.From(type, id));
-
-			return new RequestScope<T>(_lifetime, this, request);
+      return new RequestScope<T>(_lifetime, this, key);
 		}
+
+    internal bool TryReadFlow(FlowRoute route, out Flow flow)
+    {
+      return _timelineDb.TryReadFlow(route, out flow);
+    }
 	}
 }

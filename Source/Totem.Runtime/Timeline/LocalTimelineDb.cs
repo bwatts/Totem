@@ -38,33 +38,49 @@ namespace Totem.Runtime.Timeline
 		public TimelineMessage PushStopped(FlowPoint point, Exception error)
 		{
 			var stopped = new FlowStopped(
-				point.Route.Key.Type.Key,
-				point.Route.Key.Id,
-				error.ToString());
+        point.Route.Key.Type.Key,
+        point.Route.Key.Id,
+        error.ToString());
 
 			Flow.Traits.ForwardRequestId(point.Event, stopped);
 
 			return Push(point.Position, stopped);
 		}
 
-    public PushWhenResult PushWhen(Flow flow, FlowCall.When call)
+    public PushTopicResult PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents)
     {
-      lock(_flowsByKey)
+      var newPoints =
+        from newEvent in newEvents
+        select new PendingPoint(topic.Context.Key, point.Position, newEvent);
+
+      var messages = new Many<TimelineMessage>();
+      var givenError = false;
+
+      foreach(var newPoint in newPoints)
       {
-        var topicCall = call as FlowCall.TopicWhen;
+        var message = PushNext(newPoint);
 
-        var result = topicCall != null
-          ? PushTopicWhen((Topic) flow, topicCall)
-          : new PushWhenResult();
+        messages.Write.Add(message);
 
-        if(result.GivenError || flow.Context.Done)
+        if(newPoint.HasThenRoute && !givenError && !CallGiven(topic, newPoint, message))
         {
-          _flowsByKey.Remove(flow.Context.Key);
+          givenError = true;
         }
-
-        return result;
       }
+
+      if(givenError || topic.Context.Done)
+      {
+        lock(_flowsByKey)
+        {
+          _flowsByKey.Remove(topic.Context.Key);
+        }
+      }
+
+      return new PushTopicResult(messages, givenError);
     }
+
+    public void PushView(View view)
+    {}
 
     //
     // PushNext
@@ -107,37 +123,8 @@ namespace Totem.Runtime.Timeline
 		}
 
     //
-    // Push topic when
+    // Given
     //
-
-		PushWhenResult PushTopicWhen(Topic topic, FlowCall.TopicWhen call)
-		{
-      var newPoints = call
-        .RetrieveNewEvents()
-        .ToMany(e => new PendingPoint(topic.Context.Key, call.Point.Position, e));
-
-      var messages = new Many<TimelineMessage>();
-      var givenError = false;
-
-			lock(_flowsByKey)
-			{
-				foreach(var newPoint in newPoints)
-				{
-					var message = PushNext(newPoint);
-
-          messages.Write.Add(message);
-
-          if(newPoint.HasThenRoute
-            && !givenError
-            && !CallGiven(topic, newPoint, message))
-          {
-            givenError = true;
-          }
-				}
-			}
-
-      return new PushWhenResult(messages, givenError);
-    }
 
     bool CallGiven(Topic topic, PendingPoint newPoint, TimelineMessage message)
     {
