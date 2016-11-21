@@ -73,6 +73,16 @@ namespace Totem
 
 				throw new ExpectException(message, error);
 			}
+
+			var notThrownMessage = (issue ?? "Expected exception was not thrown")
+					.WriteTwoLines()
+					.WriteLine("Expected:")
+					.WriteLine(Text.OfType<TException>().Indent(retainWhitespace: true))
+					.WriteLine()
+					.WriteLine("Received:")
+					.WriteLine(Text.Of("None").Indent(retainWhitespace: true));
+
+			throw new ExpectException(notThrownMessage);
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
