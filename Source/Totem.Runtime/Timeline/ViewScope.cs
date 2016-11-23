@@ -109,8 +109,6 @@ namespace Totem.Runtime.Timeline
 
       if(!_timeline.TryReadFlow(_initialRoute, out flow))
       {
-        Log.Verbose("[timeline] [{Key:l}] Routed view does not yet exist; ignoring", Key);
-
         CompleteTask();
       }
       else if(flow.Context.HasError)
