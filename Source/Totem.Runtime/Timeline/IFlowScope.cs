@@ -12,7 +12,7 @@ namespace Totem.Runtime.Timeline
 	{
     FlowKey Key { get; }
 
-    Task Task { get; }
+    Task<Flow> Task { get; }
 
     FlowPoint Point { get; }
 

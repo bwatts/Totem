@@ -119,17 +119,28 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-		internal RequestScope<T> CreateRequest<T>(Id id) where T : Request
+		internal RequestScope CreateRequest<T>(Id id) where T : Request
 		{
 			var type = Runtime.GetRequest(typeof(T));
 
       var key = FlowKey.From(type, id);
 
-      return new RequestScope<T>(_lifetime, this, key);
+      var initialRoute = new FlowRoute(key, first: false, when: true, given: false, then: false);
+
+      return new RequestScope(_lifetime, this, initialRoute);
 		}
 
     internal bool TryReadFlow(FlowRoute route, out Flow flow)
     {
+      if(route.Key.Type.IsRequest)
+      {
+        flow = route.Key.Type.New();
+
+        FlowContext.Bind(flow, route.Key);
+
+        return true;
+      }
+
       return _timelineDb.TryReadFlow(route, out flow);
     }
 	}

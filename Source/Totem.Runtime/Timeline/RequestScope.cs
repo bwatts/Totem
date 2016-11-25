@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Autofac;
 using Totem.Runtime.Map.Timeline;
@@ -14,90 +10,35 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// The scope of a request's activity on the timeline
   /// </summary>
-  internal sealed class RequestScope<T> : Connection, IRequestScope where T : Request
+  internal sealed class RequestScope : FlowScope
   {
-    readonly TaskCompletionSource<T> _task = new TaskCompletionSource<T>();
-    readonly Subject<FlowPoint> _points = new Subject<FlowPoint>();
     readonly ILifetimeScope _lifetime;
-    readonly TimelineScope _timeline;
-    T _request;
-    FlowPoint _point;
 
-    internal RequestScope(ILifetimeScope lifetime, TimelineScope timeline, FlowKey key)
+    internal RequestScope(ILifetimeScope lifetime, TimelineScope timeline, FlowRoute initialRoute)
+      : base(timeline, initialRoute)
     {
       _lifetime = lifetime;
-      _timeline = timeline;
-      Key = key;
-    }
-
-    public FlowKey Key { get; }
-
-    internal Task<T> Task => _task.Task;
-
-    public void Push(FlowPoint point)
-    {
-      _points.OnNext(point);
     }
 
     public void PushError(Exception error)
     {
-      _task.SetException(error);
-
-      Disconnect();
+      CompleteTask(error);
     }
 
-    //
-    // Lifecycle
-    //
-
-    protected override void Open()
+    protected override async Task PushPoint()
     {
-      _request = (T) Key.Type.New();
-
-      FlowContext.Bind(_request, Key);
-
-      Track(_points
-        .ObserveOn(ThreadPoolScheduler.Instance)
-        .SelectMany(OnNextPoint)
-        .Subscribe());
-    }
-
-    protected override void Close()
-    {
-      _task.TrySetCanceled(State.CancellationToken);
-    }
-
-    async Task<Unit> OnNextPoint(FlowPoint point)
-    {
-      Log.Verbose("[timeline] {Position:l} => {Flow:l}", point.Position, Key);
-
       try
       {
-        _point = point;
-
-        await PushPoint();
+        await CallWhen();
       }
       catch(Exception error)
       {
         PushError(error);
       }
 
-      return default(Unit);
-    }
-
-    //
-    // Point
-    //
-
-    async Task PushPoint()
-    {
-      await CallWhen();
-
-      if(_request.Context.Done)
+      if(Flow.Context.Done)
       {
-        _task.SetResult(_request);
-
-        Disconnect();
+        CompleteTask();
       }
     }
 
@@ -107,23 +48,25 @@ namespace Totem.Runtime.Timeline
 
       if(flowEvent != null)
       {
+        Log.Verbose("[timeline] {Position:l} => {Flow:l}", Point.Position, Key);
+
         using(var scope = _lifetime.BeginCallScope())
         {
           var call = new FlowCall.When(
-            _point,
+            Point,
             flowEvent,
             scope.Resolve<IDependencySource>(),
-            _timeline.ReadPrincipal(_point),
+            Timeline.ReadPrincipal(Point),
             State.CancellationToken);
 
-          await call.Make(_request);
+          await call.Make(Flow);
         }
       }
     }
 
     FlowEvent GetFlowEvent()
     {
-      return Key.Type.Events.Get(_point.Event, strict: false);
+      return Key.Type.Events.Get(Point.Event, strict: false);
     }
   }
 }

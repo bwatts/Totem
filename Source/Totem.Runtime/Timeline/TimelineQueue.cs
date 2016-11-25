@@ -83,11 +83,21 @@ namespace Totem.Runtime.Timeline
 
       foreach(var batch in info)
       {
-        Log.Verbose(
-          "[timeline] Resuming a batch of {Size} spanning {First:l}-{Last:l}",
-          batch.Points.Count,
-          batch.FirstPosition,
-          batch.LastPosition);
+        if(batch.Points.Count == 1)
+        {
+          Log.Verbose(
+            "[timeline] Resuming a batch of {Size} with {Position:l}",
+            batch.Points.Count,
+            batch.FirstPosition);
+        }
+        else
+        {
+          Log.Verbose(
+            "[timeline] Resuming a batch of {Size} spanning {First:l}-{Last:l}",
+            batch.Points.Count,
+            batch.FirstPosition,
+            batch.LastPosition);
+        }
 
         batchCount += 1;
         pointCount += batch.Points.Count;
@@ -105,6 +115,11 @@ namespace Totem.Runtime.Timeline
 
           if(point.OnSchedule)
           {
+            Log.Verbose(
+              "[timeline] Resuming timer for {Point:l} @ {When}",
+              point.Message.Point,
+              point.Message.Point.Event.When);
+
             _scheduleMessages.OnNext(point.Message);
           }
         }

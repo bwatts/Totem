@@ -11,7 +11,7 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class TimelineRequestSet : Connection
   {
-    readonly ConcurrentDictionary<Id, IRequestScope> _requestsById = new ConcurrentDictionary<Id, IRequestScope>();
+    readonly ConcurrentDictionary<Id, RequestScope> _requestsById = new ConcurrentDictionary<Id, RequestScope>();
     readonly TimelineScope _timeline;
 
     internal TimelineRequestSet(TimelineScope timeline)
@@ -23,7 +23,7 @@ namespace Totem.Runtime.Timeline
     {
       var requestId = message.Point.RequestId;
 
-      IRequestScope request;
+      RequestScope request;
 
       if(requestId.IsAssigned && _requestsById.TryGetValue(requestId, out request))
       {
@@ -37,7 +37,7 @@ namespace Totem.Runtime.Timeline
     {
       var requestId = point.RequestId;
 
-      IRequestScope request;
+      RequestScope request;
 
       if(requestId.IsAssigned && _requestsById.TryGetValue(requestId, out request))
       {
@@ -53,7 +53,7 @@ namespace Totem.Runtime.Timeline
 
       try
       {
-        return await request.Task;
+        return (T) await request.Task;
       }
       finally
       {
@@ -69,7 +69,7 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    RequestScope<T> AddRequest<T>(Id id) where T : Request
+    RequestScope AddRequest<T>(Id id) where T : Request
     {
 			var request = _timeline.CreateRequest<T>(id);
 
@@ -82,7 +82,7 @@ namespace Totem.Runtime.Timeline
 
     void RemoveRequest(Id id)
     {
-      IRequestScope request;
+      RequestScope request;
 
       _requestsById.TryRemove(id, out request);
     }

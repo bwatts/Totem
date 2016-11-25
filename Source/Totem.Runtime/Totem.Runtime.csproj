@@ -154,7 +154,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Timeline\FlowScope.cs" />
-    <Compile Include="Timeline\IRequestScope.cs" />
     <Compile Include="Timeline\IViewDb.cs" />
     <Compile Include="Timeline\IViewExchange.cs" />
     <Compile Include="Timeline\LocalTimelineDb.cs" />

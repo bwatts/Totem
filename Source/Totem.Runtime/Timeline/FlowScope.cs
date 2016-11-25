@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
@@ -11,20 +15,64 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal abstract class FlowScope : Connection, IFlowScope
   {
-    readonly TaskCompletionSource<Unit> _task = new TaskCompletionSource<Unit>();
+    readonly TaskCompletionSource<Flow> _task = new TaskCompletionSource<Flow>();
+    readonly Subject<Unit> _pushSignal = new Subject<Unit>();
+    FlowRoute _initialRoute;
     TimelinePosition _resumeCheckpoint;
     List<FlowPoint> _postResumePoints;
+    volatile bool _pushing;
 
-    protected FlowScope(FlowKey key)
+    protected FlowScope(TimelineScope timeline, FlowRoute initialRoute)
     {
-      Key = key;
+      Timeline = timeline;
+      _initialRoute = initialRoute;
+
+      Key = initialRoute.Key;
     }
 
     public FlowKey Key { get; }
-    public Task Task => _task.Task;
-    public FlowPoint Point { get; protected set; }
+    public Task<Flow> Task => _task.Task;
+    public FlowPoint Point { get; private set; }
 
-    protected volatile bool Resuming;
+    protected TimelineScope Timeline { get; }
+    protected ConcurrentQueue<FlowPoint> Points { get; } = new ConcurrentQueue<FlowPoint>();
+    protected Flow Flow { get; private set; }
+    protected bool Resuming { get; private set; }
+    protected bool NotCompleted => !Task.IsCompleted;
+
+    //
+    // Lifecycle
+    //
+
+    protected override void Open()
+    {
+      Track(_pushSignal
+        .ObserveOn(ThreadPoolScheduler.Instance)
+        .Subscribe(OnPushSignal));
+    }
+
+    protected override void Close()
+    {
+      _task.TrySetCanceled(State.CancellationToken);
+    }
+
+    protected void CompleteTask()
+    {
+      _task.SetResult(Flow);
+
+      Disconnect();
+    }
+
+    protected void CompleteTask(Exception error)
+    {
+      _task.SetException(error);
+
+      Disconnect();
+    }
+
+    //
+    // Push
+    //
 
     public void ResumeTo(TimelinePosition checkpoint)
     {
@@ -55,26 +103,28 @@ namespace Totem.Runtime.Timeline
 
     bool TryFinishResume(FlowPoint point)
     {
-      if(point.Position == _resumeCheckpoint)
+      if(point.Position != _resumeCheckpoint)
       {
-        Enqueue(point);
-
-        if(_postResumePoints != null)
-        {
-          foreach(var postResumePoint in _postResumePoints)
-          {
-            Enqueue(postResumePoint);
-          }
-
-          _postResumePoints = null;
-        }
-
-        _resumeCheckpoint = TimelinePosition.None;
-
-        return true;
+        return false;
       }
 
-      return false;
+      Enqueue(point);
+
+      if(_postResumePoints != null)
+      {
+        foreach(var postResumePoint in _postResumePoints)
+        {
+          Enqueue(postResumePoint);
+        }
+
+        _postResumePoints = null;
+      }
+
+      _resumeCheckpoint = TimelinePosition.None;
+
+      Resuming = false;
+
+      return true;
     }
 
     void AddPostResumePoint(FlowPoint point)
@@ -87,29 +137,102 @@ namespace Totem.Runtime.Timeline
       _postResumePoints.Add(point);
     }
 
-    protected abstract void Enqueue(FlowPoint point);
-
-    //
-    // Lifecycle
-    //
-
-    protected override void Close()
+    void Enqueue(FlowPoint point)
     {
-      _task.TrySetCanceled(State.CancellationToken);
+      Points.Enqueue(point);
+
+      _pushSignal.OnNext(Unit.Default);
     }
 
-    protected void CompleteTask()
+    void OnPushSignal(Unit _)
     {
-      _task.SetResult(Unit.Default);
+      if(!_pushing)
+      {
+        _pushing = true;
 
-      Disconnect();
+        Push();
+      }
     }
 
-    protected void CompleteTask(Exception error)
+    async Task Push()
     {
-      _task.SetException(error);
+      if(FlowLoaded())
+      {
+        await PushPoints();
+      }
 
-      Disconnect();
+      _pushing = false;
+    }
+
+    protected virtual async Task PushPoints()
+    {
+      FlowPoint point;
+
+      while(NotCompleted && Points.TryDequeue(out point))
+      {
+        Point = point;
+
+        await PushPoint();
+
+        Point = null;
+      }
+    }
+
+    protected abstract Task PushPoint();
+
+    //
+    // Load
+    //
+
+    bool FlowLoaded()
+    {
+      if(Flow == null && _initialRoute != null)
+      {
+        LoadFlow();
+
+        _initialRoute = null;
+      }
+
+      return Flow != null;
+    }
+
+    void LoadFlow()
+    {
+      try
+      {
+        TryLoadFlow();
+      }
+      catch(Exception error)
+      {
+        Log.Error(error, "[timeline] [{Flow:l}] Failed to load flow", Key);
+
+        CompleteTask(error);
+      }
+    }
+
+    void TryLoadFlow()
+    {
+      Flow flow;
+
+      if(!Timeline.TryReadFlow(_initialRoute, out flow))
+      {
+        CompleteTask();
+      }
+      else if(flow.Context.HasError)
+      {
+        Log.Verbose("[timeline] [{Flow:l}] Flow is stopped; ignoring", Key);
+
+        CompleteTask(new Exception($"Flow is stopped: {Key}"));
+      }
+      else
+      {
+        Flow = flow;
+
+        if(Flow.Context.CheckpointPosition.IsSome)
+        {
+          Log.Verbose("[timeline] [{Flow:l}] Loaded", Key);
+        }
+      }
     }
   }
 }

@@ -16,102 +16,15 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class TopicScope : FlowScope
   {
-    readonly Subject<FlowPoint> _points = new Subject<FlowPoint>();
     readonly ILifetimeScope _lifetime;
-    readonly TimelineScope _timeline;
-    FlowRoute _initialRoute;
-    Topic _topic;
 
     internal TopicScope(ILifetimeScope lifetime, TimelineScope timeline, FlowRoute initialRoute)
-      : base(initialRoute.Key)
+      : base(timeline, initialRoute)
     {
       _lifetime = lifetime;
-      _timeline = timeline;
-      _initialRoute = initialRoute;
     }
 
-    protected override void Enqueue(FlowPoint point)
-    {
-      _points.OnNext(point);
-    }
-
-    protected override void Open()
-    {
-      Track(_points
-        .ObserveOn(ThreadPoolScheduler.Instance)
-        .SelectMany(OnPoint)
-        .Subscribe());
-    }
-
-    async Task<Unit> OnPoint(FlowPoint point)
-    {
-      Point = point;
-
-      if(TopicLoaded())
-      {
-        await PushPoint();
-      }
-
-      return default(Unit);
-    }
-
-    //
-    // Load
-    //
-
-    bool TopicLoaded()
-    {
-      if(_topic == null && _initialRoute != null)
-      {
-        LoadTopic();
-
-        _initialRoute = null;
-      }
-
-      return _topic != null;
-    }
-
-    void LoadTopic()
-    {
-      try
-      {
-        TryLoadTopic();
-      }
-      catch(Exception error)
-      {
-        Log.Error(error, "[timeline] [{Key:l}] Failed to load topic", Key);
-
-        CompleteTask(error);
-      }
-    }
-
-    void TryLoadTopic()
-    {
-      Log.Verbose("[timeline] [{Key:l}] Loading...", Key);
-
-      Flow flow;
-
-      if(!_timeline.TryReadFlow(_initialRoute, out flow))
-      {
-        CompleteTask();
-      }
-      else if(flow.Context.HasError)
-      {
-        Log.Verbose("[timeline] [{Key:l}] Topic is stopped; ignoring", Key);
-
-        CompleteTask(new Exception($"Topic {Key} is stopped"));
-      }
-      else
-      {
-        _topic = (Topic) flow;
-      }
-    }
-
-    //
-    // Point
-    //
-
-    async Task PushPoint()
+    protected override async Task PushPoint()
     {
       Log.Verbose("[timeline] {Position:l} => {Flow:l}", Point.Position, Key);
 
@@ -133,9 +46,9 @@ namespace Totem.Runtime.Timeline
 
       var newEvents = await TryCallWhen(topicEvent);
 
-      var result = _timeline.PushTopic(_topic, Point, newEvents);
+      var result = Timeline.PushTopic((Topic) Flow, Point, newEvents);
 
-      if(result.GivenError || _topic.Context.Done)
+      if(result.GivenError || Flow.Context.Done)
       {
         CompleteTask();
       }
@@ -150,7 +63,7 @@ namespace Totem.Runtime.Timeline
     {
       if(Point.Route.Given && !Point.Route.Then)
       {
-        new FlowCall.Given(Point, topicEvent).Make(_topic);
+        new FlowCall.Given(Point, topicEvent).Make((Topic) Flow);
       }
     }
 
@@ -167,10 +80,10 @@ namespace Totem.Runtime.Timeline
           Point,
           topicEvent,
           scope.Resolve<IDependencySource>(),
-          _timeline.ReadPrincipal(Point),
+          Timeline.ReadPrincipal(Point),
           State.CancellationToken);
 
-        await call.Make(_topic);
+        await call.Make(Flow);
 
         return call.RetrieveNewEvents();
       }
@@ -182,9 +95,9 @@ namespace Totem.Runtime.Timeline
 
       try
       {
-        _topic.Context.SetError(Point.Position);
+        Flow.Context.SetError(Point.Position);
 
-        _timeline.PushStopped(Point, error);
+        Timeline.PushStopped(Point, error);
       }
       finally
       {
