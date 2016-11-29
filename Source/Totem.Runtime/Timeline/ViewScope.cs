@@ -12,15 +12,13 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class ViewScope : FlowScope
   {
-    readonly ILifetimeScope _lifetime;
     readonly IViewExchange _exchange;
     readonly int _batchSize;
     int _batchCount;
 
     internal ViewScope(ILifetimeScope lifetime, TimelineScope timeline, IViewExchange exchange, FlowRoute initialRoute)
-      : base(timeline, initialRoute)
+      : base(lifetime, timeline, initialRoute)
     {
-      _lifetime = lifetime;
       _exchange = exchange;
 
       _batchSize = ((ViewType) Key.Type).BatchSize;
@@ -69,23 +67,6 @@ namespace Totem.Runtime.Timeline
         }
 
         PushStopped(error);
-      }
-    }
-
-    async Task CallWhen()
-    {
-      Log.Verbose("[timeline] {Position:l} => {Key:l}", Point.Position, Key);
-
-      using(var scope = _lifetime.BeginCallScope())
-      {
-        var call = new FlowCall.When(
-          Point,
-          Key.Type.Events.Get(Point.Event),
-          scope.Resolve<IDependencySource>(),
-          Timeline.ReadPrincipal(Point),
-          State.CancellationToken);
-
-        await call.Make(Flow);
       }
     }
 

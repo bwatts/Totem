@@ -80,7 +80,7 @@ namespace Totem.Runtime.Timeline
 
     IFlowScope CreateFlow(FlowRoute route)
     {
-      var flow = _timeline.CreateDbFlow(route);
+      var flow = _timeline.CreateFlow(route);
 
       ConnectFlow(flow);
       

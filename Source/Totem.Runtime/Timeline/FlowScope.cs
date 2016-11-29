@@ -7,13 +7,15 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Autofac;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
   /// <summary>
   /// The scope of a flow's activity on the timeline
   /// </summary>
-  internal abstract class FlowScope : Connection, IFlowScope
+  internal class FlowScope : Connection, IFlowScope
   {
     readonly TaskCompletionSource<Flow> _task = new TaskCompletionSource<Flow>();
     readonly Subject<Unit> _pushSignal = new Subject<Unit>();
@@ -22,8 +24,9 @@ namespace Totem.Runtime.Timeline
     List<FlowPoint> _postResumePoints;
     volatile bool _pushing;
 
-    protected FlowScope(TimelineScope timeline, FlowRoute initialRoute)
+    internal FlowScope(ILifetimeScope lifetime, TimelineScope timeline, FlowRoute initialRoute)
     {
+      Lifetime = lifetime;
       Timeline = timeline;
       _initialRoute = initialRoute;
 
@@ -34,6 +37,7 @@ namespace Totem.Runtime.Timeline
     public Task<Flow> Task => _task.Task;
     public FlowPoint Point { get; private set; }
 
+    protected ILifetimeScope Lifetime { get; }
     protected TimelineScope Timeline { get; }
     protected ConcurrentQueue<FlowPoint> Points { get; } = new ConcurrentQueue<FlowPoint>();
     protected Flow Flow { get; private set; }
@@ -178,7 +182,55 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    protected abstract Task PushPoint();
+    protected virtual async Task PushPoint()
+    {
+      try
+      {
+        await CallWhen();
+
+        if(NotCompleted && Flow.Context.Done)
+        {
+          CompleteTask();
+        }
+      }
+      catch(Exception error)
+      {
+        Log.Error(error, "[timeline] [{Key:l}] Flow stopped", Key);
+
+        Flow.Context.SetError(Point.Position);
+
+        CompleteTask(error);
+      }
+    }
+
+    protected virtual async Task CallWhen()
+    {
+      FlowEvent flowEvent;
+
+      if(TryGetFlowEvent(out flowEvent))
+      {
+        Log.Verbose("[timeline] {Position:l} => {Flow:l}", Point.Position, Key);
+
+        using(var scope = Lifetime.BeginCallScope())
+        {
+          var call = new FlowCall.When(
+            Point,
+            flowEvent,
+            scope.Resolve<IDependencySource>(),
+            Timeline.ReadPrincipal(Point),
+            State.CancellationToken);
+
+          await call.Make(Flow);
+        }
+      }
+    }
+
+    bool TryGetFlowEvent(out FlowEvent flowEvent)
+    {
+      flowEvent = Key.Type.Events.Get(Point.Event, strict: false);
+
+      return flowEvent != null;
+    }
 
     //
     // Load

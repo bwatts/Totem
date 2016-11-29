@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Autofac;
 using Totem.Runtime.Map.Timeline;
@@ -16,13 +12,9 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class TopicScope : FlowScope
   {
-    readonly ILifetimeScope _lifetime;
-
     internal TopicScope(ILifetimeScope lifetime, TimelineScope timeline, FlowRoute initialRoute)
-      : base(timeline, initialRoute)
-    {
-      _lifetime = lifetime;
-    }
+      : base(lifetime, timeline, initialRoute)
+    {}
 
     protected override async Task PushPoint()
     {
@@ -74,7 +66,7 @@ namespace Totem.Runtime.Timeline
         return new Many<Event>();
       }
 
-      using(var scope = _lifetime.BeginCallScope())
+      using(var scope = Lifetime.BeginCallScope())
       {
         var call = new FlowCall.TopicWhen(
           Point,

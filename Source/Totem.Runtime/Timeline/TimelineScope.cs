@@ -103,7 +103,7 @@ namespace Totem.Runtime.Timeline
 			return new ClaimsPrincipal();
 		}
 
-    internal IFlowScope CreateDbFlow(FlowRoute route)
+    internal IFlowScope CreateFlow(FlowRoute route)
     {
       if(route.Key.Type.IsTopic)
       {
@@ -115,7 +115,7 @@ namespace Totem.Runtime.Timeline
       }
       else
       {
-        throw new NotSupportedException($@"Flow type ""{route.Key.Type}"" is not a database flow");
+        return new FlowScope(_lifetime, this, route);
       }
     }
 
@@ -125,7 +125,7 @@ namespace Totem.Runtime.Timeline
 
       var key = FlowKey.From(type, id);
 
-      var initialRoute = new FlowRoute(key, first: false, when: true, given: false, then: false);
+      var initialRoute = new FlowRoute(key, first: true, when: true, given: false, then: false);
 
       return new RequestScope(_lifetime, this, initialRoute);
 		}
