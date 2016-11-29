@@ -98,10 +98,14 @@ namespace Totem.Runtime.Timeline
         Flow.Context.SetError(Point.Position);
 
         Timeline.PushStopped(Point, error);
-      }
-      finally
-      {
+
         CompleteTask(error);
+      }
+      catch(Exception pushError)
+      {
+        Log.Error(pushError, "[timeline] [{Key:l}] Failed to push {Stopped:l} to timeline", Key, Runtime.GetEvent(typeof(FlowStopped)));
+
+        CompleteTask(new AggregateException(error, pushError));
       }
     }
   }
