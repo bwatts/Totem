@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,13 +10,20 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class TimelineFlowSet : Connection
 	{
-		private readonly Dictionary<FlowKey, IFlowScope> _flowsByKey = new Dictionary<FlowKey, IFlowScope>();
-
-		private readonly TimelineScope _timeline;
+		readonly ConcurrentDictionary<FlowKey, IFlowScope> _flowsByKey = new ConcurrentDictionary<FlowKey, IFlowScope>();
+		readonly TimelineScope _timeline;
+    Dictionary<FlowKey, TimelinePosition> _resumeCheckpoints;
 
     internal TimelineFlowSet(TimelineScope timeline)
     {
       _timeline = timeline;
+    }
+
+    internal void ResumeWith(ResumeInfo info)
+    {
+      _resumeCheckpoints = info.Flows.ToDictionary(
+        flow => flow.Key,
+        flow => flow.Checkpoint);
     }
 
     internal void Push(TimelineMessage message)
@@ -30,67 +38,87 @@ namespace Totem.Runtime.Timeline
         }
         catch(Exception error)
         {
-          Log.Error("[timeline] Failed to push point {Point:l} to route {Route:l}", message.Point, route);
+          Log.Error(error, "[timeline] [{Flow:l}] Failed to push point {Point:l}", route.Key, message.Point);
 
           if(!pushedRequestError)
           {
             pushedRequestError = true;
 
-            _timeline.TryPushRequestError(message.Point.RequestId, error);
+            _timeline.TryPushRequestError(message.Point, error);
           }
         }
       }
     }
 
-    private void Push(TimelineMessage message, FlowRoute route)
+    void Push(TimelineMessage message, FlowRoute route)
+    {
+      var flow = ReadFlow(route);
+
+      if(flow.Task.IsFaulted)
+      {
+        _timeline.TryPushRequestError(message.Point, flow.Task.Exception);
+      }
+      else
+      {
+        flow.Push(new FlowPoint(route, message.Point));
+      }
+    }
+
+    IFlowScope ReadFlow(FlowRoute route)
     {
       IFlowScope flow;
 
-      if(TryGetFlow(route, out flow) || TryReadFlow(route, out flow))
+      if(!_flowsByKey.TryGetValue(route.Key, out flow))
       {
-        if(flow.Instance.Context.HasError)
-        {
-          _timeline.TryPushRequestError(message.Point.RequestId, new Exception($"Flow {flow.Key} is stopped"));
-        }
-        else
-        {
-          flow.Push(new FlowPoint(route, message.Point));
-        }
-      }
-    }
+        flow = CreateFlow(route);
 
-    private bool TryGetFlow(FlowRoute route, out IFlowScope flow)
-    {
-      return _flowsByKey.TryGetValue(route.Key, out flow);
-    }
-
-    private bool TryReadFlow(FlowRoute route, out IFlowScope flow)
-    {
-      if(_timeline.TryReadFlow(route, out flow))
-      {
         _flowsByKey[route.Key] = flow;
-
-        var connection = flow.Connect(this);
-
-        var capturedFlow = flow;
-
-        flow.Task.ContinueWith(
-          _ => FinishFlow(capturedFlow, connection),
-          State.CancellationToken);
       }
 
-      return flow != null;
+      return flow;
     }
 
-    private void FinishFlow(IFlowScope flow, IDisposable connection)
+    IFlowScope CreateFlow(FlowRoute route)
     {
-      _flowsByKey.Remove(flow.Key);
+      var flow = _timeline.CreateDbFlow(route);
+
+      ConnectFlow(flow);
+      
+      TryResume(flow);
+
+      return flow;
+    }
+
+    void ConnectFlow(IFlowScope flow)
+    {
+      var connection = flow.Connect(this);
+
+      flow.Task.ContinueWith(
+        _ => FinishFlow(flow, connection),
+        State.CancellationToken);
+    }
+
+    void TryResume(IFlowScope flow)
+    {
+      TimelinePosition checkpoint;
+
+      if(_resumeCheckpoints.TryGetValue(flow.Key, out checkpoint))
+      {
+        flow.ResumeTo(checkpoint);
+      }
+    }
+
+    void FinishFlow(IFlowScope flow, IDisposable connection)
+    {
+      IFlowScope removed;
+
+      _flowsByKey.TryRemove(flow.Key, out removed);
 
       connection.Dispose();
 
       if(flow.Task.IsFaulted)
       {
-        _timeline.TryPushRequestError(flow.Point.RequestId, flow.Task.Exception);
+        _timeline.TryPushRequestError(flow.Point, flow.Task.Exception);
       }
     }
 	}

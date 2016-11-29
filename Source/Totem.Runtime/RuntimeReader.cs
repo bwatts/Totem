@@ -258,7 +258,7 @@ namespace Totem.Runtime
       }
       else if(DeclaredTypeIs<View>())
       {
-        var view = new ViewType(type, constructor, priorKeys);
+        var view = new ViewType(type, constructor, priorKeys, ReadBatchSize());
 
         _package.Views.Register(view);
 
@@ -311,6 +311,11 @@ namespace Totem.Runtime
 
         yield return priorKey;
       }
+    }
+
+    private int ReadBatchSize()
+    {
+      return _declaredType.GetCustomAttribute<BatchSizeAttribute>(inherit: true).BatchSize;
     }
 
     private void RegisterFlow(FlowType flow)

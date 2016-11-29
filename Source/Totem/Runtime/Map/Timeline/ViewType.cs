@@ -9,8 +9,14 @@ namespace Totem.Runtime.Map.Timeline
   /// </summary>
   public sealed class ViewType : FlowType
 	{
-		internal ViewType(RuntimeTypeRef type, FlowConstructor constructor, Many<RuntimeTypeKey> priorKeys)
+		internal ViewType(RuntimeTypeRef type, FlowConstructor constructor, Many<RuntimeTypeKey> priorKeys, int batchSize)
       : base(type, constructor, priorKeys)
-		{}
+		{
+      BatchSize = batchSize;
+    }
+
+    public readonly int BatchSize;
+
+    public const int DefaultBatchSize = 200;
 	}
 }

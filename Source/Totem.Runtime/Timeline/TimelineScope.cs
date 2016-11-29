@@ -12,13 +12,13 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   public sealed class TimelineScope : Connection, ITimelineScope
 	{
-    private readonly ILifetimeScope _lifetime;
-    private readonly ITimelineDb _timelineDb;
-		private readonly IViewExchange _viewExchange;
-		private readonly TimelineSchedule _schedule;
-		private readonly TimelineFlowSet _flows;
-		private readonly TimelineRequestSet _requests;
-		private readonly TimelineQueue _queue;
+    readonly ILifetimeScope _lifetime;
+    readonly ITimelineDb _timelineDb;
+		readonly IViewExchange _viewExchange;
+		readonly TimelineSchedule _schedule;
+		readonly TimelineFlowSet _flows;
+		readonly TimelineRequestSet _requests;
+		readonly TimelineQueue _queue;
 
     public TimelineScope(ILifetimeScope lifetime, ITimelineDb timelineDb, IViewExchange viewExchange)
 		{
@@ -30,7 +30,7 @@ namespace Totem.Runtime.Timeline
       _flows = new TimelineFlowSet(this);
       _requests = new TimelineRequestSet(this);
 
-			_queue = new TimelineQueue(_schedule, _flows, _requests);
+			_queue = new TimelineQueue(_timelineDb, _schedule, _flows, _requests);
     }
 
     protected override void Open()
@@ -39,11 +39,6 @@ namespace Totem.Runtime.Timeline
       Track(_flows);
       Track(_requests);
 			Track(_queue);
-
-			var resumeInfo = _timelineDb.ReadResumeInfo();
-
-			_schedule.ResumeWith(resumeInfo);
-			_queue.ResumeWith(resumeInfo);
 		}
 
 		public Task<T> MakeRequest<T>(TimelinePosition cause, Event e) where T : Request
@@ -81,11 +76,11 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    internal PushWhenResult PushWhen(Flow flow, FlowCall.When call)
+    internal PushTopicResult PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents)
 		{
       using(var enqueue = _queue.StartEnqueue())
       {
-        var result = _timelineDb.PushWhen(flow, call);
+        var result = _timelineDb.PushTopic(topic, point, newEvents);
 
         enqueue.Commit(result.Messages);
 
@@ -93,9 +88,14 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    internal void TryPushRequestError(Id requestId, Exception error)
+    internal void PushView(View view)
     {
-      _requests.TryPushError(requestId, error);
+      _timelineDb.PushView(view);
+    }
+
+    internal void TryPushRequestError(TimelinePoint point, Exception error)
+    {
+      _requests.TryPushError(point, error);
     }
 
     internal ClaimsPrincipal ReadPrincipal(FlowPoint point)
@@ -103,26 +103,45 @@ namespace Totem.Runtime.Timeline
 			return new ClaimsPrincipal();
 		}
 
-		internal bool TryReadFlow(FlowRoute route, out IFlowScope flow)
-		{
-			Flow instance;
+    internal IFlowScope CreateDbFlow(FlowRoute route)
+    {
+      if(route.Key.Type.IsTopic)
+      {
+        return new TopicScope(_lifetime, this, route);
+      }
+      else if(route.Key.Type.IsView)
+      {
+        return new ViewScope(_lifetime, this, _viewExchange, route);
+      }
+      else
+      {
+        throw new NotSupportedException($@"Flow type ""{route.Key.Type}"" is not a database flow");
+      }
+    }
 
-			flow = !_timelineDb.TryReadFlow(route, out instance)
-				? null
-				: new FlowScope(_lifetime, this, _viewExchange, instance);
-
-			return flow != null;
-		}
-
-		internal TimelineRequest<T> CreateRequest<T>(Id id) where T : Request
+		internal RequestScope CreateRequest<T>(Id id) where T : Request
 		{
 			var type = Runtime.GetRequest(typeof(T));
 
-			var request = type.New();
+      var key = FlowKey.From(type, id);
 
-      FlowContext.Bind(request, FlowKey.From(type, id));
+      var initialRoute = new FlowRoute(key, first: false, when: true, given: false, then: false);
 
-			return new TimelineRequest<T>(new FlowScope(_lifetime, this, _viewExchange, request));
+      return new RequestScope(_lifetime, this, initialRoute);
 		}
+
+    internal bool TryReadFlow(FlowRoute route, out Flow flow)
+    {
+      if(route.Key.Type.IsRequest)
+      {
+        flow = route.Key.Type.New();
+
+        FlowContext.Bind(flow, route.Key);
+
+        return true;
+      }
+
+      return _timelineDb.TryReadFlow(route, out flow);
+    }
 	}
 }

@@ -1,38 +1,44 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Autofac;
-using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
   /// <summary>
   /// The scope of a flow's activity on the timeline
   /// </summary>
-  public sealed class FlowScope : Connection, IFlowScope
+  internal abstract class FlowScope : Connection, IFlowScope
   {
-    private readonly TaskCompletionSource<object> _taskCompletionSource = new TaskCompletionSource<object>();
-    private readonly ILifetimeScope _lifetime;
-    private readonly TimelineScope _timeline;
-    private readonly IViewExchange _viewExchange;
-    private FlowQueue _queue;
-    private Task _pushQueueTask;
+    readonly TaskCompletionSource<Flow> _task = new TaskCompletionSource<Flow>();
+    readonly Subject<Unit> _pushSignal = new Subject<Unit>();
+    FlowRoute _initialRoute;
+    TimelinePosition _resumeCheckpoint;
+    List<FlowPoint> _postResumePoints;
+    volatile bool _pushing;
 
-    public FlowScope(ILifetimeScope lifetime, TimelineScope timeline, IViewExchange viewExchange, Flow instance)
+    protected FlowScope(TimelineScope timeline, FlowRoute initialRoute)
     {
-      _lifetime = lifetime;
-      _timeline = timeline;
-      _viewExchange = viewExchange;
+      Timeline = timeline;
+      _initialRoute = initialRoute;
 
-      Instance = instance;
-      Key = instance.Context.Key;
+      Key = initialRoute.Key;
     }
 
-    public Flow Instance { get; }
     public FlowKey Key { get; }
+    public Task<Flow> Task => _task.Task;
     public FlowPoint Point { get; private set; }
-    public Task Task => _taskCompletionSource.Task;
+
+    protected TimelineScope Timeline { get; }
+    protected ConcurrentQueue<FlowPoint> Points { get; } = new ConcurrentQueue<FlowPoint>();
+    protected Flow Flow { get; private set; }
+    protected bool Resuming { get; private set; }
+    protected bool NotCompleted => !Task.IsCompleted;
 
     //
     // Lifecycle
@@ -40,193 +46,193 @@ namespace Totem.Runtime.Timeline
 
     protected override void Open()
     {
-      _queue = new FlowQueue();
-      _pushQueueTask = PushQueue();
+      Track(_pushSignal
+        .ObserveOn(ThreadPoolScheduler.Instance)
+        .Subscribe(OnPushSignal));
     }
 
     protected override void Close()
     {
-      _queue = null;
-      _pushQueueTask = null;
-
-      CancelTaskIfWaiting();
+      _task.TrySetCanceled(State.CancellationToken);
     }
 
-    private void CancelTaskIfWaiting()
+    protected void CompleteTask()
     {
-      _taskCompletionSource.TrySetCanceled(State.CancellationToken);
-    }
-
-    private void CompleteTask()
-    {
-      _taskCompletionSource.TrySetResult(null);
+      _task.SetResult(Flow);
 
       Disconnect();
     }
 
-    private void CompleteTask(Exception error)
+    protected void CompleteTask(Exception error)
     {
-      _taskCompletionSource.TrySetException(error);
+      _task.SetException(error);
 
       Disconnect();
-    }
-
-    private void CompleteTaskIfDone()
-    {
-      if(Instance.Context.Done)
-      {
-        CompleteTask();
-      }
     }
 
     //
     // Push
     //
 
+    public void ResumeTo(TimelinePosition checkpoint)
+    {
+      _resumeCheckpoint = checkpoint;
+
+      Resuming = true;
+    }
+
     public void Push(FlowPoint point)
     {
-      if(PushingQueue)
+      if(!TryEnqueue(point) && !TryFinishResume(point))
       {
-        _queue.Enqueue(point);
+        AddPostResumePoint(point);
       }
     }
 
-    private bool PushingQueue => State.IsConnecting || State.IsConnected || State.IsReconnected;
-
-    private async Task PushQueue()
+    bool TryEnqueue(FlowPoint point)
     {
-      while(PushingQueue)
+      if(_resumeCheckpoint.IsNone || point.Position < _resumeCheckpoint)
       {
-        Point = await _queue.Dequeue();
+        Enqueue(point);
 
-        if(PushingQueue)
+        return true;
+      }
+
+      return false;
+    }
+
+    bool TryFinishResume(FlowPoint point)
+    {
+      if(point.Position != _resumeCheckpoint)
+      {
+        return false;
+      }
+
+      Enqueue(point);
+
+      if(_postResumePoints != null)
+      {
+        foreach(var postResumePoint in _postResumePoints)
         {
-          await PushNext();
+          Enqueue(postResumePoint);
         }
+
+        _postResumePoints = null;
+      }
+
+      _resumeCheckpoint = TimelinePosition.None;
+
+      Resuming = false;
+
+      return true;
+    }
+
+    void AddPostResumePoint(FlowPoint point)
+    {
+      if(_postResumePoints == null)
+      {
+        _postResumePoints = new List<FlowPoint>();
+      }
+
+      _postResumePoints.Add(point);
+    }
+
+    void Enqueue(FlowPoint point)
+    {
+      Points.Enqueue(point);
+
+      _pushSignal.OnNext(Unit.Default);
+    }
+
+    void OnPushSignal(Unit _)
+    {
+      if(!_pushing)
+      {
+        _pushing = true;
+
+        Push();
       }
     }
 
-    private async Task PushNext()
+    async Task Push()
     {
-      Log.Verbose("[timeline] {Position:l} => {Flow:l}", Point.Position, Key);
+      if(FlowLoaded())
+      {
+        await PushPoints();
+      }
 
+      _pushing = false;
+    }
+
+    protected virtual async Task PushPoints()
+    {
+      FlowPoint point;
+
+      while(NotCompleted && Points.TryDequeue(out point))
+      {
+        Point = point;
+
+        await PushPoint();
+
+        Point = null;
+      }
+    }
+
+    protected abstract Task PushPoint();
+
+    //
+    // Load
+    //
+
+    bool FlowLoaded()
+    {
+      if(Flow == null && _initialRoute != null)
+      {
+        LoadFlow();
+
+        _initialRoute = null;
+      }
+
+      return Flow != null;
+    }
+
+    void LoadFlow()
+    {
       try
       {
-        var flowEvent = Key.Type.Events.Get(Point.Event);
-
-        CallGivenIfTopic(flowEvent);
-
-        await CallWhen(flowEvent);
-
-        PushUpdateIfView();
-
-        CompleteTaskIfDone();
+        TryLoadFlow();
       }
       catch(Exception error)
       {
-        if(Key.Type.IsRequest)
-        {
-          CompleteTask(error);
-        }
-        else
-        {
-          PushStopped(error);
-        }
+        Log.Error(error, "[timeline] [{Flow:l}] Failed to load flow", Key);
+
+        CompleteTask(error);
       }
     }
 
-    private void CallGivenIfTopic(FlowEvent flowEvent)
+    void TryLoadFlow()
     {
-      var topic = Instance as Topic;
+      Flow flow;
 
-      if(topic != null && Point.Route.Given && !Point.Route.Then)
-      {
-        var call = new FlowCall.Given(Point, (TopicEvent) flowEvent);
-
-        call.Make(topic);
-      }
-    }
-
-    private async Task CallWhen(FlowEvent flowEvent)
-    {
-      using(var scope = _lifetime.BeginCallScope())
-      {
-        await (Key.Type.IsTopic
-          ? CallTopicWhen(flowEvent, scope)
-          : CallWhen(flowEvent, scope));
-      }
-    }
-
-    private async Task CallTopicWhen(FlowEvent flowEvent, ILifetimeScope scope)
-    {
-      var call = new FlowCall.TopicWhen(
-        Point,
-        (TopicEvent) flowEvent,
-        scope.Resolve<IDependencySource>(),
-        _timeline.ReadPrincipal(Point),
-        State.CancellationToken);
-
-      await call.Make(Instance);
-
-      PushWhen(call);
-    }
-
-    private async Task CallWhen(FlowEvent flowEvent, ILifetimeScope scope)
-    {
-      var call = new FlowCall.When(
-        Point,
-        flowEvent,
-        scope.Resolve<IDependencySource>(),
-        _timeline.ReadPrincipal(Point),
-        State.CancellationToken);
-
-      await call.Make(Instance);
-
-      if(!Key.Type.IsRequest)
-      {
-        PushWhen(call);
-      }
-    }
-
-    private void PushWhen(FlowCall.When call)
-    {
-      var result = _timeline.PushWhen(Instance, call);
-
-      if(result.GivenError)
+      if(!Timeline.TryReadFlow(_initialRoute, out flow))
       {
         CompleteTask();
       }
-    }
-
-    private void PushUpdateIfView()
-    {
-      if(Key.Type.IsView)
+      else if(flow.Context.HasError)
       {
-        try
+        Log.Verbose("[timeline] [{Flow:l}] Flow is stopped; ignoring", Key);
+
+        CompleteTask(new Exception($"Flow is stopped: {Key}"));
+      }
+      else
+      {
+        Flow = flow;
+
+        if(Flow.Context.CheckpointPosition.IsSome)
         {
-          _viewExchange.PushUpdate((View) Instance);
-        }
-        catch(Exception error)
-        {
-          Log.Error(error, "[timeline] View {Flow:l} failed to push update");
+          Log.Verbose("[timeline] [{Flow:l}] Loaded", Key);
         }
       }
     }
-
-    private void PushStopped(Exception error)
-		{
-			Log.Error(error, "[timeline] Flow {Flow:l} stopped", Key);
-
-			try
-			{
-        Instance.Context.SetError(Point.Position);
-
-				_timeline.PushStopped(Point, error);
-			}
-			finally
-			{
-				CompleteTask(error);
-			}
-		}
   }
 }

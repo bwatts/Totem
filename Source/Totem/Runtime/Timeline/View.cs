@@ -8,6 +8,7 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// A timeline presence that maintains a persistent structure
   /// </summary>
+  [BatchSize(ViewType.DefaultBatchSize)]
   public abstract class View : Flow
   {
     protected View()

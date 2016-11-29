@@ -11,34 +11,35 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class TimelineRequestSet : Connection
   {
-    private readonly ConcurrentDictionary<Id, TimelineRequest> _requestsById = new ConcurrentDictionary<Id, TimelineRequest>();
-    private readonly TimelineScope _timeline;
+    readonly ConcurrentDictionary<Id, RequestScope> _requestsById = new ConcurrentDictionary<Id, RequestScope>();
+    readonly TimelineScope _timeline;
 
     internal TimelineRequestSet(TimelineScope timeline)
     {
       _timeline = timeline;
     }
 
-    public void Push(TimelineMessage message)
+    internal void Push(TimelineMessage message)
     {
-      var requestId = Flow.Traits.RequestId.Get(message.Point.Event);
+      var requestId = message.Point.RequestId;
 
-      if(requestId.IsAssigned)
+      RequestScope request;
+
+      if(requestId.IsAssigned && _requestsById.TryGetValue(requestId, out request))
       {
-        TimelineRequest request;
+        var route = new FlowRoute(request.Key, first: false, when: true, given: false, then: false);
 
-        if(_requestsById.TryGetValue(requestId, out request))
-        {
-          request.Push(message);
-        }
+        request.Push(new FlowPoint(route, message.Point));
       }
     }
 
-    internal void TryPushError(Id requestId, Exception error)
+    internal void TryPushError(TimelinePoint point, Exception error)
     {
-      TimelineRequest request;
+      var requestId = point.RequestId;
 
-      if(_requestsById.TryGetValue(requestId, out request))
+      RequestScope request;
+
+      if(requestId.IsAssigned && _requestsById.TryGetValue(requestId, out request))
       {
         request.PushError(error);
       }
@@ -52,7 +53,7 @@ namespace Totem.Runtime.Timeline
 
       try
       {
-        return await request.Task;
+        return (T) await request.Task;
       }
       finally
       {
@@ -60,7 +61,7 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    private void CheckUniqueRequestId(Id id)
+    void CheckUniqueRequestId(Id id)
     {
       if(_requestsById.ContainsKey(id))
       {
@@ -68,21 +69,20 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    private TimelineRequest<T> AddRequest<T>(Id id) where T : Request
+    RequestScope AddRequest<T>(Id id) where T : Request
     {
 			var request = _timeline.CreateRequest<T>(id);
 
 			_requestsById[id] = request;
 
-      // No need to track the connection - the request closes when its task completes
       request.Connect(this);
 
       return request;
     }
 
-    private void RemoveRequest(Id id)
+    void RemoveRequest(Id id)
     {
-      TimelineRequest request;
+      RequestScope request;
 
       _requestsById.TryRemove(id, out request);
     }

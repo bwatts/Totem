@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
@@ -13,14 +14,21 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	internal sealed class TimelineQueue : Connection
 	{
-    private readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
-    private readonly TimelineSchedule _schedule;
-    private readonly TimelineFlowSet _flows;
-		private readonly TimelineRequestSet _requests;
-    private readonly EnqueueTransactionSet _transactions;
+    readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
+    readonly Subject<TimelineMessage> _scheduleMessages = new Subject<TimelineMessage>();
+    readonly ITimelineDb _db;
+    readonly TimelineSchedule _schedule;
+    readonly TimelineFlowSet _flows;
+		readonly TimelineRequestSet _requests;
+    readonly EnqueueTransactionSet _transactions;
 
-    internal TimelineQueue(TimelineSchedule schedule, TimelineFlowSet flows, TimelineRequestSet requests)
+    internal TimelineQueue(
+      ITimelineDb db,
+      TimelineSchedule schedule,
+      TimelineFlowSet flows,
+      TimelineRequestSet requests)
 		{
+      _db = db;
 			_schedule = schedule;
 			_flows = flows;
 			_requests = requests;
@@ -28,25 +36,109 @@ namespace Totem.Runtime.Timeline
       _transactions = new EnqueueTransactionSet(this);
 		}
 
-		protected override void Open()
-		{
-			Track(_messages
-				.ObserveOn(ThreadPoolScheduler.Instance)
-				.Subscribe(message =>
-				{
-					_schedule.Push(message);
-					_flows.Push(message);
-					_requests.Push(message);
-				}));
-		}
-
-    internal void ResumeWith(ResumeInfo info)
+    protected override void Open()
     {
-      foreach(var pointInfo in info.Points)
+      ObserveMessages();
+
+      Task.Delay(500).ContinueWith(_ => Resume());
+    }
+
+    void ObserveMessages()
+    {
+      Track(_messages
+        .ObserveOn(ThreadPoolScheduler.Instance)
+        .Subscribe(message =>
+        {
+          _flows.Push(message);
+          _requests.Push(message);
+        }));
+
+      Track(_scheduleMessages
+        .ObserveOn(ThreadPoolScheduler.Instance)
+        .Subscribe(_schedule.Push));
+    }
+
+    void Resume()
+    {
+      try
       {
-        _messages.OnNext(pointInfo.Message);
+        var info = _db.ReadResumeInfo();
+
+        _flows.ResumeWith(info);
+
+        ResumeWith(info);
+      }
+      catch(Exception error)
+      {
+        Log.Error(error, "[timeline] HALTED; failed to resume activity");
       }
     }
+
+    void ResumeWith(ResumeInfo info)
+    {
+      var batchCount = 0;
+      var pointCount = 0;
+      var firstPosition = TimelinePosition.None;
+      var lastPosition = TimelinePosition.None;
+
+      foreach(var batch in info)
+      {
+        if(batch.Points.Count == 1)
+        {
+          Log.Verbose(
+            "[timeline] Resuming a batch of {Size} with {Position:l}",
+            batch.Points.Count,
+            batch.FirstPosition);
+        }
+        else
+        {
+          Log.Verbose(
+            "[timeline] Resuming a batch of {Size} spanning {First:l}-{Last:l}",
+            batch.Points.Count,
+            batch.FirstPosition,
+            batch.LastPosition);
+        }
+
+        batchCount += 1;
+        pointCount += batch.Points.Count;
+
+        if(firstPosition == TimelinePosition.None)
+        {
+          firstPosition = batch.FirstPosition;
+        }
+
+        lastPosition = batch.LastPosition;
+
+        foreach(var point in batch.Points)
+        {
+          _messages.OnNext(point.Message);
+
+          if(point.OnSchedule)
+          {
+            Log.Verbose(
+              "[timeline] Resuming timer for {Point:l} @ {When}",
+              point.Message.Point,
+              point.Message.Point.Event.When);
+
+            _scheduleMessages.OnNext(point.Message);
+          }
+        }
+      }
+
+      if(batchCount > 1)
+      {
+        Log.Verbose(
+          "[timeline] Resumed activity with {Batches:l} ({Points:l}) spanning {First:l}-{Last:l}",
+          Text.Count(batchCount, "batch", "batches"),
+          Text.Count(pointCount, "point"),
+          firstPosition,
+          lastPosition);
+      }
+    }
+
+    //
+    // Enqueueing
+    //
 
     internal EnqueueTransaction StartEnqueue()
     {
@@ -72,15 +164,28 @@ namespace Totem.Runtime.Timeline
       }
     }
 
+    void Enqueue(IEnumerable<TimelineMessage> messages)
+    {
+      foreach(var message in messages.OrderBy(m => m.Point.Position))
+      {
+        _messages.OnNext(message);
+
+        if(message.Point.Scheduled)
+        {
+          _scheduleMessages.OnNext(message);
+        }
+      }
+    }
+
     /// <summary>
     /// The set of transactions to enqueue messages on the timeline
     /// </summary>
-    private sealed class EnqueueTransactionSet : Notion
+    class EnqueueTransactionSet : Notion
     {
-      internal readonly List<EnqueueTransaction> _open = new List<EnqueueTransaction>();
-      internal readonly List<EnqueueTransaction> _concurrent = new List<EnqueueTransaction>();
-      internal readonly List<TimelineMessage> _nextMessages = new List<TimelineMessage>();
-      private readonly TimelineQueue _queue;
+      readonly List<EnqueueTransaction> _open = new List<EnqueueTransaction>();
+      readonly List<EnqueueTransaction> _concurrent = new List<EnqueueTransaction>();
+      readonly List<TimelineMessage> _nextMessages = new List<TimelineMessage>();
+      readonly TimelineQueue _queue;
 
       internal EnqueueTransactionSet(TimelineQueue queue)
       {
@@ -103,7 +208,7 @@ namespace Totem.Runtime.Timeline
 
         if(_open.Count == 0 && _concurrent.Count == 0 && _nextMessages.Count > 0)
         {
-          PushMessages(_nextMessages.RemoveAll());
+          _queue.Enqueue(_nextMessages.RemoveAll());
         }
       }
 
@@ -113,7 +218,7 @@ namespace Totem.Runtime.Timeline
 
         if(_open.Count == 0 && _concurrent.Count == 0)
         {
-          PushMessages(transaction);
+          _queue.Enqueue(transaction);
         }
         else if(_concurrent.Count == 0)
         {
@@ -131,16 +236,8 @@ namespace Totem.Runtime.Timeline
 
           if(_concurrent.Count == 0)
           {
-            PushMessages(_nextMessages.RemoveAll());
+            _queue.Enqueue(_nextMessages.RemoveAll());
           }
-        }
-      }
-
-      private void PushMessages(IEnumerable<TimelineMessage> messages)
-      {
-        foreach(var message in messages.OrderBy(m => m.Point.Position))
-        {
-          _queue._messages.OnNext(message);
         }
       }
     }
@@ -150,9 +247,9 @@ namespace Totem.Runtime.Timeline
     /// </summary>
     internal sealed class EnqueueTransaction : IDisposable, IEnumerable<TimelineMessage>
     {
-      private readonly TimelineQueue _queue;
-      private TimelineMessage _message;
-      private Many<TimelineMessage> _messages;
+      readonly TimelineQueue _queue;
+      TimelineMessage _message;
+      Many<TimelineMessage> _messages;
 
       internal EnqueueTransaction(TimelineQueue queue)
       {
