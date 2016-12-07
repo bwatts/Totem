@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -41,7 +41,9 @@ namespace Totem.Runtime.Timeline
 
 		protected void ThenSchedule(Event e, IEnumerable<TimeSpan> timesOfDay)
 		{
-			ThenSchedule(e, timesOfDay.Select(GetWhenOccursNext).Min());
+			var result = timesOfDay.Select(GetWhenOccursNext).DefaultIfEmpty(DateTime.MinValue).Min();
+			Expect(result > DateTime.MinValue, "Event requires at least one time for scheduling.");
+			ThenSchedule(e, result);
 		}
 
 		protected void ThenSchedule(Event e, params TimeSpan[] timesOfDay)
