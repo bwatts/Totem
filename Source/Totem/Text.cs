@@ -524,59 +524,35 @@ namespace Totem
 			return If(condition, whenTrue, Text.None);
 		}
 
-		//
-		// Counts (int)
-		//
+    //
+    // Counts
+    //
 
-		public static Text SingularOrPlural(int count, Text singular, Text plural)
+		public static Text Pluralized(int count, Text singular, Text plural = null)
 		{
-			return If(count == 1, singular, plural);
+			return If(count == 1, singular, plural ?? singular + "s");
 		}
 
-		public static Text SingularOrPlural(int count, Text singular)
+    public static Text Pluralized(long count, Text singular, Text plural = null)
+    {
+      return If(count == 1, singular, plural ?? singular + "s");
+    }
+
+    public static Text Count(int count, Text singular, Text plural = null)
 		{
-			return If(count == 1, singular, singular + "s");
+			return Of(count).Write(" ").WritePluralized(count, singular, plural);
 		}
 
-		public static Text Count(int count, Text singular, Text plural)
-		{
-			return Of(count).Write(" ").WriteSingularOrPlural(count, singular, plural);
-		}
+    public static Text Count(long count, Text singular, Text plural = null)
+    {
+      return Of(count).Write(" ").WritePluralized(count, singular, plural);
+    }
 
-		public static Text Count(int count, Text singular)
-		{
-			return Of(count).Write(" ").WriteSingularOrPlural(count, singular);
-		}
+    //
+    // SeparatedBy
+    //
 
-		//
-		// Counts (long)
-		//
-
-		public static Text SingularOrPlural(long count, Text singular, Text plural)
-		{
-			return If(count == 1, singular, plural);
-		}
-
-		public static Text SingularOrPlural(long count, Text singular)
-		{
-			return If(count == 1, singular, singular + "s");
-		}
-
-		public static Text Count(long count, Text singular, Text plural)
-		{
-			return Of(count).Write(" ").WriteSingularOrPlural(count, singular, plural);
-		}
-
-		public static Text Count(long count, Text singular)
-		{
-			return Of(count).Write(" ").WriteSingularOrPlural(count, singular);
-		}
-
-		//
-		// SeparatedBy
-		//
-
-		public static Text SeparatedBy(Text separator, IEnumerable<Text> values, Func<Text, Text> selectText)
+    public static Text SeparatedBy(Text separator, IEnumerable<Text> values, Func<Text, Text> selectText)
 		{
 			return SeparatedBy(separator, values.Select(selectText));
 		}

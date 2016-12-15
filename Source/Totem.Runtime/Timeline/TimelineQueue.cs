@@ -64,9 +64,16 @@ namespace Totem.Runtime.Timeline
       {
         var info = _db.ReadResumeInfo();
 
-        _flows.ResumeWith(info);
+        if(info.EventCount == 0)
+        {
+          Log.Info("[timeline] Resumed activity");
+        }
+        else
+        {
+          _flows.ResumeWith(info);
 
-        ResumeWith(info);
+          ResumeWith(info);
+        }
       }
       catch(Exception error)
       {
@@ -76,6 +83,14 @@ namespace Totem.Runtime.Timeline
 
     void ResumeWith(ResumeInfo info)
     {
+      Log.Verbose(
+        "[timeline] Resuming activity with {FlowCount} "
+        + Text.Pluralized(info.Flows.Count, "flow")
+        + " totaling {EventCount} "
+        + Text.Pluralized(info.EventCount, "event"),
+        info.Flows.Count,
+        info.EventCount);
+
       var batchCount = 0;
       var pointCount = 0;
       var firstPosition = TimelinePosition.None;
@@ -83,24 +98,16 @@ namespace Totem.Runtime.Timeline
 
       foreach(var batch in info)
       {
-        if(batch.Points.Count == 1)
-        {
-          Log.Verbose(
-            "[timeline] Resuming a batch of {Size} with {Position:l}",
-            batch.Points.Count,
-            batch.FirstPosition);
-        }
-        else
-        {
-          Log.Verbose(
-            "[timeline] Resuming a batch of {Size} spanning {First:l}-{Last:l}",
-            batch.Points.Count,
-            batch.FirstPosition,
-            batch.LastPosition);
-        }
-
         batchCount += 1;
         pointCount += batch.Points.Count;
+
+        Log.Verbose(
+          "[timeline] Resuming event batch #{BatchCount} spanning {First:l}-{Last:l} ({PointCount} {PercentComplete:#0.00%})",
+          batchCount,
+          batch.FirstPosition,
+          batch.LastPosition,
+          pointCount,
+          pointCount / (decimal) info.EventCount);
 
         if(firstPosition == TimelinePosition.None)
         {
@@ -125,15 +132,16 @@ namespace Totem.Runtime.Timeline
         }
       }
 
-      if(batchCount > 1)
-      {
-        Log.Verbose(
-          "[timeline] Resumed activity with {Batches:l} ({Points:l}) spanning {First:l}-{Last:l}",
-          Text.Count(batchCount, "batch", "batches"),
-          Text.Count(pointCount, "point"),
-          firstPosition,
-          lastPosition);
-      }
+      Log.Info(
+        "[timeline] Resumed activity with {BatchCount} "
+        + Text.Pluralized(batchCount, "batch", "batches")
+        + " ({PointCount} "
+        + Text.Pluralized(pointCount, "point")
+        + ") spanning {First:l}-{Last:l}",
+        batchCount,
+        pointCount,
+        firstPosition,
+        lastPosition);
     }
 
     //

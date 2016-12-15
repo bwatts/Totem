@@ -18,13 +18,15 @@ namespace Totem.Runtime.Timeline
       _batches = Enumerable.Empty<Batch>();
 		}
 
-    public ResumeInfo(Many<Flow> flows, IEnumerable<Batch> batches)
+    public ResumeInfo(Many<Flow> flows, long eventCount, IEnumerable<Batch> batches)
     {
       Flows = flows;
+      EventCount = eventCount;
       _batches = batches;
     }
 
     public readonly Many<Flow> Flows;
+    public readonly long EventCount;
 
     public IEnumerator<Batch> GetEnumerator() => _batches.GetEnumerator();
 

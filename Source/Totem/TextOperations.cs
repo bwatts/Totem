@@ -528,53 +528,29 @@ namespace Totem
 			return text + Text.If(condition, whenTrue);
 		}
 
-		//
-		// Counts (int)
-		//
+    //
+    // Counts
+    //
 
-		public static Text WriteSingularOrPlural(this Text text, int count, Text singular, Text plural)
+    public static Text WritePluralized(this Text text, int count, Text singular, Text plural = null)
 		{
-			return text + Text.SingularOrPlural(count, singular, plural);
+			return text + Text.Pluralized(count, singular, plural);
 		}
 
-		public static Text WriteSingularOrPlural(this Text text, int count, Text singular)
-		{
-			return text + Text.SingularOrPlural(count, singular);
-		}
+    public static Text WritePluralized(this Text text, long count, Text singular, Text plural = null)
+    {
+      return text + Text.Pluralized(count, singular, plural);
+    }
 
-		public static Text WriteCount(this Text text, int count, Text singular, Text plural)
-		{
-			return text + Text.Count(count, singular, plural);
-		}
-
-		public static Text WriteCount(this Text text, int count, Text singular)
-		{
-			return text + Text.Count(count, singular);
-		}
-
-		//
-		// Counts (long)
-		//
-
-		public static Text WriteSingularOrPlural(this Text text, long count, Text singular, Text plural)
-		{
-			return text + Text.SingularOrPlural(count, singular, plural);
-		}
-
-		public static Text WriteSingularOrPlural(this Text text, long count, Text singular)
-		{
-			return text + Text.SingularOrPlural(count, singular);
-		}
-
-		public static Text WriteCount(this Text text, long count, Text singular, Text plural)
+    public static Text WriteCount(this Text text, int count, Text singular, Text plural = null)
 		{
 			return text + Text.Count(count, singular, plural);
 		}
 
-		public static Text WriteCount(this Text text, long count, Text singular)
-		{
-			return text + Text.Count(count, singular);
-		}
+    public static Text WriteCount(this Text text, long count, Text singular, Text plural = null)
+    {
+      return text + Text.Count(count, singular, plural);
+    }
 
 		public static Text Repeat(this Text value, int count)
 		{
