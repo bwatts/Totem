@@ -102,9 +102,33 @@ namespace Totem.Runtime.Timeline
     {
       TimelinePosition checkpoint;
 
-      if(_resumeCheckpoints.TryGetValue(flow.Key, out checkpoint))
+      if(TryReadResumeCheckpoint(flow, out checkpoint))
       {
         flow.ResumeTo(checkpoint);
+
+        RemoveResumeCheckpoint(flow);
+      }
+    }
+
+    bool TryReadResumeCheckpoint(IFlowScope flow, out TimelinePosition checkpoint)
+    {
+      if(_resumeCheckpoints == null)
+      {
+        checkpoint = TimelinePosition.None;
+
+        return false;
+      }
+
+      return _resumeCheckpoints.TryGetValue(flow.Key, out checkpoint);
+    }
+
+    void RemoveResumeCheckpoint(IFlowScope flow)
+    {
+      _resumeCheckpoints.Remove(flow.Key);
+
+      if(_resumeCheckpoints.Count == 0)
+      {
+        _resumeCheckpoints = null;
       }
     }
 
