@@ -11,14 +11,14 @@ namespace Totem.Web
 	/// </summary>
 	public abstract class WebUIApp : WebApiApp, IRootPathProvider
 	{
-		protected WebUIApp(WebUIContext context) : base(context)
+		protected WebUIApp(WebUIContext appContext) : base(appContext)
 		{}
 
-		public new WebUIContext Context => (WebUIContext) base.Context;
+		public new WebUIContext AppContext => (WebUIContext) base.AppContext;
 
 		protected override IRootPathProvider RootPathProvider => this;
 
-		public string GetRootPath() => Context.ContentFolder.ToString();
+		public string GetRootPath() => AppContext.ContentFolder.ToString();
 
 		protected override void ConfigureConventions(NancyConventions nancyConventions)
 		{

@@ -65,6 +65,9 @@
     <Compile Include="Http\HttpQueryPair.cs" />
     <Compile Include="Http\HttpResource.cs" />
     <Compile Include="IClock.cs" />
+    <Compile Include="Runtime\Map\Timeline\RequestStartMethod.cs" />
+    <Compile Include="Runtime\Timeline\RequestDeniedException.cs" />
+    <Compile Include="Runtime\Timeline\StartEventAttribute.cs" />
     <Compile Include="Runtime\Timeline\BatchSizeAttribute.cs" />
     <Compile Include="Runtime\Timeline\PriorNameAttribute.cs" />
     <Compile Include="Runtime\IConnectable.cs" />
@@ -116,9 +119,12 @@
     <Compile Include="Runtime\Timeline\IdCounter.cs" />
     <Compile Include="Runtime\Timeline\FlowRoute.cs" />
     <Compile Include="Runtime\Timeline\FlowPoint.cs" />
+    <Compile Include="Runtime\Timeline\RequestStartCall.cs" />
+    <Compile Include="Runtime\Client.cs" />
     <Compile Include="Runtime\Timeline\Topic.cs" />
     <Compile Include="Runtime\Timeline\EventScheduled.cs" />
     <Compile Include="Runtime\Timeline\View.cs" />
+    <Compile Include="Runtime\IClientAuthority.cs" />
     <Compile Include="Sequences.cs" />
     <Compile Include="Reflection\AnonymousTypes.cs" />
     <Compile Include="Reflection\Assignability.cs" />
@@ -132,12 +138,12 @@
     <Compile Include="Runtime\Map\Timeline\GivenMethod.cs" />
     <Compile Include="Runtime\Map\Timeline\WhenMethod.cs" />
     <Compile Include="Runtime\Map\Timeline\NamedDependencyAttribute.cs" />
-    <Compile Include="Runtime\Map\Timeline\WhenDependencyAttribute.cs" />
+    <Compile Include="Runtime\Map\Timeline\DependencyAttribute.cs" />
     <Compile Include="Runtime\Map\Timeline\KeyedDependencyAttribute.cs" />
     <Compile Include="Runtime\Map\Timeline\TypedDependency.cs" />
     <Compile Include="Runtime\Map\Timeline\KeyedDependency.cs" />
     <Compile Include="Runtime\Map\Timeline\EventType.cs" />
-    <Compile Include="Runtime\Map\Timeline\WhenDependency.cs" />
+    <Compile Include="Runtime\Map\Timeline\Dependency.cs" />
     <Compile Include="Runtime\Map\Timeline\FlowType.cs" />
     <Compile Include="Runtime\Map\Timeline\NamedDependency.cs" />
     <Compile Include="Runtime\Map\RuntimePackageSet.cs" />

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
@@ -45,15 +46,17 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    internal async Task<T> MakeRequest<T>(Id id) where T : Request
+    internal async Task Execute(RequestScope scope)
     {
-      CheckUniqueRequestId(id);
+      var id = scope.Request.Id;
 
-      var request = AddRequest<T>(id);
+      CheckUnique(id);
+
+      AddRequest(id, scope);
 
       try
       {
-        return (T) await request.Task;
+        await scope.Task;
       }
       finally
       {
@@ -61,7 +64,7 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    void CheckUniqueRequestId(Id id)
+    void CheckUnique(Id id)
     {
       if(_requestsById.ContainsKey(id))
       {
@@ -69,22 +72,18 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    RequestScope AddRequest<T>(Id id) where T : Request
+    void AddRequest(Id id, RequestScope scope)
     {
-			var request = _timeline.CreateRequest<T>(id);
+			_requestsById[id] = scope;
 
-			_requestsById[id] = request;
-
-      request.Connect(this);
-
-      return request;
+      scope.Connect(this);
     }
 
     void RemoveRequest(Id id)
     {
-      RequestScope request;
+      RequestScope scope;
 
-      _requestsById.TryRemove(id, out request);
+      _requestsById.TryRemove(id, out scope);
     }
   }
 }

@@ -9,7 +9,7 @@ namespace Totem.Runtime.Map.Timeline
 	/// <summary>
 	/// A .When method parameter representing a dependency resolved by key
 	/// </summary>
-	public sealed class KeyedDependency : WhenDependency
+	public sealed class KeyedDependency : Dependency
 	{
 		public KeyedDependency(ParameterInfo parameter, object key) : base(parameter)
 		{

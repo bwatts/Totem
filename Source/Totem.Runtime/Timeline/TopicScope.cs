@@ -26,7 +26,7 @@ namespace Totem.Runtime.Timeline
       }
       catch(Exception error)
       {
-        PushStopped(error);
+        await PushStopped(error);
       }
     }
 
@@ -34,15 +34,20 @@ namespace Totem.Runtime.Timeline
     {
       var topicEvent = GetTopicEvent();
 
-      TryCallGiven(topicEvent);
-
-      var newEvents = await TryCallWhen(topicEvent);
-
-      var result = Timeline.PushTopic((Topic) Flow, Point, newEvents);
-
-      if(result.GivenError || Flow.Context.Done)
+      using(var lifetime = Lifetime.BeginCallScope())
       {
-        CompleteTask();
+        var dependencies = lifetime.Resolve<IDependencySource>();
+
+        TryCallGiven(topicEvent);
+
+        var newEvents = await TryCallWhen(topicEvent, dependencies);
+
+        var result = await PushTopic(newEvents);
+
+        if(result.GivenError || Flow.Context.Done)
+        {
+          CompleteTask();
+        }
       }
     }
 
@@ -59,29 +64,26 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    async Task<Many<Event>> TryCallWhen(TopicEvent topicEvent)
+    async Task<Many<Event>> TryCallWhen(TopicEvent topicEvent, IDependencySource dependencies)
     {
       if(!Point.Route.When)
       {
         return new Many<Event>();
       }
 
-      using(var scope = Lifetime.BeginCallScope())
-      {
-        var call = new FlowCall.TopicWhen(
-          Point,
-          topicEvent,
-          scope.Resolve<IDependencySource>(),
-          Timeline.ReadPrincipal(Point),
-          State.CancellationToken);
+      var call = new FlowCall.TopicWhen(Point, topicEvent, dependencies, State.CancellationToken);
 
-        await call.Make(Flow);
+      await call.Make(Flow);
 
-        return call.RetrieveNewEvents();
-      }
+      return call.RetrieveNewEvents();
     }
 
-    void PushStopped(Exception error)
+    Task<PushTopicResult> PushTopic(Many<Event> newEvents)
+    {
+      return Timeline.PushTopic((Topic) Flow, Point, newEvents);
+    }
+
+    async Task PushStopped(Exception error)
     {
       Log.Error(error, "[timeline] [{Key:l}] Flow stopped", Key);
 
@@ -89,7 +91,7 @@ namespace Totem.Runtime.Timeline
       {
         Flow.Context.SetError(Point.Position);
 
-        Timeline.PushStopped(Point, error);
+        await Timeline.PushStopped(Point, error);
 
         CompleteTask(error);
       }

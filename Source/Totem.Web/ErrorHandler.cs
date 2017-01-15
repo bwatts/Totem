@@ -5,6 +5,7 @@ using System.Linq;
 using Nancy;
 using Nancy.ViewEngines;
 using Totem.IO;
+using Totem.Runtime.Timeline;
 
 namespace Totem.Web
 {
@@ -13,80 +14,74 @@ namespace Totem.Web
 	/// </summary>
 	public sealed class ErrorHandler : IErrorHandler
 	{
-		private readonly ErrorDetail _detail;
+		readonly bool _detailed;
 
-		public ErrorHandler(ErrorDetail detail)
+		public ErrorHandler(bool detailed)
 		{
-			_detail = detail;
+      _detailed = detailed;
 		}
 
 		public Response CreateResponse(NancyContext context, Exception error)
 		{
-			var codeAndText = GetCodeAndText(context, error);
+      var code = GetCode(error);
 
-			return new Response
-			{
-				StatusCode = codeAndText.Item1,
-				ContentType = MediaType.Plain.ToTextUtf8(),
-				Contents = body =>
-				{
-					using(var writer = new StreamWriter(body))
-					{
-						writer.Write(codeAndText.Item2);
-					}
-				}
-			};
+      var response = new Response { StatusCode = code };
+
+      if(_detailed)
+      {
+        response.ContentType = MediaType.Plain.ToTextUtf8();
+
+        response.Contents = body =>
+        {
+          using(var writer = new StreamWriter(body))
+          {
+            writer.Write(error);
+          }
+        };
+      }
+
+      return response;
 		}
 
-		private Tuple<HttpStatusCode, Text> GetCodeAndText(NancyContext context, Exception error)
+    HttpStatusCode GetCode(Exception error)
 		{
-			return GetKnownError(error) ?? GetError(HttpStatusCode.InternalServerError, error);
-		}
+      if(error is FormatException)
+      {
+        return HttpStatusCode.BadRequest;
+      }
+      else if(error is UnauthorizedAccessException)
+      {
+        return HttpStatusCode.Unauthorized;
+      }
+      else if(error is RequestDeniedException)
+      {
+        return HttpStatusCode.Forbidden;
+      }
+      else if(error is ViewNotFoundException)
+      {
+        return HttpStatusCode.NotFound;
+      }
+      else if(error is ExpectException)
+      {
+        return HttpStatusCode.UnprocessableEntity;
+      }
+      else
+      {
+        if(error is AggregateException)
+        {
+          foreach(var innerError in (error as AggregateException).InnerExceptions)
+          {
+            var code = GetCode(innerError);
 
-		private Tuple<HttpStatusCode, Text> GetKnownError(Exception error)
-		{
-			if(error is FormatException)
-			{
-				return GetError(HttpStatusCode.BadRequest, error);
-			}
-			else if(error is UnauthorizedAccessException)
-			{
-				return GetError(HttpStatusCode.Unauthorized, error);
-			}
-			else if(error is ViewNotFoundException)
-			{
-				return GetError(HttpStatusCode.NotFound, error);
-			}
-			else if(error is AggregateException)
-			{
-				return (error as AggregateException).InnerExceptions.Select(GetKnownError).FirstOrDefault();
-			}
-			else
-			{
-				return null;
-			}
-		}
+            if(code != HttpStatusCode.InternalServerError)
+            {
+              return code;
+            }
+          }
+        }
 
-		private Tuple<HttpStatusCode, Text> GetError(HttpStatusCode statusCode, Exception error)
-		{
-			return Tuple.Create(statusCode, GetErrorText(error));
+        return HttpStatusCode.InternalServerError;
+      }
 		}
-
-		private Text GetErrorText(Exception error)
-		{
-			switch(_detail)
-			{
-				case ErrorDetail.None:
-					return "An error occured (detail level prohibits further information)";
-				case ErrorDetail.Type:
-					return Text.Of("An error of type {0} occurred", error.GetType());
-				case ErrorDetail.Message:
-					return Text.Of("An error of type {0} occurred: {1}", error.GetType(), error.Message);
-				case ErrorDetail.StackTrace:
-					return Text.Of("An error of type {0} occurred: {1}", error.GetType(), error);
-				default:
-					throw new NotSupportedException("Unsupported detail level: " + Text.Of(_detail));
-			}
-		}
-	}
+  }
 }

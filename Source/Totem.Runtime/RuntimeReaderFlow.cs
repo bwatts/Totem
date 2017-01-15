@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Totem.IO;
 using Totem.Reflection;
 using Totem.Runtime.Map;
 using Totem.Runtime.Map.Timeline;
@@ -11,18 +10,18 @@ using Totem.Runtime.Timeline;
 namespace Totem.Runtime
 {
 	/// <summary>
-	/// Registers <see cref="WhenObservation"/> instances for a specific flow type
+	/// Registers methods and events for a specific flow type
 	/// </summary>
 	internal sealed class RuntimeReaderFlow : Notion
 	{
-		private readonly HashSet<EventType> _events = new HashSet<EventType>();
-    private readonly Dictionary<EventType, RouteMethod> _routesByEvent = new Dictionary<EventType, RouteMethod>();
-		private readonly Dictionary<EventType, FlowMethodSet<WhenMethod>> _whensByEvent = new Dictionary<EventType, FlowMethodSet<WhenMethod>>();
-		private readonly Dictionary<EventType, FlowMethodSet<GivenMethod>> _givensByEvent = new Dictionary<EventType, FlowMethodSet<GivenMethod>>();
-    private readonly RuntimeMap _map;
-    private readonly FlowType _flow;
-		private MethodInfo _method;
-		private EventType _event;
+		readonly HashSet<EventType> _events = new HashSet<EventType>();
+    readonly Dictionary<EventType, RouteMethod> _routesByEvent = new Dictionary<EventType, RouteMethod>();
+		readonly Dictionary<EventType, FlowMethodSet<WhenMethod>> _whensByEvent = new Dictionary<EventType, FlowMethodSet<WhenMethod>>();
+		readonly Dictionary<EventType, FlowMethodSet<GivenMethod>> _givensByEvent = new Dictionary<EventType, FlowMethodSet<GivenMethod>>();
+    readonly RuntimeMap _map;
+    readonly FlowType _flow;
+		MethodInfo _method;
+		EventType _event;
 
 		internal RuntimeReaderFlow(RuntimeMap map, FlowType flow)
 		{
@@ -37,7 +36,7 @@ namespace Totem.Runtime
       RegisterEvents();
 		}
 
-    private void RegisterMethods()
+    void RegisterMethods()
     {
       foreach(var method in
         from sourceType in _flow.DeclaredType.GetInheritanceChainTo<Flow>(includeType: true, includeTargetType: false)
@@ -79,7 +78,7 @@ namespace Totem.Runtime
       }
     }
 
-    private void TryRegisterMethod(Action register, bool expectStatic = false)
+    void TryRegisterMethod(Action register, bool expectStatic = false)
     {
       if(expectStatic && !_method.IsStatic)
       {
@@ -102,7 +101,7 @@ namespace Totem.Runtime
       }
     }
 
-    private bool TryReadEvent()
+    bool TryReadEvent()
     {
       var firstParameter = _method.GetParameters().FirstOrDefault();
       var firstParameterType = firstParameter?.ParameterType;
@@ -133,7 +132,7 @@ namespace Totem.Runtime
       return _event != null;
     }
 
-    private void RegisterRoute(bool isFirst = false)
+    void RegisterRoute(bool isFirst = false)
     {
       // Take only the first route method we see for a type - RegisterMethods calls in order of most-to-least derived
 
@@ -143,7 +142,7 @@ namespace Totem.Runtime
       }
     }
 
-    private void TryRegisterRoute(bool isFirst)
+    void TryRegisterRoute(bool isFirst)
     {
       if(_flow.IsRequest)
       {
@@ -163,12 +162,12 @@ namespace Totem.Runtime
       }
     }
 
-    private void RegisterWhen(bool scheduled = false)
+    void RegisterWhen(bool scheduled = false)
     {
 			RegisterMethods(_whensByEvent, new WhenMethod(_method, _event, ReadWhenDependencies()), scheduled);
     }
 
-		private void RegisterGiven(bool scheduled = false)
+		void RegisterGiven(bool scheduled = false)
 		{
 			if(!_flow.IsTopic)
 			{
@@ -184,7 +183,7 @@ namespace Totem.Runtime
 			}
 		}
 
-		private void RegisterMethods<T>(Dictionary<EventType, FlowMethodSet<T>> methodsByEvent, T method, bool scheduled) where T : FlowMethod
+		void RegisterMethods<T>(Dictionary<EventType, FlowMethodSet<T>> methodsByEvent, T method, bool scheduled) where T : FlowMethod
     {
 			FlowMethodSet<T> methods;
 
@@ -198,19 +197,19 @@ namespace Totem.Runtime
 			methods.SelectMethods(scheduled).Write.Add(method);
     }
 
-    private Many<WhenDependency> ReadWhenDependencies()
+    Many<Dependency> ReadWhenDependencies()
     {
 			return _method.GetParameters().Skip(1).ToMany(parameter =>
 			{
-				var attribute = parameter.GetCustomAttribute<WhenDependencyAttribute>(inherit: true);
+				var attribute = parameter.GetCustomAttribute<DependencyAttribute>(inherit: true);
 
 				return attribute != null
 					? attribute.GetDependency(parameter)
-					: WhenDependency.Typed(parameter);
+					: Dependency.Typed(parameter);
 			});
     }
 
-		private void WarnIfMethodPossiblyMisspelled()
+		void WarnIfMethodPossiblyMisspelled()
 		{
 			if(_method.DeclaringType == typeof(Topic) || _method.DeclaringType == typeof(View))
 			{
@@ -228,7 +227,7 @@ namespace Totem.Runtime
 			}
 		}
 
-		private IEnumerable<string> GetKnownMethodNames()
+		IEnumerable<string> GetKnownMethodNames()
 		{
 			yield return "When";
 			yield return "WhenScheduled";
@@ -250,7 +249,7 @@ namespace Totem.Runtime
 		// Events
 		//
 
-		private void RegisterEvents()
+		void RegisterEvents()
 		{
 			var unrouted = RouteEvents().ToMany();
 
@@ -259,7 +258,7 @@ namespace Totem.Runtime
 			SetRoutedOrSingleInstance(unrouted);
     }
 
-		private IEnumerable<EventType> RouteEvents()
+		IEnumerable<EventType> RouteEvents()
 		{
 			foreach(var e in _events)
 			{
@@ -272,7 +271,7 @@ namespace Totem.Runtime
 			}
 		}
 
-		private bool RouteEvent()
+		bool RouteEvent()
 		{
 			RouteMethod route;
 			FlowMethodSet<WhenMethod> when;
@@ -309,7 +308,7 @@ namespace Totem.Runtime
 			return hasRoute;
 		}
 
-		private void ExpectNoneOrAllUnrouted(Many<EventType> unrouted)
+		void ExpectNoneOrAllUnrouted(Many<EventType> unrouted)
 		{
 			if(unrouted.Count > 0 && unrouted.Count < _events.Count)
 			{
@@ -317,7 +316,7 @@ namespace Totem.Runtime
 			}
 		}
 
-    private void ExpectRouteFirst()
+    void ExpectRouteFirst()
     {
       if(!_flow.Events.Any(e => e.Route.First))
       {
@@ -325,7 +324,7 @@ namespace Totem.Runtime
       }
     }
 
-    private void SetRoutedOrSingleInstance(Many<EventType> unrouted)
+    void SetRoutedOrSingleInstance(Many<EventType> unrouted)
 		{
 			if(_flow.IsRequest)
 			{

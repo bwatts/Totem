@@ -13,12 +13,12 @@ namespace Totem
 	{
 		private readonly Lazy<string> _stackTrace;
 
-		internal ExpectException(string message) : base(message)
+    public ExpectException(string message) : base(message)
 		{
 			_stackTrace = new Lazy<string>(FilterStackTrace);
 		}
 
-		internal ExpectException(string message, Exception inner) : base(message, inner)
+    public ExpectException(string message, Exception inner) : base(message, inner)
 		{
 			_stackTrace = new Lazy<string>(FilterStackTrace);
 		}

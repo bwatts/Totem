@@ -19,6 +19,8 @@ namespace Totem.Runtime.Timeline
 			Event = e;
 			EventType = Runtime.GetEvent(e.GetType());
 
+      ClientId = Flow.Traits.ClientId.Get(e);
+
 			var scheduled = e as EventScheduled;
 
 			if(scheduled != null)
@@ -46,6 +48,7 @@ namespace Totem.Runtime.Timeline
 		public readonly TimelinePosition Cause;
 		public readonly Event Event;
 		public readonly EventType EventType;
+    public readonly Id ClientId;
 		public readonly bool Scheduled;
 		public readonly Event ScheduledEvent;
 		public readonly EventType ScheduledEventType;

@@ -6,6 +6,7 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Totem.Runtime.Map.Timeline;
@@ -17,12 +18,13 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal class FlowScope : Connection, IFlowScope
   {
-    readonly TaskCompletionSource<Flow> _task = new TaskCompletionSource<Flow>();
+    readonly TaskCompletionSource<object> _task = new TaskCompletionSource<object>();
     readonly Subject<Unit> _pushSignal = new Subject<Unit>();
     FlowRoute _initialRoute;
     TimelinePosition _resumeCheckpoint;
     List<FlowPoint> _postResumePoints;
-    volatile bool _pushing;
+    int _pushing;
+    Task _pushTask;
 
     internal FlowScope(ILifetimeScope lifetime, TimelineScope timeline, FlowRoute initialRoute)
     {
@@ -33,14 +35,24 @@ namespace Totem.Runtime.Timeline
       Key = initialRoute.Key;
     }
 
+    internal FlowScope(ILifetimeScope lifetime, TimelineScope timeline, Flow flow)
+    {
+      Lifetime = lifetime;
+      Timeline = timeline;
+      Flow = flow;
+
+      Key = flow.Context.Key;
+    }
+
     public FlowKey Key { get; }
-    public Task<Flow> Task => _task.Task;
-    public FlowPoint Point { get; private set; }
+    public Task Task => _task.Task;
+    public FlowPoint ErrorPoint { get; private set; }
 
     protected ILifetimeScope Lifetime { get; }
     protected TimelineScope Timeline { get; }
     protected ConcurrentQueue<FlowPoint> Points { get; } = new ConcurrentQueue<FlowPoint>();
     protected Flow Flow { get; private set; }
+    protected FlowPoint Point { get; private set; }
     protected bool Resuming { get; private set; }
     protected bool NotCompleted => !Task.IsCompleted;
 
@@ -62,7 +74,7 @@ namespace Totem.Runtime.Timeline
 
     protected void CompleteTask()
     {
-      _task.SetResult(Flow);
+      _task.SetResult(null);
 
       Disconnect();
     }
@@ -70,6 +82,8 @@ namespace Totem.Runtime.Timeline
     protected void CompleteTask(Exception error)
     {
       _task.SetException(error);
+
+      ErrorPoint = Point;
 
       Disconnect();
     }
@@ -150,23 +164,39 @@ namespace Totem.Runtime.Timeline
 
     void OnPushSignal(Unit _)
     {
-      if(!_pushing)
+      if(AcquirePushLock())
       {
-        _pushing = true;
-
-        Push();
+        _pushTask = Push();
       }
+    }
+
+    bool AcquirePushLock()
+    {
+      return Interlocked.CompareExchange(ref _pushing, 1, 0) == 0;
     }
 
     async Task Push()
     {
-      if(FlowLoaded())
+      if(await FlowLoaded())
       {
         await PushPoints();
       }
 
-      _pushing = false;
+      Point = null;
+
+      _pushTask = null;
+
+      ReleasePushLock();
     }
+
+    void ReleasePushLock()
+    {
+      Interlocked.Exchange(ref _pushing, 0);
+    }
+
+    //
+    // Points
+    //
 
     protected virtual async Task PushPoints()
     {
@@ -177,8 +207,6 @@ namespace Totem.Runtime.Timeline
         Point = point;
 
         await PushPoint();
-
-        Point = null;
       }
     }
 
@@ -211,16 +239,9 @@ namespace Totem.Runtime.Timeline
       {
         Log.Verbose("[timeline] {Position:l} => {Flow:l}", Point.Position, Key);
 
-        using(var scope = Lifetime.BeginCallScope())
+        using(var lifetime = Lifetime.BeginCallScope())
         {
-          var call = new FlowCall.When(
-            Point,
-            flowEvent,
-            scope.Resolve<IDependencySource>(),
-            Timeline.ReadPrincipal(Point),
-            State.CancellationToken);
-
-          await call.Make(Flow);
+          await CallWhen(flowEvent, lifetime);
         }
       }
     }
@@ -232,15 +253,24 @@ namespace Totem.Runtime.Timeline
       return flowEvent != null;
     }
 
+    async Task CallWhen(FlowEvent flowEvent, ILifetimeScope lifetime)
+    {
+      var dependencies = lifetime.Resolve<IDependencySource>();
+
+      var call = new FlowCall.When(Point, flowEvent, dependencies, State.CancellationToken);
+
+      await call.Make(Flow);
+    }
+
     //
     // Load
     //
 
-    bool FlowLoaded()
+    async Task<bool> FlowLoaded()
     {
       if(Flow == null && _initialRoute != null)
       {
-        LoadFlow();
+        await LoadFlow();
 
         _initialRoute = null;
       }
@@ -248,11 +278,11 @@ namespace Totem.Runtime.Timeline
       return Flow != null;
     }
 
-    void LoadFlow()
+    async Task LoadFlow()
     {
       try
       {
-        TryLoadFlow();
+        await TryLoadFlow();
       }
       catch(Exception error)
       {
@@ -262,11 +292,11 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    void TryLoadFlow()
+    async Task TryLoadFlow()
     {
-      Flow flow;
+      var flow = await Timeline.ReadFlow(_initialRoute, strict: false);
 
-      if(!Timeline.TryReadFlow(_initialRoute, out flow))
+      if(flow == null)
       {
         CompleteTask();
       }

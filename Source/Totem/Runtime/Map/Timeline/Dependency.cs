@@ -7,11 +7,11 @@ using System.Reflection;
 namespace Totem.Runtime.Map.Timeline
 {
 	/// <summary>
-	/// A .When method parameter representing a dependency resolved at call time
+	/// A method parameter representing a dependency resolved at call time
 	/// </summary>
-	public abstract class WhenDependency
+	public abstract class Dependency
 	{
-		public WhenDependency(ParameterInfo parameter)
+		public Dependency(ParameterInfo parameter)
 		{
 			Parameter = parameter;
 		}

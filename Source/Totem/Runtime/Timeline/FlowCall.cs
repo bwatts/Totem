@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Totem.Runtime.Map.Timeline;
@@ -30,18 +29,15 @@ namespace Totem.Runtime.Timeline
 			public When(
 				FlowPoint point,
 				FlowEvent e,
-				IDependencySource dependencies,
-				ClaimsPrincipal principal,
-				CancellationToken cancellationToken)
+        IDependencySource dependencies,
+        CancellationToken cancellationToken)
 				: base(point, e)
 			{
-				Dependencies = dependencies;
-				Principal = principal;
+        Dependencies = dependencies;
 				CancellationToken = cancellationToken;
 			}
 
 			public readonly IDependencySource Dependencies;
-			public readonly ClaimsPrincipal Principal;
 			public readonly CancellationToken CancellationToken;
 
       public async Task Make(Flow flow)
@@ -101,25 +97,25 @@ namespace Totem.Runtime.Timeline
 		/// </summary>
 		public sealed class TopicWhen : When
 		{
-			private readonly Many<Event> _newEvents;
-			private bool _retrieved;
+			readonly Many<Event> _newEvents;
+			bool _retrieved;
 
 			public TopicWhen(
         FlowPoint point,
 				TopicEvent e,
-				IDependencySource dependencies,
-				ClaimsPrincipal principal,
+        IDependencySource dependencies,
 				CancellationToken cancellationToken)
-				: base(point, e, dependencies, principal, cancellationToken)
+				: base(point, e, dependencies, cancellationToken)
 			{
 				_newEvents = new Many<Event>();
 			}
 
-			public void Append(Event e)
+      public void Append(Event e)
 			{
 				Flow.Traits.ForwardRequestId(Point.Event, e);
+        Flow.Traits.ForwardClientId(Point.Event, e);
 
-				_newEvents.Write.Add(e);
+        _newEvents.Write.Add(e);
 			}
 
 			public Many<Event> RetrieveNewEvents()
@@ -131,5 +127,5 @@ namespace Totem.Runtime.Timeline
 				return _newEvents;
 			}
 		}
-	}
+  }
 }

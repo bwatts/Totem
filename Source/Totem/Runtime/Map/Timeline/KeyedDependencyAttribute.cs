@@ -8,7 +8,7 @@ namespace Totem.Runtime.Map.Timeline
 	/// <summary>
 	/// A .When method parameter representing a dependency resolved by key at call time
 	/// </summary>
-	public sealed class KeyedDependencyAttribute : WhenDependencyAttribute
+	public sealed class KeyedDependencyAttribute : DependencyAttribute
 	{
 		public KeyedDependencyAttribute(object key)
 		{
@@ -17,9 +17,9 @@ namespace Totem.Runtime.Map.Timeline
 
 		public readonly object Key;
 
-		public override WhenDependency GetDependency(ParameterInfo parameter)
+		public override Dependency GetDependency(ParameterInfo parameter)
 		{
-			return WhenDependency.Keyed(parameter, Key);
+			return Dependency.Keyed(parameter, Key);
 		}
 	}
 }

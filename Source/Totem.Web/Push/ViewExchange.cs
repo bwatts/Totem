@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 using Totem.Runtime.Json;
 using Totem.Runtime.Timeline;
 
@@ -15,11 +15,11 @@ namespace Totem.Web.Push
 	/// </summary>
 	public sealed class ViewExchange : Notion, IViewExchange
 	{
-		private readonly Dictionary<Id, ViewConnection> _connectionsById = new Dictionary<Id, ViewConnection>();
-		private readonly Dictionary<FlowKey, SubscribedView> _viewsByKey = new Dictionary<FlowKey, SubscribedView>();
-		private readonly IViewDb _viewDb;
-		private readonly IPushChannel _push;
-		private readonly TimeSpan _updateThrottle;
+		readonly Dictionary<Id, ViewConnection> _connectionsById = new Dictionary<Id, ViewConnection>();
+		readonly Dictionary<FlowKey, SubscribedView> _viewsByKey = new Dictionary<FlowKey, SubscribedView>();
+		readonly IViewDb _viewDb;
+		readonly IPushChannel _push;
+		readonly TimeSpan _updateThrottle;
 
 		public ViewExchange(IViewDb viewDb, IPushChannel push, TimeSpan updateThrottle)
 		{
@@ -28,14 +28,14 @@ namespace Totem.Web.Push
 			_updateThrottle = updateThrottle;
 		}
 
-		public ViewSubscription Subscribe(Id connectionId, ViewETag etag)
+		public async Task<ViewSubscription> Subscribe(Id connectionId, ViewETag etag)
 		{
 			lock(_connectionsById)
 			{
 				SubscribeView(connectionId, etag);
 			}
 
-			return GetSubscribeResult(connectionId, etag);
+			return await GetSubscribeResult(connectionId, etag);
 		}
 
 		public void Unsubscribe(Id connectionId)
@@ -66,7 +66,7 @@ namespace Totem.Web.Push
 			subscribedView?.PushUpdate(view);
 		}
 
-		private void SubscribeView(Id connectionId, ViewETag etag)
+		void SubscribeView(Id connectionId, ViewETag etag)
 		{
 			var connection = GetConnectionOrNull(connectionId);
 
@@ -89,9 +89,9 @@ namespace Totem.Web.Push
 			connection.Subscribe(view);
 		}
 
-		private ViewSubscription GetSubscribeResult(Id connectionId, ViewETag etag)
+		async Task<ViewSubscription> GetSubscribeResult(Id connectionId, ViewETag etag)
 		{
-			var snapshot = _viewDb.ReadSnapshot(etag.Key, etag.Checkpoint);
+			var snapshot = await _viewDb.ReadSnapshot(etag.Key, etag.Checkpoint);
 
 			if(snapshot.NotFound || snapshot.NotModified)
 			{
@@ -105,7 +105,7 @@ namespace Totem.Web.Push
 			return new ViewSubscription(etag, diff);
 		}
 
-		private ViewConnection GetConnectionOrNull(Id id)
+		ViewConnection GetConnectionOrNull(Id id)
 		{
 			ViewConnection connection;
 
@@ -114,7 +114,7 @@ namespace Totem.Web.Push
 			return connection;
 		}
 
-		private SubscribedView GetViewOrNull(FlowKey key)
+		SubscribedView GetViewOrNull(FlowKey key)
 		{
 			SubscribedView view;
 
@@ -123,20 +123,20 @@ namespace Totem.Web.Push
 			return view;
 		}
 
-		private void RemoveConnection(ViewConnection connection)
+		void RemoveConnection(ViewConnection connection)
 		{
 			_connectionsById.Remove(connection.Id);
 		}
 
-		private void RemoveView(SubscribedView view)
+		void RemoveView(SubscribedView view)
 		{
 			_viewsByKey.Remove(view.Key);
 		}
 
-		private sealed class ViewConnection
+		sealed class ViewConnection
 		{
-			private readonly Dictionary<FlowKey, SubscribedView> _viewsByKey = new Dictionary<FlowKey, SubscribedView>();
-			private readonly ViewExchange _exchange;
+			readonly Dictionary<FlowKey, SubscribedView> _viewsByKey = new Dictionary<FlowKey, SubscribedView>();
+			readonly ViewExchange _exchange;
 
 			internal ViewConnection(Id id, ViewExchange exchange)
 			{
@@ -184,12 +184,12 @@ namespace Totem.Web.Push
 			}
 		}
 
-		private sealed class SubscribedView
+		sealed class SubscribedView
 		{
-			private readonly Many<Id> _connectionIds = new Many<Id>();
-			private readonly Subject<ViewUpdated> _updates = new Subject<ViewUpdated>();
-			private readonly ViewExchange _exchange;
-			private readonly IDisposable _updateSubscription;
+			readonly Many<Id> _connectionIds = new Many<Id>();
+			readonly Subject<ViewUpdated> _updates = new Subject<ViewUpdated>();
+			readonly ViewExchange _exchange;
+			readonly IDisposable _updateSubscription;
 
 			internal SubscribedView(FlowKey key, ViewExchange exchange)
 			{
@@ -229,9 +229,9 @@ namespace Totem.Web.Push
 				_updates.OnNext(new ViewUpdated(view.Context.Key.ToString(), etag.ToString(), diff));
 			}
 
-			private void WhenUpdated(ViewUpdated e)
+			void WhenUpdated(ViewUpdated e)
 			{
-				// This returns a task, but does not need to be awaited (yet): http://stackoverflow.com/a/19193493/37815
+				// This returns a task, but does not need to be awaited unless we use a SQL backplane: http://stackoverflow.com/a/19193493/37815
 
 				_exchange._push.PushToClients(e, _connectionIds);
 			}

@@ -12,20 +12,24 @@ namespace Totem.Http
 	[TypeConverter(typeof(Converter))]
 	public sealed class HttpAuthorization : Notion, IEquatable<HttpAuthorization>, IComparable<HttpAuthorization>
 	{
-		private HttpAuthorization(string type, string credentials)
+    HttpAuthorization(string type, string credentials)
 		{
 			Type = type;
 			Credentials = credentials;
 		}
 
-		public string Type { get; private set; }
-		public string Credentials { get; private set; }
-		public bool IsAnonymous => Type == "" || Credentials == "";
-		public bool IsAuthenticated => Credentials != "";
+		public string Type { get; }
+		public string Credentials { get; }
 
-		public override Text ToText()
+    public bool HasType => Type != "";
+    public bool HasCredentials => Credentials != "";
+
+    public bool TypeIsBasic => Type.Equals("Basic", StringComparison.OrdinalIgnoreCase);
+    public bool TypeIsBearer => Type.Equals("Bearer", StringComparison.OrdinalIgnoreCase);
+
+    public override Text ToText()
 		{
-			return Type.ToText().WriteIf(IsAuthenticated, Text.Of(" ").Write(Credentials));
+			return Type.ToText().WriteIf(Credentials != "", " " + Credentials);
 		}
 
 		//
@@ -59,49 +63,42 @@ namespace Totem.Http
 		public static bool operator >=(HttpAuthorization x, HttpAuthorization y) => Cmp.Op(x, y) >= 0;
 		public static bool operator <=(HttpAuthorization x, HttpAuthorization y) => Cmp.Op(x, y) <= 0;
 
-		//
-		// Factory
-		//
+    //
+    // Factory
+    //
 
 		public static readonly HttpAuthorization Anonymous = new HttpAuthorization("", "");
 
-		public static HttpAuthorization From(string type, string credentials, bool strict = true)
+		public static HttpAuthorization From(string type, string credentials)
 		{
-			if(type == "")
-			{
-				ExpectNot(credentials != "" && strict, "Credentials cannot be provided without a type");
-
-				return Anonymous;
-			}
-
 			return new HttpAuthorization(type, credentials);
 		}
 
-		public static HttpAuthorization From(string value, bool strict = true)
+		public static HttpAuthorization From(string value)
 		{
+      value = value.Trim();
+
 			if(value == "")
 			{
 				return Anonymous;
 			}
 
-			var parts = value.Split(' ');
+      var separatorIndex = value.IndexOf(' ');
 
-			if(parts.Length != 2)
-			{
-				ExpectNot(strict, "Unable to parse value: " + value);
+      if(separatorIndex == -1)
+      {
+        return From("", value);
+      }
 
-				return null;
-			}
+      var type = value.Substring(0, separatorIndex);
+      var credentials = value.Substring(separatorIndex + 1);
 
-			return From(parts[0], parts[1], strict);
+      return From(type, credentials);
 		}
 
 		public sealed class Converter : TextConverter
 		{
-			protected override object ConvertFrom(TextValue value)
-			{
-				return From(value);
-			}
+			protected override object ConvertFrom(TextValue value) => From(value);
 		}
 	}
 }

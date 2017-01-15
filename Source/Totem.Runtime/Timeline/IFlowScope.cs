@@ -12,9 +12,9 @@ namespace Totem.Runtime.Timeline
 	{
     FlowKey Key { get; }
 
-    Task<Flow> Task { get; }
+    Task Task { get; }
 
-    FlowPoint Point { get; }
+    FlowPoint ErrorPoint { get; }
 
     void ResumeTo(TimelinePosition checkpoint);
 

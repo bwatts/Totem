@@ -66,7 +66,7 @@ namespace Totem.Runtime.Timeline
           PushBatch();
         }
 
-        PushStopped(error);
+        await PushStopped(error);
       }
     }
 
@@ -91,7 +91,7 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    void PushStopped(Exception error)
+    async Task PushStopped(Exception error)
     {
       Log.Error(error, "[timeline] [{Key:l}] Flow stopped", Key);
 
@@ -99,7 +99,7 @@ namespace Totem.Runtime.Timeline
       {
         Flow.Context.SetError(Point.Position);
 
-        Timeline.PushStopped(Point, error);
+        await Timeline.PushStopped(Point, error);
 
         CompleteTask(error);
       }

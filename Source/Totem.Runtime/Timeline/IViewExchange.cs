@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
@@ -10,12 +10,12 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public interface IViewExchange
 	{
-		ViewSubscription Subscribe(Id connectionId, ViewETag etag);
+		Task<ViewSubscription> Subscribe(Id connectionId, ViewETag etag);
 
-		void Unsubscribe(Id connectionId);
+    void Unsubscribe(Id connectionId);
 
-		void Unsubscribe(Id connectionId, FlowKey key);
+    void Unsubscribe(Id connectionId, FlowKey key);
 
-		void PushUpdate(View view);
+    void PushUpdate(View view);
 	}
 }

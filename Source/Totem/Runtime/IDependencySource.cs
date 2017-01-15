@@ -20,5 +20,17 @@ namespace Totem.Runtime
 		T ResolveNamed<T>(string name);
 
 		T ResolveKeyed<T>(object key);
-	}
+
+    bool TryResolve(Type type, out object instance);
+
+    bool TryResolveNamed(Type type, string name, out object instance);
+
+    bool TryResolveKeyed(Type type, object key, out object instance);
+
+    bool TryResolve<T>(out T instance);
+
+    bool TryResolveNamed<T>(string name, out T instance);
+
+    bool TryResolveKeyed<T>(object key, out T instance);
+  }
 }

@@ -10,7 +10,7 @@ namespace Totem.Web
 	public enum ErrorDetail
 	{
 		None,
-		Type,
+    Issue,
 		Message,
 		StackTrace
 	}

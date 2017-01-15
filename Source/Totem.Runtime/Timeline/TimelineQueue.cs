@@ -15,12 +15,13 @@ namespace Totem.Runtime.Timeline
 	internal sealed class TimelineQueue : Connection
 	{
     readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
-    readonly Subject<TimelineMessage> _scheduleMessages = new Subject<TimelineMessage>();
+    readonly Subject<TimelinePoint> _schedulePoints = new Subject<TimelinePoint>();
     readonly ITimelineDb _db;
     readonly TimelineSchedule _schedule;
     readonly TimelineFlowSet _flows;
 		readonly TimelineRequestSet _requests;
     readonly EnqueueTransactionSet _transactions;
+    Task _resumeTask;
 
     internal TimelineQueue(
       ITimelineDb db,
@@ -40,7 +41,7 @@ namespace Totem.Runtime.Timeline
     {
       ObserveMessages();
 
-      Task.Delay(500).ContinueWith(_ => Resume());
+      _resumeTask = Resume();
     }
 
     void ObserveMessages()
@@ -53,16 +54,18 @@ namespace Totem.Runtime.Timeline
           _requests.Push(message);
         }));
 
-      Track(_scheduleMessages
+      Track(_schedulePoints
         .ObserveOn(ThreadPoolScheduler.Instance)
         .Subscribe(_schedule.Push));
     }
 
-    void Resume()
+    async Task Resume()
     {
+      await Task.Delay(500);
+
       try
       {
-        var info = _db.ReadResumeInfo();
+        var info = await _db.ReadResumeInfo();
 
         if(info.EventCount == 0)
         {
@@ -78,6 +81,10 @@ namespace Totem.Runtime.Timeline
       catch(Exception error)
       {
         Log.Error(error, "[timeline] HALTED; failed to resume activity");
+      }
+      finally
+      {
+        _resumeTask = null;
       }
     }
 
@@ -127,7 +134,7 @@ namespace Totem.Runtime.Timeline
               point.Message.Point,
               point.Message.Point.Event.When);
 
-            _scheduleMessages.OnNext(point.Message);
+            _schedulePoints.OnNext(point.Message.Point);
           }
         }
       }
@@ -180,7 +187,7 @@ namespace Totem.Runtime.Timeline
 
         if(message.Point.Scheduled)
         {
-          _scheduleMessages.OnNext(message);
+          _schedulePoints.OnNext(message.Point);
         }
       }
     }

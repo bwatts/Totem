@@ -4,11 +4,13 @@ using System.Linq;
 
 namespace Totem.Runtime.Timeline
 {
-	/// <summary>
-	/// A timeline presence that responds to a pending request
-	/// </summary>
-	public abstract class Request : Flow
+  /// <summary>
+  /// A timeline presence that responds to a pending request
+  /// </summary>
+  public abstract class Request : Flow
 	{
-    
-	}
+    public Client Client { get; internal set; }
+
+    public abstract bool Authorize();
+  }
 }

@@ -16,19 +16,23 @@ namespace Totem.Web.Push
 	[HubName("push")]
 	public sealed class PushHub : Hub, ITaggable
 	{
-		private readonly IViewExchange _viewExchange;
+    readonly Lazy<Id> _connectionId;
+    readonly Lazy<string> _compactConnectionId;
+		readonly IViewExchange _viewExchange;
 
 		public PushHub(IViewExchange viewExchange)
 		{
 			_viewExchange = viewExchange;
 
-			Tags = new Tags();
+      _connectionId = new Lazy<Id>(() => Id.From(Context.ConnectionId));
+      _compactConnectionId = new Lazy<string>(() => ConnectionId.ToText().CompactRight(8, "..."));
 		}
 
-		public Tags Tags { get; private set; }
-		private ILog Log => Notion.Traits.Log.Get(this);
+    public Tags Tags { get; } = new Tags();
+		ILog Log => Notion.Traits.Log.Get(this);
 
-		private string CompactConnectionId() => Text.Of(Context.ConnectionId).CompactRight(8, "...");
+    Id ConnectionId => _connectionId.Value;
+    string CompactConnectionId => _compactConnectionId.Value;
 
 		//
 		// Connection
@@ -36,14 +40,14 @@ namespace Totem.Web.Push
 
 		public override Task OnConnected()
 		{
-			Log.Verbose("[push] [{ConnectionId:l}] Connected", CompactConnectionId());
+			Log.Verbose("[push] [{ConnectionId:l}] Connected", CompactConnectionId);
 
 			return base.OnConnected();
 		}
 
 		public override Task OnReconnected()
 		{
-			Log.Verbose("[push] [{ConnectionId:l}] Reconnected", CompactConnectionId());
+			Log.Verbose("[push] [{ConnectionId:l}] Reconnected", CompactConnectionId);
 
 			return base.OnReconnected();
 		}
@@ -54,11 +58,11 @@ namespace Totem.Web.Push
 
 			if(stopCalled)
 			{
-				Log.Verbose("[push] [{ConnectionId:l}] Disconnected", CompactConnectionId());
+				Log.Verbose("[push] [{ConnectionId:l}] Disconnected", CompactConnectionId);
 			}
 			else
 			{
-				Log.Verbose("[push] [{ConnectionId:l}] Timed out", CompactConnectionId());
+				Log.Verbose("[push] [{ConnectionId:l}] Timed out", CompactConnectionId);
 			}
 
 			return base.OnDisconnected(stopCalled);
@@ -68,11 +72,11 @@ namespace Totem.Web.Push
 		// Views
 		//
 
-		public string SubscribeView(string etag)
+		public async Task<string> SubscribeView(string etag)
 		{
 			try
 			{
-				var result = _viewExchange.Subscribe(Id.From(Context.ConnectionId), ViewETag.From(etag));
+				var result = await _viewExchange.Subscribe(ConnectionId, ViewETag.From(etag));
 
 				var resultJson = JsonFormat.Text.Serialize(new
 				{
@@ -81,13 +85,13 @@ namespace Totem.Web.Push
 					diff = result.Diff
 				});
 
-				Log.Verbose("[push] [{ConnectionId:l}] Subscribed to {ETag:l}", CompactConnectionId(), result.ETag);
+				Log.Verbose("[push] [{ConnectionId:l}] Subscribed to {ETag:l}", CompactConnectionId, result.ETag);
 
 				return resultJson;
 			}
 			catch(Exception error)
 			{
-				Log.Error(error, "[push] [{ConnectionId:l}] Subscribe to {ETag:l} failed", CompactConnectionId(), etag);
+				Log.Error(error, "[push] [{ConnectionId:l}] Subscribe to {ETag:l} failed", CompactConnectionId, etag);
 
 				throw;
 			}
@@ -97,29 +101,29 @@ namespace Totem.Web.Push
 		{
 			try
 			{
-				_viewExchange.Unsubscribe(Id.From(Context.ConnectionId), FlowKey.From(key));
+				_viewExchange.Unsubscribe(ConnectionId, FlowKey.From(key));
 
-				Log.Verbose("[push] [{ConnectionId:l}] Unsubscribed from {Key:l}", CompactConnectionId(), key);
+				Log.Verbose("[push] [{ConnectionId:l}] Unsubscribed from {Key:l}", CompactConnectionId, key);
 			}
 			catch(Exception error)
 			{
-				Log.Error(error, "[push] [{ConnectionId:l}] Unsubscribe from {Key:l} failed", CompactConnectionId(), key);
+				Log.Error(error, "[push] [{ConnectionId:l}] Unsubscribe from {Key:l} failed", CompactConnectionId, key);
 
 				throw;
 			}
 		}
 
-		private void UnsubscribeViews()
+		void UnsubscribeViews()
 		{
 			try
 			{
-				_viewExchange.Unsubscribe(Id.From(Context.ConnectionId));
+				_viewExchange.Unsubscribe(ConnectionId);
 
-				Log.Verbose("[push] [{ConnectionId:l}] Unsubscribed from all views", CompactConnectionId());
+				Log.Verbose("[push] [{ConnectionId:l}] Unsubscribed from all views", CompactConnectionId);
 			}
 			catch(Exception error)
 			{
-				Log.Error(error, "[push] [{ConnectionId:l}] Unsubscribe from all views failed", CompactConnectionId());
+				Log.Error(error, "[push] [{ConnectionId:l}] Unsubscribe from all views failed", CompactConnectionId);
 
 				throw;
 			}

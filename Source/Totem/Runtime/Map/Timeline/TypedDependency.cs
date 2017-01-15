@@ -9,7 +9,7 @@ namespace Totem.Runtime.Map.Timeline
 	/// <summary>
 	/// A .When method parameter representing a dependency resolved by type
 	/// </summary>
-	public sealed class TypedDependency : WhenDependency
+	public sealed class TypedDependency : Dependency
 	{
 		public TypedDependency(ParameterInfo parameter) : base(parameter)
 		{}

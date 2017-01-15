@@ -10,8 +10,8 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public interface ITimelineScope : IConnectable
 	{
-		Task<T> MakeRequest<T>(TimelinePosition cause, Event e) where T : Request;
+		Task Push(TimelinePosition cause, Event e);
 
-		void Push(TimelinePosition cause, Event e);
+    Task Execute(Request request, Client client);
   }
 }

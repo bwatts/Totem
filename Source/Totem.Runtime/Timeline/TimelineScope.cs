@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Autofac;
 
@@ -41,46 +40,50 @@ namespace Totem.Runtime.Timeline
 			Track(_queue);
 		}
 
-		public Task<T> MakeRequest<T>(TimelinePosition cause, Event e) where T : Request
+    public async Task Execute(Request request, Client client)
 		{
-			var id = Flow.Traits.EnsureRequestId(e);
+      Expect(request.Id.IsAssigned, "Request must be assigned an identifier");
 
-			var task = _requests.MakeRequest<T>(id);
+      var scope = new RequestScope(_lifetime, this, request, client);
 
-			Push(cause, e);
+      var startEvent = await scope.CallStart();
 
-			return task;
-		}
+      var executeTask = _requests.Execute(scope);
 
-		public void Push(TimelinePosition cause, Event e)
+      await Push(TimelinePosition.None, startEvent);
+
+      await executeTask;
+    }
+
+		public async Task Push(TimelinePosition cause, Event e)
 		{
       using(var enqueue = _queue.StartEnqueue())
       {
-        enqueue.Commit(_timelineDb.Push(cause, e));
+        enqueue.Commit(await _timelineDb.Push(cause, e));
       }
     }
 
-    internal void PushFromSchedule(TimelineMessage message)
+    internal async Task PushScheduled(TimelinePoint point)
 		{
       using(var enqueue = _queue.StartEnqueue())
       {
-        enqueue.Commit(_timelineDb.PushScheduled(message));
+        enqueue.Commit(await _timelineDb.PushScheduled(point));
       }
     }
 
-    internal void PushStopped(FlowPoint point, Exception error)
+    internal async Task PushStopped(FlowPoint point, Exception error)
     {
       using(var enqueue = _queue.StartEnqueue())
       {
-        enqueue.Commit(_timelineDb.PushStopped(point, error));
+        enqueue.Commit(await _timelineDb.PushStopped(point, error));
       }
     }
 
-    internal PushTopicResult PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents)
+    internal async Task<PushTopicResult> PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents)
 		{
       using(var enqueue = _queue.StartEnqueue())
       {
-        var result = _timelineDb.PushTopic(topic, point, newEvents);
+        var result = await _timelineDb.PushTopic(topic, point, newEvents);
 
         enqueue.Commit(result.Messages);
 
@@ -88,9 +91,9 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    internal void PushView(View view)
+    internal Task PushView(View view)
     {
-      _timelineDb.PushView(view);
+      return _timelineDb.PushView(view);
     }
 
     internal void TryPushRequestError(TimelinePoint point, Exception error)
@@ -98,12 +101,7 @@ namespace Totem.Runtime.Timeline
       _requests.TryPushError(point, error);
     }
 
-    internal ClaimsPrincipal ReadPrincipal(FlowPoint point)
-		{
-			return new ClaimsPrincipal();
-		}
-
-    internal IFlowScope CreateFlow(FlowRoute route)
+    internal IFlowScope OpenFlowScope(FlowRoute route)
     {
       if(route.Key.Type.IsTopic)
       {
@@ -119,29 +117,9 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-		internal RequestScope CreateRequest<T>(Id id) where T : Request
-		{
-			var type = Runtime.GetRequest(typeof(T));
-
-      var key = FlowKey.From(type, id);
-
-      var initialRoute = new FlowRoute(key, first: true, when: true, given: false, then: false);
-
-      return new RequestScope(_lifetime, this, initialRoute);
-		}
-
-    internal bool TryReadFlow(FlowRoute route, out Flow flow)
+    internal Task<Flow> ReadFlow(FlowRoute route, bool strict = true)
     {
-      if(route.Key.Type.IsRequest)
-      {
-        flow = route.Key.Type.New();
-
-        FlowContext.Bind(flow, route.Key);
-
-        return true;
-      }
-
-      return _timelineDb.TryReadFlow(route, out flow);
+      return _timelineDb.ReadFlow(route, strict);
     }
 	}
 }

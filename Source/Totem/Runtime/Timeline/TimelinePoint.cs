@@ -15,7 +15,7 @@ namespace Totem.Runtime.Timeline
 			TimelinePosition cause,
 			EventType eventType,
 			Event e,
-			bool scheduled = false)
+      bool scheduled = false)
 		{
 			Position = position;
 			Cause = cause;
@@ -24,7 +24,8 @@ namespace Totem.Runtime.Timeline
 			Scheduled = scheduled;
 
       RequestId = Flow.Traits.RequestId.Get(e);
-		}
+      ClientId = Flow.Traits.ClientId.Get(e);
+    }
 
 		public readonly TimelinePosition Position;
 		public readonly TimelinePosition Cause;
@@ -32,7 +33,8 @@ namespace Totem.Runtime.Timeline
 		public readonly Event Event;
 		public readonly bool Scheduled;
     public readonly Id RequestId;
+    public readonly Id ClientId;
 
-		public override string ToString() => $"{Position} {EventType}";
+    public override string ToString() => $"{Position} {EventType}";
 	}
 }

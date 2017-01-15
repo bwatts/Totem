@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
@@ -9,18 +10,18 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public interface ITimelineDb
 	{
-		ResumeInfo ReadResumeInfo();
+		Task<ResumeInfo> ReadResumeInfo();
 
-		bool TryReadFlow(FlowRoute route, out Flow flow);
+		Task<Flow> ReadFlow(FlowRoute route, bool strict = true);
 
-    TimelineMessage Push(TimelinePosition cause, Event e);
+    Task<TimelineMessage> Push(TimelinePosition cause, Event e);
 
-		TimelineMessage PushScheduled(TimelineMessage message);
+    Task<TimelineMessage> PushScheduled(TimelinePoint point);
 
-    TimelineMessage PushStopped(FlowPoint point, Exception error);
+    Task<TimelineMessage> PushStopped(FlowPoint point, Exception error);
 
-    PushTopicResult PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents);
+    Task<PushTopicResult> PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents);
 
-    void PushView(View view);
+    Task PushView(View view);
   }
 }

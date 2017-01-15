@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
@@ -9,10 +10,10 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	public interface IViewDb : IFluent
 	{
-		ViewSnapshot<string> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint);
+		Task<ViewSnapshot<string>> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint);
 
-		ViewSnapshot<View> ReadSnapshot(Type type, Id id, TimelinePosition checkpoint);
+    Task<ViewSnapshot<View>> ReadSnapshot(Type type, Id id, TimelinePosition checkpoint);
 
-		ViewSnapshot<T> ReadSnapshot<T>(Id id, TimelinePosition checkpoint) where T : View;
+    Task<ViewSnapshot<T>> ReadSnapshot<T>(Id id, TimelinePosition checkpoint) where T : View;
 	}
 }

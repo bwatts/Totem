@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Microsoft.Owin.Hosting;
@@ -24,9 +25,9 @@ namespace Totem.Web
 	/// </summary>
 	public abstract class WebApiApp : AutofacNancyBootstrapper, IWebApp, ITaggable
 	{
-		protected WebApiApp(WebAppContext context)
+		protected WebApiApp(WebAppContext appContext)
 		{
-			Context = context;
+			AppContext = appContext;
 			Tags = new Tags();
 		}
 
@@ -36,7 +37,7 @@ namespace Totem.Web
 		protected ILog Log => Notion.Traits.Log.Get(this);
 		protected RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
-		protected readonly WebAppContext Context;
+		protected readonly WebAppContext AppContext;
 
 		public virtual IDisposable Start()
 		{
@@ -60,7 +61,7 @@ namespace Totem.Web
 		{
 			var options = new StartOptions();
 
-			foreach(var binding in Context.Bindings)
+			foreach(var binding in AppContext.Bindings)
 			{
 				options.Urls.Add(binding.ToString());
 			}
@@ -80,19 +81,19 @@ namespace Totem.Web
 			return new NancyOptions { Bootstrapper = this };
 		}
 
-		protected override NancyInternalConfiguration InternalConfiguration
+		protected override Func<ITypeCatalog, NancyInternalConfiguration> InternalConfiguration
 		{
 			// Regain control of headers in 404 responses
 			get { return NancyInternalConfiguration.WithOverrides(c => c.StatusCodeHandlers.Clear()); }
 		}
 
-		//
-		// Composition
-		//
+    //
+    // Composition
+    //
 
-		protected override ILifetimeScope GetApplicationContainer()
+    protected override ILifetimeScope GetApplicationContainer()
 		{
-			return Context.Scope;
+			return AppContext.Scope;
 		}
 
 		protected override abstract IEnumerable<INancyModule> GetAllModules(ILifetimeScope container);
@@ -109,30 +110,30 @@ namespace Totem.Web
 			var module = new BuilderModule();
 
 			module.Register(c => new WebApiCall(
-				HttpLink.From(context.Request.Url.ToString()),
+				Http.HttpLink.From(context.Request.Url.ToString()),
 				HttpAuthorization.From(context.Request.Headers.Authorization),
-				WebApiCallBody.From(context.Request.Headers.ContentType, () => context.Request.Body)))
+				WebApiCallBody.From(
+          context.Request.Headers.ContentType ?? "",
+          () => context.Request.Body)))
 			.InstancePerRequest();
 
 			module.Update(container.ComponentRegistry);
 		}
 
 		//
-		// Requests
+		// Request lifecycle
 		//
 
 		protected override void RequestStartup(ILifetimeScope container, IPipelines pipelines, NancyContext context)
 		{
-			pipelines.BeforeRequest += pipelineContext => BeforeRequest(container, pipelineContext);
-
-			pipelines.OnError += (pipelineContext, exception) => OnRequestError(container, pipelineContext, exception);
-
-			pipelines.AfterRequest += pipelineContext => AfterRequest(container, pipelineContext);
+      pipelines.BeforeRequest += (context2, cancel) => BeforeRequest(container, context2);
+			pipelines.OnError += (context2, exception) => OnRequestError(container, context2, exception);
+			pipelines.AfterRequest += context2 => AfterRequest(container, context2);
 		}
 
-		private Response BeforeRequest(ILifetimeScope container, NancyContext context)
+		async Task<Response> BeforeRequest(ILifetimeScope container, NancyContext context)
 		{
-			if(Context.EnableCors && context.Request.Method == "OPTIONS")
+			if(AppContext.EnableCors && context.Request.Method == "OPTIONS")
 			{
 				var response = new Response { StatusCode = HttpStatusCode.OK };
 
@@ -141,24 +142,24 @@ namespace Totem.Web
 				return response;
 			}
 
-			SetCallItem(container, context);
+			await SetCallItems(container, context);
 
 			return null;
 		}
 
-		private Response OnRequestError(ILifetimeScope container, NancyContext context, Exception exception)
-		{
-			Log.Error(exception, "[web] Request error in {Url:l}", context.Request.Url);
+    static void AddCorsHeaders(Response response)
+    {
+      response
+        .WithHeader("Access-Control-Allow-Origin", "*")
+        .WithHeader("Access-Control-Allow-Headers", "Authorization, Origin, Content-Type");
+    }
 
-			return container.Resolve<IErrorHandler>().CreateResponse(context, exception);
-		}
+    static async Task SetCallItems(ILifetimeScope container, NancyContext context)
+    {
+      context.Items[WebApi.LifetimeItemKey] = container;
 
-		private static void SetCallItem(ILifetimeScope container, NancyContext context)
-		{
-			context.Items[WebApi.CallItemKey] = container.Resolve<WebApiCall>();
-
-			IViewDb views;
-			ITimelineScope timeline;
+      IViewDb views;
+      ITimelineScope timeline;
 
       if(container.TryResolve(out views))
       {
@@ -166,29 +167,48 @@ namespace Totem.Web
       }
 
       if(container.TryResolve(out timeline))
-			{
-				context.Items[WebApi.TimelineItemKey] = timeline;
-			}
-		}
+      {
+        context.Items[WebApi.TimelineItemKey] = timeline;
+      }
 
-		private Task AfterRequest(ILifetimeScope container, NancyContext pipelineContext)
+      var call = container.Resolve<WebApiCall>();
+
+      context.Items[WebApi.CallItemKey] = call;
+
+      IWebClientAuthority clientAuthority;
+
+      var client = container.TryResolve(out clientAuthority)
+        ? await clientAuthority.Authenticate(call.Authorization)
+        : new Client();
+
+      context.Items[WebApi.ClientItemKey] = client;
+
+      context.CurrentUser = client.Principal;
+    }
+
+    Response OnRequestError(ILifetimeScope container, NancyContext context, Exception exception)
+    {
+      var response = container.Resolve<IErrorHandler>().CreateResponse(context, exception);
+
+      if(((int) response.StatusCode) >= 500)
+      {
+        Log.Error(exception, "[web] Request error in {Url:l}", context.Request.Url);
+      }
+
+      return response;
+    }
+
+    Task AfterRequest(ILifetimeScope container, NancyContext context)
 		{
-			if(Context.EnableCors)
+			if(AppContext.EnableCors)
 			{
-				AddCorsHeaders(pipelineContext.Response);
+				AddCorsHeaders(context.Response);
 			}
 
-			return Task.CompletedTask;
+      return Task.CompletedTask;
 		}
 
-		private static void AddCorsHeaders(Response response)
-		{
-			response
-				.WithHeader("Access-Control-Allow-Origin", "*")
-				.WithHeader("Access-Control-Allow-Headers", "Authorization, Origin, Content-Type");
-		}
-
-		private sealed class LogAdapter : Notion, ILoggerFactory, ILogger
+    sealed class LogAdapter : Notion, ILoggerFactory, ILogger
 		{
 			public ILogger Create(string name)
 			{
@@ -213,7 +233,7 @@ namespace Totem.Web
 				return canWrite;
 			}
 
-			private static LogLevel GetLevel(TraceEventType type)
+			static LogLevel GetLevel(TraceEventType type)
 			{
 				switch(type)
 				{

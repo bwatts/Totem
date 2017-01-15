@@ -169,5 +169,10 @@ namespace Totem
 		{
 			_resolveDefault = () => value;
 		}
-	}
+
+    public void Copy(ITaggable source, ITaggable target)
+    {
+      Set(target, Get(source));
+    }
+  }
 }

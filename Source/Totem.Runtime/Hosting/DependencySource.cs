@@ -46,5 +46,47 @@ namespace Totem.Runtime.Hosting
 		{
 			return _scope.ResolveKeyed<T>(key);
 		}
-	}
+
+    public bool TryResolve(Type type, out object instance)
+    {
+      return _scope.TryResolve(type, out instance);
+    }
+
+    public bool TryResolveNamed(Type type, string name, out object instance)
+    {
+      return _scope.TryResolveNamed(name, type, out instance);
+    }
+
+    public bool TryResolveKeyed(Type type, object key, out object instance)
+    {
+      return _scope.TryResolveKeyed(key, type, out instance);
+    }
+
+    public bool TryResolve<T>(out T instance)
+    {
+      return _scope.TryResolve(out instance);
+    }
+
+    public bool TryResolveNamed<T>(string name, out T instance)
+    {
+      object untypedInstance;
+
+      var resolved = _scope.TryResolveNamed(name, typeof(T), out untypedInstance);
+
+      instance = resolved ? (T) untypedInstance : default(T);
+
+      return resolved;
+    }
+
+    public bool TryResolveKeyed<T>(object key, out T instance)
+    {
+      object untypedInstance;
+
+      var resolved = _scope.TryResolveKeyed(key, typeof(T), out untypedInstance);
+
+      instance = resolved ? (T) untypedInstance : default(T);
+
+      return resolved;
+    }
+  }
 }

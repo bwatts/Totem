@@ -2,13 +2,15 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// Schedules points on the timeline to occur in the future
+	/// Sets timers for points which occur in the future
 	/// </summary>
 	internal sealed class TimelineSchedule : Connection
 	{
@@ -28,20 +30,21 @@ namespace Totem.Runtime.Timeline
       }
     }
 
-    internal void Push(TimelineMessage message)
+    internal void Push(TimelinePoint point)
 		{
       var timer = null as IDisposable;
 
       timer = Observable
-				.Timer(new DateTimeOffset(message.Point.Event.When))
-				.Take(1)
-				.ObserveOn(ThreadPoolScheduler.Instance)
-				.Subscribe(_ => PushToTimeline(message, timer));
+        .Timer(new DateTimeOffset(point.Event.When))
+        .Take(1)
+        .ObserveOn(ThreadPoolScheduler.Instance)
+        .SelectMany(_ => PushToTimeline(point, timer))
+        .Subscribe();
 
       _timers[timer] = true;
 		}
 
-    void PushToTimeline(TimelineMessage message, IDisposable timer)
+    async Task<Unit> PushToTimeline(TimelinePoint point, IDisposable timer)
     {
       try
       {
@@ -51,7 +54,9 @@ namespace Totem.Runtime.Timeline
 
         timer.Dispose();
 
-        _timeline.PushFromSchedule(message);
+        await _timeline.PushScheduled(point);
+
+        return Unit.Default;
       }
       catch(Exception error)
       {

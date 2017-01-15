@@ -8,7 +8,7 @@ namespace Totem.Runtime.Map.Timeline
 	/// <summary>
 	/// A .When method parameter representing a dependency resolved by name at call time
 	/// </summary>
-	public sealed class NamedDependencyAttribute : WhenDependencyAttribute
+	public sealed class NamedDependencyAttribute : DependencyAttribute
 	{
 		public NamedDependencyAttribute(string name)
 		{
@@ -17,9 +17,9 @@ namespace Totem.Runtime.Map.Timeline
 
 		public readonly string Name;
 
-		public override WhenDependency GetDependency(ParameterInfo parameter)
+		public override Dependency GetDependency(ParameterInfo parameter)
 		{
-			return WhenDependency.Named(parameter, Name);
+			return Dependency.Named(parameter, Name);
 		}
 	}
 }

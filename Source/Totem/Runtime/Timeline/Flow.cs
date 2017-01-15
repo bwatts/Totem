@@ -11,15 +11,24 @@ namespace Totem.Runtime.Timeline
 	[Durable]
 	public abstract class Flow : Notion
 	{
-		[Transient] public FlowContext Context { get; internal set; }
+    [Transient] Client _client;
+
+    [Transient] public FlowContext Context { get; internal set; }
 		[Transient] public FlowCall Call { get; internal set; }
-		[Transient] public Id Id { get; internal set; }
+    [Transient] public Id Id { get; internal set; }
 
 		public override Text ToText() => Context.ToText();
 
 		protected internal virtual Task CallWhen(FlowCall.When call)
 		{
-      return call.MakeInternal(this);
+      try
+      {
+        return call.MakeInternal(this);
+      }
+      finally
+      {
+        _client = null;
+      }
 		}
 
 		protected void ThenDone()
@@ -27,28 +36,53 @@ namespace Totem.Runtime.Timeline
 			Context.SetDone();
 		}
 
+    protected async Task<Client> ReadClient()
+    {
+      var whenCall = Call as FlowCall.When;
+
+      Expect(whenCall).IsNotNull("Flow is not making a When call");
+
+      if(_client == null)
+      {
+        IClientAuthority authority;
+
+        _client = whenCall.Dependencies.TryResolve(out authority)
+          ? await authority.Authenticate(Call.Point.ClientId)
+          : new Client();
+      }
+
+      return _client;
+    }
+
+    protected async Task<TResult> ReadClient<TResult>(Func<Client, TResult> selectResult)
+    {
+      return selectResult(await ReadClient());
+    }
+
+    protected Task<Id> ReadClientId()
+    {
+      return ReadClient(c => c.Id);
+    }
+
+    protected Task<string> ReadClientName()
+    {
+      return ReadClient(c => c.Name);
+    }
+
 		public new static class Traits
 		{
       public static readonly Tag<Id> RequestId = Tag.Declare(() => RequestId);
+      public static readonly Tag<Id> ClientId = Tag.Declare(() => ClientId);
 
-			public static Id EnsureRequestId(Event e)
+      public static void ForwardRequestId(Event source, Event target)
 			{
-				var requestId = RequestId.Get(e);
-
-				if(!requestId.IsAssigned)
-				{
-					requestId = Id.FromGuid();
-
-					RequestId.Set(e, requestId);
-				}
-
-				return requestId;
+        RequestId.Copy(source, target);
 			}
 
-			public static void ForwardRequestId(Event source, Event target)
-			{
-				RequestId.Set(target, RequestId.Get(source));
-			}
-		}
+      public static void ForwardClientId(Event source, Event target)
+      {
+        ClientId.Copy(source, target);
+      }
+    }
 	}
 }

@@ -21,7 +21,9 @@ namespace Totem.Web
 		{
 			RegisterType<WebHost>().SingleInstance();
 
-			RegisterType<ErrorHandler>().As<IErrorHandler>().SingleInstance();
+      Register(c => new ErrorHandler(detailed: true))
+      .As<IErrorHandler>()
+      .SingleInstance();
 
 			Register(c => ErrorDetail.StackTrace).SingleInstance();
 

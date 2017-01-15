@@ -16,8 +16,8 @@ namespace Totem.Runtime
 	/// </summary>
 	internal sealed class RuntimeReader : Notion
 	{
-    private readonly RuntimeDeployment _deployment;
-		private RuntimeMap _map;
+    readonly RuntimeDeployment _deployment;
+		RuntimeMap _map;
 
     internal RuntimeReader(RuntimeDeployment deployment)
 		{
@@ -39,7 +39,7 @@ namespace Totem.Runtime
 		// Regions
 		//
 
-		private RuntimeRegionSet ReadRegions()
+		RuntimeRegionSet ReadRegions()
 		{
 			return new RuntimeRegionSet(
 				from package in ReadPackages()
@@ -47,7 +47,7 @@ namespace Totem.Runtime
 				select new RuntimeRegion(packagesByRegion.Key, new RuntimePackageSet(packagesByRegion)));
 		}
 
-		private IEnumerable<RuntimePackage> ReadPackages()
+		IEnumerable<RuntimePackage> ReadPackages()
 		{
 			var packages = Many.Of(ReadRuntimePackages(), ReadDeploymentPackages());
 
@@ -59,7 +59,7 @@ namespace Totem.Runtime
 			return packages;
 		}
 
-		private IEnumerable<RuntimePackage> ReadRuntimePackages()
+		IEnumerable<RuntimePackage> ReadRuntimePackages()
 		{
 			yield return new RuntimePackage(
 				"Totem",
@@ -76,12 +76,12 @@ namespace Totem.Runtime
 				RuntimeRegionKey.From("runtime"));
 		}
 
-		private IEnumerable<RuntimePackage> ReadDeploymentPackages()
+		IEnumerable<RuntimePackage> ReadDeploymentPackages()
 		{
 			return ReadPackages(_deployment.Folder, _deployment.Folder.ReadFolders());
 		}
 
-		private IEnumerable<RuntimePackage> ReadTotemSubmodulePackages()
+		IEnumerable<RuntimePackage> ReadTotemSubmodulePackages()
 		{
 			var submoduleFolder = _deployment.InTotemSubmodule
 				? _deployment.Folder
@@ -96,7 +96,7 @@ namespace Totem.Runtime
 			return ReadPackages(submoduleFolder, subfolders.ToMany());
 		}
 
-		private IEnumerable<RuntimePackage> ReadPackages(IFolder folder, Many<FolderResource> subfolders)
+		IEnumerable<RuntimePackage> ReadPackages(IFolder folder, Many<FolderResource> subfolders)
 		{
 			return
 				from subfolder in subfolders
@@ -115,7 +115,7 @@ namespace Totem.Runtime
 					region);
 		}
 
-		private static FileResource ReadPackagePrimaryFile(IFolder folder, string packageName, FolderResource buildFolder)
+		static FileResource ReadPackagePrimaryFile(IFolder folder, string packageName, FolderResource buildFolder)
 		{
 			var dllFile = buildFolder.Then(FileName.From(packageName, "dll"));
 
@@ -138,10 +138,10 @@ namespace Totem.Runtime
     // Types
     //
 
-    private RuntimePackage _package;
-    private Type _declaredType;
+    RuntimePackage _package;
+    Type _declaredType;
 
-    private void RegisterTypes()
+    void RegisterTypes()
 		{
 			foreach(var type in
 				from region in _map.Regions
@@ -179,7 +179,7 @@ namespace Totem.Runtime
       _declaredType = null;
     }
 
-    private void RegisterEvent()
+    void RegisterEvent()
     {
 			var e = new EventType(ReadType());
 
@@ -187,7 +187,7 @@ namespace Totem.Runtime
 			_package.Events.Register(e);
     }
 
-    private bool TryRegisterArea()
+    bool TryRegisterArea()
     {
       if(DeclaredTypeIs<IRuntimeArea>())
       {
@@ -204,7 +204,7 @@ namespace Totem.Runtime
       return false;
     }
 
-    private bool TryRegisterWebApi()
+    bool TryRegisterWebApi()
     {
       if(DeclaredTypeIs<IWebApi>())
       {
@@ -216,12 +216,12 @@ namespace Totem.Runtime
       return false;
     }
 
-    private RuntimeTypeRef ReadType()
+    RuntimeTypeRef ReadType()
     {
       return new RuntimeTypeRef(_package, _declaredType);
     }
 
-    private bool DeclaredTypeIs<T>()
+    bool DeclaredTypeIs<T>()
     {
       return typeof(T).IsAssignableFrom(_declaredType);
     }
@@ -230,7 +230,7 @@ namespace Totem.Runtime
     // Flows
     //
 
-    private bool TryRegisterFlow()
+    bool TryRegisterFlow()
     {
       if(DeclaredTypeIs<Flow>())
       {
@@ -242,7 +242,7 @@ namespace Totem.Runtime
       return false;
     }
 
-    private void RegisterFlow()
+    void RegisterFlow()
     {
       var type = ReadType();
       var constructor = ReadConstructor();
@@ -266,11 +266,16 @@ namespace Totem.Runtime
       }
       else if(DeclaredTypeIs<Request>())
       {
-        var request = new RequestType(type, constructor);
+        var start = new RuntimeReaderRequestStart(_map, _declaredType).Read();
 
-        _package.Requests.Register(request);
+        if(start != null)
+        {
+          var request = new RequestType(type, constructor, start);
 
-        RegisterFlow(request);
+          _package.Requests.Register(request);
+
+          RegisterFlow(request);
+        }
       }
       else
       {
@@ -278,7 +283,7 @@ namespace Totem.Runtime
       }
     }
 
-    private FlowConstructor ReadConstructor()
+    FlowConstructor ReadConstructor()
 		{
 			var constructors = _declaredType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
 
@@ -298,7 +303,7 @@ namespace Totem.Runtime
 			}
 		}
 
-    private IEnumerable<RuntimeTypeKey> ReadPriorKeys()
+    IEnumerable<RuntimeTypeKey> ReadPriorKeys()
     {
       foreach(var attribute in _declaredType.GetCustomAttributes<PriorNameAttribute>(inherit: true))
       {
@@ -313,12 +318,12 @@ namespace Totem.Runtime
       }
     }
 
-    private int ReadBatchSize()
+    int ReadBatchSize()
     {
       return _declaredType.GetCustomAttribute<BatchSizeAttribute>(inherit: true).BatchSize;
     }
 
-    private void RegisterFlow(FlowType flow)
+    void RegisterFlow(FlowType flow)
     {
 			_package.Durable.Register(flow);
 			_package.Flows.Register(flow);
@@ -330,7 +335,7 @@ namespace Totem.Runtime
 		// Durable
 		//
 
-		private void TryRegisterDurable()
+		void TryRegisterDurable()
 		{
 			if(IsDurable(_declaredType))
 			{
@@ -338,7 +343,7 @@ namespace Totem.Runtime
 			}
 		}
 
-		private bool IsDurable(Type type)
+		bool IsDurable(Type type)
 		{
 			var defined = _declaredType.IsDefined(typeof(DurableAttribute), inherit: true);
 
@@ -351,7 +356,7 @@ namespace Totem.Runtime
 		// Area dependencies
 		//
 
-		private void RegisterAreaDependencies()
+		void RegisterAreaDependencies()
 		{
 			foreach(var dependency in
 				from region in _map.Regions

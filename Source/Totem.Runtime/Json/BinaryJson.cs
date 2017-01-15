@@ -48,7 +48,7 @@ namespace Totem.Runtime.Json
 			return JsonFormat.Text.SerializeJson(value, type, settings);
 		}
 
-		private Binary GetBinary(Text json)
+		Binary GetBinary(Text json)
 		{
 			return Binary.From(Encoding.GetBytes(json));
 		}
@@ -72,12 +72,17 @@ namespace Totem.Runtime.Json
 			return JsonFormat.Text.Deserialize<TValue>(GetText(value), settings);
 		}
 
-		public override JObject DeserializeJson(Binary value)
+		public override JObject DeserializeJson(Binary value, JsonLoadSettings settings = null)
 		{
-			return JsonFormat.Text.DeserializeJson(GetText(value));
+			return JsonFormat.Text.DeserializeJson(GetText(value), settings);
 		}
 
-		private string GetText(Binary value)
+    public override void DeserializeInto(Binary value, object instance, JsonSerializerSettings settings = null)
+    {
+      JsonFormat.Text.DeserializeInto(GetText(value), instance, settings);
+    }
+
+    string GetText(Binary value)
 		{
 			return Encoding.GetString(value.ToBytes());
 		}

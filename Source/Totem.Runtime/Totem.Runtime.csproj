@@ -133,6 +133,7 @@
     <Compile Include="Json\ExpandDictionaryConverter.cs" />
     <Compile Include="Json\TotemSerializationBinder.cs" />
     <Compile Include="Json\TotemSerializerSettings.cs" />
+    <Compile Include="RuntimeReaderRequestStart.cs" />
     <Compile Include="RuntimeReaderFlow.cs" />
     <Compile Include="RuntimeReader.cs" />
     <Compile Include="Configuration\ColumnsElement.cs" />
@@ -156,7 +157,7 @@
     <Compile Include="Timeline\FlowScope.cs" />
     <Compile Include="Timeline\IViewDb.cs" />
     <Compile Include="Timeline\IViewExchange.cs" />
-    <Compile Include="Timeline\LocalTimelineDb.cs" />
+    <Compile Include="Timeline\MemoryTimelineDb.cs" />
     <Compile Include="Timeline\IFlowScope.cs" />
     <Compile Include="Timeline\PendingPoint.cs" />
     <Compile Include="Timeline\PushTopicResult.cs" />

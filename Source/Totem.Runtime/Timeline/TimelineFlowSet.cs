@@ -80,7 +80,7 @@ namespace Totem.Runtime.Timeline
 
     IFlowScope CreateFlow(FlowRoute route)
     {
-      var flow = _timeline.CreateFlow(route);
+      var flow = _timeline.OpenFlowScope(route);
 
       ConnectFlow(flow);
       
@@ -142,7 +142,7 @@ namespace Totem.Runtime.Timeline
 
       if(flow.Task.IsFaulted)
       {
-        _timeline.TryPushRequestError(flow.Point, flow.Task.Exception);
+        _timeline.TryPushRequestError(flow.ErrorPoint, flow.Task.Exception);
       }
     }
 	}

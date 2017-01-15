@@ -46,6 +46,8 @@ namespace Totem.Runtime.Json
 			return (TValue) Deserialize(value, typeof(TValue), settings);
 		}
 
-		public abstract JObject DeserializeJson(T value);
+		public abstract JObject DeserializeJson(T value, JsonLoadSettings settings = null);
+
+    public abstract void DeserializeInto(T value, object instance, JsonSerializerSettings settings = null);
 	}
 }

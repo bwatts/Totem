@@ -56,9 +56,14 @@ namespace Totem.Runtime.Json
 			return JsonConvert.DeserializeObject<TEntity>(value, settings ?? new TotemSerializerSettings());
 		}
 
-		public override JObject DeserializeJson(Text value)
+		public override JObject DeserializeJson(Text value, JsonLoadSettings settings = null)
 		{
-			return JObject.Parse(value);
-		}
-	}
+      return JObject.Parse(value, settings);
+    }
+
+    public override void DeserializeInto(Text value, object instance, JsonSerializerSettings settings = null)
+    {
+      JsonConvert.PopulateObject(value, instance, settings);
+    }
+  }
 }

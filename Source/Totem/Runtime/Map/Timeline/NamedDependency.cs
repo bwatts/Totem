@@ -9,7 +9,7 @@ namespace Totem.Runtime.Map.Timeline
 	/// <summary>
 	/// A .When method parameter representing a dependency resolved by name
 	/// </summary>
-	public sealed class NamedDependency : WhenDependency
+	public sealed class NamedDependency : Dependency
 	{
 		public NamedDependency(ParameterInfo parameter, string name) : base(parameter)
 		{

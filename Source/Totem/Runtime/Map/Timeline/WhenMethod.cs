@@ -16,7 +16,7 @@ namespace Totem.Runtime.Map.Timeline
 		private readonly Lazy<Action<Flow, Event, IDependencySource>> _call;
 		private readonly Lazy<Func<Flow, Event, IDependencySource, Task>> _callAsync;
 
-		internal WhenMethod(MethodInfo info, EventType eventType, Many<WhenDependency> dependencies) : base(info, eventType)
+		internal WhenMethod(MethodInfo info, EventType eventType, Many<Dependency> dependencies) : base(info, eventType)
 		{
 			Dependencies = dependencies;
 
@@ -32,7 +32,7 @@ namespace Totem.Runtime.Map.Timeline
 			}
 		}
 
-		public readonly Many<WhenDependency> Dependencies;
+		public readonly Many<Dependency> Dependencies;
 		public readonly bool IsAsync;
 
 		public async Task Call(Flow flow, Event e, IDependencySource dependencies)
@@ -59,12 +59,12 @@ namespace Totem.Runtime.Map.Timeline
 
 			var flow = Expression.Parameter(typeof(Flow), "flow");
 			var e = Expression.Parameter(typeof(Event), "e");
-			var dependencies = Expression.Parameter(typeof(IDependencySource), "e");
+			var dependencies = Expression.Parameter(typeof(IDependencySource), "dependencies");
 
 			// Cast the flow and event to their specific types:
 			//
-			// (TFlow) args.Flow
-			// (TEvent) args.Event
+			// (TFlow) flow
+			// (TEvent) e
 
 			var castFlow = Expression.Convert(flow, Info.DeclaringType);
 			var castEvent = Expression.Convert(e, EventType.DeclaredType);

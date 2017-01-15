@@ -2,40 +2,48 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Totem.Runtime.Json;
 using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// A database persisting timeline data in the local runtime
+	/// A database persisting events and flows in runtime memory
 	/// </summary>
-	public sealed class LocalTimelineDb : Notion, ITimelineDb, IViewDb
+	public sealed class MemoryTimelineDb : Notion, ITimelineDb, IViewDb
 	{
 		readonly Dictionary<FlowKey, Flow> _flowsByKey = new Dictionary<FlowKey, Flow>();
 		long _position = -1;
 
-		public ResumeInfo ReadResumeInfo()
+    public Task<ResumeInfo> ReadResumeInfo()
 		{
-      return new ResumeInfo();
+      return Task.FromResult(new ResumeInfo());
 		}
 
-		public bool TryReadFlow(FlowRoute route, out Flow flow)
+		public Task<Flow> ReadFlow(FlowRoute route, bool strict = true)
 		{
-			return _flowsByKey.TryGetValue(route.Key, out flow);
+      Flow flow;
+
+      if(!_flowsByKey.TryGetValue(route.Key, out flow))
+      {
+        ExpectNot(strict, "Flow not found: " + route.Key.ToText());
+      }
+
+      return Task.FromResult(flow);
 		}
 
-		public TimelineMessage Push(TimelinePosition cause, Event e)
+		public Task<TimelineMessage> Push(TimelinePosition cause, Event e)
 		{
-			return PushNext(new PendingPoint(cause, e));
+      return Task.FromResult(PushNext(new PendingPoint(cause, e)));
 		}
 
-		public TimelineMessage PushScheduled(TimelineMessage message)
+		public Task<TimelineMessage> PushScheduled(TimelinePoint point)
 		{
-			return Push(message.Point.Position, message.Point.Event);
+      return Push(point.Position, point.Event);
 		}
 
-		public TimelineMessage PushStopped(FlowPoint point, Exception error)
+		public Task<TimelineMessage> PushStopped(FlowPoint point, Exception error)
 		{
 			var stopped = new FlowStopped(
         point.Route.Key.Type.Key,
@@ -43,11 +51,12 @@ namespace Totem.Runtime.Timeline
         error.ToString());
 
 			Flow.Traits.ForwardRequestId(point.Event, stopped);
+      Flow.Traits.ForwardClientId(point.Event, stopped);
 
-			return Push(point.Position, stopped);
+      return Push(point.Position, stopped);
 		}
 
-    public PushTopicResult PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents)
+    public async Task<PushTopicResult> PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents)
     {
       var newPoints =
         from newEvent in newEvents
@@ -58,11 +67,13 @@ namespace Totem.Runtime.Timeline
 
       foreach(var newPoint in newPoints)
       {
-        var message = PushNext(newPoint);
+        var newMessage = PushNext(newPoint);
 
-        messages.Write.Add(message);
+        messages.Write.Add(newMessage);
 
-        if(newPoint.HasThenRoute && !givenError && !CallGiven(topic, newPoint, message))
+        if(newPoint.HasThenRoute
+          && !givenError
+          && !(await CallGiven(topic, newPoint, newMessage)))
         {
           givenError = true;
         }
@@ -79,12 +90,10 @@ namespace Totem.Runtime.Timeline
       return new PushTopicResult(messages, givenError);
     }
 
-    public void PushView(View view)
-    {}
-
-    //
-    // PushNext
-    //
+    public Task PushView(View view)
+    {
+      return Task.CompletedTask;
+    }
 
     TimelineMessage PushNext(PendingPoint point)
 		{
@@ -110,29 +119,17 @@ namespace Totem.Runtime.Timeline
 					Log.Info("[timeline] {Cause:l} ++ {Point:l}", point.Cause, message.Point);
 				}
 
-				return message;
+        return message;
 			}
 		}
 
-		Many<TimelineMessage> PushNext(IEnumerable<PendingPoint> points)
-		{
-			lock(_flowsByKey)
-			{
-				return points.ToMany(PushNext);
-			}
-		}
-
-    //
-    // Given
-    //
-
-    bool CallGiven(Topic topic, PendingPoint newPoint, TimelineMessage message)
+    async Task<bool> CallGiven(Topic topic, PendingPoint newPoint, TimelineMessage newMessage)
     {
-      var thenPoint = new FlowPoint(newPoint.ThenRoute, message.Point);
+      var thenPoint = new FlowPoint(newPoint.ThenRoute, newMessage.Point);
 
       try
       {
-        var topicEvent = (TopicEvent) topic.Context.Type.Events.Get(message.Point.EventType);
+        var topicEvent = (TopicEvent) topic.Context.Type.Events.Get(newMessage.Point.EventType);
 
         var call = new FlowCall.Given(thenPoint, topicEvent);
 
@@ -144,15 +141,11 @@ namespace Totem.Runtime.Timeline
       {
         Log.Error(error, "[timeline] Flow {Flow:l} stopped", topic.Context.Key);
 
-        PushStopped(thenPoint, error);
+        await PushStopped(thenPoint, error);
 
         return false;
       }
     }
-
-    //
-    // Push new point
-    //
 
     TimelineMessage PushNewPoint(PendingPoint point)
 		{
@@ -187,19 +180,19 @@ namespace Totem.Runtime.Timeline
 		// Views
 		//
 
-		public ViewSnapshot<string> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint)
+		public Task<ViewSnapshot<string>> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint)
 		{
-			return ReadView(type, id, checkpoint, view => JsonFormat.Text.Serialize(view).ToString());
+      return Task.FromResult(ReadView(type, id, checkpoint, view => JsonFormat.Text.Serialize(view).ToString()));
 		}
 
-		public ViewSnapshot<View> ReadSnapshot(Type type, Id id, TimelinePosition checkpoint)
+    public Task<ViewSnapshot<View>> ReadSnapshot(Type type, Id id, TimelinePosition checkpoint)
 		{
-			return ReadView(type, id, checkpoint, view => (View) view);
+			return Task.FromResult(ReadView(type, id, checkpoint, view => (View) view));
 		}
 
-		public ViewSnapshot<T> ReadSnapshot<T>(Id id, TimelinePosition checkpoint) where T : View
+		public Task<ViewSnapshot<T>> ReadSnapshot<T>(Id id, TimelinePosition checkpoint) where T : View
 		{
-			return ReadView(typeof(T), id, checkpoint, view => (T) view);
+      return Task.FromResult(ReadView(typeof(T), id, checkpoint, view => (T) view));
 		}
 
 		ViewSnapshot<T> ReadView<T>(Type type, Id id, TimelinePosition checkpoint, Func<Flow, T> selectContent)
