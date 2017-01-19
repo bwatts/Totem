@@ -87,37 +87,49 @@ namespace Totem.Web
       return this.Bind<T>();
     }
 
-    protected void Authorize(bool isAuthorized)
-    {
-      if(!isAuthorized)
-      {
-        throw new RequestDeniedException();
-      }
-    }
-
     //
     // Reads
     //
 
-    protected void Get<TView>(string path, Func<dynamic, Id> selectViewId = null) where TView : View
+    protected void Get<TView>(string path, Func<bool> authorize = null) where TView : View
     {
-      Get(typeof(TView), path, selectViewId);
+      Get(typeof(TView), path, authorize);
     }
 
-    protected void Get(Type viewType, string path, Func<dynamic, Id> selectViewId = null)
+    protected void Get(Type viewType, string path, Func<bool> authorize = null)
     {
-      Get(Runtime.GetView(viewType), path, selectViewId);
-    }
+      var runtimeType = Runtime.GetView(viewType);
 
-    protected void Get(ViewType viewType, string path, Func<dynamic, Id> selectViewId = null)
-    {
-      Get(path, async args =>
+      Get(path, args =>
       {
-        var id = selectViewId == null ? Id.Unassigned : selectViewId(args);
+        if(authorize != null && !authorize())
+        {
+          throw new UnauthorizedAccessException();
+        }
 
-        var key = FlowKey.From(viewType, id);
+        return GetView(FlowKey.From(runtimeType));
+      });
+    }
 
-        return await GetView(key);
+    protected void Get<TView>(string path, Func<dynamic, Id> selectId, Func<Id, bool> authorize = null) where TView : View
+    {
+      Get(typeof(TView), path, selectId, authorize);
+    }
+
+    protected void Get(Type viewType, string path, Func<dynamic, Id> selectId, Func<Id, bool> authorize = null)
+    {
+      var runtimeType = Runtime.GetView(viewType);
+
+      Get(path, args =>
+      {
+        var id = selectId(args);
+
+        if(authorize != null && !authorize(id))
+        {
+          throw new UnauthorizedAccessException();
+        }
+
+        return GetView(FlowKey.From(runtimeType, id));
       });
     }
 

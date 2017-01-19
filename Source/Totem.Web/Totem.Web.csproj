@@ -129,6 +129,7 @@
     <Compile Include="Push\PushHub.cs" />
     <Compile Include="Push\ViewExchange.cs" />
     <Compile Include="Push\ViewUpdated.cs" />
+    <Compile Include="UnauthenticatedException.cs" />
     <Compile Include="WebApiRequest.cs" />
     <Compile Include="WebAppContext.cs" />
     <Compile Include="ErrorDetail.cs" />

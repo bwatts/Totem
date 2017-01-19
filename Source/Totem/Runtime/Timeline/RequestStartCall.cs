@@ -40,7 +40,7 @@ namespace Totem.Runtime.Timeline
     {
       if(!request.Authorize())
       {
-        throw new RequestDeniedException();
+        throw new UnauthorizedAccessException();
       }
     }
 

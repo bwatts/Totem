@@ -49,11 +49,15 @@ namespace Totem.Web
       {
         return HttpStatusCode.BadRequest;
       }
-      else if(error is UnauthorizedAccessException)
+      else if(error is UnauthenticatedException)
       {
+        // 401 Unauthorized should really be Unauthenticated; the request is missing credentials.
+        //
+        // 403 Forbidden means access denied; the credentials were fine, but not enough.
+
         return HttpStatusCode.Unauthorized;
       }
-      else if(error is RequestDeniedException)
+      else if(error is UnauthorizedAccessException)
       {
         return HttpStatusCode.Forbidden;
       }

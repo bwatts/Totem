@@ -66,7 +66,6 @@
     <Compile Include="Http\HttpResource.cs" />
     <Compile Include="IClock.cs" />
     <Compile Include="Runtime\Map\Timeline\RequestStartMethod.cs" />
-    <Compile Include="Runtime\Timeline\RequestDeniedException.cs" />
     <Compile Include="Runtime\Timeline\StartEventAttribute.cs" />
     <Compile Include="Runtime\Timeline\BatchSizeAttribute.cs" />
     <Compile Include="Runtime\Timeline\PriorNameAttribute.cs" />
