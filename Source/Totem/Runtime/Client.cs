@@ -25,6 +25,7 @@ namespace Totem.Runtime
     public Id Id { get; }
     public ClaimsPrincipal Principal { get; }
 
+    public bool IsAnonymous => !Principal.Identity?.IsAuthenticated ?? true;
     public bool IsAuthenticated => Principal.Identity?.IsAuthenticated ?? false;
     public string Name => Principal.Identity?.Name ?? "";
 
