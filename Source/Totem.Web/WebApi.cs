@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Nancy;
 using Nancy.ModelBinding;
+using Newtonsoft.Json.Linq;
 using Totem.IO;
 using Totem.Runtime;
 using Totem.Runtime.Json;
@@ -111,18 +112,18 @@ namespace Totem.Web
       });
     }
 
-    protected void Get<TView>(string path, Func<dynamic, Id> selectId, Func<Id, bool> authorize = null) where TView : View
+    protected void Get<TView>(string path, Func<dynamic, string> selectId, Func<Id, bool> authorize = null) where TView : View
     {
       Get(typeof(TView), path, selectId, authorize);
     }
 
-    protected void Get(Type viewType, string path, Func<dynamic, Id> selectId, Func<Id, bool> authorize = null)
+    protected void Get(Type viewType, string path, Func<dynamic, string> selectId, Func<Id, bool> authorize = null)
     {
       var runtimeType = Runtime.GetView(viewType);
 
       Get(path, args =>
       {
-        var id = selectId(args);
+        var id = Id.From(selectId(args));
 
         if(authorize != null && !authorize(id))
         {
@@ -319,33 +320,112 @@ namespace Totem.Web
 
       FlowContext.Bind(_request, key);
 
-      TryBindRequestBody();
-    }
-
-    void TryBindRequestBody()
-    {
-      if(Call.Body.MediaType != MediaType.Json)
-      {
-        this.BindTo(_request);
-      }
-      else
-      {
-        using(var body = Call.Body.ReadAsStream())
-        using(var reader = new StreamReader(body))
-        {
-          var json = reader.ReadToEnd();
-
-          if(json.Length > 0)
-          {
-            JsonFormat.Text.DeserializeInto(json, _request);
-          }
-        }
-      }
+      new ContentBinding(this).Bind();
     }
 
     Task ExecuteRequest()
     {
       return Timeline.Execute(_request, Client);
+    }
+
+    class ContentBinding
+    {
+      readonly WebApi _api;
+      readonly WebApiRequest _request;
+      readonly IDictionary<string, dynamic> _args;
+      readonly bool _anyArgs;
+
+      internal ContentBinding(WebApi api)
+      {
+        _api = api;
+        _request = api._request;
+
+        _args = _api.Context.Parameters as IDictionary<string, dynamic>;
+
+        _anyArgs = _args?.Count > 0;
+      }
+
+      internal void Bind()
+      {
+        if(!IsJson)
+        {
+          BindFallback();
+        }
+        else
+        {
+          BindJson();
+        }
+      }
+
+      void BindFallback()
+      {
+        _api.BindTo(_request);
+      }
+
+      bool IsJson => _api.Call.Body.MediaType == MediaType.Json;
+
+      void BindJson()
+      {
+        // See Totem.Web.WebArea.cs for an explanation of why we can't use BindTo for JSON
+
+        var json = ReadJson();
+
+        if(!_anyArgs)
+        {
+          if(json.Length > 0)
+          {
+            BindRequest(json);
+          }
+        }
+        else if(json.Length > 0)
+        {
+          BindRequest(JsonFormat.Text.DeserializeJson(json));
+        }
+        else
+        {
+          BindRequest();
+        }
+      }
+
+      string ReadJson()
+      {
+        using(var body = _api.Call.Body.ReadAsStream())
+        using(var reader = new StreamReader(body))
+        {
+          return reader.ReadToEnd();
+        }
+      }
+
+      void BindRequest(string json)
+      {
+        JsonFormat.Text.DeserializeInto(json, _request);
+      }
+
+      void BindRequest(JObject binding = null)
+      {
+        if(binding == null)
+        {
+          binding = new JObject();
+        }
+
+        foreach(var arg in _args)
+        {
+          // If the route and the body both contain the same value, but with different cases,
+          // this will create a second property on the object. It will be added after the first,
+          // though, so still takes effect via last-in-wins.
+          //
+          // The other option is to always bind the args separately from the body. This avoids the
+          // casing issue entirely, but is more costly to the happy path.
+          //
+          // As it should be exceedingly rare for a request value to be in both the route and the body,
+          // and last-in-wins ensures we'll get the correct value if it does happen, I opted to take
+          // the performance boost and limit the binding to one deserialization call.
+
+          binding[arg.Key] = arg.Value.Value;
+        }
+
+        BindRequest(binding.ToString());
+      }
     }
   }
 }

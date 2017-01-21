@@ -23,9 +23,7 @@ namespace Totem.IO
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
-			return value is string || value is Text
-				? ConvertFrom(new TextValue(context, culture, value.ToString()))
-				: base.ConvertFrom(context, culture, value);
+      return ConvertFrom(new TextValue(context, culture, value?.ToString() ?? ""));
 		}
 
 		protected abstract object ConvertFrom(TextValue value);
