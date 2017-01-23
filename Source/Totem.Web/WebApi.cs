@@ -186,7 +186,7 @@ namespace Totem.Web
         {
           ["ETag"] = view.Key.ToString()
         },
-        ContentType = MediaType.Json.ToString()
+        ContentType = MediaType.Json.ToTextUtf8()
       };
     }
 
@@ -202,7 +202,7 @@ namespace Totem.Web
         {
           ["ETag"] = GetETag(view)
         },
-        ContentType = MediaType.Json.ToString()
+        ContentType = MediaType.Json.ToTextUtf8()
       };
     }
 
@@ -218,7 +218,7 @@ namespace Totem.Web
         {
           ["ETag"] = GetETag(view)
         },
-        ContentType = MediaType.Json.ToString(),
+        ContentType = MediaType.Json.ToTextUtf8(),
         Contents = body =>
         {
           using(var writer = new StreamWriter(body))
@@ -347,27 +347,41 @@ namespace Totem.Web
 
       internal void Bind()
       {
-        if(!IsJson)
+        if(IsNonJson)
         {
-          BindFallback();
+          BindNonJson();
         }
         else
         {
-          BindJson();
+          if(CanReadBody)
+          {
+            // See Totem.Web.WebArea.cs for an explanation of why we can't use BindTo for JSON :-(
+
+            BindJson();
+          }
         }
       }
 
-      void BindFallback()
-      {
-        _api.BindTo(_request);
-      }
+      bool IsNonJson => _api.Call.Body.MediaType != MediaType.Json;
+      bool CanReadBody => _api.Call.Body.CanRead;
 
-      bool IsJson => _api.Call.Body.MediaType == MediaType.Json;
+      void BindNonJson()
+      {
+        if(CanReadBody)
+        {
+          _api.BindTo(_request);
+        }
+        else
+        {
+          // If an API reads the body directly, we can't tell call BindTo because it would also
+          // attempt to read it. We still want to bind route arguments in that case.
+
+          BindRequest();
+        }
+      }
 
       void BindJson()
       {
-        // See Totem.Web.WebArea.cs for an explanation of why we can't use BindTo for JSON
-
         var json = ReadJson();
 
         if(!_anyArgs)
