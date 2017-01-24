@@ -43,13 +43,20 @@ namespace Totem.Runtime.Timeline
 
     void PushToTimeline(TimelineMessage message, IDisposable timer)
     {
-      bool ignored;
+      try
+      {
+        bool ignored;
 
-      _timers.TryRemove(timer, out ignored);
+        _timers.TryRemove(timer, out ignored);
 
-      timer.Dispose();
+        timer.Dispose();
 
-      _timeline.PushFromSchedule(message);
+        _timeline.PushFromSchedule(message);
+      }
+      catch(Exception error)
+      {
+        Log.Error(error, "[timeline] Failed to push scheduled event of type {EventType}. The timeline will attempt to push it again after a restart.", message.Point.EventType);
+      }
     }
 	}
 }
