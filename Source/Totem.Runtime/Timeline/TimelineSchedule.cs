@@ -55,13 +55,13 @@ namespace Totem.Runtime.Timeline
         timer.Dispose();
 
         await _timeline.PushScheduled(point);
-
-        return Unit.Default;
       }
       catch(Exception error)
       {
-        Log.Error(error, "[timeline] Failed to push scheduled event of type {EventType}. The timeline will attempt to push it again after a restart.", message.Point.EventType);
+        Log.Error(error, "[timeline] Failed to push scheduled event of type {EventType}. The timeline will attempt to push it again after a restart.", point.EventType);
       }
+
+      return Unit.Default;
     }
 	}
 }
