@@ -23,14 +23,14 @@ namespace Totem
 		/// A value compared with another value of the same type. Supports drilldown.
 		/// </summary>
 		/// <typeparam name="T">The type of comparable value</typeparam>
-		public sealed class Comparable<T>
+		public struct Comparable<T>
 		{
-			private readonly T _x;
-			private readonly T _y;
-			private bool _checked;
-			private int _result;
+			readonly T _x;
+			readonly T _y;
+			bool _checked;
+			int _result;
 
-			internal Comparable(T x, T y)
+			internal Comparable(T x, T y) : this()
 			{
 				_x = x;
 				_y = y;

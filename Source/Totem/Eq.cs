@@ -29,14 +29,14 @@ namespace Totem
 		/// </summary>
 		/// <typeparam name="T">The type of equatable value</typeparam>
 		/// <remarks>The null check causes boxing - revist to reduce allocations</remarks>
-		public sealed class Equatable<T>
+		public struct Equatable<T>
 		{
-			private readonly T _x;
-			private readonly T _y;
-			private bool _checked;
-			private bool _result;
+			readonly T _x;
+			readonly T _y;
+			bool _checked;
+			bool _result;
 
-			internal Equatable(T x, T y)
+			internal Equatable(T x, T y) : this()
 			{
 				_x = x;
 				_y = y;
