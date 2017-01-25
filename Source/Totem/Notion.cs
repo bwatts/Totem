@@ -13,15 +13,23 @@ namespace Totem
 	/// </summary>
 	public abstract class Notion : IWritable, ITaggable
 	{
-		private Tags _tags;
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private Tags _tags;
 
-		Tags ITaggable.Tags => Tags;
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    Tags ITaggable.Tags => Tags;
 
-		protected Tags Tags => _tags ?? (_tags = new Tags());
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    protected Tags Tags => _tags ?? (_tags = new Tags());
 
-		protected IClock Clock => Traits.Clock.Get(this);
-		protected ILog Log => Traits.Log.Get(this);
-		protected RuntimeMap Runtime => Traits.Runtime.Get(this);
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    protected IClock Clock => Traits.Clock.Get(this);
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    protected ILog Log => Traits.Log.Get(this);
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    protected RuntimeMap Runtime => Traits.Runtime.Get(this);
 
 		public sealed override string ToString() => ToText();
 		public virtual Text ToText() => base.ToString();
