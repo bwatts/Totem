@@ -238,26 +238,6 @@ namespace Totem.Web
     // Writes
     //
 
-    protected void Delete(string path, Func<dynamic, WebApiRequest> selectRequest)
-    {
-      Delete(path, Execute(selectRequest));
-    }
-
-    protected void Patch(string path, Func<dynamic, WebApiRequest> selectRequest)
-    {
-      Patch(path, Execute(selectRequest));
-    }
-
-    protected void Post(string path, Func<dynamic, WebApiRequest> selectRequest)
-    {
-      Post(path, Execute(selectRequest));
-    }
-
-    protected void Put(string path, Func<dynamic, WebApiRequest> selectRequest)
-    {
-      Put(path, Execute(selectRequest));
-    }
-
     protected void Delete<TRequest>(string path) where TRequest : WebApiRequest, new()
     {
       Delete(path, Execute<TRequest>());
@@ -278,18 +258,45 @@ namespace Totem.Web
       Put(path, Execute<TRequest>());
     }
 
+    protected void Delete<TRequest>(string path, Action<TRequest> init) where TRequest : WebApiRequest, new()
+    {
+      Delete(path, Execute(init));
+    }
+
+    protected void Patch<TRequest>(string path, Action<TRequest> init) where TRequest : WebApiRequest, new()
+    {
+      Patch(path, Execute(init));
+    }
+
+    protected void Post<TRequest>(string path, Action<TRequest> init) where TRequest : WebApiRequest, new()
+    {
+      Post(path, Execute(init));
+    }
+
+    protected void Put<TRequest>(string path, Action<TRequest> init) where TRequest : WebApiRequest, new()
+    {
+      Put(path, Execute(init));
+    }
+
     //
     // Execution
     //
 
-    Func<dynamic, Task<object>> Execute(Func<dynamic, WebApiRequest> selectRequest)
-    {
-      return args => Execute(selectRequest(args));
-    }
-
     Func<dynamic, Task<object>> Execute<TRequest>() where TRequest : WebApiRequest, new()
     {
       return args => Execute(new TRequest());
+    }
+
+    Func<dynamic, Task<object>> Execute<TRequest>(Action<TRequest> init) where TRequest : WebApiRequest, new()
+    {
+      return args =>
+      {
+        var request = new TRequest();
+
+        init(request);
+
+        return Execute(request);
+      };
     }
 
     async Task<object> Execute(WebApiRequest request)
