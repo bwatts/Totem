@@ -11,7 +11,7 @@ namespace Totem.Runtime.Timeline
 	[Durable]
 	public abstract class Flow : Notion
 	{
-    [Transient] Client _client;
+    [Transient] User _user;
 
     [Transient] public FlowContext Context { get; internal set; }
 		[Transient] public FlowCall Call { get; internal set; }
@@ -27,7 +27,7 @@ namespace Totem.Runtime.Timeline
       }
       finally
       {
-        _client = null;
+        _user = null;
       }
 		}
 
@@ -36,52 +36,52 @@ namespace Totem.Runtime.Timeline
 			Context.SetDone();
 		}
 
-    protected async Task<Client> ReadClient()
+    protected async Task<User> ReadUser()
     {
       var whenCall = Call as FlowCall.When;
 
       Expect(whenCall).IsNotNull("Flow is not making a When call");
 
-      if(_client == null)
+      if(_user == null)
       {
-        IClientAuthority authority;
+        IUserDb userDb;
 
-        _client = whenCall.Dependencies.TryResolve(out authority)
-          ? await authority.Authenticate(Call.Point.ClientId)
-          : new Client();
+        _user = whenCall.Dependencies.TryResolve(out userDb)
+          ? await userDb.Authenticate(Call.Point.UserId)
+          : new User();
       }
 
-      return _client;
+      return _user;
     }
 
-    protected async Task<TResult> ReadClient<TResult>(Func<Client, TResult> selectResult)
+    protected async Task<TResult> ReadUser<TResult>(Func<User, TResult> selectResult)
     {
-      return selectResult(await ReadClient());
+      return selectResult(await ReadUser());
     }
 
-    protected Task<Id> ReadClientId()
+    protected Task<Id> ReadUserId()
     {
-      return ReadClient(c => c.Id);
+      return ReadUser(c => c.Id);
     }
 
-    protected Task<string> ReadClientName()
+    protected Task<string> ReadUserName()
     {
-      return ReadClient(c => c.Name);
+      return ReadUser(c => c.Name);
     }
 
 		public new static class Traits
 		{
       public static readonly Tag<Id> RequestId = Tag.Declare(() => RequestId);
-      public static readonly Tag<Id> ClientId = Tag.Declare(() => ClientId);
+      public static readonly Tag<Id> UserId = Tag.Declare(() => UserId);
 
       public static void ForwardRequestId(Event source, Event target)
 			{
         RequestId.Copy(source, target);
 			}
 
-      public static void ForwardClientId(Event source, Event target)
+      public static void ForwardUserId(Event source, Event target)
       {
-        ClientId.Copy(source, target);
+        UserId.Copy(source, target);
       }
     }
 	}

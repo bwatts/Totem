@@ -6,17 +6,17 @@ using System.Security.Claims;
 namespace Totem.Runtime
 {
   /// <summary>
-  /// A user or process establishing a security context with a runtime service
+  /// A network entity establishing a security context with a runtime service
   /// </summary>
-  public class Client
+  public class User
   {
-    public Client()
+    public User()
     {
       Id = Id.Unassigned;
       Principal = new ClaimsPrincipal();
     }
 
-    public Client(Id id, ClaimsPrincipal principal)
+    public User(Id id, ClaimsPrincipal principal)
     {
       Id = id;
       Principal = principal;

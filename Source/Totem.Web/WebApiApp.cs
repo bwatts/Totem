@@ -175,15 +175,15 @@ namespace Totem.Web
 
       context.Items[WebApi.CallItemKey] = call;
 
-      IWebClientAuthority clientAuthority;
+      IWebUserDb userAuthority;
 
-      var client = container.TryResolve(out clientAuthority)
-        ? await clientAuthority.Authenticate(call.Authorization)
-        : new Client();
+      var user = container.TryResolve(out userAuthority)
+        ? await userAuthority.Authenticate(call.Authorization)
+        : new User();
 
-      context.Items[WebApi.ClientItemKey] = client;
+      context.Items[WebApi.UserItemKey] = user;
 
-      context.CurrentUser = client.Principal;
+      context.CurrentUser = user.Principal;
     }
 
     Response OnRequestError(ILifetimeScope container, NancyContext context, Exception exception)

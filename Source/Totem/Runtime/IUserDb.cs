@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 namespace Totem.Runtime
 {
   /// <summary>
-  /// Describes the algorithm and secrets that authenticate runtime clients
+  /// Describes the algorithm and secrets that authenticate runtime users
   /// </summary>
-  public interface IClientAuthority
+  public interface IUserDb
   {
-    Task<Client> Authenticate(Id clientId);
+    Task<User> Authenticate(Id userId);
   }
 }

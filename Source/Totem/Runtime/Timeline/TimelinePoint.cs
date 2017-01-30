@@ -24,7 +24,7 @@ namespace Totem.Runtime.Timeline
 			Scheduled = scheduled;
 
       RequestId = Flow.Traits.RequestId.Get(e);
-      ClientId = Flow.Traits.ClientId.Get(e);
+      UserId = Flow.Traits.UserId.Get(e);
     }
 
 		public readonly TimelinePosition Position;
@@ -33,7 +33,7 @@ namespace Totem.Runtime.Timeline
 		public readonly Event Event;
 		public readonly bool Scheduled;
     public readonly Id RequestId;
-    public readonly Id ClientId;
+    public readonly Id UserId;
 
     public override string ToString() => $"{Position} {EventType}";
 	}

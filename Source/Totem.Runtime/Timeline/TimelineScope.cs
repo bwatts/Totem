@@ -40,11 +40,11 @@ namespace Totem.Runtime.Timeline
 			Track(_queue);
 		}
 
-    public async Task Execute(Request request, Client client)
+    public async Task Execute(Request request, User user)
 		{
       Expect(request.Id.IsAssigned, "Request must be assigned an identifier");
 
-      var scope = new RequestScope(_lifetime, this, request, client);
+      var scope = new RequestScope(_lifetime, this, request, user);
 
       var startEvent = await scope.CallStart();
 

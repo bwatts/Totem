@@ -22,7 +22,7 @@ namespace Totem.Web
 	public abstract class WebApi : NancyModule, IWebApi
 	{
 		public static readonly string CallItemKey = typeof(WebApi).FullName + ".Call";
-    public static readonly string ClientItemKey = typeof(WebApi).FullName + ".Client";
+    public static readonly string UserItemKey = typeof(WebApi).FullName + ".User";
     public static readonly string ViewsItemKey = typeof(WebApi).FullName + ".Views";
     public static readonly string TimelineItemKey = typeof(WebApi).FullName + ".Timeline";
     public static readonly string LifetimeItemKey = typeof(WebApi).FullName + ".Lifetime";
@@ -40,7 +40,7 @@ namespace Totem.Web
     public virtual Text ToText() => Call.Link.ToText();
 
     public WebApiCall Call => ReadContextItem<WebApiCall>(CallItemKey);
-    protected Client Client => ReadContextItem<Client>(ClientItemKey);
+    protected User User => ReadContextItem<User>(UserItemKey);
     protected IViewDb Views => ReadContextItem<IViewDb>(ViewsItemKey);
     protected ITimelineScope Timeline => ReadContextItem<ITimelineScope>(TimelineItemKey);
     protected ILifetimeScope Lifetime => ReadContextItem<ILifetimeScope>(LifetimeItemKey);
@@ -332,7 +332,7 @@ namespace Totem.Web
 
     Task ExecuteRequest()
     {
-      return Timeline.Execute(_request, Client);
+      return Timeline.Execute(_request, User);
     }
 
     class ContentBinding

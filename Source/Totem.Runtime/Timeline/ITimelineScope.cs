@@ -12,6 +12,6 @@ namespace Totem.Runtime.Timeline
 	{
 		Task Push(TimelinePosition cause, Event e);
 
-    Task Execute(Request request, Client client);
+    Task Execute(Request request, User user);
   }
 }

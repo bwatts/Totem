@@ -51,7 +51,7 @@ namespace Totem.Runtime.Timeline
         error.ToString());
 
 			Flow.Traits.ForwardRequestId(point.Event, stopped);
-      Flow.Traits.ForwardClientId(point.Event, stopped);
+      Flow.Traits.ForwardUserId(point.Event, stopped);
 
       return Push(point.Position, stopped);
 		}

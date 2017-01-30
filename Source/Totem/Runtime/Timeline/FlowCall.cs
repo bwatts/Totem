@@ -113,7 +113,7 @@ namespace Totem.Runtime.Timeline
       public void Append(Event e)
 			{
 				Flow.Traits.ForwardRequestId(Point.Event, e);
-        Flow.Traits.ForwardClientId(Point.Event, e);
+        Flow.Traits.ForwardUserId(Point.Event, e);
 
         _newEvents.Write.Add(e);
 			}

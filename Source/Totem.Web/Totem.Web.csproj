@@ -123,7 +123,7 @@
     <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
       <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="IWebClientAuthority.cs" />
+    <Compile Include="IWebUserDb.cs" />
     <Compile Include="Push\IPushChannel.cs" />
     <Compile Include="Push\PushChannel.cs" />
     <Compile Include="Push\PushHub.cs" />

@@ -119,11 +119,11 @@
     <Compile Include="Runtime\Timeline\FlowRoute.cs" />
     <Compile Include="Runtime\Timeline\FlowPoint.cs" />
     <Compile Include="Runtime\Timeline\RequestStartCall.cs" />
-    <Compile Include="Runtime\Client.cs" />
+    <Compile Include="Runtime\User.cs" />
     <Compile Include="Runtime\Timeline\Topic.cs" />
     <Compile Include="Runtime\Timeline\EventScheduled.cs" />
     <Compile Include="Runtime\Timeline\View.cs" />
-    <Compile Include="Runtime\IClientAuthority.cs" />
+    <Compile Include="Runtime\IUserDb.cs" />
     <Compile Include="Sequences.cs" />
     <Compile Include="Reflection\AnonymousTypes.cs" />
     <Compile Include="Reflection\Assignability.cs" />

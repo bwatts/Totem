@@ -11,20 +11,20 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
   public class RequestStartCall
   {
-    public RequestStartCall(Client client, IDependencySource dependencies)
+    public RequestStartCall(User user, IDependencySource dependencies)
     {
-      Client = client;
+      User = user;
       Dependencies = dependencies;
     }
 
-    public readonly Client Client;
+    public readonly User User;
     public readonly IDependencySource Dependencies;
 
     internal async Task<Event> Make(Request request)
     {
       try
       {
-        request.Client = Client;
+        request.User = User;
 
         Authorize(request);
 
@@ -32,7 +32,7 @@ namespace Totem.Runtime.Timeline
       }
       finally
       {
-        request.Client = null;
+        request.User = null;
       }
     }
 

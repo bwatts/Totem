@@ -11,12 +11,12 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class RequestScope : FlowScope
   {
-    readonly Client _client;
+    readonly User _user;
 
-    internal RequestScope(ILifetimeScope lifetime, TimelineScope timeline, Request request, Client client)
+    internal RequestScope(ILifetimeScope lifetime, TimelineScope timeline, Request request, User user)
       : base(lifetime, timeline, request)
     {
-      _client = client;
+      _user = user;
     }
 
     internal Request Request => (Request) Flow;
@@ -34,7 +34,7 @@ namespace Totem.Runtime.Timeline
 
         SetRequestId(startEvent);
 
-        SetClientId(startEvent);
+        SetUserId(startEvent);
 
         return startEvent;
       }
@@ -42,7 +42,7 @@ namespace Totem.Runtime.Timeline
 
     Task<Event> CallStart(ILifetimeScope scope)
     {
-      var call = new RequestStartCall(_client, scope.Resolve<IDependencySource>());
+      var call = new RequestStartCall(_user, scope.Resolve<IDependencySource>());
 
       return call.Make(Request);
     }
@@ -52,9 +52,9 @@ namespace Totem.Runtime.Timeline
       Flow.Traits.RequestId.Set(startEvent, Flow.Id);
     }
 
-    void SetClientId(Event startEvent)
+    void SetUserId(Event startEvent)
     {
-      Flow.Traits.ClientId.Set(startEvent, _client.Id);
+      Flow.Traits.UserId.Set(startEvent, _user.Id);
     }
   }
 }

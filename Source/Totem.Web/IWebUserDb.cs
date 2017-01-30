@@ -8,10 +8,10 @@ using Totem.Runtime;
 namespace Totem.Web
 {
   /// <summary>
-  /// Describes the algorithm and secrets that authenticate web clients
+  /// Describes the algorithm and secrets that authenticate web users
   /// </summary>
-  public interface IWebClientAuthority
+  public interface IWebUserDb
   {
-    Task<Client> Authenticate(HttpAuthorization header);
+    Task<User> Authenticate(HttpAuthorization header);
 	}
 }

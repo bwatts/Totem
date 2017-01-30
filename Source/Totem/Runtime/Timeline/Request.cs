@@ -9,7 +9,7 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   public abstract class Request : Flow
 	{
-    public Client Client { get; internal set; }
+    public User User { get; internal set; }
 
     public abstract bool Authorize();
   }
