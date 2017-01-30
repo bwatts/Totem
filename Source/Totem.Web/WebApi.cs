@@ -121,7 +121,7 @@ namespace Totem.Web
     {
       var runtimeType = Runtime.GetView(viewType);
 
-      Get(path, args =>
+      Get(path, async args =>
       {
         var id = Id.From(selectId(args));
 
@@ -130,7 +130,7 @@ namespace Totem.Web
           throw new UnauthorizedAccessException();
         }
 
-        return GetView(FlowKey.From(runtimeType, id));
+        return await GetView(FlowKey.From(runtimeType, id));
       });
     }
 
