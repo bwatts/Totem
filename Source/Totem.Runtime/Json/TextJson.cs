@@ -63,7 +63,7 @@ namespace Totem.Runtime.Json
 
     public override void DeserializeInto(Text value, object instance, JsonSerializerSettings settings = null)
     {
-      JsonConvert.PopulateObject(value, instance, settings);
+      JsonConvert.PopulateObject(value, instance, settings ?? new TotemSerializerSettings());
     }
   }
 }
