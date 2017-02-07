@@ -35,7 +35,6 @@ namespace Totem.Runtime.Timeline
       timer = Observable
 				.Timer(new DateTimeOffset(message.Point.Event.When))
 				.Take(1)
-				.ObserveOn(ThreadPoolScheduler.Instance)
 				.Subscribe(_ => PushToTimeline(message, timer));
 
       _timers[timer] = true;
