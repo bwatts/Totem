@@ -198,7 +198,6 @@ namespace Totem.Web.Push
 
 				_updateSubscription = _updates
 					.Throttle(_exchange._updateThrottle)
-					.ObserveOn(ThreadPoolScheduler.Instance)
 					.Subscribe(WhenUpdated);
 			}
 
