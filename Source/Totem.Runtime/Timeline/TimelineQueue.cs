@@ -46,6 +46,7 @@ namespace Totem.Runtime.Timeline
     void ObserveMessages()
     {
       Track(_messages
+        .Delay(TimeSpan.Zero) // Eager Evaluation of subscriptions causes a deadlock in StartEnqueue
         .Synchronize()
         .Subscribe(message =>
       {
@@ -54,6 +55,7 @@ namespace Totem.Runtime.Timeline
       }));
 
       Track(_scheduleMessages
+        .Delay(TimeSpan.Zero)
         .Synchronize()
         .Subscribe(_schedule.Push));
     }
