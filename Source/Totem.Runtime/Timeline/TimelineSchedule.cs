@@ -23,6 +23,7 @@ namespace Totem.Runtime.Timeline
       timer = Observable
         .Timer(new DateTimeOffset(message.Point.Event.When))
         .Take(1)
+        .Synchronize()
         .Subscribe(_ => PushToTimeline(message, timer));
     }
 
