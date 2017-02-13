@@ -46,13 +46,17 @@ namespace Totem.Runtime.Timeline
 
     void ObserveMessages()
     {
-      Track(_messages.Subscribe(message =>
+      Track(_messages
+        .ObserveOn(TimelineScheduler.Instance)
+        .Subscribe(message =>
       {
         _flows.Push(message);
         _requests.Push(message);
       }));
 
-      Track(_schedulePoints.Subscribe(_schedule.Push));
+      Track(_schedulePoints
+        .ObserveOn(TimelineScheduler.Instance)
+        .Subscribe(_schedule.Push));
     }
 
     async Task Resume()

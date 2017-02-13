@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -14,21 +12,12 @@ namespace Totem.Runtime.Timeline
 	/// </summary>
 	internal sealed class TimelineSchedule : Connection
 	{
-    readonly ConcurrentDictionary<IDisposable, bool> _timers = new ConcurrentDictionary<IDisposable, bool>();
     readonly TimelineScope _timeline;
 
     internal TimelineSchedule(TimelineScope timeline)
 		{
 			_timeline = timeline;
 		}
-
-    protected override void Close()
-    {
-      foreach(var timer in _timers.Keys)
-      {
-        timer.Dispose();
-      }
-    }
 
     internal void Push(TimelinePoint point)
 		{
@@ -37,21 +26,16 @@ namespace Totem.Runtime.Timeline
       timer = Observable
         .Timer(new DateTimeOffset(point.Event.When))
         .Take(1)
+        .ObserveOn(TimelineScheduler.Instance)
         .SelectMany(_ => PushToTimeline(point, timer))
         .Subscribe();
-
-      _timers[timer] = true;
 		}
 
     async Task<Unit> PushToTimeline(TimelinePoint point, IDisposable timer)
     {
       try
       {
-        bool ignored;
-
-        _timers.TryRemove(timer, out ignored);
-
-        timer.Dispose();
+        timer?.Dispose();
 
         await _timeline.PushScheduled(point);
       }
