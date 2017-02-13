@@ -49,7 +49,9 @@ namespace Totem.Runtime.Timeline
 
     protected override void Open()
     {
-      Track(_pushSignal.Synchronize().Subscribe(OnPushSignal));
+      Track(_pushSignal
+        .ObserveOn(TimelineScheduler.Instance)
+        .Subscribe(OnPushSignal));
     }
 
     protected override void Close()
