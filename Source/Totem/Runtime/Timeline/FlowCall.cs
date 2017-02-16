@@ -115,6 +115,13 @@ namespace Totem.Runtime.Timeline
 				Flow.Traits.ForwardRequestId(Point.Event, e);
         Flow.Traits.ForwardUserId(Point.Event, e);
 
+        var scheduled = e as EventScheduled;
+
+        if(scheduled != null)
+        {
+          Flow.Traits.ForwardUserId(Point.Event, scheduled.Event);
+        }
+
         _newEvents.Write.Add(e);
 			}
 
