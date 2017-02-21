@@ -358,14 +358,13 @@ namespace Totem.Web
         {
           BindNonJson();
         }
+        else if(CanReadBody)
+        {
+          BindJson();
+        }
         else
         {
-          if(CanReadBody)
-          {
-            // See Totem.Web.WebArea.cs for an explanation of why we can't use BindTo for JSON :-(
-
-            BindJson();
-          }
+          BindArgs();
         }
       }
 
@@ -380,15 +379,14 @@ namespace Totem.Web
         }
         else
         {
-          // If an API reads the body directly, we can't tell call BindTo because it would also
-          // attempt to read it. We still want to bind route arguments in that case.
-
-          BindRequest();
+          BindArgs();
         }
       }
 
       void BindJson()
       {
+        // See Totem.Web.WebArea.cs for an explanation of why we can't use BindTo for JSON :-(
+
         var json = ReadJson();
 
         if(!_anyArgs)
@@ -404,7 +402,7 @@ namespace Totem.Web
         }
         else
         {
-          BindRequest();
+          BindArgs();
         }
       }
 
@@ -422,13 +420,8 @@ namespace Totem.Web
         JsonFormat.Text.DeserializeInto(json, _request);
       }
 
-      void BindRequest(JObject binding = null)
+      void BindRequest(JObject binding)
       {
-        if(binding == null)
-        {
-          binding = new JObject();
-        }
-
         foreach(var arg in _args)
         {
           // If the route and the body both contain the same value, but with different cases,
@@ -446,6 +439,11 @@ namespace Totem.Web
         }
 
         BindRequest(binding.ToString());
+      }
+
+      void BindArgs()
+      {
+        BindRequest(new JObject());
       }
     }
   }
