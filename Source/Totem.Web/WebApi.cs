@@ -377,10 +377,8 @@ namespace Totem.Web
         {
           _api.BindTo(_request);
         }
-        else
-        {
-          BindArgs();
-        }
+        
+        BindArgs();
       }
 
       void BindJson()
