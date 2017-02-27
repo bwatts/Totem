@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -97,7 +98,7 @@ namespace Totem.Runtime.Timeline
 		/// </summary>
 		public sealed class TopicWhen : When
 		{
-			readonly Many<Event> _newEvents;
+			readonly ConcurrentQueue<Event> _newEvents;
 			bool _retrieved;
 
 			public TopicWhen(
@@ -107,7 +108,7 @@ namespace Totem.Runtime.Timeline
 				CancellationToken cancellationToken)
 				: base(point, e, dependencies, cancellationToken)
 			{
-				_newEvents = new Many<Event>();
+				_newEvents = new ConcurrentQueue<Event>();
 			}
 
       public void Append(Event e)
@@ -122,7 +123,7 @@ namespace Totem.Runtime.Timeline
           Flow.Traits.ForwardUserId(Point.Event, scheduled.Event);
         }
 
-        _newEvents.Write.Add(e);
+        _newEvents.Enqueue(e);
 			}
 
 			public Many<Event> RetrieveNewEvents()
@@ -131,7 +132,7 @@ namespace Totem.Runtime.Timeline
 
 				_retrieved = true;
 
-				return _newEvents;
+				return _newEvents.ToMany();
 			}
 		}
   }
