@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Totem.Runtime.Timeline
 {
 	/// <summary>
-	/// Describes an exchange routing view diffs to subscribers
+	/// Describes an exchange routing view content to subscribers
 	/// </summary>
 	public interface IViewExchange
 	{

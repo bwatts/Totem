@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using Totem.Runtime.Json;
 using Totem.Runtime.Timeline;
 
@@ -91,18 +91,18 @@ namespace Totem.Web.Push
 
 		async Task<ViewSubscription> GetSubscribeResult(Id connectionId, ViewETag etag)
 		{
-			var snapshot = await _viewDb.ReadSnapshot(etag.Key, etag.Checkpoint);
+			var snapshot = await _viewDb.ReadJsonSnapshot(etag.Key, etag.Checkpoint);
 
 			if(snapshot.NotFound || snapshot.NotModified)
 			{
-				return new ViewSubscription(etag);
+        return new ViewSubscription(etag);
 			}
 
 			etag = ViewETag.From(snapshot.Key, snapshot.Checkpoint);
 
-			var diff = JsonFormat.Text.SerializeJson(snapshot.ReadContent());
+      var content = JObject.Parse(snapshot.ReadContent());
 
-			return new ViewSubscription(etag, diff);
+      return new ViewSubscription(etag, content);
 		}
 
 		ViewConnection GetConnectionOrNull(Id id)
@@ -222,10 +222,13 @@ namespace Totem.Web.Push
 
 			internal void PushUpdate(View view)
 			{
-				var etag = ViewETag.From(view.Context.Key, view.Context.CheckpointPosition);
-				var diff = JsonFormat.Text.SerializeJson(view);
+        var key = view.Context.Key;
 
-				_updates.OnNext(new ViewUpdated(view.Context.Key.ToString(), etag.ToString(), diff));
+        var etag = ViewETag.From(key, view.Context.CheckpointPosition).ToString();
+
+        var content = JsonFormat.Text.SerializeJson(view);
+
+				_updates.OnNext(new ViewUpdated(key.ToString(), etag, content));
 			}
 
 			void WhenUpdated(ViewUpdated e)

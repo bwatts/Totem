@@ -34,8 +34,6 @@ namespace Totem.Web
 
 			RegisterType<PushHub>().InstancePerDependency().ExternallyOwned();
 
-			RegisterType<ViewExchange>().As<IViewExchange>().SingleInstance();
-
 			RegisterType<PushChannel>().As<IPushChannel>().SingleInstance();
 
 			Register(c => GlobalHost.ConnectionManager.GetHubContext<PushHub>())

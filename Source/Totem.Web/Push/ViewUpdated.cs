@@ -10,16 +10,16 @@ namespace Totem.Web.Push
 	/// </summary>
 	public class ViewUpdated : Event
 	{
-		public ViewUpdated(string key, string etag, JObject diff)
+		public ViewUpdated(string key, string etag, JObject content)
 		{
 			Key = key;
 			ETag = etag;
-			Diff = diff;
+      Content = content;
 		}
 
 		public readonly string Key;
 		public readonly string ETag;
-		public readonly JObject Diff;
+		public readonly JObject Content;
 
 		public override Text ToText() => ETag;
 	}
