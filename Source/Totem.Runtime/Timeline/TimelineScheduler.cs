@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
   /// <summary>
-  /// Schedules and synchronizes events on the timeline event loop.
+  /// Schedules and synchronizes events on the timeline event loop
   /// </summary>
   internal sealed class TimelineScheduler : IScheduler
   {
@@ -45,6 +43,6 @@ namespace Totem.Runtime.Timeline
     // Instance
     //
 
-    public static IScheduler Instance { get; } = new TimelineScheduler();
+    public static readonly IScheduler Instance = new TimelineScheduler();
   }
 }

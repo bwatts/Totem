@@ -82,7 +82,7 @@ namespace Totem.Web.Push
 				{
 					key = result.ETag.Key.ToString(),
 					etag = result.ETag.ToString(),
-					diff = result.Diff
+					content = result.Content
 				});
 
 				Log.Verbose("[push] [{ConnectionId:l}] Subscribed to {ETag:l}", CompactConnectionId, result.ETag);

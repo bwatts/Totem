@@ -32,7 +32,23 @@ namespace Totem.Runtime.Timeline
 
 		public override Text ToText() => Key.ToText();
 
-		public TContent ReadContent()
+    public ViewSnapshot<TCast> Cast<TCast>()
+    {
+      if(NotFound)
+      {
+        return ViewSnapshot<TCast>.OfNotFound(Key);
+      }
+      else if(NotModified)
+      {
+        return ViewSnapshot<TCast>.OfNotModified(Key, Checkpoint);
+      }
+      else
+      {
+        return ViewSnapshot<TCast>.OfContent(Key, Checkpoint, (TCast) (object) _content);
+      }
+    }
+
+    public TContent ReadContent()
 		{
 			ExpectNot(NotFound, "Cannot read content of view that was not found");
 			ExpectNot(NotModified, "Cannot read content of view that was not modified");

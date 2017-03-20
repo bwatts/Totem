@@ -176,16 +176,21 @@ namespace Totem.Runtime.Timeline
 
     async Task Push()
     {
-      if(await FlowLoaded())
+      try
       {
-        await PushPoints();
+        if(await FlowLoaded())
+        {
+          await PushPoints();
+        }
       }
+      finally
+      {
+        Point = null;
 
-      Point = null;
+        _pushTask = null;
 
-      _pushTask = null;
-
-      ReleasePushLock();
+        ReleasePushLock();
+      }
     }
 
     void ReleasePushLock()
