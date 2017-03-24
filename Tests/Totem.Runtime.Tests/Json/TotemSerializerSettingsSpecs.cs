@@ -21,6 +21,7 @@ namespace Totem.Runtime.Json
 
       Expect(original.Time.Hour).Is(deserialized.Time.Hour, "Hour should match original");
       Expect(original.Time.Minute).Is(deserialized.Time.Minute, "Minute should match original");
+      Expect(original.Time.Kind).Is(deserialized.Time.Kind, "Kind should match original");
     }
 
     class TimeObject
