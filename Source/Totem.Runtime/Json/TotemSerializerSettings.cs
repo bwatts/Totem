@@ -26,7 +26,7 @@ namespace Totem.Runtime.Json
 				new StringEnumConverter(),
 				new IsoDateTimeConverter
 				{
-					DateTimeStyles = DateTimeStyles.AdjustToUniversal,
+					DateTimeStyles = DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal,
 					DateTimeFormat = DateTimeFormatInfo.InvariantInfo.UniversalSortableDateTimePattern
 				});
 
