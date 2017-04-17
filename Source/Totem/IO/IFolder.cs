@@ -8,7 +8,7 @@ namespace Totem.IO
 	/// <summary>
 	/// Describes a folder in a file system
 	/// </summary>
-	public interface IFolder : IWritable
+	public interface IFolder : ITextable
 	{
 		FolderLink Link { get; }
 

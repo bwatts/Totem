@@ -10,7 +10,7 @@ namespace Totem.Http
 	/// The value of the HTTP Authorization header
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public sealed class HttpAuthorization : Notion, IEquatable<HttpAuthorization>, IComparable<HttpAuthorization>
+	public sealed class HttpAuthorization : Clean, IEquatable<HttpAuthorization>, IComparable<HttpAuthorization>
 	{
     HttpAuthorization(string type, string credentials)
 		{

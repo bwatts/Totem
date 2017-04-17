@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Totem.Runtime;
-using Totem.Runtime.Configuration;
 using Xunit;
 using Xunit.Sdk;
 
@@ -21,15 +19,6 @@ namespace Totem
 	[XunitAdapter]
 	public abstract class Specs
 	{
-		static Specs()
-		{
-			var deployment = RuntimeSection.Read().ReadDeployment();
-
-			var runtime = new RuntimeReader(deployment).Read();
-
-			Notion.Traits.InitializeRuntime(runtime);
-		}
-
     protected Expect<T> Expect<T>(T target)
 		{
 			return Totem.Expect.True(target);

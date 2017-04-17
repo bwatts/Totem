@@ -50,8 +50,8 @@ namespace Totem.Runtime.Timeline
         point.Route.Key.Id,
         error.ToString());
 
-			Flow.Traits.ForwardRequestId(point.Event, stopped);
-      Flow.Traits.ForwardUserId(point.Event, stopped);
+			Flow.Traits.BindRequestId(point.Event, stopped);
+      Flow.Traits.BindUserId(point.Event, stopped);
 
       return Push(point.Position, stopped);
 		}

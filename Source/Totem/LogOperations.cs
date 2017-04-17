@@ -6,10 +6,10 @@ using Totem.Runtime;
 
 namespace Totem
 {
-	/// <summary>
-	/// Extends <see cref="T:Totem.Runtime.ILog"/> with writes for specific scenarios
-	/// </summary>
-	[EditorBrowsable(EditorBrowsableState.Never)]
+  /// <summary>
+  /// Extends <see cref="T:Totem.Runtime.ILog"/> with writes for specific scenarios
+  /// </summary>
+  [EditorBrowsable(EditorBrowsableState.Never)]
 	public static class LogOperations
 	{
 		//
@@ -18,15 +18,15 @@ namespace Totem
 
 		public static void At(this ILog log, LogLevel level, Text messageTemplate, params object[] propertyValues)
 		{
-			log.Write(new LogMessage(level, messageTemplate, propertyValues));
-		}
+      log.Write(new LogEvent(level, messageTemplate, propertyValues));
+    }
 
-		public static void At(this ILog log, LogLevel level, Exception error, Text messageTemplate, params object[] propertyValues)
+    public static void At(this ILog log, LogLevel level, Exception error, Text messageTemplate, params object[] propertyValues)
 		{
-			log.Write(new LogMessage(level, error, messageTemplate, propertyValues));
-		}
+      log.Write(new LogEvent(error.ToString(), level, messageTemplate, propertyValues));
+    }
 
-		public static void Verbose(this ILog log, Text messageTemplate, params object[] propertyValues)
+    public static void Verbose(this ILog log, Text messageTemplate, params object[] propertyValues)
 		{
 			log.At(LogLevel.Verbose, messageTemplate, propertyValues);
 		}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Newtonsoft.Json.Serialization;
 using Totem.Reflection;
@@ -10,18 +11,20 @@ namespace Totem.Runtime.Json
 	/// <summary>
 	/// Binds durable types to their keys in the runtime
 	/// </summary>
-	internal sealed class TotemSerializationBinder : DefaultSerializationBinder, ITaggable
+	internal sealed class TotemSerializationBinder : DefaultSerializationBinder, IBindable
 	{
-		internal TotemSerializationBinder()
-		{
-			Tags = new Tags();
-		}
+    internal TotemSerializationBinder()
+    {
+      Fields = new Fields(this);
+    }
 
-		Tags ITaggable.Tags => Tags;
-		private Tags Tags;
-		private RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    Fields IBindable.Fields => Fields;
 
-		public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
+    Fields Fields { get; }
+		RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
+
+    public override void BindToName(Type serializedType, out string assemblyName, out string typeName)
 		{
 			var durableType = Runtime.GetDurable(serializedType, strict: false);
 

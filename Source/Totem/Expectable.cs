@@ -474,13 +474,13 @@ namespace Totem
 		//
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-		public static Expect<Tag<T>> IsUnset<T>(this Expect<Tag<T>> expect, ITaggable target, Text issue = null)
+		public static Expect<Field<T>> IsUnset<T>(this Expect<Field<T>> expect, IBindable target, Text issue = null)
 		{
 			return expect.IsTrue(t => Check.True(t).IsUnset(target), issue, "tag not set", t => $"tag set: {t}");
 		}
 
 		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-		public static Expect<Tag<T>> IsSet<T>(this Expect<Tag<T>> expect, ITaggable target, Text issue = null)
+		public static Expect<Field<T>> IsSet<T>(this Expect<Field<T>> expect, IBindable target, Text issue = null)
 		{
 			return expect.IsTrue(t => Check.True(t).IsSet(target), issue, "tag set", t => $"tag set: {t}");
 		}

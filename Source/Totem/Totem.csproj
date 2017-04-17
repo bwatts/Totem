@@ -35,14 +35,44 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Totem.sln.AssemblyInfo.cs">
       <Link>Properties\Totem.sln.AssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Binding.cs" />
     <Compile Include="Check.cs" />
     <Compile Include="Checkable.cs" />
+    <Compile Include="Clean.cs" />
     <Compile Include="Cmp.cs" />
+    <Compile Include="Data\DbSchema.cs" />
+    <Compile Include="Diagnostics\AverageCountM.cs" />
+    <Compile Include="Diagnostics\AverageCount.cs" />
+    <Compile Include="Diagnostics\ElapsedTimeM.cs" />
+    <Compile Include="Diagnostics\ElapsedTime.cs" />
+    <Compile Include="Diagnostics\AverageTimeM.cs" />
+    <Compile Include="Diagnostics\AverageTime.cs" />
+    <Compile Include="Diagnostics\Count64M.cs" />
+    <Compile Include="Diagnostics\Count32M.cs" />
+    <Compile Include="Diagnostics\Count64.cs" />
+    <Compile Include="Diagnostics\Count32.cs" />
+    <Compile Include="Diagnostics\SingleInstanceCounter.cs" />
+    <Compile Include="Diagnostics\MultiInstanceCounter.cs" />
+    <Compile Include="Diagnostics\Counter.cs" />
+    <Compile Include="Diagnostics\MultiInstanceCategoryAttribute.cs" />
+    <Compile Include="Diagnostics\CounterCategoryAttribute.cs" />
+    <Compile Include="Diagnostics\CounterCategory.cs" />
+    <Compile Include="Diagnostics\SingleInstanceCategoryAttribute.cs" />
+    <Compile Include="Diagnostics\Total64M.cs" />
+    <Compile Include="Diagnostics\Total32M.cs" />
+    <Compile Include="Diagnostics\Total64.cs" />
+    <Compile Include="Diagnostics\Total32.cs" />
+    <Compile Include="FieldChange.cs" />
+    <Compile Include="IBindable.cs" />
+    <Compile Include="ITextable.cs" />
+    <Compile Include="Notion.cs" />
+    <Compile Include="Runtime\LogEvent.cs" />
     <Compile Include="Runtime\ConnectionDependencies.cs" />
     <Compile Include="Eq.cs" />
     <Compile Include="Runtime\Connection.cs">
@@ -51,7 +81,6 @@
     <Compile Include="Runtime\ConnectionState.cs" />
     <Compile Include="Runtime\ConnectionPhase.cs" />
     <Compile Include="Disposal.cs" />
-    <Compile Include="Event.cs" />
     <Compile Include="Expectable.cs" />
     <Compile Include="Expect.cs" />
     <Compile Include="ExpectException.cs" />
@@ -65,12 +94,17 @@
     <Compile Include="Http\HttpQueryPair.cs" />
     <Compile Include="Http\HttpResource.cs" />
     <Compile Include="IClock.cs" />
+    <Compile Include="Runtime\Map\Diagnostics\RuntimeCounter.cs" />
+    <Compile Include="Runtime\Map\Diagnostics\RuntimeCounterCategory.cs" />
+    <Compile Include="Runtime\Map\Diagnostics\RuntimeCounterCategorySet.cs" />
+    <Compile Include="Runtime\Map\Diagnostics\RuntimeCounterSet.cs" />
+    <Compile Include="Runtime\Map\Diagnostics\RuntimeMonitor.cs" />
     <Compile Include="Runtime\Map\Timeline\RequestStartMethod.cs" />
     <Compile Include="Runtime\Timeline\StartEventAttribute.cs" />
     <Compile Include="Runtime\Timeline\BatchSizeAttribute.cs" />
     <Compile Include="Runtime\Timeline\PriorNameAttribute.cs" />
     <Compile Include="Runtime\IConnectable.cs" />
-    <Compile Include="IFluent.cs" />
+    <Compile Include="IClean.cs" />
     <Compile Include="IO\Binary.cs" />
     <Compile Include="IO\BinaryConverter.cs" />
     <Compile Include="IO\Base64.cs" />
@@ -90,10 +124,6 @@
     <Compile Include="IO\Sha1.cs" />
     <Compile Include="IO\TextConverter.cs" />
     <Compile Include="IO\TextValue.cs" />
-    <Compile Include="ITaggable.cs" />
-    <Compile Include="IWritable.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="LinkPart.cs" />
     <Compile Include="LinkPath.cs" />
     <Compile Include="LinkText.cs" />
@@ -152,10 +182,8 @@
     <Compile Include="Runtime\Map\RuntimeStatePart.cs" />
     <Compile Include="Runtime\Map\RuntimeTypeRef.cs" />
     <Compile Include="Runtime\ILog.cs" />
-    <Compile Include="Runtime\LogMessage.cs" />
-    <Compile Include="LogLevel.cs" />
-    <Compile Include="Message.cs" />
-    <Compile Include="Notion.cs" />
+    <Compile Include="Runtime\LogLevel.cs" />
+    <Compile Include="Event.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflection\AssemblyDirectories.cs" />
     <Compile Include="Reflection\LambdaBodies.cs" />
@@ -179,9 +207,9 @@
     <Compile Include="Runtime\TransientAttribute.cs" />
     <Compile Include="Runtime\WebApiCall.cs" />
     <Compile Include="Runtime\WebApiCallBody.cs" />
-    <Compile Include="Tag.cs" />
-    <Compile Include="Tags.cs" />
-    <Compile Include="TagValue.cs" />
+    <Compile Include="Field.cs" />
+    <Compile Include="Fields.cs" />
+    <Compile Include="FieldValue.cs" />
     <Compile Include="Terms.cs" />
     <Compile Include="Text.cs">
       <SubType>Code</SubType>

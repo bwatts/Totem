@@ -11,7 +11,7 @@ namespace Totem
 	/// Identifies a persistent object by a string. May be assigned or unassigned.
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public struct Id : IWritable, IEquatable<Id>, IComparable<Id>
+	public struct Id : ITextable, IEquatable<Id>, IComparable<Id>
 	{
 		private readonly string _value;
 

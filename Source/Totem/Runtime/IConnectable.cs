@@ -8,7 +8,7 @@ namespace Totem.Runtime
 	/// <summary>
 	/// Describes a stateful connection to a resource
 	/// </summary>
-	public interface IConnectable : IFluent
+	public interface IConnectable : IClean
 	{
 		ConnectionState State { get; }
 

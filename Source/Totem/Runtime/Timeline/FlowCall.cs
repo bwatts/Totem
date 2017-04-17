@@ -113,14 +113,14 @@ namespace Totem.Runtime.Timeline
 
       public void Append(Event e)
 			{
-				Flow.Traits.ForwardRequestId(Point.Event, e);
-        Flow.Traits.ForwardUserId(Point.Event, e);
+				Flow.Traits.BindRequestId(Point.Event, e);
+        Flow.Traits.BindUserId(Point.Event, e);
 
         var scheduled = e as EventScheduled;
 
         if(scheduled != null)
         {
-          Flow.Traits.ForwardUserId(Point.Event, scheduled.Event);
+          Flow.Traits.BindUserId(Point.Event, scheduled.Event);
         }
 
         _newEvents.Enqueue(e);

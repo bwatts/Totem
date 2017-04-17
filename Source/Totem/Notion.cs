@@ -8,152 +8,85 @@ using Totem.Runtime.Map;
 
 namespace Totem
 {
-	/// <summary>
-	/// An object aware of Totem modeling techniques
-	/// </summary>
-	public abstract class Notion : IWritable, ITaggable
-	{
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private Tags _tags;
-
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    Tags ITaggable.Tags => Tags;
-
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    protected Tags Tags => _tags ?? (_tags = new Tags());
-
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+  /// <summary>
+  /// A bindable object with access to a clock, a log, and a map of the runtime
+  /// </summary>
+  public abstract class Notion : Binding
+  {
+    [DebuggerHidden, DebuggerNonUserCode, DebuggerBrowsable(DebuggerBrowsableState.Never)]
     protected IClock Clock => Traits.Clock.Get(this);
 
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    [DebuggerHidden, DebuggerNonUserCode, DebuggerBrowsable(DebuggerBrowsableState.Never)]
     protected ILog Log => Traits.Log.Get(this);
 
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    [DebuggerHidden, DebuggerNonUserCode, DebuggerBrowsable(DebuggerBrowsableState.Never)]
     protected RuntimeMap Runtime => Traits.Runtime.Get(this);
 
-		public sealed override string ToString() => ToText();
-		public virtual Text ToText() => base.ToString();
+    public static class Traits
+    {
+      public static readonly Field<IClock> Clock = Field.Declare(() => Clock, new PlatformClock());
+      public static readonly Field<RuntimeMap> Runtime = Field.Declare(() => Runtime);
+      public static readonly Field<ILog> Log = Field.Declare(() => Log, new UninitializedLog());
 
-		protected static Check<T> Check<T>(T target)
-		{
-			return Totem.Check.True(target);
-		}
+      class PlatformClock : IClock
+      {
+        public DateTime Now => DateTime.UtcNow;
+      }
 
-		protected static Check<T> CheckNot<T>(T target)
-		{
-			return Totem.Check.False(target);
-		}
+      public static void InitializeRuntime(RuntimeMap runtime)
+      {
+        Expect(Runtime.ResolveDefault()).IsNull("The .Runtime trait is already initialized");
 
-		protected static Expect<T> Expect<T>(T target)
-		{
-			return Totem.Expect.True(target);
-		}
+        Runtime.SetDefault(runtime);
+      }
 
-		protected static Expect<T> ExpectNot<T>(T target)
-		{
-			return Totem.Expect.False(target);
-		}
+      public static RuntimeMap ResolveRuntime()
+      {
+        return Runtime.ResolveDefaultTyped();
+      }
 
-		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-		public static void Expect(bool result)
-		{
-			Totem.Expect.True(result);
-		}
+      public static void InitializeLog(ILog effectiveLog)
+      {
+        var uninitializedLog = Log.ResolveDefault() as UninitializedLog;
 
-		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-		public static void Expect(bool result, Text issue)
-		{
-			Totem.Expect.True(result, issue);
-		}
+        Expect(uninitializedLog).IsNotNull("The .Log trait is already initialized");
 
-		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-		public static void ExpectNot(bool result)
-		{
-			Totem.Expect.False(result);
-		}
+        Log.SetDefault(uninitializedLog);
 
-		[DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-		public static void ExpectNot(bool result, Text issue)
-		{
-			Totem.Expect.False(result, issue);
-		}
+        uninitializedLog.ReplayInto(uninitializedLog);
+      }
 
-		public static class Traits
-		{
-			public static readonly Tag<IClock> Clock = Tag.Declare(() => Clock, new PlatformClock());
-			public static readonly Tag<ILog> Log = Tag.Declare(() => Log, new UninitializedLog());
-			public static readonly Tag<RuntimeMap> Runtime = Tag.Declare(() => Runtime);
+      class UninitializedLog : ILog
+      {
+        readonly BlockingCollection<LogEvent> _events = new BlockingCollection<LogEvent>();
+        ILog _effectiveLog;
 
-			private sealed class PlatformClock : IClock
-			{
-				public DateTime Now
-				{
-					get { return DateTime.UtcNow; }
-				}
-			}
+        public LogLevel Level => LogLevel.Inherit;
 
-			//
-			// Runtime
-			//
+        public void Write(LogEvent e)
+        {
+          if(_effectiveLog == null)
+          {
+            _events.Add(e);
+          }
+          else
+          {
+            _effectiveLog.Write(e);
+          }
+        }
 
-			public static void InitializeRuntime(RuntimeMap runtime)
-			{
-				Expect(Runtime.ResolveDefault()).IsNull("The runtime trait is already initialized");
+        internal void ReplayInto(ILog effectiveLog)
+        {
+          _effectiveLog = effectiveLog;
 
-				Runtime.SetDefault(runtime);
-			}
+          _events.CompleteAdding();
 
-			public static RuntimeMap ResolveRuntime()
-			{
-				return (RuntimeMap) Runtime.ResolveDefault();
-			}
-
-			//
-			// Log
-			//
-
-			public static void InitializeLog(ILog effectiveLog)
-			{
-				var uninitializedLog = Log.ResolveDefault() as UninitializedLog;
-
-				Expect(uninitializedLog).IsNotNull("The log is already initialized");
-
-				Log.SetDefault(effectiveLog);
-
-				uninitializedLog.ReplayMessages(effectiveLog);
-			}
-
-			private sealed class UninitializedLog : ILog
-			{
-				private readonly BlockingCollection<LogMessage> _messages = new BlockingCollection<LogMessage>();
-				private ILog _effectiveLog;
-
-				public LogLevel Level => LogLevel.Inherit;
-
-				public void Write(LogMessage message)
-				{
-					if(_effectiveLog == null)
-					{
-						_messages.Add(message);
-					}
-					else
-					{
-						_effectiveLog.Write(message);
-					}
-				}
-
-				internal void ReplayMessages(ILog effectiveLog)
-				{
-					_effectiveLog = effectiveLog;
-
-					_messages.CompleteAdding();
-
-					foreach(var message in _messages.GetConsumingEnumerable())
-					{
-						_effectiveLog.Write(message);
-					}
-				}
-			}
-		}
-	}
+          foreach(var e in _events.GetConsumingEnumerable())
+          {
+            _effectiveLog.Write(e);
+          }
+        }
+      }
+    }
+  }
 }

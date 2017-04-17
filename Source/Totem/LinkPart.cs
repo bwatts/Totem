@@ -7,7 +7,7 @@ namespace Totem
 	/// <summary>
 	/// A composable element of a link. A part may represent a template - a pattern for producing links.
 	/// </summary>
-	public abstract class LinkPart : Notion
+	public abstract class LinkPart : Clean
 	{
 		public abstract bool IsTemplate { get; }
 

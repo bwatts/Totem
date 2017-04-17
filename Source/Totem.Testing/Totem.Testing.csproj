@@ -52,10 +52,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj">
-      <Project>{5a8e9b26-2368-4121-acd5-b7fb2a0088d5}</Project>
-      <Name>Totem.Runtime</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Totem\Totem.csproj">
       <Project>{7fa55c94-884e-42b1-83a3-3c4611549789}</Project>
       <Name>Totem</Name>

@@ -8,7 +8,7 @@ namespace Totem.IO
 	/// <summary>
 	/// A folder on the local file system
 	/// </summary>
-	public sealed class LocalFolder : Notion, IFolder
+	public sealed class LocalFolder : Clean, IFolder
 	{
 		public LocalFolder(FolderLink link)
 		{

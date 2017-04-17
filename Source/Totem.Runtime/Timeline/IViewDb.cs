@@ -8,7 +8,7 @@ namespace Totem.Runtime.Timeline
 	/// <summary>
 	/// Describes a set of <see cref="View"/> instances with snapshots accessible by key
 	/// </summary>
-	public interface IViewDb : IFluent
+	public interface IViewDb : IClean
 	{
 		Task<ViewSnapshot<string>> ReadJsonSnapshot(Type type, Id id, TimelinePosition checkpoint);
 

@@ -12,17 +12,17 @@ namespace Totem
 	/// Content in a write to <see cref="System.IO.TextWriter"/>
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public sealed class Text : IWritable
+	public sealed class Text : ITextable
 	{
-		private readonly bool _isNone;
-		private readonly Text _before;
-		private readonly char? _charValue;
-		private readonly string _stringValue;
-		private readonly IWritable _writableValue;
-		private readonly Action<TextWriter> _actionValue;
-		private readonly Text _textValue;
+		readonly bool _isNone;
+		readonly Text _before;
+		readonly char? _charValue;
+		readonly string _stringValue;
+		readonly ITextable _textableValue;
+		readonly Action<TextWriter> _actionValue;
+		readonly Text _textValue;
 
-		private Text()
+		Text()
 		{
 			_isNone = true;
 		}
@@ -31,27 +31,27 @@ namespace Totem
 		// Scalar
 		//
 
-		private Text(char value)
+		Text(char value)
 		{
 			_charValue = value;
 		}
 
-		private Text(string value)
+		Text(string value)
 		{
 			_stringValue = value;
 		}
 
-		private Text(IWritable value)
+		Text(ITextable value)
 		{
-			_writableValue = value;
+			_textableValue = value;
 		}
 
-		private Text(Action<TextWriter> value)
+		Text(Action<TextWriter> value)
 		{
 			_actionValue = value;
 		}
 
-		private Text(Text value)
+		Text(Text value)
 		{
 			_textValue = value;
 		}
@@ -60,31 +60,31 @@ namespace Totem
 		// Concatenated
 		//
 
-		private Text(Text left, char right)
+		Text(Text left, char right)
 		{
 			_before = left;
 			_charValue = right;
 		}
 
-		private Text(Text left, string right)
+		Text(Text left, string right)
 		{
 			_before = left;
 			_stringValue = right;
 		}
 
-		private Text(Text left, IWritable right)
+		Text(Text left, ITextable right)
 		{
 			_before = left;
-			_writableValue = right;
+			_textableValue = right;
 		}
 
-		private Text(Text left, Action<TextWriter> right)
+		Text(Text left, Action<TextWriter> right)
 		{
 			_before = left;
 			_actionValue = right;
 		}
 
-		private Text(Text left, Text right)
+		Text(Text left, Text right)
 		{
 			_before = left;
 			_textValue = right;
@@ -135,9 +135,9 @@ namespace Totem
 			{
 				_textValue.ToBuilder(builder);
 			}
-			else if(_writableValue != null)
+			else if(_textableValue != null)
 			{
-				builder.Append(_writableValue);
+				builder.Append(_textableValue);
 			}
 			else
 			{
@@ -185,9 +185,9 @@ namespace Totem
 			{
 				_textValue.ToWriter(writer);
 			}
-			else if(_writableValue != null)
+			else if(_textableValue != null)
 			{
-				writer.Write(_writableValue);
+				writer.Write(_textableValue);
 			}
 			else
 			{
@@ -278,7 +278,7 @@ namespace Totem
 			return _isNone ? new Text(value) : new Text(this, value);
 		}
 
-		public Text Write(IWritable value)
+		public Text Write(ITextable value)
 		{
 			return _isNone ? new Text(value) : new Text(this, value);
 		}
@@ -310,7 +310,7 @@ namespace Totem
 			return text.Write(value);
 		}
 
-		public static Text operator +(Text text, IWritable value)
+		public static Text operator +(Text text, ITextable value)
 		{
 			return text.Write(value);
 		}
@@ -352,7 +352,7 @@ namespace Totem
 			return new Text(value);
 		}
 
-		public static Text Of(IWritable value)
+		public static Text Of(ITextable value)
 		{
 			return new Text(value);
 		}
@@ -448,42 +448,42 @@ namespace Totem
 
 		public static Text OfMany(IEnumerable<char> values)
 		{
-			return Text.Of(new string(values.ToArray()));
+			return Of(new string(values.ToArray()));
 		}
 
 		public static Text OfMany(IEnumerable<string> values)
 		{
-			return Text.OfMany(values, value => Text.Of(value));
+			return OfMany(values, value => Of(value));
 		}
 
-		public static Text OfMany(IEnumerable<IWritable> values)
+		public static Text OfMany(IEnumerable<ITextable> values)
 		{
-			return Text.OfMany(values, Text.Of);
+			return OfMany(values, Of);
 		}
 
 		public static Text OfMany(IEnumerable<Action<TextWriter>> values)
 		{
-			return Text.OfMany(values, Text.Of);
+			return OfMany(values, Of);
 		}
 
 		public static Text OfMany(IEnumerable<Text> values)
 		{
-			return values.Aggregate(Text.None, (text, value) => text + value);
+			return values.Aggregate(None, (text, value) => text + value);
 		}
 
 		public static Text OfMany<T>(IEnumerable<T> values, Func<T, Text> selectText)
 		{
-			return Text.OfMany(values.Select(selectText));
+			return OfMany(values.Select(selectText));
 		}
 
 		public static Text OfMany<T>(IEnumerable<T> values, Func<T, int, Text> selectText)
 		{
-			return Text.OfMany(values.Select(selectText));
+			return OfMany(values.Select(selectText));
 		}
 
 		public static Text OfMany<T>(IEnumerable<T> values)
 		{
-			return Text.OfMany(values, value => Text.Of(value));
+			return OfMany(values, value => Of(value));
 		}
 
 		//
@@ -492,12 +492,12 @@ namespace Totem
 
 		public static Text OfType(object instance)
 		{
-			return instance == null ? Text.None : Text.Of(instance.GetType());
+			return instance == null ? None : Of(instance.GetType());
 		}
 
 		public static Text OfType<T>()
 		{
-			return Text.Of(typeof(T));
+			return Of(typeof(T));
 		}
 
 		//
@@ -511,7 +511,7 @@ namespace Totem
 
 		public static Text If(bool condition, Text whenTrue)
 		{
-			return If(condition, whenTrue, Text.None);
+			return If(condition, whenTrue, None);
 		}
 
 		public static Text If(Func<bool> condition, Text whenTrue, Text whenFalse)
@@ -521,7 +521,7 @@ namespace Totem
 
 		public static Text If(Func<bool> condition, Text whenTrue)
 		{
-			return If(condition, whenTrue, Text.None);
+			return If(condition, whenTrue, None);
 		}
 
     //
@@ -564,7 +564,7 @@ namespace Totem
 
 		public static Text SeparatedBy(Text separator, IEnumerable<Text> values)
 		{
-			var text = Text.None;
+			var text = None;
 
 			var wroteFirst = false;
 
@@ -587,17 +587,17 @@ namespace Totem
 
 		public static Text SeparatedBy<T>(Text separator, IEnumerable<T> values, Func<T, Text> selectText)
 		{
-			return Text.SeparatedBy(separator, values.Select(selectText));
+			return SeparatedBy(separator, values.Select(selectText));
 		}
 
 		public static Text SeparatedBy<T>(Text separator, IEnumerable<T> values, Func<T, int, Text> selectText)
 		{
-			return Text.SeparatedBy(separator, values.Select(selectText));
+			return SeparatedBy(separator, values.Select(selectText));
 		}
 
 		public static Text SeparatedBy<T>(Text separator, IEnumerable<T> values)
 		{
-			return Text.SeparatedBy(separator, values.Select(value => Text.Of(value)));
+			return SeparatedBy(separator, values.Select(value => Of(value)));
 		}
 
 		//
@@ -621,7 +621,7 @@ namespace Totem
 
 			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			{
-				return Text.Of(value);
+				return Of(value);
 			}
 
 			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
@@ -638,20 +638,20 @@ namespace Totem
 		/// <summary>
 		/// Builds an instance of <see cref="Text"/> through writes to <see cref="TextWriter"/>
 		/// </summary>
-		public class Writer : TextWriter, IWritable
+		public class Writer : TextWriter, ITextable
 		{
-			private Text _text;
-			private readonly Encoding _encoding;
+			Text _text;
+			readonly Encoding _encoding;
 
 			public Writer()
 			{
-				_text = Text.None;
+				_text = None;
 				_encoding = Encoding.Default;
 			}
 
 			public Writer(Encoding encoding)
 			{
-				_text = Text.None;
+				_text = None;
 				_encoding = encoding;
 			}
 
@@ -673,20 +673,10 @@ namespace Totem
 				_encoding = encoding;
 			}
 
-			public override Encoding Encoding
-			{
-				get { return _encoding; }
-			}
+      public override Encoding Encoding => _encoding;
 
-			public sealed override string ToString()
-			{
-				return ToText();
-			}
-
-			public virtual Text ToText()
-			{
-				return _text;
-			}
+      public sealed override string ToString() => _text;
+      public virtual Text ToText() => _text;
 
 			public override void Write(bool value) { _text = _text.Write(value); }
 			public override void Write(char value) { _text = _text.Write(value); }
@@ -732,9 +722,9 @@ namespace Totem
 
 		// https://github.com/NoelKennedy/MinimumEditDistance/blob/master/MinimumEditDistance/Levenshtein.cs
 
-		private static int CalculateEditDistance(string x, string y, int substitutionCost = 1)
+		static int CalculateEditDistance(string x, string y, int substitutionCost = 1)
 		{
-			if(String.IsNullOrEmpty(x) || String.IsNullOrEmpty(y))
+			if(string.IsNullOrEmpty(x) || string.IsNullOrEmpty(y))
 			{
 				// Short-circuit
 
@@ -754,11 +744,11 @@ namespace Totem
 			}
 		}
 
-		private static int CalculateEditDistance(string x, string y, int substitutionCost, MemoryStructure memory)
+		static int CalculateEditDistance(string x, string y, int substitutionCost, MemoryStructure memory)
 		{
-			if(String.IsNullOrEmpty(x))
+			if(string.IsNullOrEmpty(x))
 			{
-				return String.IsNullOrEmpty(y) ? 0 : y.Length;
+				return string.IsNullOrEmpty(y) ? 0 : y.Length;
 			}
 
 			var m = x.Length + 1;
@@ -800,16 +790,16 @@ namespace Totem
 			return memory[m - 1, n - 1];
 		}
 
-		private const int _maxStringProductLength = 536848900;
+		const int _maxStringProductLength = 536848900;
 
-		private abstract class MemoryStructure
+		abstract class MemoryStructure
 		{
 			internal abstract int this[int i, int j] { get; set; }
 		}
 
-		private sealed class RectangularArray : MemoryStructure
+		sealed class RectangularArray : MemoryStructure
 		{
-			private readonly int[,] _value;
+			readonly int[,] _value;
 
 			internal RectangularArray(int m, int n)
 			{
@@ -823,9 +813,9 @@ namespace Totem
 			}
 		}
 
-		private sealed class JaggedArray : MemoryStructure
+		sealed class JaggedArray : MemoryStructure
 		{
-			private int[][] _value;
+			int[][] _value;
 
 			internal JaggedArray(int m, int n)
 			{
