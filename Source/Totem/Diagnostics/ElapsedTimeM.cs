@@ -20,7 +20,7 @@ namespace Totem.Diagnostics
 
     public void Start(string instance)
     {
-      this[0, instance].RawValue = Stopwatch.GetTimestamp();
+      this[0, instance].IncrementBy(Stopwatch.GetTimestamp());
     }
   }
 }

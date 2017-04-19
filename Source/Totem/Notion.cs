@@ -51,9 +51,9 @@ namespace Totem
 
         Expect(uninitializedLog).IsNotNull("The .Log trait is already initialized");
 
-        Log.SetDefault(uninitializedLog);
+        Log.SetDefault(effectiveLog);
 
-        uninitializedLog.ReplayInto(uninitializedLog);
+        uninitializedLog.ReplayInto(effectiveLog);
       }
 
       class UninitializedLog : ILog

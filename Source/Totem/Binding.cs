@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Totem.Runtime;
 
 namespace Totem
 {
@@ -15,10 +16,10 @@ namespace Totem
       Fields = new Fields(this);
     }
 
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    [Transient, DebuggerBrowsable(DebuggerBrowsableState.Never)]
     Fields IBindable.Fields => Fields;
 
-    [DebuggerHidden, DebuggerNonUserCode, DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    protected Fields Fields { get; }
+    [Transient, DebuggerHidden, DebuggerNonUserCode, DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    protected internal Fields Fields { get; internal set; }
   }
 }

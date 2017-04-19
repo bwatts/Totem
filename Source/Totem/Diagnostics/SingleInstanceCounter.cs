@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public abstract class SingleInstanceCounter : Counter
   {
-    readonly List<PerformanceCounter> _counters = new List<PerformanceCounter>();
+    readonly List<Lazy<PerformanceCounter>> _systemCounters = new List<Lazy<PerformanceCounter>>();
 
     protected SingleInstanceCounter(string name, string description) : base(name, description)
     {}
@@ -22,11 +22,11 @@ namespace Totem.Diagnostics
 
     internal sealed override IEnumerable<CounterCreationData> GetCreationData(string category)
     {
-      _counters.Clear();
+      _systemCounters.Clear();
 
       foreach(var counterData in GetCreationData())
       {
-        _counters.Add(new PerformanceCounter(category, counterData.CounterName, readOnly: false));
+        AddSystemCounter(category, counterData.CounterName);
 
         yield return counterData;
       }
@@ -34,6 +34,12 @@ namespace Totem.Diagnostics
 
     protected abstract IEnumerable<CounterCreationData> GetCreationData();
 
-    protected PerformanceCounter this[int creationDataIndex] => _counters[creationDataIndex];
+    protected PerformanceCounter this[int creationDataIndex] => _systemCounters[creationDataIndex].Value;
+
+    void AddSystemCounter(string category, string name)
+    {
+      _systemCounters.Add(new Lazy<PerformanceCounter>(() =>
+        new PerformanceCounter(category, name, RuntimePrefix, readOnly: false)));
+    }
   }
 }

@@ -40,12 +40,15 @@ namespace Totem.Runtime.Map.Diagnostics
 
     internal void CreateLocally()
     {
+      if(PerformanceCounterCategory.Exists(Declaration.Name))
+      {
+        PerformanceCounterCategory.Delete(Declaration.Name);
+      }
+
       PerformanceCounterCategory.Create(
         Declaration.Name,
         Declaration.Description,
-        Declaration.IsSingleInstance
-          ? PerformanceCounterCategoryType.SingleInstance
-          : PerformanceCounterCategoryType.MultiInstance,
+        PerformanceCounterCategoryType.MultiInstance,
         new CounterCreationDataCollection(GetCreationDataArray()));
     }
 

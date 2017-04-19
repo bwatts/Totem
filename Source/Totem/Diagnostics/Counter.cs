@@ -2,13 +2,20 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Totem.Diagnostics
 {
   /// <summary>
   /// A counter measuring an aspect of runtime performance
   /// </summary>
-  public abstract class Counter
+  /// <remarks>
+  /// All counters have instances per runtime. If a particular counter is multi-instance,
+  /// the runtime serves as its parent. See:
+  /// 
+  /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa373193(v=vs.85).aspx
+  /// </remarks>
+  public abstract class Counter : Binding
   {
     protected Counter(string name, string description)
     {
@@ -30,9 +37,27 @@ namespace Totem.Diagnostics
       return new CounterCreationData(Name, Description, type);
     }
 
-    protected CounterCreationData NewBaseData(PerformanceCounterType type, string suffix = " (base)")
+    protected CounterCreationData NewBaseData(PerformanceCounterType type, string suffix = " [base]")
     {
-      return new CounterCreationData(Name + suffix, Description + suffix, type);
+      return new CounterCreationData(Name + suffix, Description, type);
+    }
+
+    protected string RuntimePrefix
+    {
+      get { return Traits.RuntimePrefix.Get(this); }
+      set { Traits.RuntimePrefix.Set(this, value); }
+    }
+
+    internal static class Traits
+    {
+      internal static readonly Field<string> RuntimePrefix = Field.Declare(() => RuntimePrefix, "");
+
+      public static void InitializeRuntimePrefix(string value)
+      {
+        Expect(RuntimePrefix.ResolveDefault()).Is("", "The .RuntimePrefix trait is already initialized");
+
+        RuntimePrefix.SetDefault(value);
+      }
     }
 
     //

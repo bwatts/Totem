@@ -43,9 +43,15 @@ namespace Totem.Diagnostics
     {
       get
       {
+        // See Counter.cs for more on runtime instances
+
         var name = _names[creationDataIndex];
 
-        return _counters.GetOrAdd(name, _ => new PerformanceCounter(_category, name, instance, readOnly: false));
+        return _counters.GetOrAdd(name, _ => new PerformanceCounter(
+          _category,
+          name,
+          RuntimePrefix + "/" + instance,
+          readOnly: false));
       }
     }
   }

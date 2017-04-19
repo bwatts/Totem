@@ -146,20 +146,18 @@ namespace Totem.Runtime
 
     void RegisterTypes()
 		{
-			foreach(var type in
+      foreach(var type in
 				from region in _map.Regions
 				from package in region.Packages
-				from declaredType in package.Assembly.GetTypes()
-				where (declaredType.IsPublic || declaredType.IsNestedPublic)
-					&& declaredType.IsClass
-					&& !declaredType.IsAbstract
-					&& !declaredType.IsAnonymous()
-        let isEvent = typeof(Event).IsAssignableFrom(declaredType)
+				from type in package.Assembly.GetTypes()
+				where IsPublicOrInternal(type)
+        where IsConcreteClassOrStatic(type)
+        let isEvent = typeof(Event).IsAssignableFrom(type)
         orderby isEvent descending
-				select new { package, declaredType, isEvent })
+				select new { package, type, isEvent })
 			{
         _package = type.package;
-        _declaredType = type.declaredType;
+        _declaredType = type.type;
 
 				if(type.isEvent)
         {
@@ -181,6 +179,16 @@ namespace Totem.Runtime
 
       _package = null;
       _declaredType = null;
+    }
+
+    static bool IsPublicOrInternal(Type type)
+    {
+      return type.IsPublic || type.IsNestedPublic || !type.IsNestedPrivate;
+    }
+
+    static bool IsConcreteClassOrStatic(Type type)
+    {
+      return type.IsClass && (!type.IsAbstract || type.IsSealed);
     }
 
     void RegisterEvent()

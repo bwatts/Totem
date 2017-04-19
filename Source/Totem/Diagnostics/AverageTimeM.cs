@@ -21,7 +21,7 @@ namespace Totem.Diagnostics
 
     public void Increment(long stopwatchTicks, string instance)
     {
-      this[0, instance].RawValue = stopwatchTicks;
+      this[0, instance].IncrementBy(stopwatchTicks);
       this[1, instance].Increment();
     }
 
@@ -56,7 +56,7 @@ namespace Totem.Diagnostics
 
       return Disposal.Of(() =>
       {
-        this[0, instance].RawValue = Stopwatch.GetTimestamp() - start;
+        this[0, instance].IncrementBy(Stopwatch.GetTimestamp() - start);
 
         increment();
       });

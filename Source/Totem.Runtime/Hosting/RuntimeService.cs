@@ -26,8 +26,9 @@ namespace Totem.Runtime.Hosting
     CancellationTokenSource _cancellationTokenSource;
     IDisposable _instance;
 
-    internal RuntimeService(Assembly programAssembly)
+    internal RuntimeService(string instanceName, Assembly programAssembly)
     {
+      InstanceName = instanceName;
       _programAssembly = programAssembly;
 
       Fields = new Fields(this);
@@ -42,6 +43,8 @@ namespace Totem.Runtime.Hosting
     IClock Clock => Notion.Traits.Clock.Get(this);
     ILog Log => Notion.Traits.Log.Get(this);
     RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
+
+    public string InstanceName { get; }
 
     void SetCurrentDirectoryToProgram()
     {
@@ -86,7 +89,7 @@ namespace Totem.Runtime.Hosting
     {
       try
       {
-        Runtime.Monitor.Start();
+        Runtime.Monitor.Start(InstanceName);
       }
       catch(Exception error)
       {
