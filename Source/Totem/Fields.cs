@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,13 +10,7 @@ namespace Totem
 	/// </summary>
 	public class Fields : ITextable, IReadOnlyDictionary<Field, FieldValue>
 	{
-		readonly ConcurrentDictionary<Field, FieldValue> _pairs = new ConcurrentDictionary<Field, FieldValue>();
-    readonly IBindable _binding;
-
-    internal Fields(IBindable binding)
-    {
-      _binding = binding;
-    }
+		readonly Dictionary<Field, FieldValue> _pairs = new Dictionary<Field, FieldValue>();
 
     public int Count => _pairs.Count;
 		public IEnumerable<Field> Keys => _pairs.Keys;
@@ -72,7 +65,14 @@ namespace Totem
 
 		public object Get(Field field, bool throwIfUnset = false)
 		{
-      var value = _pairs.GetOrAdd(field, _ => new FieldValue(_binding, field));
+      FieldValue value;
+
+      if(!_pairs.TryGetValue(field, out value))
+      {
+        value = new FieldValue(field);
+
+        _pairs[field] = value;
+      }
 
 			if(throwIfUnset && value.IsUnset)
 			{
@@ -124,15 +124,13 @@ namespace Totem
 			}
 			else
 			{
-				_pairs[field] = new FieldValue(_binding, field, value);
+				_pairs[field] = new FieldValue(field, value);
 			}
 		}
 
 		public void Clear(Field field)
 		{
-      FieldValue ignored;
-
-      _pairs.TryRemove(field, out ignored);
+      _pairs.Remove(field);
 		}
 
     //

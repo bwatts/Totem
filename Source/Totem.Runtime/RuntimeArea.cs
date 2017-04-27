@@ -18,7 +18,7 @@ namespace Totem.Runtime
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     Fields IBindable.Fields => Fields;
 
-		protected Fields Fields { get; private set; }
+    protected Fields Fields { get; } = new Fields();
 		protected IClock Clock => Notion.Traits.Clock.Get(this);
 		protected ILog Log => Notion.Traits.Log.Get(this);
 		protected RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
@@ -87,8 +87,6 @@ namespace Totem.Runtime
 
 		void IPartImportsSatisfiedNotification.OnImportsSatisfied()
 		{
-      Fields = new Fields(this);
-
 			ReadAreaType();
 
 			RegisterArea();

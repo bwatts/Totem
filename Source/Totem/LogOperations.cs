@@ -23,7 +23,7 @@ namespace Totem
 
     public static void At(this ILog log, LogLevel level, Exception error, Text messageTemplate, params object[] propertyValues)
 		{
-      log.Write(new LogEvent(error.ToString(), level, messageTemplate, propertyValues));
+      log.Write(new LogEvent(error, level, messageTemplate, propertyValues));
     }
 
     public static void Verbose(this ILog log, Text messageTemplate, params object[] propertyValues)

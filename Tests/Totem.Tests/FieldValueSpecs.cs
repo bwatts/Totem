@@ -11,11 +11,9 @@ namespace Totem
   {
 		static Field<int> Field = Totem.Field.Declare(() => Field, 1);
 
-    class TestBinding : Binding { }
-
 		void WithoutContent()
 		{
-			var value = new FieldValue(new TestBinding(), Field);
+			var value = new FieldValue(Field);
 
 			Expect(value.Field).Is(Field);
 			Expect(value.Content).Is(Field.ResolveDefault());
@@ -25,7 +23,7 @@ namespace Totem
 
 		void WithContent()
 		{
-			var value = new FieldValue(new TestBinding(), Field, 2);
+			var value = new FieldValue(Field, 2);
 
 			Expect(value.Field).Is(Field);
 			Expect(value.Content).Is(2);

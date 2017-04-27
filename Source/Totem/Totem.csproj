@@ -68,7 +68,6 @@
     <Compile Include="Diagnostics\Total32M.cs" />
     <Compile Include="Diagnostics\Total64.cs" />
     <Compile Include="Diagnostics\Total32.cs" />
-    <Compile Include="FieldChange.cs" />
     <Compile Include="IBindable.cs" />
     <Compile Include="ITextable.cs" />
     <Compile Include="Notion.cs" />

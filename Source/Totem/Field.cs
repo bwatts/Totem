@@ -58,11 +58,25 @@ namespace Totem
       binding.Fields.Clear(this);
 		}
 
-		//
-		// Declarations
-		//
+    //
+    // Unset value
+    //
 
-		public static Field<T> Declare<T>(Expression<Func<Field<T>>> declaration, T defaultValue = default(T))
+    public static readonly object UnsetValue = new Unset();
+
+    sealed class Unset
+    {
+      public override string ToString()
+      {
+        return "<unset>";
+      }
+    }
+
+    //
+    // Declarations
+    //
+
+    public static Field<T> Declare<T>(Expression<Func<Field<T>>> declaration, T defaultValue = default(T))
 		{
 			return new Field<T>(declaration.GetFieldInfo(), defaultValue);
 		}

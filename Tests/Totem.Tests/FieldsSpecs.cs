@@ -11,12 +11,7 @@ namespace Totem
   {
     class Binding : IBindable
     {
-      internal Binding()
-      {
-        Fields = new Fields(this);
-      }
-
-      public Fields Fields { get; }
+      public Fields Fields { get; } = new Fields();
     }
 
 		static Field<int> Field = Totem.Field.Declare(() => Field);

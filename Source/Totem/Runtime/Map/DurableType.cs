@@ -17,16 +17,7 @@ namespace Totem.Runtime.Map
 
 		public object CreateToDeserialize()
 		{
-			var instance = FormatterServices.GetUninitializedObject(DeclaredType);
-
-      var binding = instance as Binding;
-
-      if(binding != null)
-      {
-        binding.Fields = new Fields(binding);
-      }
-
-      return instance;
+			return FormatterServices.GetUninitializedObject(DeclaredType);
 		}
 	}
 }

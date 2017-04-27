@@ -13,15 +13,10 @@ namespace Totem.Runtime.Json
 	/// </summary>
 	internal sealed class TotemSerializationBinder : DefaultSerializationBinder, IBindable
 	{
-    internal TotemSerializationBinder()
-    {
-      Fields = new Fields(this);
-    }
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     Fields IBindable.Fields => Fields;
 
-    Fields Fields { get; }
+    Fields Fields { get; } = new Fields();
 		RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
     public override void BindToName(Type serializedType, out string assemblyName, out string typeName)

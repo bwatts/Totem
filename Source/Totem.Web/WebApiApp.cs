@@ -28,14 +28,12 @@ namespace Totem.Web
 		protected WebApiApp(WebAppContext appContext)
 		{
 			AppContext = appContext;
-
-      Fields = new Fields(this);
 		}
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     Fields IBindable.Fields => Fields;
 
-		protected Fields Fields { get; }
+    protected Fields Fields { get; } = new Fields();
 		protected IClock Clock => Notion.Traits.Clock.Get(this);
 		protected ILog Log => Notion.Traits.Log.Get(this);
 		protected RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);

@@ -13,39 +13,20 @@ namespace Totem.Runtime
     {
       Level = level;
       Template = template;
-      PropertyValues = propertyValues.ToMany();
+      PropertyValues = propertyValues;
     }
 
-    public LogEvent(string error, LogLevel level, string template, params object[] propertyValues) : base(error)
+    public LogEvent(Exception error, LogLevel level, string template, params object[] propertyValues)
     {
       Level = level;
       Template = template;
-      PropertyValues = propertyValues.ToMany();
+      PropertyValues = propertyValues;
+      Error = error;
     }
 
-    public LogLevel Level
-    {
-      get { return Traits.Level.Get(this); }
-      private set { Traits.Level.Set(this, value); }
-    }
-
-    public string Template
-    {
-      get { return Traits.Template.Get(this); }
-      private set { Traits.Template.Set(this, value); }
-    }
-
-    public Many<object> PropertyValues
-    {
-      get { return Traits.PropertyValues.Get(this); }
-      private set { Traits.PropertyValues.Set(this, value); }
-    }
-
-    public new static class Traits
-    {
-      public static readonly Field<LogLevel> Level = Field.Declare(() => Level);
-      public static readonly Field<string> Template = Field.Declare(() => Template);
-      public static readonly Field<Many<object>> PropertyValues = Field.Declare(() => PropertyValues, () => new Many<object>());
-    }
+    public readonly LogLevel Level;
+    public readonly Text Template;
+    public readonly object[] PropertyValues;
+    public readonly Exception Error;
   }
 }

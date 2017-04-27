@@ -31,15 +31,13 @@ namespace Totem.Runtime.Hosting
       InstanceName = instanceName;
       _programAssembly = programAssembly;
 
-      Fields = new Fields(this);
-
       SetCurrentDirectoryToProgram();
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     Fields IBindable.Fields => Fields;
 
-    Fields Fields { get; }
+    Fields Fields { get; } = new Fields();
     IClock Clock => Notion.Traits.Clock.Get(this);
     ILog Log => Notion.Traits.Log.Get(this);
     RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);

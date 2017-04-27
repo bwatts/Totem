@@ -24,13 +24,11 @@ namespace Totem.Web.Push
 		{
 			_viewExchange = viewExchange;
 
-      Fields = new Fields(this);
-
       _connectionId = new Lazy<Id>(() => Id.From(Context.ConnectionId));
       _compactConnectionId = new Lazy<string>(() => ConnectionId.ToText().CompactRight(8, "..."));
 		}
 
-    public Fields Fields { get; }
+    public Fields Fields { get; } = new Fields();
 		ILog Log => Notion.Traits.Log.Get(this);
 
     Id ConnectionId => _connectionId.Value;

@@ -100,12 +100,7 @@ namespace Totem.Web.Push
 
 		sealed class LoggingPipelineModule : HubPipelineModule, IBindable
 		{
-      public LoggingPipelineModule()
-      {
-        Fields = new Fields(this);
-      }
-
-			public Fields Fields { get; }
+      public Fields Fields { get; } = new Fields();
 			ILog Log => Traits.Log.Get(this);
 
       protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext invokerContext)

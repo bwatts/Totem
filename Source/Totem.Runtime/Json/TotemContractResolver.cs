@@ -19,8 +19,6 @@ namespace Totem.Runtime.Json
 	{		
 		public TotemContractResolver()
 		{
-      Fields = new Fields(this);
-
       NamingStrategy = new CamelCaseNamingStrategy();
 
       ExpandDictionaries = true;
@@ -29,7 +27,7 @@ namespace Totem.Runtime.Json
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     Fields IBindable.Fields => Fields;
 
-    Fields Fields { get; }
+    Fields Fields { get; } = new Fields();
 		RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
 		public bool ExpandDictionaries;
@@ -112,7 +110,8 @@ namespace Totem.Runtime.Json
 
       return !member.IsDefined(typeof(TransientAttribute))
         && !member.IsDefined(typeof(CompilerGeneratedAttribute))
-        && member.DeclaringType != typeof(Notion);
+        && member.DeclaringType != typeof(Notion)
+        && member.DeclaringType != typeof(Binding);
     }
 
     private JsonProperty CreateDurableProperty(MemberInfo member, MemberSerialization memberSerialization)
