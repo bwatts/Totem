@@ -6,16 +6,16 @@ using System.Linq;
 namespace Totem.Diagnostics
 {
   /// <summary>
-  /// Measures an increasing 64-bit integer
+  /// Measures an increasing 32-bit integer
   /// </summary>
-  public class Total64 : Counter
+  public class Total : Counter
   {
-    public Total64(string name, string description) : base(name, description)
+    public Total(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
     {
-      yield return NewData(PerformanceCounterType.NumberOfItems64);
+      yield return NewData(PerformanceCounterType.NumberOfItems32);
     }
 
     public void Increment()
@@ -23,7 +23,7 @@ namespace Totem.Diagnostics
       this[0].Increment();
     }
 
-    public void IncrementBy(long amount)
+    public void IncrementBy(int amount)
     {
       this[0].IncrementBy(amount);
     }

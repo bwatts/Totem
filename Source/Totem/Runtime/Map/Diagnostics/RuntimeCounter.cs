@@ -11,14 +11,14 @@ namespace Totem.Runtime.Map.Diagnostics
   /// </summary>
   public class RuntimeCounter
   {
-    internal RuntimeCounter(RuntimeCounterCategory category, Counter declaration)
+    internal RuntimeCounter(RuntimeCounterCategory category, CounterBase declaration)
     {
       Category = category;
       Declaration = declaration;
     }
 
     public readonly RuntimeCounterCategory Category;
-    public readonly Counter Declaration;
+    public readonly CounterBase Declaration;
 
     public override string ToString() => Declaration.ToString();
   }

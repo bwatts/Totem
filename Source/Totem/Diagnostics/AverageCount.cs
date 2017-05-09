@@ -8,7 +8,7 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures the average count of items per operation
   /// </summary>
-  public class AverageCount : SingleInstanceCounter
+  public class AverageCount : Counter
   {
     public AverageCount(string name, string description) : base(name, description)
     {}
@@ -19,7 +19,7 @@ namespace Totem.Diagnostics
       yield return NewBaseData(PerformanceCounterType.AverageBase);
     }
 
-    public void Add(long count)
+    public void Sample(long count)
     {
       this[0].IncrementBy(count);
       this[1].Increment();

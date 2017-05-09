@@ -8,9 +8,9 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures the average time to complete an operation
   /// </summary>
-  public class AverageTimeM : MultiInstanceCounter
+  public class MultiAverageTime : MultiCounter
   {
-    public AverageTimeM(string name, string description) : base(name, description)
+    public MultiAverageTime(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -33,21 +33,6 @@ namespace Totem.Diagnostics
     public IDisposable IncrementAfterBy(int amount, string instance)
     {
       return TimeThenIncrement(instance, () => this[1, instance].IncrementBy(amount));
-    }
-
-    public void Increment(long stopwatchTicks, Id instance)
-    {
-      Increment(stopwatchTicks, instance.ToString());
-    }
-
-    public IDisposable IncrementAfter(Id instance)
-    {
-      return IncrementAfter(instance.ToString());
-    }
-
-    public IDisposable IncrementAfterBy(int amount, Id instance)
-    {
-      return IncrementAfterBy(amount, instance.ToString());
     }
 
     IDisposable TimeThenIncrement(string instance, Action increment)

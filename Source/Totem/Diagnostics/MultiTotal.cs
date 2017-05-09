@@ -8,9 +8,9 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures an increasing 32-bit integer
   /// </summary>
-  public class Total32M : MultiInstanceCounter
+  public class MultiTotal : MultiCounter
   {
-    public Total32M(string name, string description) : base(name, description)
+    public MultiTotal(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -26,16 +26,6 @@ namespace Totem.Diagnostics
     public void IncrementBy(int amount, string instance)
     {
       this[0, instance].IncrementBy(amount);
-    }
-
-    public void Increment(Id instance)
-    {
-      Increment(instance.ToString());
-    }
-
-    public void IncrementBy(int amount, Id instance)
-    {
-      IncrementBy(amount, instance.ToString());
     }
   }
 }

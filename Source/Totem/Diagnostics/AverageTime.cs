@@ -8,7 +8,7 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures the average time to complete an operation
   /// </summary>
-  public class AverageTime : SingleInstanceCounter
+  public class AverageTime : Counter
   {
     public AverageTime(string name, string description) : base(name, description)
     {}

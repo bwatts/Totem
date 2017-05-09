@@ -8,7 +8,7 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures a fluctuating 64-bit integer
   /// </summary>
-  public class Count64 : SingleInstanceCounter
+  public class Count64 : Counter
   {
     public Count64(string name, string description) : base(name, description)
     {}

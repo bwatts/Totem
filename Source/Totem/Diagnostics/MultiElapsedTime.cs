@@ -8,9 +8,9 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures the elapsed time from the start of an operation
   /// </summary>
-  public class ElapsedTimeM : MultiInstanceCounter
+  public class MultiElapsedTime : MultiCounter
   {
-    public ElapsedTimeM(string name, string description) : base(name, description)
+    public MultiElapsedTime(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -20,7 +20,7 @@ namespace Totem.Diagnostics
 
     public void Start(string instance)
     {
-      this[0, instance].IncrementBy(Stopwatch.GetTimestamp());
+      this[0, instance].RawValue = Stopwatch.GetTimestamp();
     }
   }
 }

@@ -6,17 +6,17 @@ namespace Totem.Diagnostics
 {
   /// <summary>
   /// Indicates counters in the decorated class belong to the specified category and
-  /// are partitioned into instances
+  /// are not partitioned into instances
   /// </summary>
-  public sealed class MultiInstanceCategoryAttribute : CounterCategoryAttribute
+  public sealed class CountersAttribute : CounterCategoryAttribute
   {
-    public MultiInstanceCategoryAttribute(string category, string description)
+    public CountersAttribute(string category, string description)
       : base(category, description)
     {}
 
     public override CounterCategory GetCategory()
     {
-      return CounterCategory.MultiInstance(Name, Description);
+      return CounterCategory.SingleInstance(Name, Description);
     }
   }
 }

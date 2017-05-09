@@ -8,9 +8,9 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures the average count of items per operation
   /// </summary>
-  public class AverageCountM : MultiInstanceCounter
+  public class MultiAverageCount : MultiCounter
   {
-    public AverageCountM(string name, string description) : base(name, description)
+    public MultiAverageCount(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -19,7 +19,7 @@ namespace Totem.Diagnostics
       yield return NewBaseData(PerformanceCounterType.AverageBase);
     }
 
-    public void Add(string instance, long count)
+    public void Sample(long count, string instance)
     {
       this[0, instance].IncrementBy(count);
       this[1, instance].Increment();

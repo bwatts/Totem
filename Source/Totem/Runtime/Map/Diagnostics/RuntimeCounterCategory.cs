@@ -19,7 +19,7 @@ namespace Totem.Runtime.Map.Diagnostics
     public readonly CounterCategory Declaration;
     public readonly RuntimeCounterSet Counters = new RuntimeCounterSet();
 
-    internal void Register(IEnumerable<Counter> declarations)
+    internal void Register(IEnumerable<CounterBase> declarations)
     {
       foreach(var declaration in declarations)
       {
@@ -59,7 +59,7 @@ namespace Totem.Runtime.Map.Diagnostics
 
     IEnumerable<CounterCreationData> GetCreationData(RuntimeCounter counter)
     {
-      return counter.Declaration.GetCreationData(Declaration.Name);
+      return counter.Declaration.GetCreationData(Declaration);
     }
   }
 }

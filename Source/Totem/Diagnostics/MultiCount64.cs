@@ -8,9 +8,9 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures a fluctuating 64-bit integer
   /// </summary>
-  public class Count64M : MultiInstanceCounter
+  public class MultiCount64 : MultiCounter
   {
-    public Count64M(string name, string description) : base(name, description)
+    public MultiCount64(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -64,46 +64,6 @@ namespace Totem.Diagnostics
       DecrementBy(amount, instance);
 
       return Disposal.Of(() => IncrementBy(amount, instance));
-    }
-
-    public void Increment(Id instance)
-    {
-      Increment(instance.ToString());
-    }
-
-    public void Decrement(Id instance)
-    {
-      Decrement(instance.ToString());
-    }
-
-    public void IncrementBy(long amount, Id instance)
-    {
-      IncrementBy(amount, instance.ToString());
-    }
-
-    public void DecrementBy(long amount, Id instance)
-    {
-      DecrementBy(amount, instance.ToString());
-    }
-
-    public IDisposable IncrementDuring(Id instance)
-    {
-      return IncrementDuring(instance.ToString());
-    }
-
-    public IDisposable DecrementDuring(Id instance)
-    {
-      return DecrementDuring(instance.ToString());
-    }
-
-    public IDisposable IncrementDuringBy(long amount, Id instance)
-    {
-      return IncrementDuringBy(amount, instance.ToString());
-    }
-
-    public IDisposable DecrementDuringBy(long amount, Id instance)
-    {
-      return DecrementDuringBy(amount, instance.ToString());
     }
   }
 }

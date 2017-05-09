@@ -8,9 +8,9 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures a fluctuating 32-bit integer
   /// </summary>
-  public class Count32 : SingleInstanceCounter
+  public class Count : Counter
   {
-    public Count32(string name, string description) : base(name, description)
+    public Count(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()

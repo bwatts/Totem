@@ -386,8 +386,8 @@ namespace Totem.Runtime
 
         var counters = _declaredType
           .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
-          .Where(field => typeof(Counter).IsAssignableFrom(field.FieldType))
-          .Select(field => (Counter) field.GetValue(null));
+          .Where(field => typeof(CounterBase).IsAssignableFrom(field.FieldType))
+          .Select(field => (CounterBase) field.GetValue(null));
 
         category.Register(counters);
       }

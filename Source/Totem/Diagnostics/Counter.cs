@@ -1,141 +1,62 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Totem.Diagnostics
 {
   /// <summary>
-  /// A counter measuring an aspect of runtime performance
+  /// A monitored aspect of runtime performance with a single instance
   /// </summary>
-  /// <remarks>
-  /// All counters have instances per runtime. If a particular counter is multi-instance,
-  /// the runtime serves as its parent. See:
-  /// 
-  /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa373193(v=vs.85).aspx
-  /// </remarks>
-  public abstract class Counter : Binding
+  public abstract class Counter : CounterBase
   {
-    protected Counter(string name, string description)
+    readonly List<Lazy<PerformanceCounter>> _systemCounters = new List<Lazy<PerformanceCounter>>();
+
+    protected Counter(string name, string description) : base(name, description)
+    {}
+
+    internal override bool CheckCardinality(CounterCategory category)
     {
-      Name = name;
-      Description = description;
+      return category.IsSingleInstance;
     }
 
-    public readonly string Name;
-    public readonly string Description;
-
-    public override string ToString() => Name;
-
-    internal abstract bool CheckCardinality(CounterCategory category);
-
-    internal abstract IEnumerable<CounterCreationData> GetCreationData(string category);
-
-    protected CounterCreationData NewData(PerformanceCounterType type)
+    internal sealed override IEnumerable<CounterCreationData> GetCreationData(CounterCategory category)
     {
-      return new CounterCreationData(Name, Description, type);
-    }
+      _systemCounters.Clear();
 
-    protected CounterCreationData NewBaseData(PerformanceCounterType type, string suffix = " [base]")
-    {
-      return new CounterCreationData(Name + suffix, Description, type);
-    }
-
-    protected string RuntimePrefix
-    {
-      get { return Traits.RuntimePrefix.Get(this); }
-      set { Traits.RuntimePrefix.Set(this, value); }
-    }
-
-    internal static class Traits
-    {
-      internal static readonly Field<string> RuntimePrefix = Field.Declare(() => RuntimePrefix, "");
-
-      public static void InitializeRuntimePrefix(string value)
+      foreach(var counterData in GetCreationData())
       {
-        Expect(RuntimePrefix.ResolveDefault()).Is("", "The .RuntimePrefix trait is already initialized");
+        AddSystemCounter(category.Name, counterData.CounterName);
 
-        RuntimePrefix.SetDefault(value);
+        yield return counterData;
       }
     }
 
-    //
-    // Factory
-    //
+    protected abstract IEnumerable<CounterCreationData> GetCreationData();
 
-    public static AverageCount AverageCount(string name, string description)
+    protected PerformanceCounter this[int creationDataIndex] => _systemCounters[creationDataIndex].Value;
+
+    void AddSystemCounter(string category, string name)
     {
-      return new AverageCount(name, description);
+      _systemCounters.Add(new Lazy<PerformanceCounter>(() =>
+        new PerformanceCounter(category, name, RuntimePrefix, readOnly: false)));
     }
 
-    public static AverageTime AverageTime(string name, string description)
-    {
-      return new AverageTime(name, description);
-    }
-
-    public static Count32 Count32(string name, string description)
-    {
-      return new Count32(name, description);
-    }
-
-    public static Count64 Count64(string name, string description)
-    {
-      return new Count64(name, description);
-    }
-
-    public static ElapsedTime ElapsedTime(string name, string description)
-    {
-      return new ElapsedTime(name, description);
-    }
-
-    public static Total32 Total32(string name, string description)
-    {
-      return new Total32(name, description);
-    }
-
-    public static Total64 Total64(string name, string description)
-    {
-      return new Total64(name, description);
-    }
-
-    //
-    // Factory (multi-instance)
-    //
-
-    public static AverageCountM AverageCountM(string name, string description)
-    {
-      return new AverageCountM(name, description);
-    }
-
-    public static AverageTimeM AverageTimeM(string name, string description)
-    {
-      return new AverageTimeM(name, description);
-    }
-
-    public static Count32M Count32M(string name, string description)
-    {
-      return new Count32M(name, description);
-    }
-
-    public static ElapsedTimeM ElapsedTimeM(string name, string description)
-    {
-      return new ElapsedTimeM(name, description);
-    }
-
-    public static Count64M Count64M(string name, string description)
-    {
-      return new Count64M(name, description);
-    }
-
-    public static Total32M Total32M(string name, string description)
-    {
-      return new Total32M(name, description);
-    }
-
-    public static Total64M Total64M(string name, string description)
-    {
-      return new Total64M(name, description);
-    }
+    public static Activity Activity(string name, string description) => new Activity(name, description);
+    public static ActivityParallel ActivityParallel(string name, string description) => new ActivityParallel(name, description);
+    public static AverageCount AverageCount(string name, string description) => new AverageCount(name, description);
+    public static AverageRatio Ratio(string name, string description) => new AverageRatio(name, description);
+    public static AverageTime AverageTime(string name, string description) => new AverageTime(name, description);
+    public static Count Count(string name, string description) => new Count(name, description);
+    public static Count64 Count64(string name, string description) => new Count64(name, description);
+    public static Delta Delta(string name, string description) => new Delta(name, description);
+    public static Delta64 Delta64(string name, string description) => new Delta64(name, description);
+    public static ElapsedTime ElapsedTime(string name, string description) => new ElapsedTime(name, description);
+    public static Inactivity Inactivity(string name, string description) => new Inactivity(name, description);
+    public static InactivityParallel InactivityParallel(string name, string description) => new InactivityParallel(name, description);
+    public static Percentage Percentage(string name, string description) => new Percentage(name, description);
+    public static Rate Rate(string name, string description) => new Rate(name, description);
+    public static Rate64 Rate64(string name, string description) => new Rate64(name, description);
+    public static Total Total(string name, string description) => new Total(name, description);
+    public static Total64 Total64(string name, string description) => new Total64(name, description);
   }
 }

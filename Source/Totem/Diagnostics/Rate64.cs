@@ -6,16 +6,16 @@ using System.Linq;
 namespace Totem.Diagnostics
 {
   /// <summary>
-  /// Measures an increasing 32-bit integer
+  /// Measures the rate of change of a 64-bit integer
   /// </summary>
-  public class Total32 : SingleInstanceCounter
+  public class Rate64 : Counter
   {
-    public Total32(string name, string description) : base(name, description)
+    public Rate64(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
     {
-      yield return NewData(PerformanceCounterType.NumberOfItems32);
+      yield return NewData(PerformanceCounterType.RateOfCountsPerSecond64);
     }
 
     public void Increment()

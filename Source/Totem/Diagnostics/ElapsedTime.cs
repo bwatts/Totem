@@ -8,7 +8,7 @@ namespace Totem.Diagnostics
   /// <summary>
   /// Measures the elapsed time from the start of an operation
   /// </summary>
-  public class ElapsedTime : SingleInstanceCounter
+  public class ElapsedTime : Counter
   {
     public ElapsedTime(string name, string description) : base(name, description)
     {}

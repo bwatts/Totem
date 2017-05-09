@@ -22,7 +22,7 @@ namespace Totem.Runtime.Map.Diagnostics
 
     void InitializePrefix(string instanceName)
     {
-      Counter.Traits.InitializeRuntimePrefix(Escape(instanceName));
+      CounterBase.Traits.InitializeRuntimePrefix(Escape(instanceName));
     }
 
     string Escape(string instanceName)
