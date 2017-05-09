@@ -47,6 +47,7 @@
     <Compile Include="Clean.cs" />
     <Compile Include="Cmp.cs" />
     <Compile Include="Data\DbSchema.cs" />
+    <Compile Include="Diagnostics\Instance.cs" />
     <Compile Include="Diagnostics\MultiInactivityParallel.cs" />
     <Compile Include="Diagnostics\MultiInactivity.cs" />
     <Compile Include="Diagnostics\MultiElapsedTime.cs" />

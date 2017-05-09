@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class MultiTotal64 : MultiCounter
   {
-    public MultiTotal64(string name, string description) : base(name, description)
+    internal MultiTotal64(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -18,12 +18,12 @@ namespace Totem.Diagnostics
       yield return NewData(PerformanceCounterType.NumberOfItems64);
     }
 
-    public void Increment(string instance)
+    public void Increment(Instance instance)
     {
       this[0, instance].Increment();
     }
 
-    public void IncrementBy(long amount, string instance)
+    public void IncrementBy(long amount, Instance instance)
     {
       this[0, instance].IncrementBy(amount);
     }

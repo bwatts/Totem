@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class AverageRatio : Counter
   {
-    public AverageRatio(string name, string description) : base(name, description)
+    internal AverageRatio(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()

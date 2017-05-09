@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class ElapsedTime : Counter
   {
-    public ElapsedTime(string name, string description) : base(name, description)
+    internal ElapsedTime(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()

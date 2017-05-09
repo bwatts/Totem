@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class MultiCount : MultiCounter
   {
-    public MultiCount(string name, string description) : base(name, description)
+    internal MultiCount(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -18,48 +18,48 @@ namespace Totem.Diagnostics
       yield return NewData(PerformanceCounterType.NumberOfItems32);
     }
 
-    public void Increment(string instance)
+    public void Increment(Instance instance)
     {
       this[0, instance].Increment();
     }
 
-    public void Decrement(string instance)
+    public void Decrement(Instance instance)
     {
       this[0, instance].Decrement();
     }
 
-    public void IncrementBy(int amount, string instance)
+    public void IncrementBy(int amount, Instance instance)
     {
       this[0, instance].IncrementBy(amount);
     }
 
-    public void DecrementBy(int amount, string instance)
+    public void DecrementBy(int amount, Instance instance)
     {
       this[0, instance].IncrementBy(-amount);
     }
 
-    public IDisposable IncrementDuring(string instance)
+    public IDisposable IncrementDuring(Instance instance)
     {
       Increment(instance);
 
       return Disposal.Of(() => Decrement(instance));
     }
 
-    public IDisposable DecrementDuring(string instance)
+    public IDisposable DecrementDuring(Instance instance)
     {
       Decrement(instance);
 
       return Disposal.Of(() => Increment(instance));
     }
 
-    public IDisposable IncrementDuringBy(int amount, string instance)
+    public IDisposable IncrementDuringBy(int amount, Instance instance)
     {
       IncrementBy(amount, instance);
 
       return Disposal.Of(() => DecrementBy(amount, instance));
     }
 
-    public IDisposable DecrementDuringBy(int amount, string instance)
+    public IDisposable DecrementDuringBy(int amount, Instance instance)
     {
       DecrementBy(amount, instance);
 

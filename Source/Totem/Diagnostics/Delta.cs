@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class Delta : Counter
   {
-    public Delta(string name, string description) : base(name, description)
+    internal Delta(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()

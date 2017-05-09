@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class Percentage : Counter
   {
-    public Percentage(string name, string description) : base(name, description)
+    internal Percentage(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()

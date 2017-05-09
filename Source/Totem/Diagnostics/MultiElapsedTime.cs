@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class MultiElapsedTime : MultiCounter
   {
-    public MultiElapsedTime(string name, string description) : base(name, description)
+    internal MultiElapsedTime(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -18,7 +18,7 @@ namespace Totem.Diagnostics
       yield return NewData(PerformanceCounterType.ElapsedTime);
     }
 
-    public void Start(string instance)
+    public void Start(Instance instance)
     {
       this[0, instance].RawValue = Stopwatch.GetTimestamp();
     }

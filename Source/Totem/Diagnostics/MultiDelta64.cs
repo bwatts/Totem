@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class MultiDelta64 : MultiCounter
   {
-    public MultiDelta64(string name, string description) : base(name, description)
+    internal MultiDelta64(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -18,7 +18,7 @@ namespace Totem.Diagnostics
       yield return NewData(PerformanceCounterType.CounterDelta64);
     }
 
-    public void Sample(long value, string instance)
+    public void Sample(long value, Instance instance)
     {
       this[0, instance].RawValue = value;
     }

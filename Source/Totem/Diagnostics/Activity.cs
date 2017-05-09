@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class Activity : Counter
   {
-    public Activity(string name, string description) : base(name, description)
+    internal Activity(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()

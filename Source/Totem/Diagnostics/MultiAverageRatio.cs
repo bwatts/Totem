@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class MultiAverageRatio : MultiCounter
   {
-    public MultiAverageRatio(string name, string description) : base(name, description)
+    internal MultiAverageRatio(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -19,13 +19,13 @@ namespace Totem.Diagnostics
       yield return NewData(PerformanceCounterType.SampleBase);
     }
 
-    public void SampleTrue(string instance)
+    public void SampleTrue(Instance instance)
     {
       this[0, instance].Increment();
       this[1, instance].Increment();
     }
 
-    public void SampleFalse(string instance)
+    public void SampleFalse(Instance instance)
     {
       this[1, instance].Increment();
     }

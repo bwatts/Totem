@@ -13,23 +13,23 @@ namespace Totem.Runtime.Map.Diagnostics
   {
     public readonly RuntimeCounterCategorySet Categories = new RuntimeCounterCategorySet();
 
-    public void Start(string instanceName)
+    public void Start(string instance)
     {
-      InitializePrefix(instanceName);
+      InitializePrefix(instance);
 
       CreateCategoriesLocally();
     }
 
-    void InitializePrefix(string instanceName)
+    void InitializePrefix(string instance)
     {
-      CounterBase.Traits.InitializeRuntimePrefix(Escape(instanceName));
+      CounterBase.Traits.InitializeRuntimePrefix(Escape(instance));
     }
 
-    string Escape(string instanceName)
+    string Escape(string instance)
     {
       // https://msdn.microsoft.com/en-us/library/windows/desktop/aa373193(v=vs.85).aspx
 
-      var prefix = EscapeCounts(EscapeCharacters(instanceName));
+      var prefix = EscapeCounts(EscapeCharacters(instance));
 
       return prefix == "" ? "<default>" : prefix;
     }

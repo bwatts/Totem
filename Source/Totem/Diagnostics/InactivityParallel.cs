@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class InactivityParallel : Counter
   {
-    public InactivityParallel(string name, string description) : base(name, description)
+    internal InactivityParallel(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()

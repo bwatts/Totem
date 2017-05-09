@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class MultiPercentage : MultiCounter
   {
-    public MultiPercentage(string name, string description) : base(name, description)
+    internal MultiPercentage(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -19,42 +19,42 @@ namespace Totem.Diagnostics
       yield return NewData(PerformanceCounterType.RawBase);
     }
 
-    public void Increment(string instance)
+    public void Increment(Instance instance)
     {
       this[0, instance].Increment();
     }
 
-    public void IncrementBy(int amount, string instance)
+    public void IncrementBy(int amount, Instance instance)
     {
       this[0, instance].IncrementBy(amount);
     }
 
-    public void IncrementMax(string instance)
+    public void IncrementMax(Instance instance)
     {
       this[1, instance].Increment();
     }
 
-    public void IncrementMax(int amount, string instance)
+    public void IncrementMax(int amount, Instance instance)
     {
       this[1, instance].IncrementBy(amount);
     }
 
-    public void Decrement(string instance)
+    public void Decrement(Instance instance)
     {
       this[0, instance].Decrement();
     }
 
-    public void DecrementBy(int amount, string instance)
+    public void DecrementBy(int amount, Instance instance)
     {
       this[0, instance].IncrementBy(-amount);
     }
 
-    public void DecrementMax(string instance)
+    public void DecrementMax(Instance instance)
     {
       this[1, instance].Decrement();
     }
 
-    public void DecrementMax(int amount, string instance)
+    public void DecrementMax(int amount, Instance instance)
     {
       this[1, instance].IncrementBy(-amount);
     }

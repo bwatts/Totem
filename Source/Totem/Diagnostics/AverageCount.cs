@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class AverageCount : Counter
   {
-    public AverageCount(string name, string description) : base(name, description)
+    internal AverageCount(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()

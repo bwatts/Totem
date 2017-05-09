@@ -11,7 +11,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public abstract class MultiCounter : CounterBase
   {
-    readonly ConcurrentDictionary<string, PerformanceCounter> _counters = new ConcurrentDictionary<string, PerformanceCounter>();
+    readonly ConcurrentDictionary<Instance, PerformanceCounter> _counters = new ConcurrentDictionary<Instance, PerformanceCounter>();
     readonly List<string> _names = new List<string>();
     string _category;
 
@@ -37,7 +37,7 @@ namespace Totem.Diagnostics
 
     protected abstract IEnumerable<CounterCreationData> GetCreationData();
 
-    protected PerformanceCounter this[int creationDataIndex, string instance]
+    protected PerformanceCounter this[int creationDataIndex, Instance instance]
     {
       get
       {
@@ -48,7 +48,7 @@ namespace Totem.Diagnostics
         return _counters.GetOrAdd(name, _ => new PerformanceCounter(
           _category,
           name,
-          RuntimePrefix + "/" + instance,
+          $"{RuntimePrefix}/{instance}",
           readOnly: false));
       }
     }

@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class MultiInactivityParallel : MultiCounter
   {
-    public MultiInactivityParallel(string name, string description) : base(name, description)
+    internal MultiInactivityParallel(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -19,12 +19,12 @@ namespace Totem.Diagnostics
       yield return NewData(PerformanceCounterType.CounterMultiBase);
     }
 
-    public void Increment(long stopwatchTicks, string instance)
+    public void Increment(long stopwatchTicks, Instance instance)
     {
       this[0, instance].IncrementBy(stopwatchTicks);
     }
 
-    public IDisposable IncrementAfter(string instance)
+    public IDisposable IncrementAfter(Instance instance)
     {
       var start = Stopwatch.GetTimestamp();
 
@@ -34,17 +34,17 @@ namespace Totem.Diagnostics
       });
     }
 
-    public void IncrementOps(string instance)
+    public void IncrementOps(Instance instance)
     {
       this[1, instance].Increment();
     }
 
-    public void IncrementOpsBy(int amount, string instance)
+    public void IncrementOpsBy(int amount, Instance instance)
     {
       this[1, instance].IncrementBy(amount);
     }
 
-    public void SetOps(int count, string instance)
+    public void SetOps(int count, Instance instance)
     {
       this[1, instance].RawValue = count;
     }

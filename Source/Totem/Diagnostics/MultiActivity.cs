@@ -10,7 +10,7 @@ namespace Totem.Diagnostics
   /// </summary>
   public class MultiActivity : MultiCounter
   {
-    public MultiActivity(string name, string description) : base(name, description)
+    internal MultiActivity(string name, string description) : base(name, description)
     {}
 
     protected override IEnumerable<CounterCreationData> GetCreationData()
@@ -18,12 +18,12 @@ namespace Totem.Diagnostics
       yield return NewData(PerformanceCounterType.CounterTimer);
     }
 
-    public void Increment(long stopwatchTicks, string instance)
+    public void Increment(long stopwatchTicks, Instance instance)
     {
       this[0, instance].IncrementBy(stopwatchTicks);
     }
 
-    public IDisposable IncrementAfter(string instance)
+    public IDisposable IncrementAfter(Instance instance)
     {
       var start = Stopwatch.GetTimestamp();
 
