@@ -41,6 +41,14 @@ namespace Totem.Diagnostics
         new PerformanceCounter(category, name, RuntimePrefix, readOnly: false)));
     }
 
+    internal void WriteInitially()
+    {
+      foreach(var systemCounter in _systemCounters)
+      {
+        systemCounter.Value.RawValue = 0;
+      }
+    }
+
     public static Activity Activity(string name, string description) => new Activity(name, description);
     public static ActivityParallel ActivityParallel(string name, string description) => new ActivityParallel(name, description);
     public static AverageCount AverageCount(string name, string description) => new AverageCount(name, description);

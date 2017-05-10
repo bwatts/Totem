@@ -40,11 +40,23 @@ namespace Totem.Runtime.Map.Diagnostics
 
     internal void CreateLocally()
     {
+      DeleteIfExists();
+
+      Create();
+
+      WriteIfSingleInstance();
+    }
+
+    void DeleteIfExists()
+    {
       if(PerformanceCounterCategory.Exists(Declaration.Name))
       {
         PerformanceCounterCategory.Delete(Declaration.Name);
       }
+    }
 
+    void Create()
+    {
       PerformanceCounterCategory.Create(
         Declaration.Name,
         Declaration.Description,
@@ -60,6 +72,17 @@ namespace Totem.Runtime.Map.Diagnostics
     IEnumerable<CounterCreationData> GetCreationData(RuntimeCounter counter)
     {
       return counter.Declaration.GetCreationData(Declaration);
+    }
+
+    void WriteIfSingleInstance()
+    {
+      if(Declaration.IsSingleInstance)
+      {
+        foreach(Counter declaration in Counters.Select(counter => counter.Declaration))
+        {
+          declaration.WriteInitially();
+        }
+      }
     }
   }
 }
