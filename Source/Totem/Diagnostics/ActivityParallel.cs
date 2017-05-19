@@ -34,16 +34,6 @@ namespace Totem.Diagnostics
       });
     }
 
-    public void IncrementOps()
-    {
-      this[1].Increment();
-    }
-
-    public void IncrementOpsBy(int amount)
-    {
-      this[1].IncrementBy(amount);
-    }
-
     public void SetOps(int count)
     {
       this[1].RawValue = count;

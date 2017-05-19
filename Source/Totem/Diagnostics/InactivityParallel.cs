@@ -24,26 +24,6 @@ namespace Totem.Diagnostics
       this[0].IncrementBy(stopwatchTicks);
     }
 
-    public IDisposable IncrementAfter()
-    {
-      var start = Stopwatch.GetTimestamp();
-
-      return Disposal.Of(() =>
-      {
-        Increment(Stopwatch.GetTimestamp() - start);
-      });
-    }
-
-    public void IncrementOps()
-    {
-      this[1].Increment();
-    }
-
-    public void IncrementOpsBy(int amount)
-    {
-      this[1].IncrementBy(amount);
-    }
-
     public void SetOps(int count)
     {
       this[1].RawValue = count;

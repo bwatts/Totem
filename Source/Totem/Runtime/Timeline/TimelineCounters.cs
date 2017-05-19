@@ -8,7 +8,7 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// Performance monitoring for aspects of the timeline
   /// </summary>
-  [Counters("Timeline", "Monitors timeline performance")]
+  [Counters("Totem : Timeline", "Monitors timeline performance")]
   internal static class TimelineCounters
   {
     internal static readonly ElapsedTime Uptime =
