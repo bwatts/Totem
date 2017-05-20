@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Totem.Diagnostics;
@@ -51,12 +52,66 @@ namespace Totem.Runtime.Map.Diagnostics
       {
         try
         {
-          category.CreateLocally();
+          CreateLocally(category);
         }
         catch(Exception error)
         {
-          Log.Error(error, "[runtime] Failed to create category locally: {Category}");
+          Log.Error(error, "[runtime] Failed to create category locally: {Category}", category);
         }
+      }
+    }
+
+
+    void CreateLocally(RuntimeCounterCategory category)
+    {
+      TryResetCounters();
+      try
+      {
+        category.CreateLocally();
+      }
+      catch(InvalidOperationException error)
+      {
+        if(!IsCorrupted(error))
+        {
+          throw;
+        }
+
+        TryResetCounters();
+
+        category.CreateLocally();
+      }
+    }
+
+    static bool IsCorrupted(InvalidOperationException error) =>
+      error.Message.StartsWith(
+        "Cannot load Counter Name data because an invalid index",
+        StringComparison.OrdinalIgnoreCase);
+
+    void TryResetCounters()
+    {
+      Log.Info("[runtime] Detected counter corruption. Resetting...");
+
+      try
+      {
+        using(var process = new Process
+        {
+          StartInfo = new ProcessStartInfo
+          {
+            FileName = "lodctr",
+            Arguments = "/r",
+            UseShellExecute = false
+          }
+        })
+        {
+          process.Start();
+          process.WaitForExit();
+
+          Console.WriteLine();
+        }
+      }
+      catch(Exception resetError)
+      {
+        Log.Error(resetError, "[runtime] Failed to reset counters");
       }
     }
   }
