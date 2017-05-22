@@ -48,7 +48,7 @@ namespace Totem.Diagnostics
         return _counters.GetOrAdd(name, _ => new PerformanceCounter(
           _category,
           name,
-          $"{RuntimePrefix}/{instance}",
+          $"{RuntimePrefix}|{instance}",
           readOnly: false));
       }
     }
