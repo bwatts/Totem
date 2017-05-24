@@ -49,12 +49,10 @@ namespace Totem.Diagnostics
 
     internal static class Traits
     {
-      internal static readonly Field<string> RuntimePrefix = Field.Declare(() => RuntimePrefix, "");
+      internal static readonly Field<string> RuntimePrefix = Field.Declare(() => RuntimePrefix);
 
       public static void InitializeRuntimePrefix(string value)
       {
-        Expect(RuntimePrefix.ResolveDefault()).Is("", "The .RuntimePrefix trait is already initialized");
-
         RuntimePrefix.SetDefault(value);
       }
     }

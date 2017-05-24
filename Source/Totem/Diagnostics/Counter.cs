@@ -41,7 +41,7 @@ namespace Totem.Diagnostics
         new PerformanceCounter(category, name, RuntimePrefix, readOnly: false)));
     }
 
-    internal void WriteInitially()
+    internal void WriteDefault()
     {
       foreach(var systemCounter in _systemCounters)
       {

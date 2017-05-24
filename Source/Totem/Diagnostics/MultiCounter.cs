@@ -45,11 +45,10 @@ namespace Totem.Diagnostics
 
         var name = _names[creationDataIndex];
 
-        return _counters.GetOrAdd(name, _ => new PerformanceCounter(
-          _category,
-          name,
-          $"{RuntimePrefix}|{instance}",
-          readOnly: false));
+        var instanceName = RuntimePrefix == "" ? instance.ToString() : $"{RuntimePrefix}|{instance}";
+
+        return _counters.GetOrAdd(name, _ =>
+          new PerformanceCounter(_category, name, instanceName, readOnly: false));
       }
     }
 

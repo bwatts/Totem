@@ -18,22 +18,27 @@ namespace Totem.Runtime.Map.Diagnostics
     {
       InitializePrefix(instance);
 
-      CreateCategoriesLocally();
+      try
+      {
+        CreateCounters();
+      }
+      catch(Exception error)
+      {
+        Log.Error(error, "[runtime] Failed to start runtime monitor");
+      }
     }
 
-    void InitializePrefix(string instance)
-    {
-      CounterBase.Traits.InitializeRuntimePrefix(Escape(instance));
-    }
+    //
+    // Prefix
+    //
 
-    string Escape(string instance)
-    {
-      // https://msdn.microsoft.com/en-us/library/windows/desktop/aa373193(v=vs.85).aspx
+    void InitializePrefix(string instance) =>
+      CounterBase.Traits.InitializeRuntimePrefix(EscapePrefix(instance));
 
-      var prefix = EscapeCounts(EscapeCharacters(instance));
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/aa373193(v=vs.85).aspx
 
-      return prefix == "" ? "<default>" : prefix;
-    }
+    string EscapePrefix(string instance) =>
+      EscapeCounts(EscapeCharacters(instance));
 
     string EscapeCharacters(string prefix) =>
       prefix
@@ -46,51 +51,65 @@ namespace Totem.Runtime.Map.Diagnostics
     string EscapeCounts(string prefix) =>
       Regex.Replace(prefix, "#[0-9][^0-9]", match => "-" + match.Groups[0].Value);
 
-    void CreateCategoriesLocally()
+    //
+    // Counters
+    //
+
+    void CreateCounters()
+    {
+      try
+      {
+        CreateCategories();
+      }
+      catch(Exception error)
+      {
+        if(TryResetCounters(error))
+        {
+          CreateCategories();
+        }
+        else
+        {
+          throw;
+        }
+      }
+    }
+
+    void CreateCategories()
     {
       foreach(var category in Categories)
       {
         try
         {
-          CreateLocally(category);
+          category.CreateLocally();
         }
         catch(Exception error)
         {
-          Log.Error(error, "[runtime] Failed to create category locally: {Category}", category);
+          Log.Error(error, "[runtime] Failed to create counter category locally: {Category}", category);
         }
       }
     }
 
-
-    void CreateLocally(RuntimeCounterCategory category)
+    bool TryResetCounters(Exception error)
     {
-      TryResetCounters();
-      try
+      if(IsCorrupted(error))
       {
-        category.CreateLocally();
-      }
-      catch(InvalidOperationException error)
-      {
-        if(!IsCorrupted(error))
-        {
-          throw;
-        }
+        Log.Info("[runtime] Detected counter corruption. Resetting...");
 
-        TryResetCounters();
+        ResetCounters();
 
-        category.CreateLocally();
+        return true;
       }
+
+      return false;
     }
 
-    static bool IsCorrupted(InvalidOperationException error) =>
+    static bool IsCorrupted(Exception error) =>
       error.Message.StartsWith(
         "Cannot load Counter Name data because an invalid index",
         StringComparison.OrdinalIgnoreCase);
 
-    void TryResetCounters()
+    void ResetCounters()
     {
-      Log.Info("[runtime] Detected counter corruption. Resetting...");
-
       try
       {
         using(var process = new Process
@@ -99,14 +118,12 @@ namespace Totem.Runtime.Map.Diagnostics
           {
             FileName = "lodctr",
             Arguments = "/r",
-            UseShellExecute = false
+            UseShellExecute = true
           }
         })
         {
           process.Start();
           process.WaitForExit();
-
-          Console.WriteLine();
         }
       }
       catch(Exception resetError)

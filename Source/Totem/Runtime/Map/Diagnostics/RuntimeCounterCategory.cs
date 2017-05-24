@@ -43,8 +43,6 @@ namespace Totem.Runtime.Map.Diagnostics
       DeleteIfExists();
 
       Create();
-
-      WriteIfSingleInstance();
     }
 
     void DeleteIfExists()
@@ -57,31 +55,40 @@ namespace Totem.Runtime.Map.Diagnostics
 
     void Create()
     {
+      if(Declaration.IsMultiInstance)
+      {
+        CreateType(PerformanceCounterCategoryType.MultiInstance);
+      }
+      else if(HasRuntimePrefix)
+      {
+        CreateType(PerformanceCounterCategoryType.MultiInstance);
+
+        WriteDefaults();
+      }
+      else
+      {
+        CreateType(PerformanceCounterCategoryType.SingleInstance);
+      }
+    }
+
+    void CreateType(PerformanceCounterCategoryType type) =>
       PerformanceCounterCategory.Create(
         Declaration.Name,
         Declaration.Description,
-        PerformanceCounterCategoryType.MultiInstance,
-        new CounterCreationDataCollection(GetCreationDataArray()));
-    }
+        type,
+        new CounterCreationDataCollection(
+          Counters
+          .SelectMany(counter => counter.Declaration.GetCreationData(Declaration))
+          .ToArray()));
 
-    CounterCreationData[] GetCreationDataArray()
-    {
-      return Counters.SelectMany(GetCreationData).ToArray();
-    }
+    bool HasRuntimePrefix =>
+      CounterBase.Traits.RuntimePrefix.ResolveDefaultTyped() != "";
 
-    IEnumerable<CounterCreationData> GetCreationData(RuntimeCounter counter)
+    void WriteDefaults()
     {
-      return counter.Declaration.GetCreationData(Declaration);
-    }
-
-    void WriteIfSingleInstance()
-    {
-      if(Declaration.IsSingleInstance)
+      foreach(Counter declaration in Counters.Select(counter => counter.Declaration))
       {
-        foreach(Counter declaration in Counters.Select(counter => counter.Declaration))
-        {
-          declaration.WriteInitially();
-        }
+        declaration.WriteDefault();
       }
     }
   }
