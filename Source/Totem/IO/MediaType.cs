@@ -10,7 +10,7 @@ namespace Totem.IO
 	/// An identifier representing the format of a piece of media
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public sealed class MediaType : Notion, IEquatable<MediaType>, IComparable<MediaType>
+	public sealed class MediaType : Clean, IEquatable<MediaType>, IComparable<MediaType>
 	{
 		public MediaType(string name)
 		{

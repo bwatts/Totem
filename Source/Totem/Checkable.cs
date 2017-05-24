@@ -314,12 +314,12 @@ namespace Totem
 		// Tags
 		//
 
-		public static Check<Tag<T>> IsUnset<T>(this Check<Tag<T>> check, ITaggable target)
+		public static Check<Field<T>> IsUnset<T>(this Check<Field<T>> check, IBindable target)
 		{
 			return check.IsTrue(t => t.IsUnset(target));
 		}
 
-		public static Check<Tag<T>> IsSet<T>(this Check<Tag<T>> check, ITaggable target)
+		public static Check<Field<T>> IsSet<T>(this Check<Field<T>> check, IBindable target)
 		{
 			return check.IsTrue(t => t.IsSet(target));
 		}

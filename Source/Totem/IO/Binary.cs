@@ -13,7 +13,7 @@ namespace Totem.IO
 	/// A sequences of bytes
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public struct Binary : IWritable, IEquatable<Binary>
+	public struct Binary : ITextable, IEquatable<Binary>
 	{
 		public static readonly Binary None = new Binary();
 

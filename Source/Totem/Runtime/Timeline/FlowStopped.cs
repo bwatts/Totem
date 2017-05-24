@@ -14,11 +14,11 @@ namespace Totem.Runtime.Timeline
 		{
 			Type = type;
       Id = id;
-			Error = error;
+      Error = error;
 		}
 
 		public readonly RuntimeTypeKey Type;
     public readonly Id Id;
-		public readonly string Error;
+    public readonly string Error;
 	}
 }

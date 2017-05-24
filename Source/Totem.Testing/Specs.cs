@@ -21,14 +21,14 @@ namespace Totem
 	[XunitAdapter]
 	public abstract class Specs
 	{
-		static Specs()
-		{
-			var deployment = RuntimeSection.Read().ReadDeployment();
+    static Specs()
+    {
+      var deployment = RuntimeSection.Read().ReadDeployment();
 
-			var runtime = new RuntimeReader(deployment).Read();
+      var runtime = new RuntimeReader(deployment).Read();
 
-			Notion.Traits.InitializeRuntime(runtime);
-		}
+      Notion.Traits.InitializeRuntime(runtime);
+    }
 
     protected Expect<T> Expect<T>(T target)
 		{

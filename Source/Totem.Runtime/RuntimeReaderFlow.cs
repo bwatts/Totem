@@ -301,7 +301,7 @@ namespace Totem.Runtime
 				flowEvent = new FlowEvent(_flow, _event, route, when);
 			}
 
-			_flow.RegisterEvent(flowEvent);
+			_flow.Events.Register(flowEvent);
 
 			_event.RegisterFlow(flowEvent);
 

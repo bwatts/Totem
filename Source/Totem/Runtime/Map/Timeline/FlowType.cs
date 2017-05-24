@@ -51,7 +51,5 @@ namespace Totem.Runtime.Map.Timeline
 		}
 
 		public Flow New() => Constructor.Call();
-
-		internal void RegisterEvent(FlowEvent e) => Events.Register(e);
 	}
 }

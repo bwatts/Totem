@@ -36,11 +36,11 @@ namespace Totem
 			Assert.Equal("x", Text.Of("x").ToString());
 		}
 
-		void WritableValue()
+		void TextableValue()
 		{
-			var writableValue = (IWritable) Text.Of("x");
+			var textableValue = (ITextable) Text.Of("x");
 
-			Assert.Equal("x", Text.Of(writableValue).ToString());
+			Assert.Equal("x", Text.Of(textableValue).ToString());
 		}
 
 		void ActionValue()
@@ -178,11 +178,11 @@ namespace Totem
 			Assert.Equal("xy", Text.Of("x").Write("y").ToString());
 		}
 
-		void WriteWritable()
+		void WriteTextable()
 		{
-			var writableValue = (IWritable) Text.Of("y");
+			var textableValue = (ITextable) Text.Of("y");
 
-			Assert.Equal("xy", Text.Of("x").Write(writableValue).ToString());
+			Assert.Equal("xy", Text.Of("x").Write(textableValue).ToString());
 		}
 
 		void WriteAction()
@@ -223,9 +223,9 @@ namespace Totem
 			Assert.Equal("xy", value.ToString());
 		}
 
-		void AddWritable()
+		void AddTextable()
 		{
-			var value = Text.Of("x") + (IWritable) Text.Of("y");
+			var value = Text.Of("x") + (ITextable) Text.Of("y");
 
 			Assert.Equal("xy", value.ToString());
 		}
@@ -260,11 +260,11 @@ namespace Totem
 			Assert.Equal("y", Text.None.Write("y").ToString());
 		}
 
-		void NoneWriteWritable()
+		void NoneWriteTextable()
 		{
-			var writableValue = (IWritable) Text.Of("y");
+			var textableValue = (ITextable) Text.Of("y");
 
-			Assert.Equal("y", Text.None.Write(writableValue).ToString());
+			Assert.Equal("y", Text.None.Write(textableValue).ToString());
 		}
 
 		void NoneWriteAction()
@@ -305,12 +305,12 @@ namespace Totem
 			Assert.Equal("xy", value.ToString());
 		}
 
-		void ManyWritables()
+		void ManyTextables()
 		{
-			var value = Text.OfMany(new[]
+			var value = Text.OfMany<ITextable>(new[]
 			{
-				(IWritable) Text.Of("x"),
-				(IWritable) Text.Of("y")
+				(ITextable) Text.Of("x"),
+				(ITextable) Text.Of("y")
 			});
 
 			Assert.Equal("xy", value.ToString());

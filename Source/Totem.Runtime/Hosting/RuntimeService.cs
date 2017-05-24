@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Primitives;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -14,71 +15,88 @@ using Totem.Runtime.Map;
 
 namespace Totem.Runtime.Hosting
 {
-	/// <summary>
-	/// The Topshelf service control hosting the Totem runtime
-	/// </summary>
-	internal sealed class RuntimeService : ServiceControl, ITaggable, IRuntimeService
-	{
-		private readonly Assembly _programAssembly;
-		private HostControl _hostControl;
-		private CompositionContainer _container;
-		private CancellationTokenSource _cancellationTokenSource;
-		private IDisposable _instance;
+  /// <summary>
+  /// The Topshelf service control hosting the Totem runtime
+  /// </summary>
+  internal sealed class RuntimeService : ServiceControl, IBindable, IRuntimeService
+  {
+    readonly Assembly _programAssembly;
+    HostControl _hostControl;
+    CompositionContainer _container;
+    CancellationTokenSource _cancellationTokenSource;
+    IDisposable _instance;
 
-		internal RuntimeService(Assembly programAssembly)
-		{
-			_programAssembly = programAssembly;
+    internal RuntimeService(string instanceName, Assembly programAssembly)
+    {
+      InstanceName = instanceName;
+      _programAssembly = programAssembly;
 
-			Tags = new Tags();
+      SetCurrentDirectoryToProgram();
+    }
 
-			SetCurrentDirectoryToProgram();
-		}
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    Fields IBindable.Fields => Fields;
 
-		Tags ITaggable.Tags => Tags;
-		private Tags Tags { get; set; }
-		private IClock Cloc => Notion.Traits.Clock.Get(this);
-		private ILog Log => Notion.Traits.Log.Get(this);
-		private RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
+    Fields Fields { get; } = new Fields();
+    IClock Clock => Notion.Traits.Clock.Get(this);
+    ILog Log => Notion.Traits.Log.Get(this);
+    RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
-		private void SetCurrentDirectoryToProgram()
-		{
-			// Run the service where installed, instead of a system folder
+    public string InstanceName { get; }
 
-			Directory.SetCurrentDirectory(_programAssembly.GetDirectoryName());
-		}
+    void SetCurrentDirectoryToProgram()
+    {
+      // Run the service where installed, instead of a system folder
 
-		//
-		// Start
-		//
+      Directory.SetCurrentDirectory(_programAssembly.GetDirectoryName());
+    }
 
-		internal static IRuntimeService Instance;
+    //
+    // Start
+    //
 
-		public bool Start(HostControl hostControl)
-		{
-			_hostControl = hostControl;
+    internal static IRuntimeService Instance;
 
-			Instance = this;
+    public bool Start(HostControl hostControl)
+    {
+      _hostControl = hostControl;
 
-			Log.Info("[runtime] Starting service");
+      Instance = this;
 
-			OpenScope();
+      Log.Info("[runtime] Starting service");
 
-			LoadInstance();
+      OpenScope();
 
-			Log.Info("[runtime] Service started");
+      StartMonitor();
 
-			return true;
-		}
+      LoadInstance();
 
-		private void OpenScope()
-		{
-			_container = new CompositionContainer(Runtime.Catalog, CompositionOptions.DisableSilentRejection);
+      Log.Info("[runtime] Service started");
 
-			_cancellationTokenSource = new CancellationTokenSource();
-		}
+      return true;
+    }
 
-		private void LoadInstance()
-		{
+    void OpenScope()
+    {
+      _container = new CompositionContainer(Runtime.Catalog, CompositionOptions.DisableSilentRejection);
+
+      _cancellationTokenSource = new CancellationTokenSource();
+    }
+
+    void StartMonitor()
+    {
+      try
+      {
+        Runtime.Monitor.Start(InstanceName);
+      }
+      catch(Exception error)
+      {
+        Log.Error(error, "[runtime] Failed to start performance monitoring");
+      }
+    }
+
+    void LoadInstance()
+    {
       try
       {
         _instance = _container
@@ -89,9 +107,9 @@ namespace Totem.Runtime.Hosting
       {
         throw new Exception("Failed to compose the runtime service", GetRootException(error));
       }
-		}
+    }
 
-    private Exception GetRootException(Exception error)
+    Exception GetRootException(Exception error)
     {
       // http://haacked.com/archive/2014/12/09/unwrap-mef-exception/
 
@@ -140,55 +158,55 @@ namespace Totem.Runtime.Hosting
       return error;
     }
 
-		//
-		// Stop
-		//
+    //
+    // Stop
+    //
 
-		public bool Stop(HostControl hostControl)
-		{
-			UnloadInstance();
+    public bool Stop(HostControl hostControl)
+    {
+      UnloadInstance();
 
-			CloseScope();
+      CloseScope();
 
-			return true;
-		}
+      return true;
+    }
 
-		private void UnloadInstance()
-		{
-			if(_instance != null)
-			{
-				_cancellationTokenSource.Cancel();
+    void UnloadInstance()
+    {
+      if(_instance != null)
+      {
+        _cancellationTokenSource.Cancel();
 
-				_instance.Dispose();
-			}
-		}
+        _instance.Dispose();
+      }
+    }
 
-		private void CloseScope()
-		{
-			if(_container != null)
-			{
-				_container.Dispose();
-			}
+    void CloseScope()
+    {
+      if(_container != null)
+      {
+        _container.Dispose();
+      }
 
-			_hostControl = null;
-			_container = null;
-			_cancellationTokenSource = null;
-			_instance = null;
-		}
+      _hostControl = null;
+      _container = null;
+      _cancellationTokenSource = null;
+      _instance = null;
+    }
 
-		//
-		// Restart
-		//
+    //
+    // Restart
+    //
 
-		public void Restart(string reason)
-		{
-			Restarted = true;
+    public void Restart(string reason)
+    {
+      Restarted = true;
 
-			Log.Info("[runtime] Restarting in 5s: {Reason:l}", reason);
+      Log.Info("[runtime] Restarting in 5s: {Reason:l}", reason);
 
-			Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => _hostControl.Stop());
-		}
+      Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ => _hostControl.Stop());
+    }
 
-		internal bool Restarted { get; private set; }
-	}
+    internal bool Restarted { get; private set; }
+  }
 }

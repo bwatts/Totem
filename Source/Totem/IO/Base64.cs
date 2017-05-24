@@ -11,7 +11,7 @@ namespace Totem.IO
 	/// A binary value encoded as Base64 text
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public sealed class Base64 : IWritable, IEquatable<Base64>, IComparable<Base64>
+	public sealed class Base64 : ITextable, IEquatable<Base64>, IComparable<Base64>
 	{
 		public static readonly Base64 None = new Base64("", Binary.None);
 

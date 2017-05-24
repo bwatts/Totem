@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,8 +31,10 @@ namespace Totem.Web
     WebApiRequest _request;
     RequestType _requestType;
 
-    Tags ITaggable.Tags => Tags;
-    protected Tags Tags { get; } = new Tags();
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    Fields IBindable.Fields => Fields;
+
+    protected Fields Fields { get; } = new Fields();
 		protected IClock Clock => Notion.Traits.Clock.Get(this);
 		protected ILog Log => Notion.Traits.Log.Get(this);
 		protected RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);

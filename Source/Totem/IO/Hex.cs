@@ -10,7 +10,7 @@ namespace Totem.IO
 	/// A binary value encoded as hexadecimal text
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public sealed class Hex : IWritable, IEquatable<Hex>, IComparable<Hex>
+	public sealed class Hex : ITextable, IEquatable<Hex>, IComparable<Hex>
 	{
 		public static readonly Hex None = new Hex("", Binary.None);
 

@@ -8,8 +8,8 @@ namespace Totem.IO
 	/// Content of type <see cref="TContent"/> identified by media type
 	/// </summary>
 	/// <typeparam name="TContent">The identified type of content</typeparam>
-	public class Media<TContent> : Notion
-	{
+	public class Media<TContent> : Clean
+  {
 		public Media(MediaType type, TContent content)
 		{
 			Type = type;

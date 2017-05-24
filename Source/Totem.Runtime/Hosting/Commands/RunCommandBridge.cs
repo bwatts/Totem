@@ -26,7 +26,7 @@ namespace Totem.Runtime.Hosting.Commands
 		{
 			Console.SetOut(consoleOut);
 
-			var command = new RuntimeCommand();
+      var command = new RuntimeCommand();
 
 			var result = command.Execute<TProgram>();
 
@@ -39,13 +39,18 @@ namespace Totem.Runtime.Hosting.Commands
 
 			protected override int ExecuteCommand<TProgram>()
 			{
-				var service = new RuntimeService(typeof(TProgram).Assembly);
+        var service = null as RuntimeService;
 
 				var result = (int) HostFactory.Run(host =>
 				{
 					host.UseSerilog(SerilogAdapter.Logger);
 
-					host.Service(() => service);
+          host.Service(settings =>
+          {
+            service = new RuntimeService(settings.InstanceName, typeof(TProgram).Assembly);
+
+            return service;
+          });
 
 					new TProgram().ConfigureHost(host);
 				});

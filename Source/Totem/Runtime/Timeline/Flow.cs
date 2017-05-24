@@ -71,17 +71,17 @@ namespace Totem.Runtime.Timeline
 
 		public new static class Traits
 		{
-      public static readonly Tag<Id> RequestId = Tag.Declare(() => RequestId);
-      public static readonly Tag<Id> UserId = Tag.Declare(() => UserId);
+      public static readonly Field<Id> RequestId = Field.Declare(() => RequestId);
+      public static readonly Field<Id> UserId = Field.Declare(() => UserId);
 
-      public static void ForwardRequestId(Event source, Event target)
+      public static void BindRequestId(Event source, Event target)
 			{
-        RequestId.Copy(source, target);
+        RequestId.Bind(source, target);
 			}
 
-      public static void ForwardUserId(Event source, Event target)
+      public static void BindUserId(Event source, Event target)
       {
-        UserId.Copy(source, target);
+        UserId.Bind(source, target);
       }
     }
 	}

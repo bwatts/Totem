@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Linq;
+using Totem.Runtime.Map.Diagnostics;
 using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Map
@@ -11,10 +12,11 @@ namespace Totem.Runtime.Map
 	/// </summary>
 	public sealed class RuntimeMap
 	{
-		public RuntimeMap(RuntimeDeployment deployment, RuntimeRegionSet regions)
+		public RuntimeMap(RuntimeDeployment deployment, RuntimeMonitor monitor, RuntimeRegionSet regions)
 		{
 			Deployment = deployment;
-			Regions = regions;
+      Monitor = monitor;
+      Regions = regions;
 
 			Catalog = new AggregateCatalog(
 				from region in Regions
@@ -24,7 +26,8 @@ namespace Totem.Runtime.Map
 
 		public readonly RuntimeDeployment Deployment;
 		public readonly RuntimeRegionSet Regions;
-		public readonly AggregateCatalog Catalog;
+    public readonly RuntimeMonitor Monitor;
+    public readonly AggregateCatalog Catalog;
 
     public override string ToString() => Deployment.Folder.ToString();
 

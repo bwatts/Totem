@@ -12,9 +12,9 @@ namespace Totem.Runtime.Hosting.Commands
 	/// </summary>
 	public sealed class RunCommand : HostCommand
 	{
-		private AppDomain _appDomain;
-		private RunCommandBridge _bridge;
-		private int? _result;
+		AppDomain _appDomain;
+		RunCommandBridge _bridge;
+		int? _result;
 
 		protected override int ExecuteCommand<TProgram>()
 		{
@@ -26,10 +26,10 @@ namespace Totem.Runtime.Hosting.Commands
 			return FinalResult;
 		}
 
-		private bool Executing => _result == null;
-		private int FinalResult => _result.Value;
+		bool Executing => _result == null;
+		int FinalResult => _result.Value;
 
-		private void ExecuteRuntime<TProgram>() where TProgram : IRuntimeProgram, new()
+		void ExecuteRuntime<TProgram>() where TProgram : IRuntimeProgram, new()
 		{
 			try
 			{
@@ -47,7 +47,7 @@ namespace Totem.Runtime.Hosting.Commands
 		// App domain
 		//
 
-		private void ExecuteRuntimeAppDomain<TProgram>() where TProgram : IRuntimeProgram, new()
+		void ExecuteRuntimeAppDomain<TProgram>() where TProgram : IRuntimeProgram, new()
 		{
 			CreateAppDomain();
 
@@ -56,7 +56,7 @@ namespace Totem.Runtime.Hosting.Commands
 			ExecuteBridge<TProgram>();
 		}
 
-		private void CreateAppDomain()
+		void CreateAppDomain()
 		{
 			_appDomain = AppDomain.CreateDomain(typeof(RunCommand).FullName, null, new AppDomainSetup
 			{
@@ -66,7 +66,7 @@ namespace Totem.Runtime.Hosting.Commands
 			});
 		}
 
-		private void CreateBridge()
+		void CreateBridge()
 		{
 			var assemblyFile = Path.Combine(_appDomain.SetupInformation.ApplicationBase, "Totem.Runtime.dll");
 
@@ -81,7 +81,7 @@ namespace Totem.Runtime.Hosting.Commands
 				activationAttributes: null);
 		}
 
-		private void ExecuteBridge<TProgram>() where TProgram : IRuntimeProgram, new()
+		void ExecuteBridge<TProgram>() where TProgram : IRuntimeProgram, new()
 		{
 			try
 			{
@@ -93,7 +93,7 @@ namespace Totem.Runtime.Hosting.Commands
 			}
 		}
 
-		private void UnloadAppDomain()
+		void UnloadAppDomain()
 		{
 			try
 			{
@@ -110,7 +110,7 @@ namespace Totem.Runtime.Hosting.Commands
 			_bridge = null;
 		}
 
-		private sealed class ConsoleWriter : TextWriter
+		sealed class ConsoleWriter : TextWriter
 		{
 			public override Encoding Encoding
 			{

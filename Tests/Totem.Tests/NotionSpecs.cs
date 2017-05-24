@@ -16,30 +16,30 @@ namespace Totem
 
 		void Create()
 		{
-			var tags = (new TestNotion() as ITaggable).Tags;
+			var fields = (new TestNotion() as IBindable).Fields;
 
-			Expect(tags.Count).Is(0);
+			Expect(fields.Count).Is(0);
 		}
 
 		void GetTagDefault()
 		{
 			var notion = new TestNotion();
-			var tags = (notion as ITaggable).Tags;
+			var fields = (notion as IBindable).Fields;
 
 			Expect(notion.Now.Kind).Is(DateTimeKind.Utc);
 
-			Expect(tags.Count).Is(1);
-			Expect(tags.Get(Notion.Traits.Clock)).IsAssignableTo(typeof(IClock));
+			Expect(fields.Count).Is(1);
+			Expect(fields.Get(Notion.Traits.Clock)).IsAssignableTo(typeof(IClock));
 		}
 
 		void SetTag()
 		{
-			var tags = (new TestNotion() as ITaggable).Tags;
+			var fields = (new TestNotion() as IBindable).Fields;
 
-			tags.Set(Notion.Traits.Clock, null);
+      fields.Set(Notion.Traits.Clock, null);
 
-			Expect(tags.Count).Is(1);
-			Expect(tags.Get(Notion.Traits.Clock)).IsNull();
+			Expect(fields.Count).Is(1);
+			Expect(fields.Get(Notion.Traits.Clock)).IsNull();
 		}
 	}
 }

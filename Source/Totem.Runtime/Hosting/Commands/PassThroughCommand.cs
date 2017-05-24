@@ -16,7 +16,7 @@ namespace Totem.Runtime.Hosting.Commands
 			{
 				host.UseSerilog(SerilogAdapter.Logger);
 
-				host.Service(() => new RuntimeService(typeof(TProgram).Assembly));
+				host.Service(s => new RuntimeService(s.InstanceName, typeof(TProgram).Assembly));
 
 				new TProgram().ConfigureHost(host);
 			});
