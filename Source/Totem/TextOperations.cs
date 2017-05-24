@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -819,5 +820,79 @@ namespace Totem
 		{
 			return text + value.CompactRight(maxLength, ellipsis);
 		}
-	}
+
+    //
+    // Comparisons
+    //
+
+    public static bool Equals(this Text text, string other)
+    {
+      return other != null && text.ToString().Equals(other);
+    }
+
+    public static bool Equals(this Text text, string other, StringComparison comparisonType)
+    {
+      return other != null && text.ToString().Equals(other, comparisonType);
+    }
+
+    public static int Compare(this Text text, string other)
+    {
+      return text.ToString().CompareTo(other);
+    }
+
+    public static int Compare(this Text text, string other, StringComparison comparisonType)
+    {
+      return string.Compare(text.ToString(), other, comparisonType);
+    }
+
+    public static int Compare(this Text text, string other, bool ignoreCase)
+    {
+      return string.Compare(text.ToString(), other, ignoreCase);
+    }
+
+    public static int Compare(this Text text, string other, bool ignoreCase, CultureInfo culture)
+    {
+      return string.Compare(text.ToString(), other, ignoreCase, culture);
+    }
+
+    public static int Compare(this Text text, string other, CultureInfo culture, CompareOptions options)
+    {
+      return string.Compare(text.ToString(), other, culture, options);
+    }
+
+    public static int Compare(this Text text, int index, string other, int otherIndex, int length)
+    {
+      return string.Compare(text.ToString(), index, other, otherIndex, length);
+    }
+
+    public static int Compare(this Text text, int index, string other, int otherIndex, int length, StringComparison comparisonType)
+    {
+      return string.Compare(text.ToString(), index, other, otherIndex, length, comparisonType);
+    }
+
+    public static int Compare(this Text text, int index, string other, int otherIndex, int length, bool ignoreCase)
+    {
+      return string.Compare(text.ToString(), index, other, otherIndex, length, ignoreCase);
+    }
+
+    public static int Compare(this Text text, int index, string other, int otherIndex, int length, CultureInfo culture, CompareOptions options)
+    {
+      return string.Compare(text.ToString(), index, other, otherIndex, length, culture, options);
+    }
+
+    public static int Compare(this Text text, int index, string other, int otherIndex, int length, bool ignoreCase, CultureInfo culture)
+    {
+      return string.Compare(text.ToString(), index, other, otherIndex, length, ignoreCase, culture);
+    }
+
+    public static int CompareOrdinal(this Text text, string other)
+    {
+      return string.CompareOrdinal(text.ToString(), other);
+    }
+
+    public static int CompareOrdinal(this Text text, int index, string other, int otherIndex, int length)
+    {
+      return string.CompareOrdinal(text.ToString(), index, other, otherIndex, length);
+    }
+  }
 }

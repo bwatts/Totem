@@ -14,7 +14,7 @@ namespace Totem.Web.Push
 	/// Communicates with clients interacting via push
 	/// </summary>
 	[HubName("push")]
-	public sealed class PushHub : Hub, ITaggable
+	public sealed class PushHub : Hub, IBindable
 	{
     readonly Lazy<Id> _connectionId;
     readonly Lazy<string> _compactConnectionId;
@@ -28,17 +28,17 @@ namespace Totem.Web.Push
       _compactConnectionId = new Lazy<string>(() => ConnectionId.ToText().CompactRight(8, "..."));
 		}
 
-    public Tags Tags { get; } = new Tags();
+    public Fields Fields { get; } = new Fields();
 		ILog Log => Notion.Traits.Log.Get(this);
 
     Id ConnectionId => _connectionId.Value;
     string CompactConnectionId => _compactConnectionId.Value;
 
-		//
-		// Connection
-		//
+    //
+    // Connection
+    //
 
-		public override Task OnConnected()
+    public override Task OnConnected()
 		{
 			Log.Verbose("[push] [{ConnectionId:l}] Connected", CompactConnectionId);
 

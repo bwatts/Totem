@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Totem
+namespace Totem.Runtime
 {
 	/// <summary>
 	/// The relative importance of a log message

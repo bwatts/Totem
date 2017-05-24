@@ -12,7 +12,7 @@ namespace Totem.IO
 	/// A SHA-1 value encoded as hexadecimal text
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public sealed class Sha1 : IWritable, IEquatable<Sha1>, IComparable<Sha1>
+	public sealed class Sha1 : ITextable, IEquatable<Sha1>, IComparable<Sha1>
 	{
 		public const int HexLength = 40;
 		public const int BinaryLength = 20;

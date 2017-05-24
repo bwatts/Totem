@@ -11,7 +11,7 @@ namespace Totem
 	/// A space-separated list of descriptive text values
 	/// </summary>
 	[TypeConverter(typeof(Converter))]
-	public sealed class Terms : IWritable, IEquatable<Terms>, IReadOnlyList<string>
+	public sealed class Terms : ITextable, IEquatable<Terms>, IReadOnlyList<string>
 	{
 		private readonly string[] _terms;
 

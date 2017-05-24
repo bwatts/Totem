@@ -9,6 +9,8 @@ namespace Totem.Runtime.Hosting
 	/// </summary>
 	public interface IRuntimeService
 	{
+    string InstanceName { get; }
+
 		void Restart(string reason);
 	}
 }

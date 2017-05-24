@@ -23,16 +23,17 @@ namespace Totem.Web
 	/// <summary>
 	/// An HTTP-bound API composed by OWIN and Nancy
 	/// </summary>
-	public abstract class WebApiApp : AutofacNancyBootstrapper, IWebApp, ITaggable
+	public abstract class WebApiApp : AutofacNancyBootstrapper, IWebApp, IBindable
 	{
 		protected WebApiApp(WebAppContext appContext)
 		{
 			AppContext = appContext;
-			Tags = new Tags();
 		}
 
-		Tags ITaggable.Tags => Tags;
-		protected Tags Tags { get; private set; }
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    Fields IBindable.Fields => Fields;
+
+    protected Fields Fields { get; } = new Fields();
 		protected IClock Clock => Notion.Traits.Clock.Get(this);
 		protected ILog Log => Notion.Traits.Log.Get(this);
 		protected RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);

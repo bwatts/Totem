@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Serilog;
 using Serilog.Events;
 
 namespace Totem.Runtime.Configuration
 {
-	/// <summary>
-	/// Writes log messages to a Serilog logger
-	/// </summary>
-	internal sealed class SerilogAdapter : ILog
+  /// <summary>
+  /// Writes log messages to a Serilog logger
+  /// </summary>
+  internal sealed class SerilogAdapter : ILog
 	{
 		internal SerilogAdapter(ILogger logger, LogLevel level)
 		{
@@ -19,29 +20,34 @@ namespace Totem.Runtime.Configuration
 
 		internal readonly ILogger Logger;
 
-		public LogLevel Level { get; private set; }
+		public LogLevel Level { get; }
 
-		public void Write(LogMessage message)
+		public void Write(LogEvent e)
 		{
-			var effectiveLevel = message.Level == LogLevel.Inherit ? Level : message.Level;
+      var level = GetEffectiveLevel(e);
 
-			var level = (LogEventLevel) (effectiveLevel - 1);
-
-			if(Logger.IsEnabled(level))
-			{
-				Write(message, level);
-			}
+      if(Logger.IsEnabled(level))
+      {
+        Write(e, level);
+      }
 		}
 
-		private void Write(LogMessage message, LogEventLevel level)
+    LogEventLevel GetEffectiveLevel(LogEvent e)
+    {
+      var effectiveLevel = e.Level == LogLevel.Inherit ? Level : e.Level;
+
+      return (LogEventLevel) (effectiveLevel - 1);
+    }
+
+    void Write(LogEvent e, LogEventLevel level)
 		{
-			if(message.Error != null)
+			if(e.Error != null)
 			{
-				Logger.Write(level, message.Error, message.Template, message.PropertyValues);
+				Logger.Write(level, e.Error, e.Template, e.PropertyValues);
 			}
 			else
 			{
-				Logger.Write(level, message.Template, message.PropertyValues);
+				Logger.Write(level, e.Template, e.PropertyValues);
 			}
 		}
 	}

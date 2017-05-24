@@ -98,17 +98,12 @@ namespace Totem.Web.Push
 			}
 		}
 
-		private sealed class LoggingPipelineModule : HubPipelineModule, ITaggable
+		sealed class LoggingPipelineModule : HubPipelineModule, IBindable
 		{
-			public LoggingPipelineModule()
-			{
-				Tags = new Tags();
-			}
+      public Fields Fields { get; } = new Fields();
+			ILog Log => Traits.Log.Get(this);
 
-			public Tags Tags { get; private set; }
-			private ILog Log => Traits.Log.Get(this);
-
-			protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext invokerContext)
+      protected override void OnIncomingError(ExceptionContext exceptionContext, IHubIncomingInvokerContext invokerContext)
 			{
 				Log.Error(exceptionContext.Error, "An exception occurred in the SignalR pipeline");
 

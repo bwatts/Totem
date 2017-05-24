@@ -29,7 +29,7 @@ namespace Totem.Runtime.Timeline
 
 		protected void ThenSchedule(Event e, DateTime whenOccurs)
 		{
-			Message.Traits.When.Set(e, whenOccurs);
+			Event.Traits.When.Set(e, whenOccurs);
 
 			Then(new EventScheduled(e));
 		}

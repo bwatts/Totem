@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -14,20 +15,20 @@ namespace Totem.Runtime.Json
 	/// <summary>
 	/// Resolves contracts describing the serialization and deserialization of objects to JSON in the Totem runtime
 	/// </summary>
-	public class TotemContractResolver : DefaultContractResolver, ITaggable
-	{
+	public class TotemContractResolver : DefaultContractResolver, IBindable
+	{		
 		public TotemContractResolver()
 		{
-			Tags = new Tags();
-
       NamingStrategy = new CamelCaseNamingStrategy();
 
       ExpandDictionaries = true;
 		}
 
-		Tags ITaggable.Tags => Tags;
-		private Tags Tags;
-		private RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    Fields IBindable.Fields => Fields;
+
+    Fields Fields { get; } = new Fields();
+		RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
 
 		public bool ExpandDictionaries;
 
@@ -109,7 +110,8 @@ namespace Totem.Runtime.Json
 
       return !member.IsDefined(typeof(TransientAttribute))
         && !member.IsDefined(typeof(CompilerGeneratedAttribute))
-        && member.DeclaringType != typeof(Notion);
+        && member.DeclaringType != typeof(Notion)
+        && member.DeclaringType != typeof(Binding);
     }
 
     private JsonProperty CreateDurableProperty(MemberInfo member, MemberSerialization memberSerialization)

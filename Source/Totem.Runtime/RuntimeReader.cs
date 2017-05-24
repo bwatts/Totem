@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Reflection;
+using Totem.Diagnostics;
 using Totem.IO;
 using Totem.Reflection;
 using Totem.Runtime.Map;
+using Totem.Runtime.Map.Diagnostics;
 using Totem.Runtime.Map.Timeline;
 using Totem.Runtime.Timeline;
 
@@ -26,7 +28,7 @@ namespace Totem.Runtime
 
 		internal RuntimeMap Read()
 		{
-			_map = new RuntimeMap(_deployment, ReadRegions());
+      _map = CreateMap();
 
 			RegisterTypes();
 
@@ -35,9 +37,10 @@ namespace Totem.Runtime
 			return _map;
 		}
 
-		//
-		// Regions
-		//
+    RuntimeMap CreateMap()
+    {
+      return new RuntimeMap(_deployment, new RuntimeMonitor(), ReadRegions());
+    }
 
 		RuntimeRegionSet ReadRegions()
 		{
@@ -143,40 +146,49 @@ namespace Totem.Runtime
 
     void RegisterTypes()
 		{
-			foreach(var type in
+      foreach(var type in
 				from region in _map.Regions
 				from package in region.Packages
-				from declaredType in package.Assembly.GetTypes()
-				where (declaredType.IsPublic || declaredType.IsNestedPublic)
-					&& declaredType.IsClass
-					&& !declaredType.IsAbstract
-					&& !declaredType.IsAnonymous()
-        let isEvent = typeof(Event).IsAssignableFrom(declaredType)
+				from type in package.Assembly.GetTypes()
+				where IsPublicOrInternal(type)
+        where IsConcreteClassOrStatic(type)
+        let isEvent = typeof(Event).IsAssignableFrom(type)
         orderby isEvent descending
-				select new { package, declaredType, isEvent })
+				select new { package, type, isEvent })
 			{
         _package = type.package;
-        _declaredType = type.declaredType;
+        _declaredType = type.type;
 
 				if(type.isEvent)
         {
           RegisterEvent();
         }
-        else if(TryRegisterArea() || TryRegisterWebApi())
+        else if(
+          TryRegisterArea()
+          || TryRegisterWebApi()
+          || TryRegisterFlow()
+          || TryRegisterDurable())
         {
           continue;
         }
         else
         {
-					if(!TryRegisterFlow())
-					{
-						TryRegisterDurable();
-					}
+          TryRegisterCounterCategory();
         }
 			}
 
       _package = null;
       _declaredType = null;
+    }
+
+    static bool IsPublicOrInternal(Type type)
+    {
+      return type.IsPublic || type.IsNestedPublic || !type.IsNestedPrivate;
+    }
+
+    static bool IsConcreteClassOrStatic(Type type)
+    {
+      return type.IsClass && (!type.IsAbstract || type.IsSealed);
     }
 
     void RegisterEvent()
@@ -335,12 +347,16 @@ namespace Totem.Runtime
 		// Durable
 		//
 
-		void TryRegisterDurable()
+		bool TryRegisterDurable()
 		{
 			if(IsDurable(_declaredType))
 			{
 				_package.Durable.Register(new DurableType(ReadType()));
+
+        return true;
 			}
+
+      return false;
 		}
 
 		bool IsDurable(Type type)
@@ -351,6 +367,31 @@ namespace Totem.Runtime
 
 			return defined || definedNested;
 		}
+
+    //
+    // Counters
+    //
+
+    void TryRegisterCounterCategory()
+    {
+      var declaration = _declaredType
+        .GetCustomAttribute<CounterCategoryAttribute>()
+        ?.GetCategory();
+
+      if(declaration != null)
+      {
+        var category = new RuntimeCounterCategory(ReadType(), declaration);
+
+        _map.Monitor.Categories.Register(category);
+
+        var counters = _declaredType
+          .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+          .Where(field => typeof(CounterBase).IsAssignableFrom(field.FieldType))
+          .Select(field => (CounterBase) field.GetValue(null));
+
+        category.Register(counters);
+      }
+    }
 
 		//
 		// Area dependencies

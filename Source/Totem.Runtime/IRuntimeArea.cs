@@ -12,7 +12,7 @@ namespace Totem.Runtime
 	/// Describes a set of related objects composed in a Totem runtime
 	/// </summary>
 	[InheritedExport(typeof(IRuntimeArea))]
-	public interface IRuntimeArea : IModule, IWritable, ITaggable
+	public interface IRuntimeArea : IModule, ITextable, IBindable
 	{
 		AreaType AreaType { get; }
 

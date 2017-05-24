@@ -15,8 +15,10 @@ namespace Totem.Runtime
 	/// </summary>
 	public abstract class RuntimeArea : BuilderModule, IRuntimeArea, IPartImportsSatisfiedNotification
 	{
-		Tags ITaggable.Tags => Tags;
-		protected Tags Tags { get; private set; }
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    Fields IBindable.Fields => Fields;
+
+    protected Fields Fields { get; } = new Fields();
 		protected IClock Clock => Notion.Traits.Clock.Get(this);
 		protected ILog Log => Notion.Traits.Log.Get(this);
 		protected RuntimeMap Runtime => Notion.Traits.Runtime.Get(this);
@@ -85,8 +87,6 @@ namespace Totem.Runtime
 
 		void IPartImportsSatisfiedNotification.OnImportsSatisfied()
 		{
-			Tags = new Tags();
-
 			ReadAreaType();
 
 			RegisterArea();
