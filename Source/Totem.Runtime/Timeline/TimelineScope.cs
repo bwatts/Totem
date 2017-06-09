@@ -38,8 +38,6 @@ namespace Totem.Runtime.Timeline
       Track(_flows);
       Track(_requests);
 			Track(_queue);
-
-      TimelineCounters.Uptime.Start();
 		}
 
     public async Task Execute(Request request, User user)
