@@ -338,10 +338,11 @@ namespace Totem.Web
       return Timeline.Execute(_request, User);
     }
 
-    class ContentBinding
+    class ContentBinding : Notion
     {
       readonly WebApi _api;
       readonly WebApiRequest _request;
+      readonly RequestType _requestType;
       readonly IDictionary<string, dynamic> _args;
       readonly bool _anyArgs;
 
@@ -349,6 +350,7 @@ namespace Totem.Web
       {
         _api = api;
         _request = api._request;
+        _requestType = api._requestType;
 
         _args = _api.Context.Parameters as IDictionary<string, dynamic>;
 
@@ -394,12 +396,12 @@ namespace Totem.Web
         {
           if(json.Length > 0)
           {
-            BindRequest(json);
+            DeserializeIntoRequest(json);
           }
         }
         else if(json.Length > 0)
         {
-          BindRequest(JsonFormat.Text.DeserializeJson(json));
+          DeserializeRequest(json);
         }
         else
         {
@@ -416,9 +418,36 @@ namespace Totem.Web
         }
       }
 
-      void BindRequest(string json)
+      void DeserializeIntoRequest(string json)
       {
-        JsonFormat.Text.DeserializeInto(json, _request);
+        try
+        {
+          JsonFormat.Text.DeserializeInto(json, _request);
+        }
+        catch(Exception error)
+        {
+          Log.Error(error, $"[web] Failed to deserialize JSON into {_request.Context.Key}\n\n{json}");
+
+          throw;
+        }
+      }
+
+      void DeserializeRequest(string json)
+      {
+        var binding = null as JObject;
+
+        try
+        {
+          binding = JsonFormat.Text.DeserializeJson(json);
+        }
+        catch(Exception error)
+        {
+          Log.Error(error, $"[web] Failed to deserialize JSON into {_request.Context.Key}\n\n{json}");
+
+          throw;
+        }
+
+        BindRequest(binding);
       }
 
       void BindRequest(JObject binding)
@@ -439,7 +468,7 @@ namespace Totem.Web
           binding[arg.Key] = arg.Value.Value;
         }
 
-        BindRequest(binding.ToString());
+        DeserializeIntoRequest(binding.ToString());
       }
 
       void BindArgs()
