@@ -3,20 +3,18 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Reflection;
-using Totem.Diagnostics;
 using Totem.IO;
-using Totem.Reflection;
+using Totem.Metrics;
 using Totem.Runtime.Map;
-using Totem.Runtime.Map.Diagnostics;
 using Totem.Runtime.Map.Timeline;
 using Totem.Runtime.Timeline;
 
 namespace Totem.Runtime
 {
-	/// <summary>
-	/// Reads the regions of the runtime map and registers their elements
-	/// </summary>
-	internal sealed class RuntimeReader : Notion
+  /// <summary>
+  /// Reads the regions of the runtime map and registers their elements
+  /// </summary>
+  internal sealed class RuntimeReader : Notion
 	{
     readonly RuntimeDeployment _deployment;
 		RuntimeMap _map;
@@ -39,7 +37,7 @@ namespace Totem.Runtime
 
     RuntimeMap CreateMap()
     {
-      return new RuntimeMap(_deployment, new RuntimeMonitor(), ReadRegions());
+      return new RuntimeMap(_deployment, ReadRegions(), new RuntimeMonitor());
     }
 
 		RuntimeRegionSet ReadRegions()
@@ -151,7 +149,7 @@ namespace Totem.Runtime
 				from package in region.Packages
 				from type in package.Assembly.GetTypes()
 				where IsPublicOrInternal(type)
-        where IsConcreteClassOrStatic(type)
+        where IsConcreteOrStaticClass(type)
         let isEvent = typeof(Event).IsAssignableFrom(type)
         orderby isEvent descending
 				select new { package, type, isEvent })
@@ -173,7 +171,7 @@ namespace Totem.Runtime
         }
         else
         {
-          TryRegisterCounterCategory();
+          TryRegisterMetrics();
         }
 			}
 
@@ -186,12 +184,12 @@ namespace Totem.Runtime
       return type.IsPublic || type.IsNestedPublic || !type.IsNestedPrivate;
     }
 
-    static bool IsConcreteClassOrStatic(Type type)
+    static bool IsConcreteOrStaticClass(Type type)
     {
-      return type.IsClass && (!type.IsAbstract || type.IsSealed);
+			return type.IsClass && (!type.IsAbstract || type.IsSealed);
     }
 
-    void RegisterEvent()
+		void RegisterEvent()
     {
 			var e = new EventType(ReadType());
 
@@ -369,29 +367,56 @@ namespace Totem.Runtime
 		}
 
     //
-    // Counters
+    // Metrics
     //
 
-    void TryRegisterCounterCategory()
+    void TryRegisterMetrics()
     {
-      var declaration = _declaredType
-        .GetCustomAttribute<CounterCategoryAttribute>()
-        ?.GetCategory();
+			if(IsMetricType())
+			{
+				var fields = ReadMetricFields().ToList();
 
-      if(declaration != null)
-      {
-        var category = new RuntimeCounterCategory(ReadType(), declaration);
-
-        _map.Monitor.Categories.Register(category);
-
-        var counters = _declaredType
-          .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
-          .Where(field => typeof(CounterBase).IsAssignableFrom(field.FieldType))
-          .Select(field => (CounterBase) field.GetValue(null));
-
-        category.Register(counters);
-      }
+				if(fields.Count > 0)
+				{
+          RegisterMetrics(RegisterMetricType(), fields);
+				}
+			}
     }
+
+		bool IsMetricType()
+		{
+			return _declaredType.IsClass
+        && _declaredType.IsAbstract
+        && _declaredType.IsSealed;
+		}
+
+		IEnumerable<FieldInfo> ReadMetricFields()
+		{
+      return _declaredType
+        .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+        .Where(field => typeof(Metric).IsAssignableFrom(field.FieldType));
+		}
+
+		RuntimeMetricType RegisterMetricType()
+		{
+			var type = new RuntimeMetricType(ReadType());
+
+			_map.Monitor.MetricTypes.Register(type);
+
+			return type;
+		}
+
+		void RegisterMetrics(RuntimeMetricType type, List<FieldInfo> fields)
+		{
+			foreach(var field in fields)
+			{
+				var declaration = (Metric) field.GetValue(null);
+
+        var metric = type.RegisterMetric(field, declaration);
+
+				_map.Monitor.Metrics.Register(metric);
+			}
+		}
 
 		//
 		// Area dependencies

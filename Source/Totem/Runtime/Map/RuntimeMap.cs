@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition.Hosting;
 using System.Linq;
-using Totem.Runtime.Map.Diagnostics;
+using System.Reflection;
+using Totem.Metrics;
 using Totem.Runtime.Map.Timeline;
 
 namespace Totem.Runtime.Map
@@ -12,11 +12,11 @@ namespace Totem.Runtime.Map
 	/// </summary>
 	public sealed class RuntimeMap
 	{
-		public RuntimeMap(RuntimeDeployment deployment, RuntimeMonitor monitor, RuntimeRegionSet regions)
-		{
+    public RuntimeMap(RuntimeDeployment deployment, RuntimeRegionSet regions, RuntimeMonitor monitor)
+    {
 			Deployment = deployment;
-      Monitor = monitor;
       Regions = regions;
+			Monitor = monitor;
 
 			Catalog = new AggregateCatalog(
 				from region in Regions
@@ -109,6 +109,26 @@ namespace Totem.Runtime.Map
     public WebApiType GetWebApi(Type declaredType, bool strict = true)
     {
       return Regions.GetWebApi(declaredType, strict);
+    }
+
+    public RuntimeMetricType GetMetricType(RuntimeTypeKey key, bool strict = true)
+    {
+      return Monitor.GetMetricType(key, strict);
+    }
+
+    public RuntimeMetricType GetMetricType(Type declaredType, bool strict = true)
+    {
+      return Monitor.GetMetricType(declaredType, strict);
+    }
+
+    public RuntimeMetric GetMetric(RuntimeTypeKey key, bool strict = true)
+    {
+      return Monitor.GetMetric(key, strict);
+    }
+
+    public RuntimeMetric GetMetric(Metric declaration, bool strict = true)
+    {
+      return Monitor.GetMetric(declaration, strict);
     }
   }
 }

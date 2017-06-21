@@ -210,13 +210,7 @@ namespace Totem.Runtime.Timeline
       {
         Point = point;
 
-        using(var _ = TimelineCounters.EventsInProgress.IncrementDuring())
-        using(var __ = TimelineCounters.EventTime.IncrementAfter())
-        {
-          await PushPoint();
-
-          TimelineCounters.EventsHandled.Increment();
-        }
+        await PushPoint();
       }
     }
 

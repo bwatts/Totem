@@ -67,8 +67,6 @@ namespace Totem.Runtime.Hosting
 
       OpenScope();
 
-      StartMonitor();
-
       LoadInstance();
 
       Log.Info("[runtime] Service started");
@@ -81,18 +79,6 @@ namespace Totem.Runtime.Hosting
       _container = new CompositionContainer(Runtime.Catalog, CompositionOptions.DisableSilentRejection);
 
       _cancellationTokenSource = new CancellationTokenSource();
-    }
-
-    void StartMonitor()
-    {
-      try
-      {
-        Runtime.Monitor.Start(InstanceName);
-      }
-      catch(Exception error)
-      {
-        Log.Error(error, "[runtime] Failed to start performance monitoring");
-      }
     }
 
     void LoadInstance()
