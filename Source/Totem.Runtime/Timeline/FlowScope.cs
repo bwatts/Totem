@@ -180,7 +180,10 @@ namespace Totem.Runtime.Timeline
       {
         if(await FlowLoaded())
         {
-          await PushPoints();
+          using(var _ = TimelineMetrics.FlowActivity.SetActiveDuring(Flow.Context.Key.ToString()))
+          {
+            await PushPoints();
+          }
         }
       }
       finally

@@ -82,6 +82,7 @@ namespace Totem.Runtime.Timeline
     internal async Task<PushTopicResult> PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents)
 		{
       using(var enqueue = _queue.StartEnqueue())
+      using(var _ = TimelineMetrics.PushTime.Measure(topic.Context.Key.ToString()))
       {
         var result = await _timelineDb.PushTopic(topic, point, newEvents);
 

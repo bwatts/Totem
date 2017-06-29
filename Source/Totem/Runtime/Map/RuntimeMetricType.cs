@@ -15,7 +15,7 @@ namespace Totem.Runtime.Map
 
     internal RuntimeMetric RegisterMetric(FieldInfo field, Metric declaration)
     {
-      var key = RuntimeTypeKey.From(Key.Region, field.Name);
+      var key = RuntimeTypeKey.From(Key.Region, $"{Key.Name}.{field.Name}");
 
       var metric = new RuntimeMetric(key, this, field, declaration);
 

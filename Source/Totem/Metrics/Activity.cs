@@ -1,4 +1,6 @@
-﻿namespace Totem.Metrics
+﻿using System;
+
+namespace Totem.Metrics
 {
   /// <summary>
   /// Measures the active and idle time for a process
@@ -13,5 +15,18 @@
 
     public void SetInactive(MetricPath path = default(MetricPath)) =>
       AppendWrite(false, path);
+
+    public IDisposable SetDuring(bool active, MetricPath path = default(MetricPath))
+    {
+      Set(active, path);
+
+      return Disposal.Of(() => Set(!active, path));
+    }
+
+    public IDisposable SetActiveDuring(MetricPath path = default(MetricPath)) =>
+      SetDuring(true, path);
+
+    public IDisposable SetInactiveDuring(MetricPath path = default(MetricPath)) =>
+      SetDuring(false, path);
   }
 }
