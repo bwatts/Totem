@@ -43,17 +43,20 @@ namespace Totem.Runtime.Timeline
 
       public async Task Make(Flow flow)
       {
-        try
+        using(var _ = TimelineMetrics.WhenTime.Measure(flow.ToPath()))
         {
-          flow.Call = this;
+          try
+          {
+            flow.Call = this;
 
-          await flow.CallWhen(this);
+            await flow.CallWhen(this);
 
-          flow.Context.FinishCall(flow, this);
-        }
-        finally
-        {
-          flow.Call = null;
+            flow.Context.FinishCall(flow, this);
+          }
+          finally
+          {
+            flow.Call = null;
+          }
         }
       }
 
@@ -75,20 +78,23 @@ namespace Totem.Runtime.Timeline
 
       public void Make(Topic topic, bool loading = false)
       {
-        try
+        using(var _ = TimelineMetrics.GivenTime.Measure(topic.ToPath()))
         {
-          topic.Call = this;
-
-          Event.CallGiven(topic, this);
-
-          if(!loading)
+          try
           {
-            topic.Context.FinishCall(topic, this);
+            topic.Call = this;
+
+            Event.CallGiven(topic, this);
+
+            if(!loading)
+            {
+              topic.Context.FinishCall(topic, this);
+            }
           }
-        }
-        finally
-        {
-          topic.Call = null;
+          finally
+          {
+            topic.Call = null;
+          }
         }
       }
 		}

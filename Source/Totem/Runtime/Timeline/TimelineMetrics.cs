@@ -1,4 +1,5 @@
-﻿using Totem.Metrics;
+﻿using System;
+using Totem.Metrics;
 
 namespace Totem.Runtime.Timeline
 {
@@ -9,5 +10,10 @@ namespace Totem.Runtime.Timeline
   {
     internal static readonly Duration PushTime = new Duration();
     internal static readonly Activity FlowActivity = new Activity();
+    internal static readonly Duration WhenTime = new Duration();
+    internal static readonly Duration GivenTime = new Duration();
+
+    internal static MetricPath ToPath(this Flow flow) =>
+      flow.Context.Key.ToString();
   }
 }
