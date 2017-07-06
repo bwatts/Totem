@@ -8,12 +8,22 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal static class TimelineMetrics
   {
+    internal static readonly Duration EnqueueTime = new Duration();
     internal static readonly Duration PushTime = new Duration();
     internal static readonly Activity FlowActivity = new Activity();
     internal static readonly Duration WhenTime = new Duration();
     internal static readonly Duration GivenTime = new Duration();
 
     internal static MetricPath ToPath(this Flow flow) =>
-      flow.Context.Key.ToString();
+      $"{flow.Context.Key}";
+
+    internal static MetricPath ToPath(this Flow flow, TimelinePosition position) =>
+      $"{flow.Context.Key}@{position}";
+
+    internal static MetricPath ToPath(this TimelinePoint point) =>
+      $"{point.EventType}@{point.Position}";
+
+    internal static MetricPath ToPath(this TimelinePoint point, string prefix) =>
+      $"{prefix}/{point.EventType}@{point.Position}";
   }
 }

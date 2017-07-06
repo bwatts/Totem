@@ -43,7 +43,7 @@ namespace Totem.Runtime.Timeline
 
       public async Task Make(Flow flow)
       {
-        using(var _ = TimelineMetrics.WhenTime.Measure(flow.ToPath()))
+        using(var _ = TimelineMetrics.WhenTime.Measure(flow.ToPath(Point.Position)))
         {
           try
           {
@@ -78,7 +78,7 @@ namespace Totem.Runtime.Timeline
 
       public void Make(Topic topic, bool loading = false)
       {
-        using(var _ = TimelineMetrics.GivenTime.Measure(topic.ToPath()))
+        using(var _ = TimelineMetrics.GivenTime.Measure(topic.ToPath(Point.Position)))
         {
           try
           {
