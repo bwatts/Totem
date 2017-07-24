@@ -154,6 +154,8 @@
     <Compile Include="Hosting\SerilogAdapter.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Timeline\TimelinePushSet.cs" />
+    <Compile Include="Timeline\TimelinePush.cs" />
     <Compile Include="Timeline\TimelineScheduler.cs" />
     <Compile Include="Timeline\FlowScope.cs" />
     <Compile Include="Timeline\IViewDb.cs" />

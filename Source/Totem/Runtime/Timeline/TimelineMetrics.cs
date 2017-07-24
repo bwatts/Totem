@@ -8,8 +8,6 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal static class TimelineMetrics
   {
-    internal static readonly Duration EnqueueTime = new Duration();
-    internal static readonly Duration PushTime = new Duration();
     internal static readonly Activity FlowActivity = new Activity();
     internal static readonly Duration WhenTime = new Duration();
     internal static readonly Duration GivenTime = new Duration();
