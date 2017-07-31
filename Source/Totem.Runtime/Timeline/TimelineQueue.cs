@@ -78,10 +78,6 @@ namespace Totem.Runtime.Timeline
           ResumeWith(info);
         }
       }
-      catch(Exception error)
-      {
-        Log.Error(error, "[timeline] HALTED; failed to resume activity");
-      }
       finally
       {
         _resumeTask = null;
