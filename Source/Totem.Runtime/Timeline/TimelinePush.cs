@@ -21,7 +21,13 @@ namespace Totem.Runtime.Timeline
       {
         other._group.Add(this);
       }
+
+      Id = GetHashCode().ToString().Substring(0, 4);
+
+      TimelinePushMetrics.Time.StartMeasuring(Id);
     }
+
+    internal readonly string Id;
 
     internal bool Done { get; private set; }
     internal readonly Many<TimelineMessage> Messages = new Many<TimelineMessage>();
@@ -31,30 +37,33 @@ namespace Totem.Runtime.Timeline
 
     internal void Commit(TimelineMessage message)
     {
-      Done = true;
-
       Messages.Write.Add(message);
 
-      _set.EndPush(this);
+      End();
     }
 
     internal void Commit(Many<TimelineMessage> messages)
     {
-      Done = true;
-
       Messages.Write.AddRange(messages);
 
-      _set.EndPush(this);
+      End();
     }
 
     public void Dispose()
     {
       if(!Done)
       {
-        Done = true;
-
-        _set.EndPush(this);
+        End();
       }
+    }
+
+    void End()
+    {
+      Done = true;
+
+      _set.EndPush(this);
+
+      TimelinePushMetrics.Time.StopMeasuring(Id);
     }
   }
 }

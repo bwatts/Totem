@@ -27,6 +27,10 @@ namespace Totem.Runtime.Timeline
 
         _pushes.Add(push);
 
+        TimelinePushMetrics.Open.Set(_pushes.Count);
+        TimelinePushMetrics.Done.Set(_pushes.Count - group.Count);
+        TimelinePushMetrics.Group.Set(group.Count);
+
         return push;
       }
     }
@@ -51,6 +55,9 @@ namespace Totem.Runtime.Timeline
         {
           _queue.PushMessage(message);
         }
+
+        TimelinePushMetrics.Open.Set(_pushes.Count);
+        TimelinePushMetrics.MessagesPer.Set(messages.Count);
       }
     }
   }
