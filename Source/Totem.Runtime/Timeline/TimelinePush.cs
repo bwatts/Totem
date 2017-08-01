@@ -7,7 +7,7 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// A transaction pushing one or more events to the timeline
   /// </summary>
-  internal sealed class TimelinePush : IDisposable
+  internal sealed class TimelinePush : Notion, IDisposable
   {
     readonly TimelinePushSet _set;
     readonly List<TimelinePush> _group;
@@ -32,11 +32,15 @@ namespace Totem.Runtime.Timeline
     internal bool Done { get; private set; }
     internal readonly Many<TimelineMessage> Messages = new Many<TimelineMessage>();
 
+    public override string ToString() => Id;
+
     internal bool GroupDone() =>
       Done && _group.All(other => other.Done);
 
     internal void Commit(TimelineMessage message)
     {
+      Log.Warning("[timeline-push] COMMIT      {Id:l}", Id);
+
       Messages.Write.Add(message);
 
       End();
@@ -44,6 +48,8 @@ namespace Totem.Runtime.Timeline
 
     internal void Commit(Many<TimelineMessage> messages)
     {
+      Log.Warning("[timeline-push] COMMIT      {Id:l}", Id);
+
       Messages.Write.AddRange(messages);
 
       End();
@@ -53,6 +59,8 @@ namespace Totem.Runtime.Timeline
     {
       if(!Done)
       {
+        Log.Warning("[timeline-push] ROLL BACK   {Id:l}", Id);
+
         End();
       }
     }

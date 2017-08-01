@@ -10,7 +10,6 @@ namespace Totem.Runtime.Timeline
     internal static readonly Count Open = new Count();
     internal static readonly Count Done = new Count();
     internal static readonly Count Group = new Count();
-    internal static readonly Count MessagesPer = new Count();
     internal static readonly Duration Time = new Duration();
   }
 }
