@@ -57,44 +57,35 @@ namespace Totem.Runtime.Timeline
 
 		public async Task Push(TimelinePosition cause, Event e)
 		{
-      using(var enqueue = _queue.StartEnqueue())
-      using(var _ = TimelineMetrics.EnqueueTime.Measure())
+      using(var push = _queue.StartPush())
       {
-        enqueue.Commit(await _timelineDb.Push(cause, e));
+        push.Commit(await _timelineDb.Push(cause, e));
       }
     }
 
     internal async Task PushScheduled(TimelinePoint point)
 		{
-      using(var enqueue = _queue.StartEnqueue())
-      using(var _ = TimelineMetrics.EnqueueTime.Measure(point.ToPath("scheduled")))
+      using(var push = _queue.StartPush())
       {
-        enqueue.Commit(await _timelineDb.PushScheduled(point));
+        push.Commit(await _timelineDb.PushScheduled(point));
       }
     }
 
     internal async Task PushStopped(FlowPoint point, Exception error)
     {
-      using(var enqueue = _queue.StartEnqueue())
-      using(var _ = TimelineMetrics.EnqueueTime.Measure(point.ToPath("stopped")))
+      using(var push = _queue.StartPush())
       {
-        enqueue.Commit(await _timelineDb.PushStopped(point, error));
+        push.Commit(await _timelineDb.PushStopped(point, error));
       }
     }
 
     internal async Task<PushTopicResult> PushTopic(Topic topic, FlowPoint point, IEnumerable<Event> newEvents)
 		{
-      var metricsPath = topic.ToPath(point.Position);
-
-      using(var enqueue = _queue.StartEnqueue())
-      using(var _ = TimelineMetrics.PushTime.Measure(metricsPath))
+      using(var push = _queue.StartPush())
       {
         var result = await _timelineDb.PushTopic(topic, point, newEvents);
 
-        using(var __ = TimelineMetrics.EnqueueTime.Measure(metricsPath))
-        {
-          enqueue.Commit(result.Messages);
-        }
+        push.Commit(result.Messages);
 
         return result;
       }

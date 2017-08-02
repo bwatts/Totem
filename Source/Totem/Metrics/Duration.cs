@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace Totem.Metrics
@@ -8,6 +9,8 @@ namespace Totem.Metrics
   /// </summary>
   public class Duration : Metric<double>
   {
+    readonly ConcurrentDictionary<MetricPath, Stopwatch> _stopwatches = new ConcurrentDictionary<MetricPath, Stopwatch>();
+
     public void Append(double seconds, MetricPath path = default(MetricPath)) =>
       AppendWrite(seconds, path);
 
@@ -19,6 +22,23 @@ namespace Totem.Metrics
       var stopwatch = Stopwatch.StartNew();
 
       return Disposal.Of(() => Append(stopwatch.Elapsed, path));
+    }
+
+    public void StartMeasuring(MetricPath path = default(MetricPath)) =>
+      _stopwatches[path] = Stopwatch.StartNew();
+
+    public bool StopMeasuring(MetricPath path = default(MetricPath))
+    {
+      Stopwatch stopwatch;
+
+      if(_stopwatches.TryRemove(path, out stopwatch))
+      {
+        Append(stopwatch.Elapsed, path);
+
+        return true;
+      }
+
+      return false;
     }
   }
 }

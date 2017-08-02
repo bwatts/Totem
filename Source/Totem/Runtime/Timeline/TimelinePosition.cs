@@ -21,7 +21,8 @@ namespace Totem.Runtime.Timeline
 		public bool IsNone => _point == null;
 		public bool IsSome => _point != null;
 
-		public override string ToString() => "#" + (IsNone ? "-" : _point.ToString());
+		public override string ToString() =>
+      "#" + (IsNone ? "-" : _point.ToString());
 
 		public long ToInt64()
 		{
@@ -30,10 +31,11 @@ namespace Totem.Runtime.Timeline
 			return _point.Value;
 		}
 
-		public long? ToInt64OrNull()
-		{
-			return _point;
-		}
+		public long? ToInt64OrNull() =>
+			_point;
+
+    public TimelinePosition Next() =>
+      new TimelinePosition(_point == null ? 0 : _point + 1);
 
 		//
 		// Equality
