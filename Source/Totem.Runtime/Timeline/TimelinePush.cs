@@ -21,26 +21,16 @@ namespace Totem.Runtime.Timeline
       {
         other._group.Add(this);
       }
-
-      Id = GetHashCode().ToString().Substring(0, 4);
-
-      TimelinePushMetrics.Time.StartMeasuring(Id);
     }
-
-    internal readonly string Id;
 
     internal bool Done { get; private set; }
     internal readonly Many<TimelineMessage> Messages = new Many<TimelineMessage>();
-
-    public override string ToString() => Id;
 
     internal bool GroupDone() =>
       Done && _group.All(other => other.Done);
 
     internal void Commit(TimelineMessage message)
     {
-      Log.Warning("[timeline-push] COMMIT      {Id:l}", Id);
-
       Messages.Write.Add(message);
 
       End();
@@ -48,8 +38,6 @@ namespace Totem.Runtime.Timeline
 
     internal void Commit(Many<TimelineMessage> messages)
     {
-      Log.Warning("[timeline-push] COMMIT      {Id:l}", Id);
-
       Messages.Write.AddRange(messages);
 
       End();
@@ -59,8 +47,6 @@ namespace Totem.Runtime.Timeline
     {
       if(!Done)
       {
-        Log.Warning("[timeline-push] ROLL BACK   {Id:l}", Id);
-
         End();
       }
     }
@@ -69,9 +55,7 @@ namespace Totem.Runtime.Timeline
     {
       Done = true;
 
-      _set.EndPush(this);
-
-      TimelinePushMetrics.Time.StopMeasuring(Id);
+      _set.EndPush();
     }
   }
 }

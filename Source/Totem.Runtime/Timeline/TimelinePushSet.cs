@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 
@@ -8,7 +7,7 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// The set of transactions pushing events to the timeline
   /// </summary>
-  internal sealed class TimelinePushSet : Notion
+  internal sealed class TimelinePushSet
   {
     readonly List<TimelinePush> _pushes = new List<TimelinePush>();
     readonly TimelineQueue _queue;
@@ -28,44 +27,24 @@ namespace Totem.Runtime.Timeline
 
         _pushes.Add(push);
 
-        TimelinePushMetrics.Open.Set(_pushes.Count);
-        TimelinePushMetrics.Done.Set(_pushes.Count - group.Count);
-        TimelinePushMetrics.Group.Set(group.Count);
-
-        Log.Warning("[timeline-push] START       {Group:l}", Many.Of(group, push).Reverse().Select(p => p.Id));
-
         return push;
       }
     }
 
-    internal void EndPush(TimelinePush push)
+    internal void EndPush()
     {
       lock(_pushes)
       {
-        var donePushes = TakeWhileGroupDone().ToList();
+        var messages =
+          from groupDonePush in TakeWhileGroupDone()
+          from message in groupDonePush.Messages
+          orderby message.Point.Position
+          select message;
 
-        Log.Warning("[timeline-push] END         {Group:l}", donePushes);
-
-        var messages = new List<Tuple<string, TimelineMessage>>();
-
-        foreach(var donePush in donePushes)
+        foreach(var message in messages)
         {
-          _pushes.Remove(donePush);
-
-          foreach(var message in donePush.Messages)
-          {
-            messages.Add(Tuple.Create(donePush.Id, message));
-          }
+          _queue.PushMessage(message);
         }
-
-        foreach(var message in messages.OrderBy(m => m.Item2.Point.Position))
-        {
-          Log.Warning("[timeline-push] PUSH        {Id:l} => {Position:l}", message.Item1, message.Item2.Point.Position);
-
-          _queue.PushMessage(message.Item2);
-        }
-
-        TimelinePushMetrics.Open.Set(_pushes.Count);
       }
     }
 
