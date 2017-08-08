@@ -213,6 +213,8 @@ namespace Totem.Runtime.Timeline
       {
         Point = point;
 
+        TimelineMetrics.TimeToObserve.StopMeasuring($"{point.Position}/{Key}");
+
         await PushPoint();
       }
     }

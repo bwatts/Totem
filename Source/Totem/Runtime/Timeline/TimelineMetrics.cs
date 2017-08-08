@@ -6,8 +6,10 @@ namespace Totem.Runtime.Timeline
   /// <summary>
   /// Monitors the performance of aspects of the timeline
   /// </summary>
-  internal static class TimelineMetrics
+  public static class TimelineMetrics
   {
+    public static readonly Duration TimeToObserve = new Duration();
+
     internal static readonly Activity FlowActivity = new Activity();
     internal static readonly Duration WhenTime = new Duration();
     internal static readonly Duration GivenTime = new Duration();
