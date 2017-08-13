@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
@@ -12,8 +7,6 @@ namespace Totem.Runtime.Timeline
   /// </summary>
   internal sealed class TimelineQueue : Connection
 	{
-    readonly Subject<TimelineMessage> _messages = new Subject<TimelineMessage>();
-    readonly Subject<TimelinePoint> _schedulePoints = new Subject<TimelinePoint>();
     readonly ITimelineDb _db;
     readonly TimelineSchedule _schedule;
     readonly TimelineFlowSet _flows;
@@ -37,24 +30,7 @@ namespace Totem.Runtime.Timeline
 
     protected override void Open()
     {
-      ObserveMessages();
-
       _resumeTask = Resume();
-    }
-
-    void ObserveMessages()
-    {
-      Track(_messages
-        .ObserveOn(TimelineScheduler.Instance)
-        .Subscribe(message =>
-      {
-        _flows.Push(message);
-        _requests.Push(message);
-      }));
-
-      Track(_schedulePoints
-        .ObserveOn(TimelineScheduler.Instance)
-        .Subscribe(_schedule.Push));
     }
 
     async Task Resume()
@@ -119,7 +95,8 @@ namespace Totem.Runtime.Timeline
 
         foreach(var point in batch.Points)
         {
-          _messages.OnNext(point.Message);
+          _flows.Push(point.Message);
+          _requests.Push(point.Message);
 
           if(point.OnSchedule)
           {
@@ -128,7 +105,7 @@ namespace Totem.Runtime.Timeline
               point.Message.Point,
               point.Message.Point.Event.When);
 
-            _schedulePoints.OnNext(point.Message.Point);
+            _schedule.Push(point.Message.Point);
           }
         }
       }
@@ -154,11 +131,12 @@ namespace Totem.Runtime.Timeline
 
     internal void PushMessage(TimelineMessage message)
     {
-      _messages.OnNext(message);
+      _flows.Push(message);
+      _requests.Push(message);
 
       if(message.Point.Scheduled)
       {
-        _schedulePoints.OnNext(message.Point);
+        _schedule.Push(message.Point);
       }
     }
   }

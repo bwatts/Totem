@@ -26,7 +26,6 @@ namespace Totem.Runtime.Timeline
       timer = Observable
         .Timer(new DateTimeOffset(point.Event.When))
         .Take(1)
-        .ObserveOn(TimelineScheduler.Instance)
         .SelectMany(_ => PushToTimeline(point, timer))
         .Subscribe();
 		}
