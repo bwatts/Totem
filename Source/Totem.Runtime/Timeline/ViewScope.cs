@@ -24,12 +24,8 @@ namespace Totem.Runtime.Timeline
       _batchSize = ((ViewType) Key.Type).BatchSize;
     }
 
-    protected override async Task PushPoints()
-    {
-      await base.PushPoints();
-
+    protected override void OnWaitingForPoints() =>
       CompleteBatch();
-    }
 
     protected override async Task PushPoint()
     {
@@ -123,7 +119,7 @@ namespace Totem.Runtime.Timeline
         PushUpdate();
       }
 
-      if(NotCompleted && Flow.Context.Done)
+      if(NotCompleted && Flow != null && Flow.Context.Done)
       {
         CompleteTask();
       }
@@ -131,13 +127,18 @@ namespace Totem.Runtime.Timeline
 
     void PushUpdate()
     {
-      try
+      var view = (View) Flow;
+
+      if(view != null)
       {
-        _exchange.PushUpdate((View) Flow);
-      }
-      catch(Exception error)
-      {
-        Log.Error(error, "[timeline] [{Key:l}] Failed to push update", Key);
+        try
+        {
+          _exchange.PushUpdate(view);
+        }
+        catch(Exception error)
+        {
+          Log.Error(error, "[timeline] [{Key:l}] Failed to push update", Key);
+        }
       }
     }
   }

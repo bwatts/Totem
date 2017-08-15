@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
@@ -18,12 +14,11 @@ namespace Totem.Runtime.Timeline
   internal class FlowScope : Connection, IFlowScope
   {
     readonly TaskCompletionSource<object> _task = new TaskCompletionSource<object>();
-    readonly Subject<Unit> _pushSignal = new Subject<Unit>();
     FlowRoute _initialRoute;
     TimelinePosition _resumeCheckpoint;
     List<FlowPoint> _postResumePoints;
-    int _pushing;
     Task _pushTask;
+    TaskCompletionSource<object> _pushSignal;
 
     internal FlowScope(ILifetimeScope lifetime, TimelineScope timeline, FlowRoute initialRoute)
     {
@@ -59,17 +54,11 @@ namespace Totem.Runtime.Timeline
     // Lifecycle
     //
 
-    protected override void Open()
-    {
-      Track(_pushSignal
-        .ObserveOn(TimelineScheduler.Instance)
-        .Subscribe(OnPushSignal));
-    }
+    protected override void Open() =>
+      _pushTask = Task.Run(PushPoints, State.CancellationToken);
 
-    protected override void Close()
-    {
+    protected override void Close() =>
       _task.TrySetCanceled(State.CancellationToken);
-    }
 
     protected void CompleteTask()
     {
@@ -80,15 +69,15 @@ namespace Totem.Runtime.Timeline
 
     protected void CompleteTask(Exception error)
     {
-      _task.SetException(error);
-
       ErrorPoint = Point;
+
+      _task.SetException(error);
 
       Disconnect();
     }
 
     //
-    // Push
+    // Resume/Push
     //
 
     public void ResumeTo(TimelinePosition checkpoint)
@@ -154,70 +143,69 @@ namespace Totem.Runtime.Timeline
       _postResumePoints.Add(point);
     }
 
+    //
+    // Queuing
+
     void Enqueue(FlowPoint point)
     {
       Points.Enqueue(point);
 
-      _pushSignal.OnNext(Unit.Default);
+      Interlocked
+        .Exchange(ref _pushSignal, null)
+        ?.SetResult(null);
     }
 
-    void OnPushSignal(Unit _)
+    async Task PushPoints()
     {
-      if(AcquirePushLock())
+      while(NotCompleted)
       {
-        _pushTask = Push();
+        FlowPoint point;
+
+        if(Points.TryDequeue(out point))
+        {
+          await PushPoint(point);
+        }
+        else
+        {
+          await WaitForPoints();
+        }
       }
     }
 
-    bool AcquirePushLock()
-    {
-      return Interlocked.CompareExchange(ref _pushing, 1, 0) == 0;
-    }
-
-    async Task Push()
+    async Task PushPoint(FlowPoint point)
     {
       try
       {
         if(await FlowLoaded())
         {
-          using(var _ = TimelineMetrics.FlowActivity.SetActiveDuring(Flow.ToPath()))
-          {
-            await PushPoints();
-          }
+          Point = point;
+
+          TimelineMetrics.TimeToObserve.StopMeasuring($"{point.Position}/{Key}");
+
+          await PushPoint();
         }
       }
       finally
       {
         Point = null;
-
-        _pushTask = null;
-
-        ReleasePushLock();
       }
     }
 
-    void ReleasePushLock()
+    async Task WaitForPoints()
     {
-      Interlocked.Exchange(ref _pushing, 0);
+      OnWaitingForPoints();
+
+      _pushSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+      await _pushSignal.Task;
     }
+
+    protected virtual void OnWaitingForPoints()
+    {}
 
     //
     // Points
     //
-
-    protected virtual async Task PushPoints()
-    {
-      FlowPoint point;
-
-      while(NotCompleted && Points.TryDequeue(out point))
-      {
-        Point = point;
-
-        TimelineMetrics.TimeToObserve.StopMeasuring($"{point.Position}/{Key}");
-
-        await PushPoint();
-      }
-    }
 
     protected virtual async Task PushPoint()
     {
