@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
-	/// <summary>
-	/// Sets timers for points which occur in the future
-	/// </summary>
-	internal sealed class TimelineSchedule : Connection
+  /// <summary>
+  /// Sets timers for points which occur in the future
+  /// </summary>
+  internal sealed class TimelineSchedule : Connection
 	{
     readonly TimelineScope _timeline;
 
@@ -24,13 +23,12 @@ namespace Totem.Runtime.Timeline
       var timer = null as IDisposable;
 
       timer = Observable
-        .Timer(new DateTimeOffset(point.Event.When))
+        .Timer(new DateTimeOffset(point.Event.When), TaskPoolScheduler.Default)
         .Take(1)
-        .SelectMany(_ => PushToTimeline(point, timer))
-        .Subscribe();
+        .Subscribe(_ => Task.Run(() => PushToTimeline(point, timer)));
 		}
 
-    async Task<Unit> PushToTimeline(TimelinePoint point, IDisposable timer)
+    async Task PushToTimeline(TimelinePoint point, IDisposable timer)
     {
       try
       {
@@ -42,8 +40,6 @@ namespace Totem.Runtime.Timeline
       {
         Log.Error(error, "[timeline] Failed to push scheduled event of type {EventType}. The timeline will attempt to push it again after a restart.", point.EventType);
       }
-
-      return Unit.Default;
     }
 	}
 }
