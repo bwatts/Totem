@@ -145,6 +145,7 @@
     <Compile Include="Runtime\Timeline\EventScheduled.cs" />
     <Compile Include="Runtime\Timeline\View.cs" />
     <Compile Include="Runtime\IUserDb.cs" />
+    <Compile Include="Runtime\WriteOnlyAttribute.cs" />
     <Compile Include="Sequences.cs" />
     <Compile Include="Reflection\AnonymousTypes.cs" />
     <Compile Include="Reflection\Assignability.cs" />
