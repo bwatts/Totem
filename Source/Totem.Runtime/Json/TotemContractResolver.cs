@@ -130,8 +130,17 @@ namespace Totem.Runtime.Json
       else
       {
         var propertyMember = (PropertyInfo) member;
+        var attributes = property.AttributeProvider.GetAttributes(typeof(WriteOnlyAttribute), true);
 
-        property.Writable = propertyMember.CanWrite || propertyMember.GetSetMethod(nonPublic: true) != null;
+        if ((attributes?.Count ?? 0) > 0)
+        {
+          property.Writable = false;
+        }
+        else
+        {
+          property.Writable = propertyMember.CanWrite || propertyMember.GetSetMethod(nonPublic: true) != null;
+        }
+
         property.Readable = propertyMember.CanRead || propertyMember.GetGetMethod(nonPublic: true) != null;
       }
 

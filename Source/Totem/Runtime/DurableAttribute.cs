@@ -12,4 +12,9 @@ namespace Totem.Runtime
 	{
 
 	}
+
+  public sealed class WriteOnlyAttribute : Attribute
+  {
+
+  }
 }
