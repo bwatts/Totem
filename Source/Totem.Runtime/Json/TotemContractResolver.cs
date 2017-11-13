@@ -129,10 +129,18 @@ namespace Totem.Runtime.Json
       }
       else
       {
-        var propertyMember = (PropertyInfo) member;
-
-        property.Writable = propertyMember.CanWrite || propertyMember.GetSetMethod(nonPublic: true) != null;
-        property.Readable = propertyMember.CanRead || propertyMember.GetGetMethod(nonPublic: true) != null;
+        var info = (PropertyInfo) member;
+		
+		var canSet = info.CanWrite || info.GetSetMethod(nonPublic: true) != null;
+		var canGet = info.CanRead || info.GetGetMethod(nonPublic: true) != null;
+		
+		var isOutput = property
+			.AttributeProvider
+			.GetAttributes(typeof(OutputAttribute), inherit: true)
+			.Any();
+			
+		property.Writable = !isOutput && canSet;
+		property.Readable = canGet;
       }
 
       return property;
