@@ -21,7 +21,7 @@ namespace Totem.Tracking
 			_pushRate = pushRate;
 		}
 
-		protected override void Open() => StartTracking();
+		protected override async void Open() => await StartTracking();
 		protected override void Close() => _tracking = false;
 
 		async Task StartTracking()
