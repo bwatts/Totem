@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Totem.Runtime;
 
 namespace Totem.Tracking
 {
+  /// <summary>
+  /// An index of tracked timeline events
+  /// </summary>
 	public sealed class EventIndex : Connection, IEventIndex
 	{
 		readonly ConcurrentQueue<Action<IEventIndex>> _writes = new ConcurrentQueue<Action<IEventIndex>>();
@@ -54,7 +54,9 @@ namespace Totem.Tracking
 		{
 			return _db.PushWrites(batch =>
 			{
-				while (_writes.TryDequeue(out Action<IEventIndex> write))
+        Action<IEventIndex> write;
+
+        while(_writes.TryDequeue(out write))
 				{
 					write(batch);
 				}
