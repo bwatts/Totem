@@ -2,18 +2,19 @@ using System;
 
 namespace Totem.Tracking
 {
+  /// <summary>
+  /// A timeline event tracked by an index
+  /// </summary>
 	public class TrackedEvent
 	{
-		protected TrackedEvent() { }
-
-		public TrackedEvent(string eventType, long position, Id userId, DateTime eventWhen, string keyType, string key)
+		public TrackedEvent(string eventType, long eventPosition, Id userId, DateTime eventWhen, string keyType, string keyValue)
 		{
 			EventType = eventType;
-			EventPosition = position;
+			EventPosition = eventPosition;
 			UserId = userId;
 			EventWhen = eventWhen;
 			KeyType = keyType;
-			KeyValue = key;
+			KeyValue = keyValue;
 		}
 
 		public string EventType;
