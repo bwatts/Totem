@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -76,7 +76,6 @@ namespace Totem.Runtime
       try
       {
         _cancellationTokenRegistration.Dispose();
-        _cancellationTokenRegistration = default(CancellationTokenRegistration);
       }
       catch(NullReferenceException)
       {
@@ -84,6 +83,8 @@ namespace Totem.Runtime
         //
         // We can't do anything about it, so ignore it.
       }
+
+      _cancellationTokenRegistration = default(CancellationTokenRegistration);
 		}
 
 		//
