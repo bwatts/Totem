@@ -4,6 +4,7 @@ TestResults/
 .nuget/
 _ReSharper.*/
 /packages
+.vs/
 artifacts/
 PublishProfiles/
 *.user
