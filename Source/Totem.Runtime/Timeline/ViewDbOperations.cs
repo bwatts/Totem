@@ -153,7 +153,7 @@ namespace Totem.Runtime.Timeline
 		{
       var view = await readView;
 
-			Expect.False(strict && view.NotFound, "View not found");
+			Expect.False(strict && view.NotFound, $"View not found: {view.Key}");
 
 			return view.NotFound ? default(T) : view.ReadContent();
 		}
