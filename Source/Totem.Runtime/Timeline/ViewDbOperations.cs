@@ -151,9 +151,9 @@ namespace Totem.Runtime.Timeline
 
 		static async Task<T> ReadContent<T>(this Task<ViewSnapshot<T>> readView, bool strict)
 		{
-      var view = await readView;
+			var view = await readView;
 
-			Expect.False(strict && view.NotFound, "View not found");
+			Expect.False(strict && view.NotFound, $"View not found: {view.Key}");
 
 			return view.NotFound ? default(T) : view.ReadContent();
 		}
