@@ -18,7 +18,17 @@ namespace Totem
 
 		public static void At(this ILog log, LogLevel level, Text messageTemplate, params object[] propertyValues)
 		{
-      log.Write(new LogEvent(level, messageTemplate, propertyValues));
+		  if (propertyValues.Length > 0)
+		  {
+		    var ex = propertyValues[0] as Exception;
+		    if (ex != null)
+		    {
+		      log.Write(new LogEvent(ex, level,
+		        $"Error logged with an Exception object as a property value: '{messageTemplate}'", propertyValues));
+		    }
+		  }
+
+		  log.Write(new LogEvent(level, messageTemplate, propertyValues));
     }
 
     public static void At(this ILog log, LogLevel level, Exception error, Text messageTemplate, params object[] propertyValues)
