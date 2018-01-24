@@ -1,4 +1,6 @@
-Totem is a set of development techniques lovingly prepared in C# and spiced with the experience of coding for those who code. Software is exploding with cross-pollination of ideas, lending new eyes to old problems. This is an attempt to catch some of that lightning in a bottle.
+Totem is a Command Query Responsibility Segregation (CQRS) and Event Sourcing (ES) framework. 
+
+Lovingly prepared in C# and spiced with the experience of coding for those who code. Software is exploding with cross-pollination of ideas, lending new eyes to old problems. This is an attempt to catch some of that lightning in a bottle.
 
 # Introduction
 
