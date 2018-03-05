@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -22,7 +22,7 @@ namespace Totem.Runtime.Map.Timeline
 		{
 			// dependencies.ResolveKeyed<T>(Key)
 
-			return Expression.Call(dependencies, "ResolveKeyed", new[] { Parameter.ParameterType }, Expression.Constant(Key));
+			return Expression.Call(dependencies, "ResolveKeyed", new[] { Parameter.ParameterType }, Expression.Constant(Key, typeof(object)));
 		}
 	}
 }
