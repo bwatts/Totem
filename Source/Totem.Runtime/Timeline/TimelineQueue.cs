@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+using System;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
@@ -6,11 +7,11 @@ namespace Totem.Runtime.Timeline
   /// A queue of timeline points with asynchronous dequeues for the whole timeline
   /// </summary>
   internal sealed class TimelineQueue : Connection
-	{
+  {
     readonly ITimelineDb _db;
     readonly TimelineSchedule _schedule;
     readonly TimelineFlowSet _flows;
-		readonly TimelineRequestSet _requests;
+    readonly TimelineRequestSet _requests;
     Task _resumeTask;
     TimelinePushSet _pushSet;
 
@@ -19,14 +20,14 @@ namespace Totem.Runtime.Timeline
       TimelineSchedule schedule,
       TimelineFlowSet flows,
       TimelineRequestSet requests)
-		{
+    {
       _db = db;
-			_schedule = schedule;
-			_flows = flows;
-			_requests = requests;
+      _schedule = schedule;
+      _flows = flows;
+      _requests = requests;
 
       _pushSet = new TimelinePushSet(this);
-		}
+    }
 
     protected override void Open()
     {
@@ -41,7 +42,7 @@ namespace Totem.Runtime.Timeline
       {
         var info = await _db.ReadResumeInfo();
 
-        if(info.EventCount == 0)
+        if (info.EventCount == 0)
         {
           Log.Info("[timeline] Resumed activity");
         }
@@ -68,58 +69,66 @@ namespace Totem.Runtime.Timeline
         info.Flows.Count,
         info.EventCount);
 
-      var batchCount = 0;
-      var pointCount = 0;
-      var firstPosition = TimelinePosition.None;
-      var lastPosition = TimelinePosition.None;
-
-      foreach(var batch in info)
+      try
       {
-        batchCount += 1;
-        pointCount += batch.Points.Count;
+        var batchCount = 0;
+        var pointCount = 0;
+        var firstPosition = TimelinePosition.None;
+        var lastPosition = TimelinePosition.None;
 
-        Log.Verbose(
-          "[timeline] Resuming event batch #{BatchCount} spanning {First:l}-{Last:l} ({PointCount} {PercentComplete:#0.00%})",
-          batchCount,
-          batch.FirstPosition,
-          batch.LastPosition,
-          pointCount,
-          pointCount / (decimal) info.EventCount);
-
-        if(firstPosition == TimelinePosition.None)
+        foreach (var batch in info)
         {
-          firstPosition = batch.FirstPosition;
-        }
+          batchCount += 1;
+          pointCount += batch.Points.Count;
 
-        lastPosition = batch.LastPosition;
+          Log.Verbose(
+            "[timeline] Resuming event batch #{BatchCount} spanning {First:l}-{Last:l} ({PointCount} {PercentComplete:#0.00%})",
+            batchCount,
+            batch.FirstPosition,
+            batch.LastPosition,
+            pointCount,
+            pointCount / (decimal)info.EventCount);
 
-        foreach(var point in batch.Points)
-        {
-          _flows.Push(point.Message);
-          _requests.Push(point.Message);
-
-          if(point.OnSchedule)
+          if (firstPosition == TimelinePosition.None)
           {
-            Log.Verbose(
-              "[timeline] Resuming timer for {Point:l} @ {When}",
-              point.Message.Point,
-              point.Message.Point.Event.When);
+            firstPosition = batch.FirstPosition;
+          }
 
-            _schedule.Push(point.Message.Point);
+          lastPosition = batch.LastPosition;
+
+          foreach (var point in batch.Points)
+          {
+            _flows.Push(point.Message);
+            _requests.Push(point.Message);
+
+            if (point.OnSchedule)
+            {
+              Log.Verbose(
+                "[timeline] Resuming timer for {Point:l} @ {When}",
+                point.Message.Point,
+                point.Message.Point.Event.When);
+
+              _schedule.Push(point.Message.Point);
+            }
           }
         }
-      }
 
-      Log.Info(
-        "[timeline] Resumed activity with {BatchCount} "
-        + Text.Pluralized(batchCount, "batch", "batches")
-        + " ({PointCount} "
-        + Text.Pluralized(pointCount, "point")
-        + ") spanning {First:l}-{Last:l}",
-        batchCount,
-        pointCount,
-        firstPosition,
-        lastPosition);
+        Log.Info(
+          "[timeline] Resumed activity with {BatchCount} "
+          + Text.Pluralized(batchCount, "batch", "batches")
+          + " ({PointCount} "
+          + Text.Pluralized(pointCount, "point")
+          + ") spanning {First:l}-{Last:l}",
+          batchCount,
+          pointCount,
+          firstPosition,
+          lastPosition);
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Failed at resuming event batching.");
+        throw;
+      }
     }
 
     //
@@ -134,7 +143,7 @@ namespace Totem.Runtime.Timeline
       _flows.Push(message);
       _requests.Push(message);
 
-      if(message.Point.Scheduled)
+      if (message.Point.Scheduled)
       {
         _schedule.Push(message.Point);
       }
