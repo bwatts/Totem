@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+using System;
+using System.Threading.Tasks;
 
 namespace Totem.Runtime.Timeline
 {
@@ -51,6 +52,11 @@ namespace Totem.Runtime.Timeline
 
           ResumeWith(info);
         }
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Failed at resuming event batching.");
+        throw;
       }
       finally
       {
