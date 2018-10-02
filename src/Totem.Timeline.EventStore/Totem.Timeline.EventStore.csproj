@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Hosting\XML\**" />
+    <EmbeddedResource Remove="Hosting\XML\**" />
+    <None Remove="Hosting\XML\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ReadResumeInfoCommand.cs" />
+    <Compile Remove="ReadResumeScheduleCommand.cs" />
+    <Compile Remove="TimelineHost.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="resume-projection.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="resume-projection.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0.23" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
+    <PackageReference Include="System.Reactive.Linq" Version="4.1.0-preview.84" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj" />
+    <ProjectReference Include="..\Totem.Timeline\Totem.Timeline.csproj" />
+    <ProjectReference Include="..\Totem\Totem.csproj" />
+  </ItemGroup>
+
+</Project>

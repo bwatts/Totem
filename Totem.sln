@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Data.SqlClient", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Timeline", "src\Totem.Timeline\Totem.Timeline.csproj", "{2CE3E3CE-24FA-4D49-B7F2-DF90C3F382C9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Timeline.EventStore", "src\Totem.Timeline.EventStore\Totem.Timeline.EventStore.csproj", "{FC5AD829-C91E-4A67-9C2E-9536CDB2ECB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{2CE3E3CE-24FA-4D49-B7F2-DF90C3F382C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CE3E3CE-24FA-4D49-B7F2-DF90C3F382C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CE3E3CE-24FA-4D49-B7F2-DF90C3F382C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC5AD829-C91E-4A67-9C2E-9536CDB2ECB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC5AD829-C91E-4A67-9C2E-9536CDB2ECB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC5AD829-C91E-4A67-9C2E-9536CDB2ECB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC5AD829-C91E-4A67-9C2E-9536CDB2ECB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
