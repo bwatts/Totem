@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Totem Contributors</Authors>
+    <Company />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj" />
+    <ProjectReference Include="..\Totem.Timeline\Totem.Timeline.csproj" />
+    <ProjectReference Include="..\Totem\Totem.csproj" />
+  </ItemGroup>
+
+</Project>
