@@ -5,6 +5,8 @@ TestResults/
 _ReSharper.*/
 /packages
 .vs/
+_data/
+.vs/
 artifacts/
 PublishProfiles/
 *.user
