@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 
 namespace Totem.IO
@@ -16,11 +17,26 @@ namespace Totem.IO
 
     public abstract string ToString(bool altSlash = false, bool leading = false);
 
-    public static IOResource From(string value, bool strict = true)
+    public static bool TryFrom(string value, out IOResource resource)
     {
-      var resource = FileResource.From(value, strict: false) ?? FolderResource.From(value, strict: false) as IOResource;
+      if(FileResource.TryFrom(value, out var file))
+      {
+        resource = file;
+      }
+      else
+      {
+        resource = FolderResource.From(value);
+      }
 
-      Expect.False(strict && resource == null, "Value is not an I/O resource");
+      return resource != null;
+    }
+
+    public static IOResource From(string value)
+    {
+      if(!TryFrom(value, out var resource))
+      {
+        throw new FormatException($"Failed to parse resource: {value}");
+      }
 
       return resource;
     }

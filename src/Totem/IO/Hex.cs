@@ -57,16 +57,30 @@ namespace Totem.IO
 
     public static readonly Hex None = new Hex("", Binary.None);
 
-    public static Hex From(string value, bool strict = true)
+    public static bool TryFrom(string value, out Hex hex)
     {
-      value = value.ToLower();
+      try
+      {
+        hex = From(value);
 
+        return true;
+      }
+      catch(FormatException)
+      {
+        hex = null;
+
+        return false;
+      }
+    }
+
+    public static Hex From(string value)
+    {
       if(value.Length % 2 != 0)
       {
-        Expect.False(strict, "Value is not an even length: " + value);
-
-        return None;
+        throw new FormatException($"Failed to parse hex value, expected even length: {value}");
       }
+
+      value = value.ToLower();
 
       var data = new byte[value.Length / 2];
 
@@ -78,15 +92,9 @@ namespace Totem.IO
         {
           data[i / 2] = Convert.ToByte(hexValue, 16);
         }
-        catch(FormatException exception)
+        catch(FormatException error)
         {
-          Expect.False(strict, Text
-            .Of("Failed to parse value: ")
-            .Write(value)
-            .WriteTwoLines()
-            .Write(exception));
-
-          return None;
+          throw new FormatException($"Failed to parse hex value at {i}: {hexValue}", error);
         }
       }
 

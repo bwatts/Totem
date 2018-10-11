@@ -54,16 +54,21 @@ namespace Totem.IO
       return new LinkPath(relativeSegments);
     }
 
-    public LinkPath Up(int count = 1, bool strict = true)
+    public bool TryUp(out LinkPath path, int count = 1)
     {
-      if(Segments.Count < count)
-      {
-        Expect.False(strict, "Cannot move up from root");
+      path = Segments.Count <= count ? null : new LinkPath(Segments.Take(Segments.Count - count).ToList());
 
-        return Root;
+      return path != null;
+    }
+
+    public LinkPath Up(int count = 1)
+    {
+      if(!TryUp(out var path, count))
+      {
+        throw new InvalidOperationException("Cannot go up from root");
       }
 
-      return new LinkPath(Segments.Take(Segments.Count - count).ToList());
+      return path;
     }
 
     public LinkPath Then(LinkPath path) =>

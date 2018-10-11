@@ -28,8 +28,15 @@ namespace Totem.IO
     public FileResource RelativeTo(FolderLink folder) =>
       FileResource.From(Folder.RelativeTo(folder), Name);
 
-    public FileLink Up(int count = 1, bool strict = true) =>
-      new FileLink(Folder.Up(count, strict), Name);
+    public bool TryUp(out FileLink up, int count = 1)
+    {
+      up = Folder.TryUp(out var folderUp, count) ? new FileLink(folderUp, Name) : null;
+
+      return up != null;
+    }
+
+    public FileLink Up(int count = 1) =>
+      new FileLink(Folder.Up(count), Name);
 
     //
     // Equality
@@ -51,52 +58,101 @@ namespace Totem.IO
     // Factory
     //
 
-    public static FileLink From(FolderLink folder, FileResource file) =>
-      new FileLink(folder.Then(file.Folder), file.Name);
-
-    public static FileLink From(FolderLink folder, string file, bool strict = true)
+    public static bool TryFrom(FolderLink folder, string file, out FileLink link)
     {
-      var parsedFile = FileResource.From(file, strict);
+      link = FileResource.TryFrom(file, out var parsedFile) ? From(folder, parsedFile) : null;
 
-      return parsedFile == null ? null : From(folder, parsedFile);
+      return link != null;
     }
 
-    public static FileLink From(string folder, FileResource file, bool strict = true)
+    public static bool TryFrom(string folder, FileResource file, out FileLink link)
     {
-      var parsedFolder = FolderLink.From(folder, strict);
+      link = FolderLink.TryFrom(folder, out var parsedFolder) ? From(parsedFolder, file) : null;
 
-      return parsedFolder == null ? null : From(parsedFolder, file);
+      return link != null;
     }
 
-    public static FileLink From(string folder, string file, bool strict = true)
+    public static bool TryFrom(string folder, string file, out FileLink link)
     {
-      var parsedFolder = FolderLink.From(folder, strict);
+      link = null;
 
-      return parsedFolder == null ? null : From(parsedFolder, file, strict);
-    }
-
-    public new static FileLink From(string value, bool strict = true, bool extensionOptional = false)
-    {
-      var parsedFolder = FolderLink.From(value, strict);
-
-      if(parsedFolder != null)
+      if(FolderLink.TryFrom(folder, out var parsedFolder))
       {
-        var fileSegment = parsedFolder.Resource.Path.Segments.LastOrDefault();
-
-        if(fileSegment != null)
+        if(FileName.TryFrom(file, out var parsedFile))
         {
-          var parsedName = FileName.From(fileSegment.ToString(), strict, extensionOptional);
+          link = new FileLink(parsedFolder, parsedFile);
+        }
+      }
 
-          if(parsedName != null)
+      return link != null;
+    }
+
+    public new static bool TryFrom(string value, out FileLink link, bool extensionOptional = false)
+    {
+      link = null;
+
+      if(FolderLink.TryFrom(value, out var parsedFolder))
+      {
+        var file = parsedFolder.Resource.Path.Segments.LastOrDefault()?.ToString();
+
+        if(file != null)
+        {
+          if(FileName.TryFrom(file, out var parsedFile, extensionOptional))
           {
-            return new FileLink(parsedFolder.Up(strict: false), parsedName);
+            if(!parsedFolder.TryUp(out var folderUp))
+            {
+              folderUp = parsedFolder;
+            }
+
+            link = new FileLink(folderUp, parsedFile);
           }
         }
       }
 
-      Expect.False(strict, "Cannot parse file link");
+      return link != null;
+    }
 
-      return null;
+    public static FileLink From(FolderLink folder, FileResource file) =>
+      new FileLink(folder.Then(file.Folder), file.Name);
+
+    public static FileLink From(FolderLink folder, string file)
+    {
+      if(!TryFrom(folder, file, out var link))
+      {
+        throw new FormatException($"Failed to parse file: {file}");
+      }
+
+      return link;
+    }
+
+    public static FileLink From(string folder, FileResource file)
+    {
+      if(!TryFrom(folder, file, out var link))
+      {
+        throw new FormatException($"Failed to parse folder: {folder}");
+      }
+
+      return link;
+    }
+
+    public static FileLink From(string folder, string file)
+    {
+      if(!TryFrom(folder, file, out var link))
+      {
+        throw new FormatException($"Failed to parse folder or file: {folder} {file}");
+      }
+
+      return link;
+    }
+
+    public new static FileLink From(string value, bool extensionOptional = false)
+    {
+      if(!TryFrom(value, out var link, extensionOptional))
+      {
+        throw new FormatException($"Failed to parse file: {value}");
+      }
+
+      return link;
     }
 
     public new sealed class Converter : TextConverter

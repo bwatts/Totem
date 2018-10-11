@@ -28,15 +28,6 @@ namespace Totem
     public override string ToString() =>
       _value ?? "";
 
-    public HttpResource ToHttpResource(bool strict = true) =>
-      HttpResource.From(ToString(), strict);
-
-    public FolderResource ToFolderResource(bool strict = true) =>
-      FolderResource.From(ToString(), strict);
-
-    public FileResource ToFileResource(bool strict = true, bool extensionOptional = true) =>
-      FileResource.From(ToString(), strict, extensionOptional);
-
     //
     // Equality
     //
@@ -75,7 +66,7 @@ namespace Totem
       From(value?.ToString());
 
     public static Id FromGuid() =>
-      new Id(Guid.NewGuid().ToString());
+      From(Guid.NewGuid());
 
     public static Id FromMany(IEnumerable<string> ids) =>
       From(ids.ToTextSeparatedBy(Separator).ToString());

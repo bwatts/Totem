@@ -33,8 +33,15 @@ namespace Totem.IO
     public FolderResource RelativeTo(FolderLink other) =>
       Root != other.Root ? FolderResource.Root : Resource.RelativeTo(other.Resource);
 
-    public FolderLink Up(int count = 1, bool strict = true) =>
-      new FolderLink(Root, Resource.Up(count, strict));
+    public bool TryUp(out FolderLink up, int count = 1)
+    {
+      up = Resource.TryUp(out var resourceUp, count) ? new FolderLink(Root, resourceUp, IsUnc) : null;
+
+      return up != null;
+    }
+
+    public FolderLink Up(int count = 1) =>
+      new FolderLink(Root, Resource.Up(count));
 
     public FolderLink Then(FolderResource folder) =>
       new FolderLink(Root, Resource.Then(folder));
@@ -71,64 +78,117 @@ namespace Totem.IO
     // Factory
     //
 
+    public const string UncPrefix = @"\\";
+
+    public static bool HasUncPrefix(LinkText root) =>
+      root.ToString().StartsWith(UncPrefix);
+
+    public static bool TryFrom(LinkText root, string resource, out FolderLink link)
+    {
+      link = From(root, FolderResource.From(resource));
+
+      return true;
+    }
+
+    public static bool TryFrom(string value, out FolderLink link)
+    {
+      if(TryFromLocal(value, out var localLink))
+      {
+        link = localLink;
+      }
+      else if(TryFromUnc(value, out var uncLink))
+      {
+        link = uncLink;
+      }
+      else
+      {
+        link = null;
+      }
+
+      return link != null;
+    }
+
+    public static bool TryFromUnc(string value, out FolderLink link)
+    {
+      link = null;
+
+      if(!String.IsNullOrEmpty(value) && HasUncPrefix(value))
+      {
+        var path = FolderResource.From(value.Substring(2)).Path;
+
+        var root = $@"\\{path.Segments[0]}";
+
+        var resource = path.Segments.Count == 1
+          ? LinkPath.Root
+          : LinkPath.From(path.Segments.Skip(1));
+
+        link = new FolderLink(root, FolderResource.From(resource), isUnc: true);
+      }
+
+      return link != null;
+    }
+
+    public static bool TryFromLocal(string value, out FolderLink link)
+    {
+      link = null;
+
+      var path = FolderResource.From(value).Path;
+
+      if(path.Segments.Any())
+      {
+        var root = path.Segments[0];
+
+        var resource = path.Segments.Count == 1
+          ? LinkPath.Root
+          : LinkPath.From(path.Segments.Skip(1));
+
+        link = new FolderLink(root, FolderResource.From(resource));
+      }
+
+      return link != null;
+    }
+
     public static FolderLink From(LinkText root, FolderResource resource) =>
       new FolderLink(root, resource);
 
-    public static FolderLink From(LinkText root, string resource, bool strict = true)
+    public static FolderLink From(LinkText root, string resource)
     {
-      var parsedResource = FolderResource.From(resource, strict);
-
-      return parsedResource == null ? null : From(root, resource);
-    }
-
-    public static FolderLink From(string value, bool strict = true)
-    {
-      var folder = FromUnc(value, strict: false) ?? FromLocal(value, strict: false);
-
-      Expect.False(strict && folder == null, "Cannot parse folder link");
-
-      return folder;
-    }
-
-    public static FolderLink FromUnc(string value, bool strict = true)
-    {
-      if(!String.IsNullOrEmpty(value) && value.StartsWith(@"\\"))
+      if(!TryFrom(root, resource, out var link))
       {
-        var parsedFolder = FolderResource.From(value.Substring(2), strict);
-
-        if(parsedFolder != null)
-        {
-          var root = @"\\" + parsedFolder.Path.Segments[0].ToString();
-
-          var path = parsedFolder.Path.Segments.Count == 1
-            ? LinkPath.Root
-            : LinkPath.From(parsedFolder.Path.Segments.Skip(1));
-
-          return new FolderLink(root, FolderResource.From(path), isUnc: true);
-        }
+        throw new FormatException($"Failed to parse folder resource: {resource}");
       }
 
-      Expect.False(strict, "Cannot parse UNC link: " + value);
-
-      return null;
+      return link;
     }
 
-    public static FolderLink FromLocal(string value, bool strict = true)
+    public static FolderLink From(string value)
     {
-      var parsedFolder = FolderResource.From(value, strict);
-
-      if(parsedFolder != null && parsedFolder.Path.Segments.Count > 0)
+      if(!TryFrom(value, out var link))
       {
-        var path = parsedFolder.Path.Segments.Count == 1
-          ? LinkPath.Root
-          : LinkPath.From(parsedFolder.Path.Segments.Skip(1));
-
-        return new FolderLink(parsedFolder.Path.Segments[0], FolderResource.From(path));
+        throw new FormatException($"Failed to parse folder link: {value}");
       }
 
-      Expect.True(strict, "Cannot parse folder link: " + value);
+      return link;
+    }
 
-      return null;
+    public static FolderLink FromUnc(string value)
+    {
+      if(!TryFromUnc(value, out var link))
+      {
+        throw new FormatException($"Failed to parse UNC folder link: {value}");
+      }
+
+      return link;
+    }
+
+    public static FolderLink FromLocal(string value)
+    {
+      if(!TryFromLocal(value, out var link))
+      {
+        throw new FormatException($"Failed to parse local folder link: {value}");
+      }
+
+      return link;
     }
 
     public new sealed class Converter : TextConverter

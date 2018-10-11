@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,59 +11,72 @@ namespace Totem.Reflection
   [EditorBrowsable(EditorBrowsableState.Never)]
   public static class LambdaExpressionExtensions
   {
-    public static MemberInfo GetMemberInfo(this LambdaExpression lambda, bool strict = true)
+    public static bool TryGetMember(this LambdaExpression lambda, out MemberInfo member)
     {
-      var member = (lambda.Body as MemberExpression)?.Member;
+      member = (lambda.Body as MemberExpression)?.Member;
 
-      Expect.False(strict && member == null, "Lambda does not access a field or property");
+      return member != null;
+    }
+
+    public static bool TryGetField(this LambdaExpression lambda, out FieldInfo field)
+    {
+      field = lambda.TryGetMember(out var member) ? member as FieldInfo : null;
+
+      return field != null;
+    }
+
+    public static bool TryGetProperty(this LambdaExpression lambda, out PropertyInfo property)
+    {
+      property = lambda.TryGetMember(out var member) ? member as PropertyInfo : null;
+
+      return property != null;
+    }
+
+    public static bool TryGetMethod(this LambdaExpression lambda, out MethodInfo method)
+    {
+      method = (lambda.Body as MethodCallExpression)?.Method;
+
+      return method != null;
+    }
+
+    public static MemberInfo GetMember(this LambdaExpression lambda)
+    {
+      if(!lambda.TryGetMember(out var member))
+      {
+        throw new Exception($"Failed to extract field or property access from lambda: {lambda}");
+      }
 
       return member;
     }
 
-    public static FieldInfo GetFieldInfo(this LambdaExpression lambda, bool strict = true)
+    public static FieldInfo GetField(this LambdaExpression lambda)
     {
-      var field = lambda.GetMemberInfo(strict: false) as FieldInfo;
-
-      Expect.False(strict && field == null, "Lambda does not access a field");
+      if(!lambda.TryGetField(out var field))
+      {
+        throw new Exception($"Failed to extract field access from lambda: {lambda}");
+      }
 
       return field;
     }
 
-    public static PropertyInfo GetPropertyInfo(this LambdaExpression lambda, bool strict = true)
+    public static PropertyInfo GetProperty(this LambdaExpression lambda)
     {
-      var property = lambda.GetMemberInfo(strict: false) as PropertyInfo;
-
-      Expect.False(strict && property == null, "Lambda does not access a property");
+      if(!lambda.TryGetProperty(out var property))
+      {
+        throw new Exception($"Failed to extract property access from lambda: {lambda}");
+      }
 
       return property;
     }
 
-    public static MethodInfo GetMethodInfo(this LambdaExpression lambda, bool strict = true)
+    public static MethodInfo GetMethod(this LambdaExpression lambda)
     {
-      var method = (lambda.Body as MethodCallExpression)?.Method;
-
-      Expect.False(strict && method == null, "Lambda does not call a method");
+      if(!lambda.TryGetMethod(out var method))
+      {
+        throw new Exception($"Failed to extract property access from lambda: {lambda}");
+      }
 
       return method;
     }
-
-    static Text ToText(this LambdaExpression lambda) =>
-      Text.Of(lambda).Write(" ").WriteInParentheses(Text.Of(lambda.Body.NodeType));
-
-    //
-    // Names
-    //
-
-    public static string GetMemberName(this LambdaExpression lambda, bool strict = true) =>
-      lambda.GetMemberInfo(strict)?.Name;
-
-    public static string GetFieldName(this LambdaExpression lambda, bool strict = true) =>
-      lambda.GetFieldInfo(strict)?.Name;
-
-    public static string GetPropertyName(this LambdaExpression lambda, bool strict = true) =>
-      lambda.GetPropertyInfo(strict)?.Name;
-
-    public static string GetMethodName(this LambdaExpression lambda, bool strict = true) =>
-      lambda.GetMethodInfo(strict)?.Name;
   }
 }

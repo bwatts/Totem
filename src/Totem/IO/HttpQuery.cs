@@ -22,6 +22,7 @@ namespace Totem.IO
     }
 
     public int Count => _pairsByKey.Count;
+    public LinkText this[LinkText key] => _pairsByKey[key].Value;
     public IEnumerable<LinkText> Keys => _pairsByKey.Keys;
     public IEnumerable<LinkText> Values => _pairsByKey.Values.Select(pair => pair.Value);
     public bool IsEmpty => Count == 0;
@@ -40,16 +41,11 @@ namespace Totem.IO
     public bool ContainsKey(LinkText key) =>
       _pairsByKey.ContainsKey(key);
 
-    public LinkText Get(LinkText key, bool strict = true)
+    public bool TryGet(LinkText key, out LinkText value)
     {
-      if(_pairsByKey.TryGetValue(key, out var pair))
-      {
-        return pair.Value;
-      }
+      value = _pairsByKey.TryGetValue(key, out var pair) ? pair.Value : null;
 
-      Expect.False(strict, "Unknown key: " + key.ToString());
-
-      return null;
+      return value != null;
     }
 
     public HttpQuery Set(LinkText key, LinkText value)
@@ -92,32 +88,35 @@ namespace Totem.IO
 
     public static readonly HttpQuery Empty = new HttpQuery(new Dictionary<LinkText, HttpQueryPair>());
 
-    public static HttpQuery From(System.Collections.Generic.IEnumerable<HttpQueryPair> pairs) =>
-      new HttpQuery(pairs.ToDictionary(pair => pair.Key));
-
-    public static HttpQuery From(params HttpQueryPair[] pairs) =>
-      From(pairs as System.Collections.Generic.IEnumerable<HttpQueryPair>);
-
-    public static HttpQuery From(string value, bool strict = true)
+    public static bool TryFrom(string value, out HttpQuery query)
     {
       var pairs = new List<HttpQueryPair>();
 
       foreach(var part in value.Split(PairSeparator))
       {
-        var pair = HttpQueryPair.From(part, strict: false);
-
-        if(pair == null)
+        if(!HttpQueryPair.TryFrom(part, out var parsedPair))
         {
-          Expect.False(strict, "Failed to parse query: " + value);
+          query = null;
 
-          return null;
+          return false;
         }
 
-        pairs.Add(pair);
+        pairs.Add(parsedPair);
       }
 
-      return From(pairs);
+      query = From(pairs);
+
+      return true;
     }
+
+    public static HttpQuery From(IEnumerable<HttpQueryPair> pairs) =>
+      new HttpQuery(pairs.ToDictionary(pair => pair.Key));
+
+    public static HttpQuery From(params HttpQueryPair[] pairs) =>
+      From(pairs as IEnumerable<HttpQueryPair>);
+
+    public static HttpQuery From(string value) =>
+      From(value.Split(PairSeparator).Select(HttpQueryPair.From));
 
     public sealed class Converter : TextConverter
     {

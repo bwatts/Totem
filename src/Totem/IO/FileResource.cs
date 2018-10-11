@@ -28,8 +28,15 @@ namespace Totem.IO
     public FileResource RelativeTo(FolderResource folder) =>
       new FileResource(Folder.RelativeTo(folder), Name);
 
-    public FileResource Up(int count = 1, bool strict = true) =>
-      new FileResource(Folder.Up(count, strict), Name);
+    public bool TryUp(out FileResource up, int count = 1)
+    {
+      up = Folder.TryUp(out var folderUp, count) ? new FileResource(folderUp, Name) : null;
+
+      return up != null;
+    }
+
+    public FileResource Up(int count = 1) =>
+      new FileResource(Folder.Up(count), Name);
 
     //
     // Equality
@@ -51,55 +58,83 @@ namespace Totem.IO
     // Factory
     //
 
+    public static bool TryFrom(FolderResource folder, string name, out FileResource resource, bool extensionOptional = false)
+    {
+      resource = FileName.TryFrom(name, out var parsedName, extensionOptional) ? new FileResource(folder, parsedName) : null;
+
+      return resource != null;
+    }
+
+    public static bool TryFrom(string folder, string name, out FileResource resource, bool extensionOptional = false)
+    {
+      resource = FileName.TryFrom(name, out var parsedName, extensionOptional)
+        ? new FileResource(FolderResource.From(folder), parsedName)
+        : null;
+
+      return resource != null;
+    }
+
+    public static bool TryFrom(string value, out FileResource resource, bool extensionOptional = false)
+    {
+      resource = null;
+
+      var parsedFolder = FolderResource.From(value);
+
+      var file = parsedFolder.Path.Segments.LastOrDefault()?.ToString();
+
+      if(file != null)
+      {
+        if(FileName.TryFrom(file, out var parsedFile, extensionOptional))
+        {
+          if(!parsedFolder.TryUp(out var folderUp))
+          {
+            folderUp = parsedFolder;
+          }
+
+          resource = new FileResource(folderUp, parsedFile);
+        }
+      }
+
+      return resource != null;
+    }
+
     public static FileResource From(FolderResource folder, FileName name) =>
       new FileResource(folder, name);
 
     public static FileResource From(FileName name) =>
       new FileResource(FolderResource.Root, name);
 
-    public static FileResource From(FolderResource folder, string name, bool strict = true, bool extensionOptional = false)
+    public static FileResource From(string folder, FileName name) =>
+      From(FolderResource.From(folder), name);
+
+    public static FileResource From(FolderResource folder, string name, bool extensionOptional = false)
     {
-      var parsedName = FileName.From(name, strict, extensionOptional);
-
-      return parsedName == null ? null : new FileResource(folder, parsedName);
-    }
-
-    public static FileResource From(string folder, FileName name, bool strict = true)
-    {
-      var parsedFolder = FolderResource.From(folder, strict);
-
-      return parsedFolder == null ? null : new FileResource(parsedFolder, name);
-    }
-
-    public static FileResource From(string folder, string name, bool strict = true, bool extensionOptional = false)
-    {
-      var parsedFolder = FolderResource.From(folder, strict);
-
-      return parsedFolder == null ? null : From(parsedFolder, name, strict, extensionOptional);
-    }
-
-    public static FileResource From(string value, bool strict = true, bool extensionOptional = false)
-    {
-      var parsedFolder = FolderResource.From(value, strict);
-
-      if(parsedFolder != null)
+      if(!TryFrom(folder, name, out var resource, extensionOptional))
       {
-        var fileSegment = parsedFolder.Path.Segments.LastOrDefault();
-
-        if(fileSegment != null)
-        {
-          var parsedName = FileName.From(fileSegment.ToString(), strict, extensionOptional);
-
-          if(parsedName != null)
-          {
-            return new FileResource(parsedFolder.Up(strict: false), parsedName);
-          }
-        }
+        throw new FormatException($"Failed to parse file name: {name}");
       }
 
-      Expect.False(strict, "Cannot parse file resource");
+      return resource;
+    }
 
-      return null;
+    public static FileResource From(string folder, string name, bool extensionOptional = false)
+    {
+      if(!TryFrom(folder, name, out var resource))
+      {
+        throw new FormatException($"Failed to parse file resource: {folder} {name}");
+      }
+
+      return resource;
+    }
+
+    public static FileResource From(string value, bool extensionOptional = false)
+    {
+      if(!TryFrom(value, out var resource))
+      {
+        throw new FormatException($"Failed to parse file resource: {value}");
+      }
+
+      return resource;
     }
 
     public static FileResource FromRandom() =>

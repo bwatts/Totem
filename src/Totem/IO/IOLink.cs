@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 
 namespace Totem.IO
@@ -16,11 +17,30 @@ namespace Totem.IO
 
     public abstract string ToString(bool altSlash = false);
 
-    public static IOLink From(string value, bool strict = true, bool extensionOptional = false)
+    public static bool TryFrom(string value, out IOLink link, bool extensionOptional = false)
     {
-      var link = FileLink.From(value, strict: false, extensionOptional: extensionOptional) ?? FolderLink.From(value, strict: false) as IOLink;
+      if(FileLink.TryFrom(value, out var file, extensionOptional))
+      {
+        link = file;
+      }
+      else if(FolderLink.TryFrom(value, out var folder))
+      {
+        link = folder;
+      }
+      else
+      {
+        link = null;
+      }
 
-      Expect.False(strict && link == null, "Value is not an I/O link");
+      return link != null;
+    }
+
+    public static IOLink From(string value, bool extensionOptional = false)
+    {
+      if(!TryFrom(value, out var link, extensionOptional))
+      {
+        throw new FormatException($"Failed to parse folder or file link: {value}");
+      }
 
       return link;
     }

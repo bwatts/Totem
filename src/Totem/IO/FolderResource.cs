@@ -30,8 +30,15 @@ namespace Totem.IO
     public FolderResource RelativeTo(FolderResource other) =>
       new FolderResource(Path.RelativeTo(other.Path));
 
-    public FolderResource Up(int count = 1, bool strict = true) =>
-      new FolderResource(Path.Up(count, strict));
+    public bool TryUp(out FolderResource up, int count = 1)
+    {
+      up = Path.TryUp(out var pathUp, count) ? new FolderResource(pathUp) : null;
+
+      return up != null;
+    }
+
+    public FolderResource Up(int count = 1) =>
+      new FolderResource(Path.Up(count));
 
     public FolderResource Then(FolderResource folder) =>
       new FolderResource(Path.Then(folder.Path));
@@ -65,7 +72,7 @@ namespace Totem.IO
     public static FolderResource From(LinkPath path) =>
       new FolderResource(path);
 
-    public new static FolderResource From(string value, bool strict = true) =>
+    public new static FolderResource From(string value) =>
       new FolderResource(LinkPath.From(value, _separators));
 
     public static FolderResource FromRandom() =>

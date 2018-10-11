@@ -46,21 +46,26 @@ namespace Totem.IO
     // Factory
     //
 
-    public static HttpQueryPair From(LinkText key, LinkText value) =>
-      new HttpQueryPair(key, value);
-
-    public static HttpQueryPair From(string value, bool strict = true)
+    public static bool TryFrom(string value, out HttpQueryPair pair)
     {
       var parts = value.Split(Separator);
 
-      if(parts.Length != 2)
-      {
-        Expect.False(strict, "Failed to parse query pair: " + value);
+      pair = parts.Length == 2 ? new HttpQueryPair(parts[0], parts[1]) : null;
 
-        return null;
+      return pair != null;
+    }
+
+    public static HttpQueryPair From(LinkText key, LinkText value) =>
+      new HttpQueryPair(key, value);
+
+    public static HttpQueryPair From(string value)
+    {
+      if(!TryFrom(value, out var pair))
+      {
+        throw new FormatException($"Failed to parse query pair: {value}");
       }
 
-      return new HttpQueryPair(parts[0], parts[1]);
+      return pair;
     }
 
     public sealed class Converter : TextConverter

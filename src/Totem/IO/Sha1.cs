@@ -64,31 +64,55 @@ namespace Totem.IO
 
     public static readonly Sha1 None = new Sha1(Hex.None);
 
-    public static Sha1 From(Hex hex, bool strict = true)
+    public static bool TryFrom(Hex hex, out Sha1 sha1)
     {
-      if(hex.TextLength != HexLength)
-      {
-        Expect.False(strict, $"Value is not the SHA-1 text length of 40 characters: {hex}");
+      sha1 = hex.TextLength == HexLength ? new Sha1(hex) : null;
 
-        return None;
-      }
-
-      return new Sha1(hex);
+      return sha1 != null;
     }
 
-    public static Sha1 From(string hex, bool strict = true) =>
-      new Sha1(Hex.From(hex, strict));
-
-    public static Sha1 From(Binary binary, bool strict = true)
+    public static bool TryFrom(string hex, out Sha1 sha1)
     {
-      if(binary.Length != BinaryLength)
-      {
-        Expect.False(strict, $"Value is not the SHA-1 binary length of 20 bytes: {binary}");
+      sha1 = Hex.TryFrom(hex, out var parsedHex) && parsedHex.TextLength == HexLength ? new Sha1(parsedHex) : null;
 
-        return None;
+      return sha1 != null;
+    }
+
+    public static bool TryFrom(Binary binary, out Sha1 sha1)
+    {
+      sha1 = binary.Length == BinaryLength ? new Sha1(Hex.From(binary)) : null;
+
+      return sha1 != null;
+    }
+
+    public static Sha1 From(Hex hex)
+    {
+      if(!TryFrom(hex, out var sha1))
+      {
+        throw new FormatException($"Failed to parse hex, expected a SHA-1 text length of {HexLength}: {hex}");
       }
 
-      return new Sha1(Hex.From(binary));
+      return sha1;
+    }
+
+    public static Sha1 From(string hex)
+    {
+      if(!TryFrom(hex, out var sha1))
+      {
+        throw new FormatException($"Failed to parse hex, expected a SHA-1 text length of {HexLength}: {hex}");
+      }
+
+      return sha1;
+    }
+
+    public static Sha1 From(Binary binary)
+    {
+      if(!TryFrom(binary, out var sha1))
+      {
+        throw new FormatException($"Failed to parse binary, expected a SHA-1 byte length of {BinaryLength}: {binary}");
+      }
+
+      return sha1;
     }
 
     //

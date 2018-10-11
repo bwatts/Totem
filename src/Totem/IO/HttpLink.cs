@@ -78,35 +78,39 @@ namespace Totem.IO
     // Factory
     //
 
-    public static HttpLink From(HttpHost host, HttpResource resource) =>
-      new HttpLink(host, resource);
-
-    public static HttpLink From(HttpHost host, string resource, bool strict = true)
+    public static bool TryFrom(HttpHost host, string resource, out HttpLink link)
     {
-      var parsedResource = HttpResource.From(resource, strict);
+      link = HttpResource.TryFrom(resource, out var parsedResource) ? new HttpLink(host, parsedResource) : null;
 
-      return parsedResource == null ? null : new HttpLink(host, parsedResource);
+      return link != null;
     }
 
-    public static HttpLink From(string host, HttpResource resource, bool strict = true)
+    public static bool TryFrom(string host, HttpResource resource, out HttpLink link)
     {
-      var parsedHost = HttpHost.From(host, strict);
+      link = HttpHost.TryFrom(host, out var parsedHost) ? new HttpLink(parsedHost, resource) : null;
 
-      return parsedHost == null ? null : new HttpLink(parsedHost, resource);
+      return link != null;
     }
 
-    public static HttpLink From(string host, string resource, bool strict = true)
+    public static bool TryFrom(string host, string resource, out HttpLink link)
     {
-      var parsedHost = HttpHost.From(host, strict);
+      link = null;
 
-      return parsedHost == null ? null : From(parsedHost, resource, strict);
+      if(HttpHost.TryFrom(host, out var parsedHost))
+      {
+        if(HttpResource.TryFrom(resource, out var parsedResource))
+        {
+          link = new HttpLink(parsedHost, parsedResource);
+        }
+      }
+
+      return link != null;
     }
 
-    public static HttpLink From(HttpHost host) =>
-      From(host, HttpResource.Root);
-
-    public new static HttpLink From(string value, bool strict = true)
+    public new static bool TryFrom(string value, out HttpLink link)
     {
+      link = null;
+
       var schemeParts = value.Split(new[] { Uri.SchemeDelimiter }, StringSplitOptions.None);
 
       if(schemeParts.Length == 2)
@@ -115,11 +119,9 @@ namespace Totem.IO
 
         if(pathSeparatorIndex == -1 || pathSeparatorIndex == schemeParts[1].Length - 1)
         {
-          var host = HttpHost.From(value, strict: false);
-
-          if(host != null)
+          if(HttpHost.TryFrom(value, out var parsedHost))
           {
-            return new HttpLink(host, HttpResource.Root);
+            link = new HttpLink(parsedHost, HttpResource.Root);
           }
         }
         else
@@ -127,23 +129,63 @@ namespace Totem.IO
           var hostText = schemeParts[0] + Uri.SchemeDelimiter + schemeParts[1].Substring(0, pathSeparatorIndex);
           var resourceText = schemeParts[1].Substring(pathSeparatorIndex + 1);
 
-          var host = HttpHost.From(hostText, strict: false);
-
-          if(host != null)
+          if(HttpHost.TryFrom(hostText, out var parsedHost))
           {
-            var resource = HttpResource.From(resourceText, strict: false);
-
-            if(resource != null)
+            if(HttpResource.TryFrom(resourceText, out var parsedResource))
             {
-              return new HttpLink(host, resource);
+              link = new HttpLink(parsedHost, parsedResource);
             }
           }
         }
       }
 
-      Expect.False(strict, "Failed to parse HTTP link: " + value);
+      return link != null;
+    }
 
-      return null;
+    public static HttpLink From(HttpHost host, HttpResource resource) =>
+      new HttpLink(host, resource);
+
+    public static HttpLink From(HttpHost host) =>
+      From(host, HttpResource.Root);
+
+    public static HttpLink From(HttpHost host, string resource)
+    {
+      if(!TryFrom(host, resource, out var link))
+      {
+        throw new FormatException($"Failed to parse resource: {resource}");
+      }
+
+      return link;
+    }
+
+    public static HttpLink From(string host, HttpResource resource)
+    {
+      if(!TryFrom(host, resource, out var link))
+      {
+        throw new FormatException($"Failed to parse host: {host}");
+      }
+
+      return link;
+    }
+
+    public static HttpLink From(string host, string resource)
+    {
+      if(!TryFrom(host, resource, out var link))
+      {
+        throw new FormatException($"Failed to parse link: {host} {resource}");
+      }
+
+      return link;
+    }
+
+    public new static HttpLink From(string value)
+    {
+      if(!TryFrom(value, out var link))
+      {
+        throw new FormatException($"Failed to parse link: {value}");
+      }
+
+      return link;
     }
 
     public new sealed class Converter : TextConverter

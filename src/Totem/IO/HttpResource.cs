@@ -27,8 +27,8 @@ namespace Totem.IO
 
     public string ToString(bool leadingSlash = false, bool trailingSlash = false) =>
       Text
-        .Of(Path.ToString(leading: leadingSlash, trailing: trailingSlash))
-        .WriteIf(Query.Count > 0, Text.Of(QuerySeparator).Write(Query));
+      .Of(Path.ToString(leading: leadingSlash, trailing: trailingSlash))
+      .WriteIf(Query.Count > 0, Text.Of(QuerySeparator).Write(Query));
 
     public HttpResource RelativeTo(HttpResource other)
     {
@@ -37,8 +37,15 @@ namespace Totem.IO
       return new HttpResource(Path.RelativeTo(other.Path), other.Query);
     }
 
-    public HttpResource Up(int count = 1, bool strict = true) =>
-      new HttpResource(Path.Up(count, strict), Query);
+    public bool TryUp(out HttpResource up, int count = 1)
+    {
+      up = Path.TryUp(out var pathUp, count) ? new HttpResource(pathUp, Query) : null;
+
+      return up != null;
+    }
+
+    public HttpResource Up(int count = 1) =>
+      new HttpResource(Path.Up(count), Query);
 
     public HttpResource Then(HttpResource resource)
     {
@@ -77,47 +84,61 @@ namespace Totem.IO
 
     public static readonly HttpResource Root = new HttpResource(LinkPath.Root, HttpQuery.Empty);
 
+    public static bool TryFrom(LinkPath path, string query, out HttpResource resource)
+    {
+      resource = HttpQuery.TryFrom(query, out var parsedQuery) ? new HttpResource(path, parsedQuery) : null;
+
+      return resource != null;
+    }
+
+    public static bool TryFrom(string path, string query, out HttpResource resource) =>
+      TryFrom(LinkPath.From(path, _pathSeparators), query, out resource);
+
+    public new static bool TryFrom(string value, out HttpResource resource)
+    {
+      var parts = value.Split(QuerySeparator);
+
+      var path = LinkPath.From(parts[0], _pathSeparators);
+
+      if(parts.Length == 1)
+      {
+        resource = new HttpResource(path, HttpQuery.Empty);
+      }
+      else if(HttpQuery.TryFrom(parts[1], out var parsedQuery))
+      {
+        resource = new HttpResource(path, parsedQuery);
+      }
+      else
+      {
+        resource = null;
+      }
+
+      return resource != null;
+    }
+
     public static HttpResource From(LinkPath path, HttpQuery query) =>
       new HttpResource(path, query);
 
-    public static HttpResource From(LinkPath path, string query, bool strict = true)
-    {
-      var parsedQuery = HttpQuery.From(query, strict);
-
-      return parsedQuery == null ? null : new HttpResource(path, parsedQuery);
-    }
+    public static HttpResource From(LinkPath path, string query) =>
+      new HttpResource(path, HttpQuery.From(query));
 
     public static HttpResource From(string path, HttpQuery query) =>
       new HttpResource(LinkPath.From(path, _pathSeparators), query);
 
-    public static HttpResource From(string path, string query, bool strict = true) =>
-      From(LinkPath.From(path, _pathSeparators), query);
+    public static HttpResource From(string path, string query) =>
+      From(path, HttpQuery.From(query));
 
     public static HttpResource From(LinkPath path) =>
       From(path, HttpQuery.Empty);
 
-    public new static HttpResource From(string value, bool strict = true)
+    public new static HttpResource From(string value)
     {
-      var parts = value.Split(QuerySeparator);
-
-      if(parts.Length == 1)
+      if(!TryFrom(value, out var resource))
       {
-        return new HttpResource(LinkPath.From(parts[0], _pathSeparators), HttpQuery.Empty);
-      }
-      else
-      {
-        var path = LinkPath.From(parts[0], _pathSeparators);
-        var query = HttpQuery.From(parts[1], strict);
-
-        if(query != null)
-        {
-          return new HttpResource(path, query);
-        }
+        throw new FormatException($"Failed to parse resource: {value}");
       }
 
-      Expect.False(strict, "Failed to parse resource: " + value);
-
-      return null;
+      return resource;
     }
 
     public static HttpResource From(FolderResource folder) =>

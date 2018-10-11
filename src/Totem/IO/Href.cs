@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 
 namespace Totem.IO
@@ -18,11 +19,30 @@ namespace Totem.IO
       }
     }
 
-    public static Href From(string value, bool strict = true)
+    public static bool TryFrom(string value, out Href href)
     {
-      var href = HttpLink.From(value, strict: false) ?? HttpResource.From(value, strict: false) as Href;
+      if(HttpLink.TryFrom(value, out var link))
+      {
+        href = link;
+      }
+      else if(HttpResource.TryFrom(value, out var resource))
+      {
+        href = resource;
+      }
+      else
+      {
+        href = null;
+      }
 
-      Expect.False(strict && href == null, "Failed to parse href: " + value);
+      return href != null;
+    }
+
+    public static Href From(string value)
+    {
+      if(!TryFrom(value, out var href))
+      {
+        throw new FormatException($"Failed to parse href: {value}");
+      }
 
       return href;
     }

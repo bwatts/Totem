@@ -58,27 +58,27 @@ namespace Totem.IO
     // Factory
     //
 
-    public static Base64 From(string value, bool strict = true, Encoding encoding = null)
+    public static bool TryFrom(string value, out Base64 base64, Encoding encoding = null)
     {
-      byte[] data;
-
       try
       {
-        data = Convert.FromBase64String(value);
-      }
-      catch(FormatException error)
-      {
-        if(strict)
-        {
-          Expect.False(strict, Text
-            .Of("Failed to parse value: ")
-            .Write(value)
-            .WriteTwoLines()
-            .Write(error));
-        }
+        var data = Convert.FromBase64String(value);
 
-        return null;
+        base64 = new Base64(value, Binary.From(data));
+
+        return true;
       }
+      catch(FormatException)
+      {
+        base64 = null;
+
+        return false;
+      }
+    }
+
+    public static Base64 From(string value, Encoding encoding = null)
+    {
+      var data = Convert.FromBase64String(value);
 
       return new Base64(value, Binary.From(data));
     }

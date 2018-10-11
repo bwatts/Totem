@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.IO;
 
 namespace Totem.IO
 {
@@ -44,39 +45,47 @@ namespace Totem.IO
     // Factory
     //
 
-    public static FileName From(string value, bool strict = true, bool extensionOptional = false)
+    public static bool TryFrom(string value, out FileName name, bool extensionOptional = false)
     {
+      name = null;
+
       var extensionIndex = value.LastIndexOf(FileExtension.Separator);
 
       if(extensionIndex == -1)
       {
         if(extensionOptional)
         {
-          return new FileName(value, "");
+          name = new FileName(value, "");
         }
-
-        Expect.False(strict, "Extension is required");
-
-        return null;
       }
-      
-      if(extensionIndex == value.Length - 1)
+      else
       {
-        Expect.False(strict, "A file name cannot end with an extension separator");
-
-        return null;
+        if(extensionIndex < value.Length - 1)
+        {
+          name = new FileName(
+            value.Substring(0, extensionIndex),
+            value.Substring(extensionIndex + 1));
+        }
       }
 
-      return new FileName(
-        value.Substring(0, extensionIndex),
-        value.Substring(extensionIndex + 1));
+      return name != null;
+    }
+
+    public static FileName From(string value, bool extensionOptional = false)
+    {
+      if(!TryFrom(value, out var name, extensionOptional))
+      {
+        throw new FormatException($"Failed to parse file name: {value}");
+      }
+
+      return name;
     }
 
     public static FileName From(LinkText text, LinkText extension) =>
       new FileName(text, extension);
 
     public static FileName FromRandom() =>
-      From(System.IO.Path.GetRandomFileName());
+      From(Path.GetRandomFileName());
 
     public sealed class Converter : TextConverter
     {

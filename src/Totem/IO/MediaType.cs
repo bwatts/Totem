@@ -10,7 +10,7 @@ namespace Totem.IO
   [TypeConverter(typeof(Converter))]
   public sealed class MediaType : IEquatable<MediaType>, IComparable<MediaType>
   {
-    public MediaType(string name)
+    MediaType(string name)
     {
       Name = name?.Split(';')[0].Trim() ?? "";
       IsNone = Name == Names.None;
@@ -77,16 +77,19 @@ namespace Totem.IO
       public const string Xml = "text/xml";
     }
 
-    public static readonly MediaType None = new MediaType(Names.None);
-    public static readonly MediaType Css = new MediaType(Names.Css);
-    public static readonly MediaType Html = new MediaType(Names.Html);
-    public static readonly MediaType Javascript = new MediaType(Names.Javascript);
-    public static readonly MediaType Json = new MediaType(Names.Json);
-    public static readonly MediaType Plain = new MediaType(Names.Plain);
-    public static readonly MediaType Xml = new MediaType(Names.Xml);
+    public static readonly MediaType None = From(Names.None);
+    public static readonly MediaType Css = From(Names.Css);
+    public static readonly MediaType Html = From(Names.Html);
+    public static readonly MediaType Javascript = From(Names.Javascript);
+    public static readonly MediaType Json = From(Names.Json);
+    public static readonly MediaType Plain = From(Names.Plain);
+    public static readonly MediaType Xml = From(Names.Xml);
 
     public static readonly Many<MediaType> AllKnown = Many.Of(Css, Html, Javascript, Json, Plain, Xml);
     public static readonly Many<MediaType> AllText = Many.Of(Css, Html, Javascript, Json, Plain, Xml);
+
+    public static MediaType From(string name) =>
+      new MediaType(name);
 
     public sealed class Converter : TextConverter
     {

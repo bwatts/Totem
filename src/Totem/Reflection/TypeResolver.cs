@@ -18,118 +18,61 @@ namespace Totem.Reflection
     //
     // https://github.com/JamesNK/Newtonsoft.Json/blob/master/Src/Newtonsoft.Json/Serialization/DefaultSerializationBinder.cs
 
-    public static Type Resolve(string name, bool strict = true)
-    {
-      var type = _types.Resolve(name);
-
-      Expect.False(strict && type == null, "Failed to resolve type: " + name);
-
-      return type;
-    }
-
-    public static Type Resolve(string typeName, string assemblyName, bool strict = true)
-    {
-      var type = _types.Resolve(typeName, assemblyName);
-
-      Expect.False(strict && type == null, Text.Of("Failed to resolve type {0} in assembly {1}", typeName, assemblyName));
-
-      return type;
-    }
-
     static readonly TypeIndex _types = new TypeIndex();
+
+    public static bool TryResolve(string name, string assembly, out Type type) =>
+      _types.TryResolve(name, assembly, out type);
+
+    public static Type Resolve(string name, string assembly)
+    {
+      if(!TryResolve(name, assembly, out var type))
+      {
+        throw new Exception($"Failed to resolve type from assembly: {name}, {assembly}");
+      }
+
+      return type;
+    }
 
     sealed class TypeIndex
     {
-      readonly ConcurrentDictionary<string, Type> _typesByName = new ConcurrentDictionary<string, Type>();
+      readonly ConcurrentDictionary<string, Type> _byFullName = new ConcurrentDictionary<string, Type>();
 
-      internal Type Resolve(string name)
+      internal bool TryResolve(string name, string assembly, out Type type)
       {
-        var typeAndAssembly = SplitTypeAndAssembly(name);
+        var fullName = string.IsNullOrEmpty(assembly) ? name : $"{name}, {assembly}";
 
-        return _typesByName.GetOrAdd(name, _ => LoadType(typeAndAssembly.Item1, typeAndAssembly.Item2));
-      }
-
-      internal Type Resolve(string typeName, string assemblyName)
-      {
-        var name = typeName + ", " + assemblyName;
-
-        return _typesByName.GetOrAdd(name, _ => LoadType(typeName, assemblyName));
-      }
-
-      static Type LoadType(string typeName, string assemblyName)
-      {
-        if(assemblyName == null)
+        if(!_byFullName.TryGetValue(fullName, out type) && TryLoadType(name, assembly, out type))
         {
-          return Type.GetType(typeName);
+          _byFullName.TryAdd(fullName, type);
         }
 
-#pragma warning disable 618,612
-        var assembly = Assembly.LoadWithPartialName(assemblyName);
-#pragma warning restore 618,612
+        return type != null;
+      }
 
+      bool TryLoadType(string name, string assembly, out Type type)
+      {
         if(assembly == null)
         {
-          assembly = AppDomain.CurrentDomain
-            .GetAssemblies()
-            .Where(appDomainAssembly => appDomainAssembly.FullName == assemblyName || appDomainAssembly.GetName().Name == assemblyName)
-            .FirstOrDefault();
-        }
-
-        return assembly?.GetType(typeName, throwOnError: false);
-      }
-
-      static Tuple<string, string> SplitTypeAndAssembly(string type)
-      {
-        string name;
-        string assembly;
-
-        var assemblyDelimiterIndex = GetAssemblyDelimiterIndex(type);
-
-        if(assemblyDelimiterIndex != null)
-        {
-          name = type.Substring(0, assemblyDelimiterIndex.Value).Trim();
-          assembly = type.Substring(assemblyDelimiterIndex.Value + 1, type.Length - assemblyDelimiterIndex.Value - 1).Trim();
+          type = Type.GetType(name);
         }
         else
         {
-          name = type;
-          assembly = null;
-        }
+#pragma warning disable 618, 612
+          var loadedAssembly = Assembly.LoadWithPartialName(assembly);
+#pragma warning restore 618, 612
 
-        return Tuple.Create(name, assembly);
-      }
-
-      static int? GetAssemblyDelimiterIndex(string type)
-      {
-        // Get the first comma following all surrounded in brackets because of generic types
-        //
-        // e.g. System.Collections.Generic.Dictionary`2[[System.String, mscorlib,Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
-
-        var scope = 0;
-
-        for(var i = 0; i < type.Length; i++)
-        {
-          var character = type[i];
-
-          switch(character)
+          if(loadedAssembly == null)
           {
-            case '[':
-              scope++;
-              break;
-            case ']':
-              scope--;
-              break;
-            case ',':
-              if(scope == 0)
-              {
-                return i;
-              }
-
-              break;
+            loadedAssembly = AppDomain.CurrentDomain
+              .GetAssemblies()
+              .Where(a => a.FullName == assembly || a.GetName().Name == assembly)
+              .FirstOrDefault();
           }
+
+          type = loadedAssembly?.GetType(name, throwOnError: false);
         }
 
-        return null;
+        return type != null;
       }
     }
   }

@@ -49,10 +49,10 @@ namespace Totem.Runtime
     //
 
     public static Field<T> Declare<T>(Expression<Func<Field<T>>> declaration, Func<IBindable, T> resolveDefaultValue) =>
-      new Field<T>(declaration.GetFieldInfo(), resolveDefaultValue);
+      new Field<T>(declaration.GetField(), resolveDefaultValue);
 
     public static Field<T> Declare<T>(Expression<Func<Field<T>>> declaration, T defaultValue = default(T)) =>
-      new Field<T>(declaration.GetFieldInfo(), _ => defaultValue);
+      new Field<T>(declaration.GetField(), _ => defaultValue);
 
     public static Field<IReadOnlyList<T>> Declare<T>(Expression<Func<Field<IReadOnlyList<T>>>> declaration) =>
       Declare(declaration, _ => new List<T>());

@@ -18,7 +18,7 @@ namespace Totem.IO
     {
       Value = value ?? "";
 
-      _isTemplate = value.StartsWith(TemplateStart) && value.EndsWith(TemplateEnd);
+      _isTemplate = Value.StartsWith(TemplateStart) && Value.EndsWith(TemplateEnd);
     }
 
     public readonly string Value;

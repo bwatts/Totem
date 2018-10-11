@@ -86,32 +86,10 @@ namespace Totem.IO
     // Factory
     //
 
-    public static HttpHost From(bool secure, HttpDomain domain, int port) =>
-      new HttpHost(secure, domain, port, secure ? port == DefaultSecurePort : port == DefaultPort);
-
-    public static HttpHost From(bool secure, HttpDomain domain) =>
-      new HttpHost(secure, domain, secure ? DefaultSecurePort : DefaultPort, portIsDefault: true);
-
-    public static HttpHost From(bool secure, string domain, int port) =>
-      From(secure, HttpDomain.From(domain), port);
-
-    public static HttpHost From(bool secure, string domain) =>
-      From(secure, HttpDomain.From(domain));
-
-    public static HttpHost FromHttp(HttpDomain domain) =>
-      From(false, domain);
-
-    public static HttpHost FromHttps(HttpDomain domain) =>
-      From(true, domain);
-
-    public static HttpHost FromHttp(string domain) =>
-      From(false, domain);
-
-    public static HttpHost FromHttps(string domain) =>
-      From(true, domain);
-
-    public static HttpHost From(string value, bool strict = true)
+    public static bool TryFrom(string value, out HttpHost host)
     {
+      host = null;
+
       var parts = value.Split(new[] { Uri.SchemeDelimiter }, StringSplitOptions.None);
 
       if(parts.Length > 0)
@@ -145,23 +123,54 @@ namespace Totem.IO
 
           if(domainParts.Length == 1)
           {
-            return From(isHttps, domainParts[0]);
+            host = From(isHttps, domainParts[0]);
           }
           else
           {
-
             if(int.TryParse(domainParts[1], out var port))
             {
-              return From(isHttps, domainParts[0], port);
+              host = From(isHttps, domainParts[0], port);
             }
           }
         }
       }
 
-      Expect.False(strict, "Failed to parse host: " + value);
-
-      return null;
+      return host != null;
     }
+
+    public static HttpHost From(string value)
+    {
+      if(!TryFrom(value, out var host))
+      {
+        throw new FormatException($"Failed to parse HTTP host: {value}");
+      }
+
+      return host;
+    }
+
+    public static HttpHost From(bool secure, HttpDomain domain, int port) =>
+      new HttpHost(secure, domain, port, secure ? port == DefaultSecurePort : port == DefaultPort);
+
+    public static HttpHost From(bool secure, HttpDomain domain) =>
+      new HttpHost(secure, domain, secure ? DefaultSecurePort : DefaultPort, portIsDefault: true);
+
+    public static HttpHost From(bool secure, string domain, int port) =>
+      From(secure, HttpDomain.From(domain), port);
+
+    public static HttpHost From(bool secure, string domain) =>
+      From(secure, HttpDomain.From(domain));
+
+    public static HttpHost FromHttp(HttpDomain domain) =>
+      From(false, domain);
+
+    public static HttpHost FromHttps(HttpDomain domain) =>
+      From(true, domain);
+
+    public static HttpHost FromHttp(string domain) =>
+      From(false, domain);
+
+    public static HttpHost FromHttps(string domain) =>
+      From(true, domain);
 
     public sealed class Converter : TextConverter
     {
