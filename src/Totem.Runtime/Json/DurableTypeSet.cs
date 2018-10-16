@@ -6,12 +6,12 @@ namespace Totem.Runtime.Json
   /// <summary>
   /// The durable types known to Totem JSON serialization
   /// </summary>
-  public sealed class DurableTypes : IDurableTypes
+  public sealed class DurableTypeSet : IDurableTypeSet
   {
     readonly Dictionary<string, IDurableType> _byKey = new Dictionary<string, IDurableType>();
     readonly Dictionary<Type, IDurableType> _byDeclaredType = new Dictionary<Type, IDurableType>();
 
-    public DurableTypes(IEnumerable<IDurableType> types)
+    public DurableTypeSet(IEnumerable<IDurableType> types)
     {
       foreach(var type in types)
       {

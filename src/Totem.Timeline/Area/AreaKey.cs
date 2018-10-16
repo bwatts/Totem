@@ -6,7 +6,7 @@ using Totem.IO;
 namespace Totem.Timeline.Area
 {
   /// <summary>
-  /// Identifies an area of a runtime using C# identifier rules
+  /// Identifies a timeline area using C# identifier rules
   /// </summary>
   [TypeConverter(typeof(Converter))]
   public sealed class AreaKey : IEquatable<AreaKey>, IComparable<AreaKey>
@@ -54,21 +54,27 @@ namespace Totem.Timeline.Area
       + "$",            // End the string
       RegexOptions.Compiled);
 
-    public static AreaKey From(string value, bool strict = true)
+    public static bool TryFrom(string value, out AreaKey key)
     {
-      if(Id.IsName(value))
+      key = Id.IsName(value) ? new AreaKey(value) : null;
+
+      return key != null;
+    }
+
+    public static AreaKey From(string value)
+    {
+      if(!TryFrom(value, out var key))
       {
-        return new AreaKey(value);
+        throw new FormatException($"Failed to parse area key: {value}");
       }
 
-      Expect.False(strict, $"Failed to parse area key: {value}");
-
-      return null;
+      return key;
     }
 
     public sealed class Converter : TextConverter
     {
-      protected override object ConvertFrom(TextValue value) => From(value);
+      protected override object ConvertFrom(TextValue value) =>
+        From(value);
     }
   }
 }

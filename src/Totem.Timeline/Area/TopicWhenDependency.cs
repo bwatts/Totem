@@ -5,11 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Totem.Timeline.Area
 {
   /// <summary>
-  /// A method parameter representing a service resolved at call time
+  /// A parameter to a .When method representing a service resolved at call time
   /// </summary>
-  public class FlowDependency
+  public class TopicWhenDependency
   {
-    public FlowDependency(ParameterInfo parameter)
+    public TopicWhenDependency(ParameterInfo parameter)
     {
       Parameter = parameter;
     }

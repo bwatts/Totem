@@ -23,10 +23,10 @@ namespace Totem.Timeline.SignalR
     Id ConnectionId => Id.From(Context.ConnectionId);
 
     public Task SubscribeToChanged(string etag) =>
-      _db.SubscribeToChanged(ConnectionId, QueryETag.From(_area, etag));
+      _db.SubscribeToChanged(ConnectionId, QueryETag.From(etag, _area));
 
     public void UnsubscribeFromChanged(string key) =>
-      _db.UnsubscribeFromChanged(ConnectionId, FlowKey.From(_area, key));
+      _db.UnsubscribeFromChanged(ConnectionId, FlowKey.From(key, _area));
 
     public override Task OnDisconnectedAsync(Exception exception)
     {

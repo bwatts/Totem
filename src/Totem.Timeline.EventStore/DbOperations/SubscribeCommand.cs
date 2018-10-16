@@ -72,7 +72,7 @@ namespace Totem.Timeline.EventStore.DbOperations
       {
         if(typeItem is JArray multiInstance)
         {
-          var type = _context.Area.Flows.Get(MapTypeKey.From(multiInstance[0].Value<string>()));
+          var type = _context.Area.GetFlow(MapTypeKey.From(multiInstance[0].Value<string>()));
 
           foreach(var idItem in multiInstance.Skip(1))
           {
@@ -81,7 +81,7 @@ namespace Totem.Timeline.EventStore.DbOperations
         }
         else
         {
-          yield return FlowKey.From(_context.Area, typeItem.Value<string>());
+          yield return FlowKey.From(typeItem.Value<string>(), _context.Area);
         }
       }
     }

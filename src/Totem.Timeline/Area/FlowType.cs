@@ -3,21 +3,20 @@ namespace Totem.Timeline.Area
   /// <summary>
   /// A .NET type representing a flow on the timeline
   /// </summary>
-  public class FlowType : MapType
+  public abstract class FlowType : MapType
   {
-    public FlowType(MapTypeInfo info, FlowConstructor constructor, ResumeAlgorithm resumeAlgorithm) : base(info)
+    protected FlowType(FlowTypeInfo info) : base(info)
     {
-      Constructor = constructor;
-      ResumeAlgorithm = resumeAlgorithm;
-      Observations = new FlowObservationSet();
-
-      IsTopic = this is TopicType;
-      IsQuery = this is QueryType;
+      Constructor = info.Constructor;
+      Observations = info.Observations;
+      ResumeAlgorithm = info.ResumeAlgorithm;
+      IsTopic = info.IsTopic;
+      IsQuery = info.IsQuery;
     }
 
     public readonly FlowConstructor Constructor;
-    public readonly ResumeAlgorithm ResumeAlgorithm;
     public readonly FlowObservationSet Observations;
+    public readonly ResumeAlgorithm ResumeAlgorithm;
     public readonly bool IsTopic;
     public readonly bool IsQuery;
 

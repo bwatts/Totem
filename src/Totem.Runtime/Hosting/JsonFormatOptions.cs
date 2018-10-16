@@ -8,7 +8,7 @@ namespace Totem.Runtime.Hosting
   /// </summary>
   public class JsonFormatOptions
   {
-    public readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings();
-    public readonly Many<IDurableType> DurableTypes = new Many<IDurableType>();
+    public JsonSerializerSettings SerializerSettings { get; } = new JsonSerializerSettings();
+    public Many<IDurableType> DurableTypes { get; } = new Many<IDurableType>();
   }
 }

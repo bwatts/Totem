@@ -8,15 +8,12 @@ namespace Totem.Timeline.Area
   /// <typeparam name="T">The type of declared methods</typeparam>
   public class FlowMethodSet<T> where T : FlowMethod
   {
-    public FlowMethodSet(Many<T> methods, Many<T> scheduledMethods)
+    public FlowMethodSet(Many<T> methods = null, Many<T> scheduledMethods = null)
     {
-      Methods = methods;
-      ScheduledMethods = scheduledMethods;
+      Methods = methods ?? new Many<T>();
+      ScheduledMethods = scheduledMethods ?? new Many<T>();
     }
       
-    public FlowMethodSet() : this(new Many<T>(), new Many<T>())
-    {}
-
     public readonly Many<T> Methods;
     public readonly Many<T> ScheduledMethods;
 

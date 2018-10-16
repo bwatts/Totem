@@ -8,18 +8,18 @@ namespace Totem.Timeline.Area
   /// </summary>
   public class FlowObservation
   {
-    public FlowObservation(FlowType flowType, EventType eventType, FlowRoute route, FlowMethodSet<FlowWhen> when)
+    public FlowObservation(FlowType flowType, EventType eventType, FlowRoute route, FlowMethodSet<FlowGiven> given)
     {
       FlowType = flowType;
       EventType = eventType;
       Route = route;
-      When = when;
+      Given = given;
     }
 
     public readonly FlowType FlowType;
     public readonly EventType EventType;
     public readonly FlowRoute Route;
-    public readonly FlowMethodSet<FlowWhen> When;
+    public readonly FlowMethodSet<FlowGiven> Given;
 
     public bool HasRoute => Route != null;
     public bool CanBeFirst => Route == null || Route.First;
@@ -47,19 +47,16 @@ namespace Totem.Timeline.Area
     }
 
     protected virtual bool CanRoute(Event e, bool scheduled) =>
-      EventType.IsTypeOf(e) && HasWhen(scheduled);
+      EventType.IsTypeOf(e) && HasGiven(scheduled);
 
-    public bool HasWhen(bool scheduled) =>
-      When.HasMethod(scheduled);
+    public bool HasGiven(bool scheduled) =>
+      Given.HasMethod(scheduled);
 
-    public bool HasWhen() =>
-      When.HasMethod(true) || When.HasMethod(false);
-
-    public async Task CallWhen(Flow flow, FlowCall.When call)
+    public void CallGiven(Flow flow, FlowCall.Given call)
     {
-      foreach(var whenMethod in When.GetMethods(call.Point.Scheduled))
+      foreach(var givenMethod in Given.GetMethods(call.Point.Scheduled))
       {
-        await whenMethod.Call(flow, call.Point.Event, call.Services);
+        givenMethod.Call(flow, call.Point.Event);
       }
     }
   }

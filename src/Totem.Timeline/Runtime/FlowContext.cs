@@ -7,7 +7,7 @@ namespace Totem.Timeline
   /// <summary>
   /// The context of a flow's presence on the timeline
   /// </summary>
-  public class FlowContext
+  public sealed class FlowContext
   {
     readonly Flow _flow;
     User _user;
@@ -32,27 +32,11 @@ namespace Totem.Timeline
     public readonly FlowKey Key;
     public TimelinePosition CheckpointPosition { get; private set; }
     public TimelinePosition ErrorPosition { get; internal set; }
-    public bool Done { get; internal set; }
     public FlowCall Call { get; private set; }
+    public bool Done { get; internal set; }
 
     public override string ToString() =>
       Key.ToString();
-
-    internal async Task CallWhen(FlowCall.When call)
-    {
-      try
-      {
-        Call = call;
-
-        await call.Make(_flow);
-
-        AdvanceCheckpoint();
-      }
-      finally
-      {
-        Call = null;
-      }
-    }
 
     internal void CallGiven(FlowCall.Given call, bool advanceCheckpoint = false)
     {
@@ -60,12 +44,28 @@ namespace Totem.Timeline
       {
         Call = call;
 
-        call.Make((Topic) _flow);
+        call.Make(_flow);
 
         if(advanceCheckpoint)
         {
           AdvanceCheckpoint();
         }
+      }
+      finally
+      {
+        Call = null;
+      }
+    }
+
+    internal async Task CallWhen(FlowCall.When call)
+    {
+      try
+      {
+        Call = call;
+
+        await call.Make((Topic) _flow);
+
+        AdvanceCheckpoint();
       }
       finally
       {

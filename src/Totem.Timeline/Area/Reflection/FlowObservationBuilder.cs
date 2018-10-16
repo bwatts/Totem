@@ -5,13 +5,13 @@ using System.Reflection;
 using Totem.Reflection;
 using Totem.Runtime;
 
-namespace Totem.Timeline.Area
+namespace Totem.Timeline.Area.Reflection
 {
   /// <summary>
-  /// Builds a flow type in the area map
+  /// Builds the observations of a flow in an area map
   /// </summary>
   /// <remarks>
-  /// This stateful builder finds the Route, When, and Given methods defined by flow types.
+  /// This stateful builder finds the Route, When, and Given methods defined by tye flow type.
   /// 
   /// During iteration, each method/event pair are stored in the <see cref="_method"/> and
   /// <see cref="_event"/> fields, respectively, allowing universal access without passing
@@ -20,19 +20,19 @@ namespace Totem.Timeline.Area
   /// After finding those methods, it associates each of the <see cref="FlowType"/> and
   /// <see cref="EventType"/> pairs.
   /// </remarks>
-  internal sealed class AreaMapFlowBuilder : Notion
+  internal sealed class FlowObservationBuilder : Notion
   {
     readonly HashSet<EventType> _events = new HashSet<EventType>();
     readonly Dictionary<EventType, FlowRoute> _routesByEvent = new Dictionary<EventType, FlowRoute>();
-    readonly Dictionary<EventType, FlowMethodSet<FlowWhen>> _whensByEvent = new Dictionary<EventType, FlowMethodSet<FlowWhen>>();
-    readonly Dictionary<EventType, FlowMethodSet<TopicGiven>> _givensByEvent = new Dictionary<EventType, FlowMethodSet<TopicGiven>>();
-    readonly AreaMap _map;
+    readonly Dictionary<EventType, FlowMethodSet<FlowGiven>> _givensByEvent = new Dictionary<EventType, FlowMethodSet<FlowGiven>>();
+    readonly Dictionary<EventType, FlowMethodSet<TopicWhen>> _whensByEvent = new Dictionary<EventType, FlowMethodSet<TopicWhen>>();
+    readonly MapBuilder _map;
     readonly FlowType _flow;
     MethodInfo _method;
     string _methodPath;
     EventType _event;
 
-    internal AreaMapFlowBuilder(AreaMap map, FlowType flow)
+    internal FlowObservationBuilder(MapBuilder map, FlowType flow)
     {
       _map = map;
       _flow = flow;
@@ -79,17 +79,17 @@ namespace Totem.Timeline.Area
         case "RouteFirst":
           TryDeclareMethod(() => DeclareRoute(isFirst: true), expectStatic: true);
           break;
-        case "When":
-          TryDeclareMethod(() => DeclareWhen());
-          break;
-        case "WhenScheduled":
-          TryDeclareMethod(() => DeclareWhen(scheduled: true));
-          break;
         case "Given":
           TryDeclareMethod(() => DeclareGiven());
           break;
         case "GivenScheduled":
           TryDeclareMethod(() => DeclareGiven(scheduled: true));
+          break;
+        case "When":
+          TryDeclareMethod(() => DeclareWhen());
+          break;
+        case "WhenScheduled":
+          TryDeclareMethod(() => DeclareWhen(scheduled: true));
           break;
         default:
           WarnIfMethodPossiblyMisspelled();
@@ -127,14 +127,18 @@ namespace Totem.Timeline.Area
 
       if(firstParameterType == null || !typeof(Event).IsAssignableFrom(firstParameterType))
       {
-        Log.Warning($"[runtime] {_methodPath} does not have an event as the first parameter; ignoring");
+        Log.Warning($"[runtime] Flow method {_methodPath} does not have an event as the first parameter; ignoring");
+
+        return false;
+      }
+      else if(!_map.TryGetEvent(firstParameterType, out _event))
+      {
+        Log.Warning($"[runtime] Flow method {_methodPath} refers to an event that is not in the map; ignoring");
 
         return false;
       }
       else
       {
-        _event = _map.Events.Get(firstParameterType);
-
         _events.Add(_event);
 
         return true;
@@ -147,40 +151,38 @@ namespace Totem.Timeline.Area
 
       if(!_routesByEvent.ContainsKey(_event))
       {
-        TryDeclareRoute(isFirst);
+        if(_method.ReturnType == typeof(Id) || typeof(IEnumerable<Id>).IsAssignableFrom(_method.ReturnType))
+        {
+          _routesByEvent.Add(_event, new FlowRoute(_method, _event, _flow, isFirst));
+        }
+        else
+        {
+          Log.Warning($"[runtime] {_methodPath}({_event}) does not return one or many Id values; ignoring");
+        }
       }
     }
-
-    void TryDeclareRoute(bool isFirst)
-    {
-      if(_method.ReturnType == typeof(Id) || typeof(IEnumerable<Id>).IsAssignableFrom(_method.ReturnType))
-      {
-        _routesByEvent.Add(_event, new FlowRoute(_method, _event, _flow, isFirst));
-      }
-      else
-      {
-        Log.Warning($"[runtime] {_methodPath}({_event}) does not return one or many Id values; ignoring");
-      }
-    }
-
-    void DeclareWhen(bool scheduled = false) =>
-      DeclareMethods(
-        _whensByEvent,
-        new FlowWhen(_method, _event, ReadWhenDependencies()), scheduled);
 
     void DeclareGiven(bool scheduled = false)
     {
-      if(!_flow.IsTopic)
+      if(_method.GetParameters().Length == 1)
       {
-        Log.Warning($"[runtime] {_method.DeclaringType.FullName} is not a topic and cannot have {_method.Name} methods; ignoring");
-      }
-      else if(_method.GetParameters().Length > 1)
-      {
-        Log.Warning($"[runtime] {_methodPath}({_event}, ...) is solely for state and cannot have dependencies; ignoring");
+        DeclareMethods(_givensByEvent, new FlowGiven(_method, _event), scheduled);
       }
       else
       {
-        DeclareMethods(_givensByEvent, new TopicGiven(_method, _event), scheduled);
+        Log.Warning($"[runtime] {_methodPath}({_event}, ...) is solely for state and cannot have dependencies; ignoring");
+      }
+    }
+
+    void DeclareWhen(bool scheduled = false)
+    {
+      if(_flow.IsTopic)
+      {
+        DeclareMethods(_whensByEvent, new TopicWhen(_method, _event, ReadWhenDependencies()), scheduled);
+      }
+      else
+      {
+        Log.Warning($"[runtime] {_method.DeclaringType.FullName} is not a topic and cannot have {_method.Name} methods; ignoring");
       }
     }
 
@@ -196,8 +198,8 @@ namespace Totem.Timeline.Area
       methods.GetMethods(scheduled).Write.Add(method);
     }
 
-    Many<FlowDependency> ReadWhenDependencies() =>
-      _method.GetParameters().Skip(1).ToMany(parameter => new FlowDependency(parameter));
+    Many<TopicWhenDependency> ReadWhenDependencies() =>
+      _method.GetParameters().Skip(1).ToMany(parameter => new TopicWhenDependency(parameter));
 
     void WarnIfMethodPossiblyMisspelled()
     {
@@ -207,7 +209,7 @@ namespace Totem.Timeline.Area
         {
           if(Text.EditDistance(_method.Name, knownMethodName) <= 2)
           {
-            Log.Warning($"[runtime] Flow method '{knownMethodName}' possibly misspelled: {_methodPath}");
+            Log.Warning($"[runtime] Flow method \"{knownMethodName}\" possibly misspelled: {_methodPath}");
 
             break;
           }
@@ -260,29 +262,28 @@ namespace Totem.Timeline.Area
     {
       var hasRoute = _routesByEvent.TryGetValue(_event, out var route);
 
-      if(!_whensByEvent.TryGetValue(_event, out var when))
+      if(!_givensByEvent.TryGetValue(_event, out var given))
       {
-        when = new FlowMethodSet<FlowWhen>();
+        given = new FlowMethodSet<FlowGiven>();
       }
 
       FlowObservation observation;
 
       if(!_flow.IsTopic)
       {
-        observation = new FlowObservation(_flow, _event, route, when);
+        observation = new FlowObservation(_flow, _event, route, given);
       }
       else
       {
-        if(!_givensByEvent.TryGetValue(_event, out var given))
+        if(!_whensByEvent.TryGetValue(_event, out var when))
         {
-          given = new FlowMethodSet<TopicGiven>();
+          when = new FlowMethodSet<TopicWhen>();
         }
 
-        observation = new TopicObservation(_flow, _event, route, when, given);
+        observation = new TopicObservation(_flow, _event, route, given, when);
       }
 
       _flow.Observations.Declare(observation);
-
       _event.Observations.Write.Add(observation);
 
       return hasRoute;

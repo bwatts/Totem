@@ -15,9 +15,9 @@ namespace Totem.Runtime.Json
   /// </summary>
   public class JsonFormatContractResolver : DefaultContractResolver
   {
-    readonly IDurableTypes _durableTypes;
+    readonly IDurableTypeSet _durableTypes;
 
-    public JsonFormatContractResolver(IDurableTypes durableTypes)
+    public JsonFormatContractResolver(IDurableTypeSet durableTypes)
     {
       _durableTypes = durableTypes;
 

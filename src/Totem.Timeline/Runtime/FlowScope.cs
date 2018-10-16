@@ -18,17 +18,15 @@ namespace Totem.Timeline.Runtime
     TimelinePosition _resumeCheckpoint;
     TaskSource<TimelinePoint> _pendingDequeue;
 
-    protected FlowScope(FlowKey key, IServiceProvider services, ITimelineDb db)
+    protected FlowScope(FlowKey key, ITimelineDb db)
     {
       Key = key;
-      Services = services;
       Db = db;
     }
 
     public FlowKey Key { get; }
     public Task<FlowResult> Task => _taskSource.Task;
 
-    protected IServiceProvider Services { get; }
     protected ITimelineDb Db { get; }
     protected bool Running => !Task.IsCompleted;
 

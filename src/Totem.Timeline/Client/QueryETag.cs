@@ -38,30 +38,35 @@ namespace Totem.Timeline.Client
     public static bool operator ==(QueryETag x, QueryETag y) => Eq.Op(x, y);
     public static bool operator !=(QueryETag x, QueryETag y) => Eq.OpNot(x, y);
 
-    public static QueryETag From(FlowKey key, TimelinePosition position) =>
-      new QueryETag(key, position);
-
-    public static QueryETag From(AreaMap area, string value, bool strict = true)
+    public static bool TryFrom(string value, AreaMap map, out QueryETag etag)
     {
+      etag = null;
+
       var parts = value.Split('@');
 
-      if(parts.Length > 0)
+      if(parts.Length > 0 && FlowKey.TryFrom(parts[0], map, out var key))
       {
-        var key = FlowKey.From(area, parts[0], strict);
+        var checkpoint = parts.Length == 2 && long.TryParse(parts[1], out var position)
+          ? new TimelinePosition(position)
+          : TimelinePosition.None;
 
-        if(key != null)
-        {
-          var checkpoint = parts.Length == 2 && long.TryParse(parts[1], out var position)
-            ? new TimelinePosition(position)
-            : TimelinePosition.None;
-
-          return new QueryETag(key, checkpoint);
-        }
+        etag = new QueryETag(key, checkpoint);
       }
 
-      Expect.False(strict, $"Failed to parse ETag: {value}");
+      return etag != null;
+    }
 
-      return null;
+    public static QueryETag From(FlowKey key, TimelinePosition checkpoint) =>
+      new QueryETag(key, checkpoint);
+
+    public static QueryETag From(string value, AreaMap map)
+    {
+      if(!TryFrom(value, map, out var etag))
+      {
+        throw new FormatException($"Failed to parse query ETag: \"{value}\"");
+      }
+
+      return etag;
     }
   }
 }

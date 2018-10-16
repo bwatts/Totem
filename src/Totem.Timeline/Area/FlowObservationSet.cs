@@ -9,58 +9,97 @@ namespace Totem.Timeline.Area
   /// </summary>
   public class FlowObservationSet : IReadOnlyCollection<FlowObservation>
   {
-    readonly Dictionary<MapTypeKey, FlowObservation> _eventsByKey = new Dictionary<MapTypeKey, FlowObservation>();
-    readonly Dictionary<Type, FlowObservation> _eventsByType = new Dictionary<Type, FlowObservation>();
+    readonly Dictionary<MapTypeKey, FlowObservation> _byKey = new Dictionary<MapTypeKey, FlowObservation>();
+    readonly Dictionary<Type, FlowObservation> _byDeclaredType = new Dictionary<Type, FlowObservation>();
 
-    public IEnumerator<FlowObservation> GetEnumerator() => _eventsByKey.Values.GetEnumerator();
+    public FlowObservationSet()
+    {}
+
+    public FlowObservationSet(IEnumerable<FlowObservation> observations)
+    {
+      foreach(var observation in observations)
+      {
+        Declare(observation);
+      }
+    }
+
+    public int Count => _byKey.Count;
+    public FlowObservation this[MapTypeKey key] => _byKey[key];
+    public FlowObservation this[EventType type] => _byKey[type.Key];
+    public FlowObservation this[Type declaredType] => _byDeclaredType[declaredType];
+    public FlowObservation this[Event e] => _byDeclaredType[e.GetType()];
+
+    public IEnumerator<FlowObservation> GetEnumerator() => _byKey.Values.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public int Count => _eventsByKey.Count;
+    public bool Contains(MapTypeKey key) =>
+      _byKey.ContainsKey(key);
 
-    public bool Contains(EventType e) => Contains(e.DeclaredType);
-    public bool Contains(MapTypeKey key) => _eventsByKey.ContainsKey(key);
-    public bool Contains(Type declaredType) => _eventsByType.ContainsKey(declaredType);
-    public bool Contains(Event e) => Contains(e.GetType());
+    public bool Contains(EventType e) =>
+      Contains(e.DeclaredType);
 
-    public FlowObservation Get(MapTypeKey key, bool strict = true)
+    public bool Contains(Type declaredType) =>
+      _byDeclaredType.ContainsKey(declaredType);
+
+    public bool Contains(Event e) =>
+      Contains(e.GetType());
+
+    public bool TryGet(MapTypeKey key, out FlowObservation observation) =>
+      _byKey.TryGetValue(key, out observation);
+
+    public bool TryGet(EventType type, out FlowObservation observation) =>
+      TryGet(type.DeclaredType, out observation);
+
+    public bool TryGet(Type declaredType, out FlowObservation observation) =>
+      _byDeclaredType.TryGetValue(declaredType, out observation);
+
+    public bool TryGet(Event e, out FlowObservation observation) =>
+      TryGet(e.GetType(), out observation);
+
+    public FlowObservation Get(MapTypeKey key)
     {
-      if(_eventsByKey.TryGetValue(key, out var e))
+      if(!TryGet(key, out var observation))
       {
-        return e;
+        throw new KeyNotFoundException($"This set does not contain the specified key: {key}");
       }
 
-      Expect.False(strict, "Unknown event key: " + Text.Of(key));
-
-      return null;
+      return observation;
     }
 
-    public FlowObservation Get(Type type, bool strict = true)
+    public FlowObservation Get(EventType type)
     {
-      if(_eventsByType.TryGetValue(type, out var e))
+      if(!TryGet(type, out var observation))
       {
-        return e;
+        throw new KeyNotFoundException($"This set does not contain the specified event: {type}");
       }
 
-      Expect.False(strict, "Unknown event type: " + Text.Of(type));
-
-      return null;
+      return observation;
     }
 
-    public FlowObservation Get(EventType type, bool strict = true) =>
-      Get(type.DeclaredType, strict);
-
-    public FlowObservation Get(Event e, bool strict = true) =>
-      Get(e.GetType(), strict);
-
-    internal void Declare(FlowObservation e)
+    public FlowObservation Get(Type declaredType)
     {
-      if(_eventsByKey.TryGetValue(e.EventType.Key, out var current) && current != e)
+      if(!TryGet(declaredType, out var observation))
       {
-        throw new Exception($"Event {e.EventType} is already declared");
+        throw new KeyNotFoundException($"This set does not contain the specified event: {declaredType}");
       }
 
-      _eventsByKey.Add(e.EventType.Key, e);
-      _eventsByType.Add(e.EventType.DeclaredType, e);
+      return observation;
+    }
+
+    public FlowObservation Get(Event e)
+    {
+      if(!TryGet(e, out var observation))
+      {
+        throw new KeyNotFoundException($"This set does not contain the specified event: {e.GetType()}");
+      }
+
+      return observation;
+    }
+
+    internal void Declare(FlowObservation observation)
+    {
+      _byKey[observation.EventType.Key] = observation;
+      _byDeclaredType[observation.EventType.DeclaredType] = observation;
     }
   }
 }

@@ -88,11 +88,11 @@ namespace Totem.Timeline.Runtime
     {
       if(key.Type.IsTopic)
       {
-        return new TopicScope(key, _services, _db, _area);
+        return new TopicScope(key, _db, _services, _area);
       }
       else if(key.Type.IsQuery)
       {
-        return new QueryScope(key, _services, _db);
+        return new QueryScope(key, _db);
       }
       else
       {

@@ -11,15 +11,18 @@ namespace Totem.Timeline.Runtime
   /// </summary>
   public class TopicScope : FlowScope<Topic>
   {
+    readonly IServiceProvider _services;
     readonly AreaMap _area;
 
-    public TopicScope(FlowKey key, IServiceProvider services, ITimelineDb db, AreaMap area)
-      : base(key, services, db)
+    public TopicScope(FlowKey key, ITimelineDb db, IServiceProvider services, AreaMap area)
+      : base(key, db)
     {
+      _services = services;
       _area = area;
     }
 
-    protected new TopicObservation Observation => (TopicObservation) base.Observation;
+    protected new TopicObservation Observation =>
+      (TopicObservation) base.Observation;
 
     protected override async Task ObservePoint()
     {
@@ -27,10 +30,13 @@ namespace Totem.Timeline.Runtime
       {
         LogPoint();
 
-        using(var callScope = Services.CreateScope())
+        if(CanCallGiven)
         {
           CallGiven();
+        }
 
+        using(var callScope = _services.CreateScope())
+        {
           await CallWhen(callScope.ServiceProvider);
         }
       }
@@ -47,8 +53,9 @@ namespace Totem.Timeline.Runtime
       }
     }
 
-    bool CanCallWhen =>
-      Observation.HasWhen(Point.Scheduled);
+    bool CanCallWhen => Observation.HasWhen(Point.Scheduled);
+    bool CanCallGiven => Observation.HasGiven(Point.Scheduled);
+    bool GivenWasNotImmediate => Point.Topic != Key;
 
     void LogPoint() =>
       Log.Debug("[timeline] #{Position} => {Key}", Point.Position.ToInt64(), Key);
@@ -59,16 +66,13 @@ namespace Totem.Timeline.Runtime
     void CallGivenWithoutWhen() =>
       Flow.Context.CallGiven(new FlowCall.Given(Point, Observation), advanceCheckpoint: true);
 
-    bool GivenWasNotImmediate =>
-      Point.Topic != Key;
-
     async Task CallWhen(IServiceProvider services)
     {
-      var call = new FlowCall.TopicWhen(Point, Observation, services, State.CancellationToken);
+      var call = new FlowCall.When(Point, Observation, services, State.CancellationToken);
 
       await Flow.Context.CallWhen(call);
 
-      var newEvents = call.RetrieveNewEvents();
+      var newEvents = call.GetNewEvents();
 
       if(newEvents.Count == 0)
       {
@@ -88,7 +92,11 @@ namespace Totem.Timeline.Runtime
       {
         foreach(var call in immediateGivens.Calls)
         {
-          Flow.Context.CallGiven(call, advanceCheckpoint: !call.Observation.HasWhen());
+          var observation = (TopicObservation) call.Observation;
+
+          var hasWhen = observation.HasWhen(scheduled: true) || observation.HasWhen(scheduled: false);
+
+          Flow.Context.CallGiven(call, advanceCheckpoint: !hasWhen);
         }
       }
       catch(Exception error)

@@ -5,13 +5,13 @@ using Totem.Timeline.Area;
 namespace Totem.Timeline.Json
 {
   /// <summary>
-  /// A timeline area type known to Totem JSON serialization
+  /// A timeline type known to Totem JSON serialization
   /// </summary>
-  internal sealed class AreaDurableType : IDurableType
+  internal sealed class DurableMapType : IDurableType
   {
-    readonly DurableType _type;
+    readonly MapType _type;
 
-    internal AreaDurableType(DurableType type)
+    internal DurableMapType(MapType type)
     {
       _type = type;
     }

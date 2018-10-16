@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using Totem.Runtime;
 using Totem.Timeline.Area;
 
 namespace Totem.Timeline
@@ -22,13 +21,27 @@ namespace Totem.Timeline
     public readonly FlowObservation Observation;
 
     /// <summary>
-    /// A call to a .When method of a <see cref="Flow"/>
+    /// A call to a .Given method of a <see cref="Flow"/>
     /// </summary>
-    public class When : FlowCall
+    public sealed class Given : FlowCall
     {
+      public Given(TimelinePoint point, FlowObservation observation) : base(point, observation)
+      {}
+
+      public void Make(Flow flow) =>
+        Observation.CallGiven(flow, this);
+    }
+
+    /// <summary>
+    /// A call to a .When method of a <see cref="Topic"/>
+    /// </summary>
+    public sealed class When : FlowCall
+    {
+      readonly ConcurrentQueue<Event> _newEvents = new ConcurrentQueue<Event>();
+
       public When(
         TimelinePoint point,
-        FlowObservation observation,
+        TopicObservation observation,
         IServiceProvider services,
         CancellationToken cancellationToken)
         : base(point, observation)
@@ -40,27 +53,11 @@ namespace Totem.Timeline
       public readonly IServiceProvider Services;
       public readonly CancellationToken CancellationToken;
 
-      public Task Make(Flow flow) =>
-        Observation.CallWhen(flow, this);
-    }
+      public new TopicObservation Observation =>
+        (TopicObservation) base.Observation;
 
-    /// <summary>
-    /// A call to a .When method of a <see cref="Topic"/>
-    /// </summary>
-    public sealed class TopicWhen : When
-    {
-      readonly ConcurrentQueue<Event> _newEvents;
-      bool _retrieved;
-
-      public TopicWhen(
-        TimelinePoint point,
-        TopicObservation observation,
-        IServiceProvider services,
-        CancellationToken cancellationToken)
-        : base(point, observation, services, cancellationToken)
-      {
-        _newEvents = new ConcurrentQueue<Event>();
-      }
+      public Task Make(Topic topic) =>
+        Observation.CallWhen(topic, this);
 
       public void Append(Event e)
       {
@@ -70,29 +67,8 @@ namespace Totem.Timeline
         _newEvents.Enqueue(e);
       }
 
-      public Many<Event> RetrieveNewEvents()
-      {
-        Expect.False(_retrieved, "New events already retrieved");
-
-        _retrieved = true;
-
-        return _newEvents.ToMany();
-      }
-    }
-
-    /// <summary>
-    /// A call to a .Given method of a <see cref="Topic"/>
-    /// </summary>
-    public sealed class Given : FlowCall
-    {
-      public Given(TimelinePoint point, TopicObservation observation) : base(point, observation)
-      {}
-
-      public new TopicObservation Observation =>
-        (TopicObservation) base.Observation;
-
-      public void Make(Topic topic) =>
-        Observation.CallGiven(topic, this);
+      public Many<Event> GetNewEvents() =>
+        _newEvents.ToMany();
     }
   }
 }

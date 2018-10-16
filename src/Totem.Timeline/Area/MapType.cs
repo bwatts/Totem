@@ -1,10 +1,11 @@
 using System;
 using System.Linq.Expressions;
+using System.Runtime.Serialization;
 
 namespace Totem.Timeline.Area
 {
   /// <summary>
-  /// A .NET type representing a runtime object
+  /// A .NET type representing a type in a timeline map
   /// </summary>
   public abstract class MapType
   {
@@ -43,7 +44,7 @@ namespace Totem.Timeline.Area
     public Expression ConvertToDeclaredType(Expression instance) =>
       Expression.Convert(instance, DeclaredType);
 
-    protected void ExpectInstance(object value) =>
-      Expect.True(IsTypeOf(value), "Runtime object is not an instance of the specified type");
+    public object CreateToDeserialize() =>
+      FormatterServices.GetUninitializedObject(DeclaredType);
   }
 }

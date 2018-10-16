@@ -48,9 +48,7 @@ namespace Totem.Timeline
     {
       Expect.That(interval).IsGreaterThan(TimeSpan.Zero, "Scheduling requires an interval in the future");
 
-      // The time of day is relative to the timezone of the topic
-
-      var now = scheduler.Now.ToLocalTime();
+      var now = scheduler.Now;
       var today = now.Date;
 
       var whenOccursNext = today + offset;
@@ -62,7 +60,7 @@ namespace Totem.Timeline
 
       var whenOccurs = whenOccursNext.Date == now.Date ? whenOccursNext : now.Date.AddDays(1) + offset;
 
-      scheduler.At(e, whenOccurs.ToUniversalTime());
+      scheduler.At(e, whenOccurs);
     }
   }
 }

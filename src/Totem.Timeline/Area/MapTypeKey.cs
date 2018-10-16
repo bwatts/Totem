@@ -49,49 +49,72 @@ namespace Totem.Timeline.Area
     // Factory
     //
 
-    public static MapTypeKey From(string value, bool strict = true)
+    public static bool TryFrom(string value, out MapTypeKey key)
     {
-      var areaParts = (value ?? "").Split(':');
+      key = null;
 
-      if(areaParts.Length == 2)
+      var parts = (value ?? "").Split(':');
+
+      return parts.Length == 2
+        && AreaKey.TryFrom(parts[0], out var areaKey)
+        && TryFrom(areaKey, parts[1], out key);
+    }
+
+    public static bool TryFrom(string area, string name, out MapTypeKey key)
+    {
+      if(AreaKey.TryFrom(area, out var areaKey) && TryFrom(areaKey, name, out key))
       {
-        var area = AreaKey.From(areaParts[0], strict);
-
-        if(area != null)
-        {
-          return From(area, areaParts[1], strict);
-        }
+        return true;
       }
 
-      Expect.False(strict, $"Failed to parse runtime key: {value}");
+      key = null;
 
-      return null;
+      return false;
     }
 
-    public static MapTypeKey From(string area, string name, bool strict = true)
-    {
-      var parsedArea = AreaKey.From(area, strict);
-
-      return parsedArea == null ? null : From(parsedArea, name, strict);
-    }
-
-    public static MapTypeKey From(AreaKey area, string name, bool strict = true)
+    public static bool TryFrom(AreaKey area, string name, out MapTypeKey key)
     {
       var nameParts = name.Split('.');
 
-      if(nameParts.Length > 0 && nameParts.All(Id.IsName))
+      key = nameParts.Length > 0 && nameParts.All(Id.IsName) ? new MapTypeKey(area, name) : null;
+
+      return key != null;
+    }
+
+    public static MapTypeKey From(string value)
+    {
+      if(!TryFrom(value, out var key))
       {
-        return new MapTypeKey(area, name);
+        throw new FormatException($"Failed to parse map type key: {value}");
       }
 
-      Expect.False(strict, $"Failed to parse runtime key name: {name}");
+      return key;
+    }
 
-      return null;
+    public static MapTypeKey From(string area, string name)
+    {
+      if(!TryFrom(area, name, out var key))
+      {
+        throw new FormatException($"Failed to parse map type key from area \"{area}\" and name \"{name}\"");
+      }
+
+      return key;
+    }
+
+    public static MapTypeKey From(AreaKey area, string name)
+    {
+      if(!TryFrom(area, name, out var key))
+      {
+        throw new FormatException($"Failed to parse map type key from area \"{area}\" and name \"{name}\"");
+      }
+
+      return key;
     }
 
     public sealed class Converter : TextConverter
     {
-      protected override object ConvertFrom(TextValue value) => From(value);
+      protected override object ConvertFrom(TextValue value) =>
+        From(value);
     }
   }
 }

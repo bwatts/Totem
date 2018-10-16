@@ -27,7 +27,7 @@ namespace Totem.Runtime.Hosting
 
     public void PostConfigure(string name, JsonFormatOptions options)
     {
-      var durableTypes = new DurableTypes(options.DurableTypes);
+      var durableTypes = new DurableTypeSet(options.DurableTypes);
 
       options.SerializerSettings.ContractResolver = new JsonFormatContractResolver(durableTypes);
       options.SerializerSettings.SerializationBinder = new JsonFormatSerializationBinder(durableTypes);

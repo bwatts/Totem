@@ -11,22 +11,22 @@ namespace Totem.Timeline.Hosting
   /// </summary>
   public class TimelineJsonFormatOptionsSetup : IConfigureOptions<JsonFormatOptions>
   {
-    readonly AreaMap _area;
+    readonly AreaMap _map;
 
-    public TimelineJsonFormatOptionsSetup(AreaMap area)
+    public TimelineJsonFormatOptionsSetup(AreaMap map)
     {
-      _area = area;
+      _map = map;
     }
 
     public void Configure(JsonFormatOptions options)
     {
       options.SerializerSettings.Converters.AddRange(
-        new FlowKeyConverter(_area),
+        new FlowKeyConverter(_map),
         new TimelinePositionConverter());
 
       options.DurableTypes.Write.AddRange(
-        from type in _area.Durable
-        select new AreaDurableType(type));
+        from type in _map.Types
+        select new DurableMapType(type));
     }
   }
 }

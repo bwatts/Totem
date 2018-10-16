@@ -59,25 +59,25 @@ namespace Totem.Timeline.EventStore
 
     public IEnumerable<FlowKey> GetRoutes(AreaMap area)
     {
-      var multiInstanceTypes = RouteTypes.ToHashSet();
+      var singleInstanceTypes = RouteTypes.ToHashSet();
 
       foreach(var typeIds in RouteIds)
       {
         var type = RouteTypes[typeIds.Type];
+        
+        singleInstanceTypes.Remove(type);
 
-        multiInstanceTypes.Remove(type);
-
-        var areaType = area.Flows.Get(type);
+        var flow = area.GetFlow(type);
 
         foreach(var id in typeIds.Ids)
         {
-          yield return FlowKey.From(areaType, id);
+          yield return FlowKey.From(flow, id);
         }
       }
 
-      foreach(var type in multiInstanceTypes)
+      foreach(var type in singleInstanceTypes)
       {
-        yield return FlowKey.From(area.Flows.Get(type));
+        yield return FlowKey.From(area.GetFlow(type));
       }
     }
   }

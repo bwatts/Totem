@@ -14,10 +14,10 @@ namespace Totem.Timeline.Area
   {
     readonly Dictionary<string, MapTypeStatePart> _partsByName;
 
-    public MapTypeState(Type type)
+    public MapTypeState(Type declaredType)
     {
       var parts =
-        from member in type.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+        from member in declaredType.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
         where member.MemberType.HasFlag(MemberTypes.Field | MemberTypes.Property)
         where !member.IsDefined(typeof(CompilerGeneratedAttribute))
         select new MapTypeStatePart(member);
@@ -34,19 +34,11 @@ namespace Totem.Timeline.Area
     public IEnumerator<MapTypeStatePart> GetEnumerator() => _partsByName.Values.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public bool ContainsName(string name) => _partsByName.ContainsKey(name);
+    public bool ContainsName(string name) =>
+      _partsByName.ContainsKey(name);
 
-    public MapTypeStatePart Get(string name, bool strict = true)
-    {
-      if(!ContainsName(name))
-      {
-        Expect.False(strict, $"Unknown part name: {name}");
-
-        return null;
-      }
-
-      return _partsByName[name];
-    }
+    public bool TryGet(string name, out MapTypeStatePart part) =>
+      _partsByName.TryGetValue(name, out part);
 
     //
     // IReadOnlyDictionary

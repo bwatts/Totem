@@ -98,7 +98,9 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     bool TryGetObservation(EventType type, out TopicObservation observation)
     {
-      observation = (TopicObservation) _topicKey.Type.Observations.Get(type, strict: false);
+      observation = _topicKey.Type.Observations.TryGet(type, out var baseObservation)
+        ? (TopicObservation) baseObservation
+        : null;
 
       return observation != null;
     }

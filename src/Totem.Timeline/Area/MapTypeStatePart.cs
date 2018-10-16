@@ -26,17 +26,17 @@ namespace Totem.Timeline.Area
 
         var canWrite = !AsField.IsInitOnly;
 
-        IsPublic = AsField.IsPublic;
-        IsPublicSet = IsPublic && canWrite;
+        GetIsPublic = AsField.IsPublic;
+        SetIsPublic = GetIsPublic && canWrite;
 
-        IsInternal = AsField.IsFamily;
-        IsInternalSet = IsInternal && canWrite;
+        GetIsInternal = AsField.IsFamily;
+        SetIsInternal = GetIsInternal && canWrite;
 
-        IsProtected = AsField.IsFamily;
-        IsProtectedSet = IsProtected && canWrite;
+        GetIsProtected = AsField.IsFamily;
+        SetIsProtected = GetIsProtected && canWrite;
 
-        IsPrivate = AsField.IsPrivate;
-        IsPrivateSet = IsPrivate && canWrite;
+        GetIsPrivate = AsField.IsPrivate;
+        SetIsPrivate = GetIsPrivate && canWrite;
       }
       else
       {
@@ -45,17 +45,17 @@ namespace Totem.Timeline.Area
         var getter = AsProperty.GetGetMethod(nonPublic: true);
         var setter = AsProperty.GetSetMethod(nonPublic: true);
 
-        IsPublic = getter != null && getter.IsPublic;
-        IsPublicSet = setter != null && setter.IsPublic;
+        GetIsPublic = getter != null && getter.IsPublic;
+        SetIsPublic = setter != null && setter.IsPublic;
 
-        IsInternal = getter != null && getter.IsAssembly;
-        IsInternalSet = setter != null && setter.IsAssembly;
+        GetIsInternal = getter != null && getter.IsAssembly;
+        SetIsInternal = setter != null && setter.IsAssembly;
 
-        IsProtected = getter != null && getter.IsFamily;
-        IsProtectedSet = setter != null && setter.IsFamily;
+        GetIsProtected = getter != null && getter.IsFamily;
+        SetIsProtected = setter != null && setter.IsFamily;
 
-        IsPrivate = getter != null && getter.IsPrivate;
-        IsPrivateSet = setter != null && setter.IsPrivate;
+        GetIsPrivate = getter != null && getter.IsPrivate;
+        SetIsPrivate = setter != null && setter.IsPrivate;
       }
     }
 
@@ -66,14 +66,14 @@ namespace Totem.Timeline.Area
     public readonly bool IsProperty;
     public readonly FieldInfo AsField;
     public readonly PropertyInfo AsProperty;
-    public readonly bool IsPublic;
-    public readonly bool IsPublicSet;
-    public readonly bool IsInternal;
-    public readonly bool IsInternalSet;
-    public readonly bool IsProtected;
-    public readonly bool IsProtectedSet;
-    public readonly bool IsPrivate;
-    public readonly bool IsPrivateSet;
+    public readonly bool GetIsPublic;
+    public readonly bool SetIsPublic;
+    public readonly bool GetIsInternal;
+    public readonly bool SetIsInternal;
+    public readonly bool GetIsProtected;
+    public readonly bool SetIsProtected;
+    public readonly bool GetIsPrivate;
+    public readonly bool SetIsPrivate;
 
     public override string ToString() => $"{ValueType.ToSourceText()} {Name}";
   }

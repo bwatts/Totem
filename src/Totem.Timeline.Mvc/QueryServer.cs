@@ -49,7 +49,7 @@ namespace Totem.Timeline.Mvc
     {
       if(TryGetIfNoneMatch(out var ifNoneMatch))
       {
-        return QueryETag.From(_area, ifNoneMatch);
+        return QueryETag.From(ifNoneMatch, _area);
       }
 
       var key = FlowKey.From(_area.Queries.Get(type), id);

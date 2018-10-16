@@ -5,7 +5,7 @@ namespace Totem.Runtime.Json
   /// <summary>
   /// Describes the durable types known to Totem JSON serialization
   /// </summary>
-  public interface IDurableTypes
+  public interface IDurableTypeSet
   {
     bool Contains(Type type);
 

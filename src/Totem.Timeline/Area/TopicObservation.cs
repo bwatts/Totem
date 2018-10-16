@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Totem.Timeline.Area
 {
   /// <summary>
@@ -9,29 +11,26 @@ namespace Totem.Timeline.Area
       FlowType flowType,
       EventType eventType,
       FlowRoute route,
-      FlowMethodSet<FlowWhen> when,
-      FlowMethodSet<TopicGiven> given)
-      : base(flowType, eventType, route, when)
+      FlowMethodSet<FlowGiven> given,
+      FlowMethodSet<TopicWhen> when)
+      : base(flowType, eventType, route, given)
     {
-      Given = given;
+      When = when;
     }
 
-    public readonly FlowMethodSet<TopicGiven> Given;
+    public readonly FlowMethodSet<TopicWhen> When;
 
     protected override bool CanRoute(Event e, bool scheduled) =>
-      EventType.IsTypeOf(e) && (HasWhen(scheduled) || HasGiven(scheduled));
+      EventType.IsTypeOf(e) && (HasGiven(scheduled) || HasWhen(scheduled));
 
-    public bool HasGiven(bool scheduled) =>
-      Given.HasMethod(scheduled);
+    public bool HasWhen(bool scheduled) =>
+      When.HasMethod(scheduled);
 
-    public bool HasGiven() =>
-      Given.HasMethod(true) || Given.HasMethod(false);
-
-    public void CallGiven(Topic topic, FlowCall.Given call)
+    public async Task CallWhen(Topic topic, FlowCall.When call)
     {
-      foreach(var givenMethod in Given.GetMethods(call.Point.Scheduled))
+      foreach(var whenMethod in When.GetMethods(call.Point.Scheduled))
       {
-        givenMethod.Call(topic, call.Point.Event);
+        await whenMethod.Call(topic, call.Point.Event, call.Services);
       }
     }
   }

@@ -57,8 +57,8 @@ namespace Totem.Timeline.EventStore.Client
 
     void OnChanged(ResolvedEvent e) =>
       _db.OnChanged(QueryETag.From(
-        _context.Area,
-        _context.Json.FromJsonUtf8<QueryChanged>(e.Event.Data).ETag));
+        _context.Json.FromJsonUtf8<QueryChanged>(e.Event.Data).ETag,
+        _context.Area));
 
     void OnDropped(SubscriptionDropReason reason, Exception error)
     {

@@ -9,9 +9,9 @@ namespace Totem.Runtime.Json
   /// </summary>
   public class JsonFormatSerializationBinder : DefaultSerializationBinder
   {
-    readonly IDurableTypes _durableTypes;
+    readonly IDurableTypeSet _durableTypes;
 
-    public JsonFormatSerializationBinder(IDurableTypes durableTypes)
+    public JsonFormatSerializationBinder(IDurableTypeSet durableTypes)
     {
       _durableTypes = durableTypes;
     }

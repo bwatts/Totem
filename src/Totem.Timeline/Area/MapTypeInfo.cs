@@ -3,7 +3,7 @@ using System;
 namespace Totem.Timeline.Area
 {
   /// <summary>
-  /// A description of a .NET type representing a runtime object
+  /// A description of a .NET type representing a type in a timeline map
   /// </summary>
   public class MapTypeInfo
   {
@@ -18,7 +18,8 @@ namespace Totem.Timeline.Area
     public readonly MapTypeKey Key;
     public readonly MapTypeState State;
 
-    public override string ToString() => Key.ToString();
+    public override string ToString() =>
+      Key.ToString();
 
     string ReadName()
     {

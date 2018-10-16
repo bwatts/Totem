@@ -16,7 +16,7 @@ namespace Totem.Timeline
 
     protected void Then(Event e)
     {
-      var whenCall = Context.Call as FlowCall.TopicWhen;
+      var whenCall = Context.Call as FlowCall.When;
 
       Expect.That(whenCall).IsNotNull("Topic is not making a When call. This may indicate an asynchronous operation was not awaited in a prior When call.");
 

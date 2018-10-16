@@ -1,21 +1,19 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Totem.Runtime;
 using Totem.Timeline.Area;
 
 namespace Totem.Timeline.Runtime
 {
   /// <summary>
-  /// The scope of a view's activity on the timeline
+  /// The scope of a query's activity on the timeline
   /// </summary>
   public class QueryScope : FlowScope<Query>
   {
     readonly int _batchSize;
     int _batchCount;
 
-    public QueryScope(FlowKey key, IServiceProvider services, ITimelineDb db)
-      : base(key, services, db)
+    public QueryScope(FlowKey key, ITimelineDb db) : base(key, db)
     {
       _batchSize = ((QueryType) key.Type).BatchSize;
     }
@@ -24,7 +22,7 @@ namespace Totem.Timeline.Runtime
     {
       try
       {
-        await CallWhen();
+        CallGiven();
       }
       catch
       {
@@ -39,18 +37,11 @@ namespace Totem.Timeline.Runtime
     protected override Task OnPendingDequeue() =>
       CompleteBatch();
 
-    async Task CallWhen()
+    void CallGiven()
     {
       Log.Debug("[timeline] #{Position} => {Key}", Point.Position.ToInt64(), Key);
 
-      using(var scope = Services.CreateScope())
-      {
-        await Flow.Context.CallWhen(new FlowCall.When(
-          Point,
-          Observation,
-          scope.ServiceProvider,
-          State.CancellationToken));
-      }
+      Flow.Context.CallGiven(new FlowCall.Given(Point, Observation));
 
       Flow.OnUpdated();
     }

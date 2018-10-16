@@ -1,4 +1,5 @@
 using Totem.Timeline.Area;
+using Totem.Timeline.Area.Reflection;
 
 namespace Totem.Timeline.Hosting
 {
@@ -12,12 +13,12 @@ namespace Totem.Timeline.Hosting
       Key = AreaKey.From(key);
     }
 
-    public AreaKey Key { get; }
+    public readonly AreaKey Key;
 
     public override string ToString() =>
       Key.ToString();
 
     public AreaMap BuildMap() =>
-      new AreaMap(Key, GetType().Assembly);
+      new MapBuilder(Key, GetType().Assembly).Build();
   }
 }

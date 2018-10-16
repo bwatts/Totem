@@ -9,18 +9,18 @@ namespace Totem.Timeline.Json
   /// </summary>
   public class FlowKeyConverter : JsonConverter
   {
-    readonly AreaMap _area;
+    readonly AreaMap _map;
 
-    public FlowKeyConverter(AreaMap area)
+    public FlowKeyConverter(AreaMap map)
     {
-      _area = area;
+      _map = map;
     }
 
     public override bool CanConvert(Type objectType) =>
       objectType == typeof(FlowKey);
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) =>
-      reader.Value == null ? null : FlowKey.From(_area, reader.Value.ToString());
+      reader.Value == null ? null : FlowKey.From(reader.Value.ToString(), _map);
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) =>
       writer.WriteValue(value?.ToString());

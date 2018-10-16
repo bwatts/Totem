@@ -3,10 +3,9 @@ namespace Totem.Timeline.Area
   /// <summary>
   /// A .NET type representing a query on the timeline
   /// </summary>
-  public sealed class QueryType : FlowType
+  public class QueryType : FlowType
   {
-    public QueryType(MapTypeInfo info, FlowConstructor constructor, ResumeAlgorithm resumeAlgorithm, int batchSize)
-      : base(info, constructor, resumeAlgorithm)
+    public QueryType(FlowTypeInfo info, int batchSize) : base(info)
     {
       BatchSize = batchSize;
     }
