@@ -6,7 +6,7 @@ using Totem.Timeline.Client;
 namespace Totem.Timeline.Mvc
 {
   /// <summary>
-  /// Indicates a request ETag refers to an older version of a query
+  /// Indicates a request for the latest version of a query
   /// </summary>
   public class QueryStateResult : ActionResult
   {

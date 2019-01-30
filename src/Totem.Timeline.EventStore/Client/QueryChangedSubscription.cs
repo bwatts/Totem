@@ -48,12 +48,16 @@ namespace Totem.Timeline.EventStore.Client
     void ReleaseSubscribeLock() =>
       Interlocked.Exchange(ref _subscribeLock, 0);
 
-    Task<EventStoreSubscription> SubscribeToStream() =>
-      _context.Connection.SubscribeToStreamAsync(
+    async Task<EventStoreSubscription> SubscribeToStream()
+    {
+      var task = _context.Connection.SubscribeToStreamAsync(
         _context.Area.GetChangedQueriesStream(),
         resolveLinkTos: false,
         eventAppeared: (_, e) => OnChanged(e),
         subscriptionDropped: (_, reason, error) => OnDropped(reason, error));
+
+      return await task.ConfigureAwait(false);
+    }
 
     void OnChanged(ResolvedEvent e) =>
       _db.OnChanged(QueryETag.From(

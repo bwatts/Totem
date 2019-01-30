@@ -41,9 +41,9 @@ namespace Totem.Timeline.Runtime
     {
       Log.Debug("[timeline] #{Position} => {Key}", Point.Position.ToInt64(), Key);
 
-      Flow.Context.CallGiven(new FlowCall.Given(Point, Observation));
+      Flow.Context.CallGiven(new FlowCall.Given(Point, Observation), advanceCheckpoint: true);
 
-      Flow.OnUpdated();
+      Flow.OnChanged();
     }
 
     async Task AdvanceBatch()

@@ -10,16 +10,19 @@ namespace Totem.Timeline.Client
   {
     Stream _content;
 
-    QueryState(QueryETag etag, bool notFound = false, bool notModified = false, Stream content = null)
+    public QueryState(QueryETag etag)
     {
       ETag = etag;
-      NotFound = notFound;
-      NotModified = notModified;
+      NotModified = true;
+    }
+
+    public QueryState(QueryETag etag, Stream content)
+    {
+      ETag = etag;
       _content = content;
     }
 
     public readonly QueryETag ETag;
-    public readonly bool NotFound;
     public readonly bool NotModified;
 
     public override string ToString() =>
@@ -27,24 +30,10 @@ namespace Totem.Timeline.Client
 
     public Stream ReadContent()
     {
-      Expect.False(NotFound, "Cannot read content of a query that was not found");
       Expect.False(NotModified, "Cannot read content of a query that was not modified");
       Expect.That(_content).IsNotNull("Cannot read content of a query more than once");
 
       return Interlocked.Exchange(ref _content, null);
-    }
-
-    public static QueryState OfNotFound(QueryETag etag) =>
-      new QueryState(etag, notFound: true);
-
-    public static QueryState OfNotModified(QueryETag etag) =>
-      new QueryState(etag, notModified: true);
-
-    public static QueryState OfContent(QueryETag etag, Stream content)
-    {
-      Expect.True(etag.Checkpoint.IsSome, "A query without a checkpoint cannot have content");
-
-      return new QueryState(etag, content: content);
     }
   }
 }

@@ -76,7 +76,7 @@ namespace Totem.Timeline.EventStore.DbOperations
 
       if(routes.Contains(_topicKey)
         && TryGetObservation(type, out var observation)
-        && observation.HasGiven(Event.Traits.IsScheduled(e)))
+        && observation.HasGiven(Event.IsScheduled(e)))
       {
         var point = new TimelinePoint(
           _newPosition,

@@ -20,6 +20,9 @@ namespace Totem.Timeline.Client
     public QueryETag WithCheckpoint(TimelinePosition checkpoint) =>
       new QueryETag(Key, checkpoint);
 
+    public QueryETag WithoutCheckpoint() =>
+      new QueryETag(Key, TimelinePosition.None);
+
     public QueryETag GetLatest(QueryETag other) =>
       Checkpoint > other.Checkpoint ? this : other;
 
@@ -55,6 +58,9 @@ namespace Totem.Timeline.Client
 
       return etag != null;
     }
+
+    public static QueryETag From(FlowKey key) =>
+      new QueryETag(key, TimelinePosition.None);
 
     public static QueryETag From(FlowKey key, TimelinePosition checkpoint) =>
       new QueryETag(key, checkpoint);

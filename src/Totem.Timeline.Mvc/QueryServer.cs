@@ -31,18 +31,9 @@ namespace Totem.Timeline.Mvc
 
       var state = await _db.ReadState(etag);
 
-      if(state.NotFound)
-      {
-        return new QueryNotFoundResult(etag);
-      }
-      else if(state.NotModified)
-      {
-        return new QueryNotModifiedResult(etag);
-      }
-      else
-      {
-        return new QueryStateResult(state);
-      }
+      return state.NotModified
+        ? new QueryNotModifiedResult(etag)
+        : new QueryStateResult(state) as IActionResult;
     }
 
     QueryETag ReadETag(Type type, Id id)

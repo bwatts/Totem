@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
+using Totem.Runtime.Json;
 using Totem.Timeline.Client;
 
 namespace Totem.Timeline.EventStore.Client
@@ -37,7 +38,9 @@ namespace Totem.Timeline.EventStore.Client
       {
         case EventReadStatus.NoStream:
         case EventReadStatus.NotFound:
-          return QueryState.OfNotFound(etag);
+          var defaultData = _context.Json.ToJsonUtf8(etag.Key.Type.New());
+
+          return new QueryState(etag.WithoutCheckpoint(), new MemoryStream(defaultData));
         case EventReadStatus.Success:
           var number = result.Event?.Event.EventNumber;
           var data = result.Event?.Event.Data;
@@ -45,8 +48,8 @@ namespace Totem.Timeline.EventStore.Client
           var checkpoint = new TimelinePosition(number);
 
           return checkpoint == etag.Checkpoint
-            ? QueryState.OfNotModified(etag)
-            : QueryState.OfContent(etag.WithCheckpoint(checkpoint), new MemoryStream(data));
+            ? new QueryState(etag)
+            : new QueryState(etag.WithCheckpoint(checkpoint), new MemoryStream(data));
         default:
           throw new Exception($"Unexpected result when reading {stream}: {result.Status}");
       }

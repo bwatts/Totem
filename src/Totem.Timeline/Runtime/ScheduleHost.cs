@@ -28,7 +28,7 @@ namespace Totem.Timeline.Runtime
 
     internal Task OnNext(TimelinePoint point)
     {
-      var whenOccurs = Event.Traits.WhenOccurs.Get(point.Event);
+      var whenOccurs = Event.GetWhenOccurs(point.Event);
 
       if(whenOccurs != null)
       {

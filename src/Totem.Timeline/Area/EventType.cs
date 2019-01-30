@@ -19,6 +19,6 @@ namespace Totem.Timeline.Area
       Observations.SelectMany(observation => observation.GetRoutes(e, scheduled));
 
     public IEnumerable<FlowKey> GetRoutes(Event e) =>
-      GetRoutes(e, Event.Traits.IsScheduled(e));
+      GetRoutes(e, Event.IsScheduled(e));
   }
 }

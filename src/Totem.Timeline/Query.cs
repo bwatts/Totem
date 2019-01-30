@@ -12,13 +12,13 @@ namespace Totem.Timeline
     protected Query()
     {
       WhenCreated = Clock.Now;
-      WhenUpdated = WhenCreated;
+      WhenChanged = WhenCreated;
     }
 
     public DateTimeOffset WhenCreated { get; }
-    public DateTimeOffset WhenUpdated { get; private set; }
+    public DateTimeOffset WhenChanged { get; private set; }
 
-    internal void OnUpdated() =>
-      WhenUpdated = Clock.Now;
+    internal void OnChanged() =>
+      WhenChanged = Clock.Now;
   }
 }
