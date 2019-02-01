@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem", "src\Totem\Totem.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Runtime", "src\Totem.Runtime\Totem.Runtime.csproj", "{2DF0CF1D-1949-4021-ADDC-7C9C898E87C6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Data.SqlClient", "src\Totem.Data.SqlClient\Totem.Data.SqlClient.csproj", "{FEF8E15E-2EA5-4923-B390-CBE18B8F3EC2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Timeline", "src\Totem.Timeline\Totem.Timeline.csproj", "{2CE3E3CE-24FA-4D49-B7F2-DF90C3F382C9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Timeline.EventStore", "src\Totem.Timeline.EventStore\Totem.Timeline.EventStore.csproj", "{FC5AD829-C91E-4A67-9C2E-9536CDB2ECB2}"
@@ -16,6 +14,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Timeline.Mvc", "src\Totem.Timeline.Mvc\Totem.Timeline.Mvc.csproj", "{530B7EED-5695-4725-96D7-FEE6075F29B0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Timeline.SignalR", "src\Totem.Timeline.SignalR\Totem.Timeline.SignalR.csproj", "{D5457111-A91E-4C99-82FB-D25651DA4FF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.App.Service", "src\Totem.App.Service\Totem.App.Service.csproj", "{24E68249-6182-4FA2-8504-2973B1926FBA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.App.Web", "src\Totem.App.Web\Totem.App.Web.csproj", "{608B4716-40D6-4A8C-8DBA-C49EB06B1984}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,10 +33,6 @@ Global
 		{2DF0CF1D-1949-4021-ADDC-7C9C898E87C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DF0CF1D-1949-4021-ADDC-7C9C898E87C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DF0CF1D-1949-4021-ADDC-7C9C898E87C6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FEF8E15E-2EA5-4923-B390-CBE18B8F3EC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FEF8E15E-2EA5-4923-B390-CBE18B8F3EC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FEF8E15E-2EA5-4923-B390-CBE18B8F3EC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FEF8E15E-2EA5-4923-B390-CBE18B8F3EC2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2CE3E3CE-24FA-4D49-B7F2-DF90C3F382C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2CE3E3CE-24FA-4D49-B7F2-DF90C3F382C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CE3E3CE-24FA-4D49-B7F2-DF90C3F382C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,6 +49,14 @@ Global
 		{D5457111-A91E-4C99-82FB-D25651DA4FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5457111-A91E-4C99-82FB-D25651DA4FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5457111-A91E-4C99-82FB-D25651DA4FF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24E68249-6182-4FA2-8504-2973B1926FBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24E68249-6182-4FA2-8504-2973B1926FBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24E68249-6182-4FA2-8504-2973B1926FBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24E68249-6182-4FA2-8504-2973B1926FBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{608B4716-40D6-4A8C-8DBA-C49EB06B1984}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{608B4716-40D6-4A8C-8DBA-C49EB06B1984}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{608B4716-40D6-4A8C-8DBA-C49EB06B1984}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{608B4716-40D6-4A8C-8DBA-C49EB06B1984}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
