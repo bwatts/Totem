@@ -94,7 +94,7 @@ namespace Totem.IO
     public static bool TryFrom(string path, string query, out HttpResource resource) =>
       TryFrom(LinkPath.From(path, _pathSeparators), query, out resource);
 
-    public new static bool TryFrom(string value, out HttpResource resource)
+    public static bool TryFrom(string value, out HttpResource resource)
     {
       var parts = value.Split(QuerySeparator);
 

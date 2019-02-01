@@ -107,7 +107,7 @@ namespace Totem.IO
       return link != null;
     }
 
-    public new static bool TryFrom(string value, out HttpLink link)
+    public static bool TryFrom(string value, out HttpLink link)
     {
       link = null;
 

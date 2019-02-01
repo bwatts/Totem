@@ -87,7 +87,7 @@ namespace Totem.IO
       return link != null;
     }
 
-    public new static bool TryFrom(string value, out FileLink link, bool extensionOptional = false)
+    public static bool TryFrom(string value, out FileLink link, bool extensionOptional = false)
     {
       link = null;
 
