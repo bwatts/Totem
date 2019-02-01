@@ -26,8 +26,8 @@
 
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0.23" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
-    <PackageReference Include="System.Reactive.Linq" Version="4.1.0-preview.84" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
+    <PackageReference Include="System.Reactive.Linq" Version="4.1.2" />
   </ItemGroup>
 
   <ItemGroup>
