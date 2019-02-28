@@ -1,9 +1,11 @@
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Totem.Runtime.Hosting;
@@ -20,23 +22,17 @@ namespace Totem.App.Web
   public static class WebApp
   {
     public static Task Run<TArea>() where TArea : TimelineArea, new() =>
-      WebHost
-      .CreateDefaultBuilder()
-      .DefaultWebApp<TArea>()
-      .Build()
-      .RunAsync();
+      CreateDefaultBuilder<TArea>().Build().RunAsync();
 
     public static Task Run<TArea>(Action<IServiceCollection> configureServices) where TArea : TimelineArea, new() =>
-      WebHost
-      .CreateDefaultBuilder()
-      .DefaultWebApp<TArea>()
+      CreateDefaultBuilder<TArea>()
       .ConfigureServices(configureServices)
       .Build()
       .RunAsync();
 
     public static Task Run<TArea>(Action<IWebHostBuilder, IServiceCollection> configureHostAndServices) where TArea : TimelineArea, new()
     {
-      var host = WebHost.CreateDefaultBuilder().DefaultWebApp<TArea>();
+      var host = CreateDefaultBuilder<TArea>();
 
       host.ConfigureServices(services => configureHostAndServices(host, services));
 
@@ -45,7 +41,7 @@ namespace Totem.App.Web
 
     public static Task Run<TArea>(Action<IWebHostBuilder, IServiceCollection> configureHostAndServices, Action<IApplicationBuilder> configureApp) where TArea : TimelineArea, new()
     {
-      var host = WebHost.CreateDefaultBuilder().DefaultWebApp<TArea>();
+      var host = CreateDefaultBuilder<TArea>();
 
       host.ConfigureServices(services => configureHostAndServices(host, services));
 
@@ -53,6 +49,15 @@ namespace Totem.App.Web
 
       return host.Build().RunAsync();
     }
+
+    public static IWebHostBuilder CreateDefaultBuilder<TArea>() where TArea : TimelineArea, new() =>
+      WebHost
+      .CreateDefaultBuilder()
+      .UseEntryAssemblyHostingStartup()
+      .DefaultWebApp<TArea>();
+
+    public static IWebHostBuilder UseEntryAssemblyHostingStartup(this IWebHostBuilder host) =>
+      host.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Assembly.GetEntryAssembly().FullName);
 
     public static IWebHostBuilder DefaultWebApp<TArea>(this IWebHostBuilder host) where TArea : TimelineArea, new() =>
       host
@@ -77,7 +82,7 @@ namespace Totem.App.Web
 
         services.AddTimelineClient<TArea>(client => client.AddEventStore().BindOptionsToConfiguration());
 
-        services.AddMvc().AddCommandsAndQueries();
+        services.AddMvc().AddCommandsAndQueries().AddApplicationPart(Assembly.GetEntryAssembly());
 
         services.AddSignalR().AddQueryNotifications();
       });
@@ -95,7 +100,7 @@ namespace Totem.App.Web
 
     public static void DefaultConfigure(this IApplicationBuilder app)
     {
-      var environment = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+      var environment = app.ApplicationServices.GetRequiredService<Microsoft.Extensions.Hosting.IHostingEnvironment>();
 
       if(environment.IsDevelopment())
       {
