@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Totem.Runtime;
-using Totem.Timeline.Area;
 
 namespace Totem.Timeline.Runtime
 {
@@ -16,13 +15,11 @@ namespace Totem.Timeline.Runtime
     readonly HashSet<FlowKey> _stopped = new HashSet<FlowKey>();
     readonly IServiceProvider _services;
     readonly ITimelineDb _db;
-    readonly AreaMap _area;
 
-    internal FlowHost(IServiceProvider services, ITimelineDb db, AreaMap area)
+    internal FlowHost(IServiceProvider services, ITimelineDb db)
     {
       _services = services;
       _db = db;
-      _area = area;
     }
 
     internal async Task Resume(Many<FlowKey> routes)
@@ -88,7 +85,7 @@ namespace Totem.Timeline.Runtime
     {
       if(key.Type.IsTopic)
       {
-        return new TopicScope(key, _db, _services, _area);
+        return new TopicScope(key, _db, _services);
       }
       else if(key.Type.IsQuery)
       {

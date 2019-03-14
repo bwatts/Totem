@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Totem.Timeline.Area
 {
@@ -8,7 +7,7 @@ namespace Totem.Timeline.Area
   /// </summary>
   public class FlowObservation
   {
-    public FlowObservation(FlowType flowType, EventType eventType, FlowRoute route, FlowMethodSet<FlowGiven> given)
+    internal FlowObservation(FlowType flowType, EventType eventType, FlowRoute route, FlowMethodSet<FlowGiven> given)
     {
       FlowType = flowType;
       EventType = eventType;

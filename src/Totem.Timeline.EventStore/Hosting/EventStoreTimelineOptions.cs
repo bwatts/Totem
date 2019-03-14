@@ -60,7 +60,6 @@ namespace Totem.Timeline.EventStore.Hosting
 
     public class ProjectionOptions
     {
-      public bool EnsureInstalled { get; set; } = true;
       public TimeSpan InstallTimeout { get; set; } = TimeSpan.FromSeconds(5);
     }
   }

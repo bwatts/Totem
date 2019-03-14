@@ -11,25 +11,23 @@ namespace Totem.Timeline.EventStore.DbOperations
   internal class ReadResumeScheduleCommand
   {
     readonly Many<TimelinePoint> _points = new Many<TimelinePoint>();
-    readonly EventStoreContext _db;
+    readonly EventStoreContext _context;
     readonly ResumeAlgorithm _algorithm;
     readonly Many<long> _schedule;
     readonly long _scheduleFirst;
     readonly long _scheduleLast;
-    readonly string _stream;
-    long _streamCheckpoint;
+    long _readCheckpoint;
     int _batchIndex;
 
-    internal ReadResumeScheduleCommand(EventStoreContext db, Many<long> schedule)
+    internal ReadResumeScheduleCommand(EventStoreContext context, Many<long> schedule)
     {
-      _db = db;
+      _context = context;
       _schedule = schedule;
 
       _scheduleFirst = schedule.First();
       _scheduleLast = schedule.Last();
 
-      _stream = _db.Area.GetScheduleStream();
-      _streamCheckpoint = StreamPosition.End;
+      _readCheckpoint = StreamPosition.End;
 
       // There is overhead in piping a resume algorithm from configuration. The default should work until
       // we experience otherwise.
@@ -49,7 +47,7 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     async Task<bool> ReadNextBatch()
     {
-      if(_streamCheckpoint == 0)
+      if(_readCheckpoint == 0)
       {
         return false;
       }
@@ -58,7 +56,7 @@ namespace Totem.Timeline.EventStore.DbOperations
 
       foreach(var e in batch.Events)
       {
-        _streamCheckpoint = e.Link.EventNumber;
+        _readCheckpoint = e.Link.EventNumber;
 
         var areaPosition = e.Event.EventNumber;
 
@@ -69,7 +67,7 @@ namespace Totem.Timeline.EventStore.DbOperations
 
         if(areaPosition <= _scheduleLast && _schedule.Contains(areaPosition))
         {
-          _points.Write.Insert(0, _db.ReadAreaPoint(e));
+          _points.Write.Insert(0, _context.ReadAreaPoint(e));
         }
       }
 
@@ -78,9 +76,9 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     async Task<StreamEventsSlice> ReadBatch()
     {
-      var result = await _db.Connection.ReadStreamEventsBackwardAsync(
-        _stream,
-        _streamCheckpoint,
+      var result = await _context.Connection.ReadStreamEventsBackwardAsync(
+        TimelineStreams.Schedule,
+        _readCheckpoint,
         _algorithm.GetNextBatchSize(_batchIndex),
         resolveLinkTos: true);
 
@@ -90,7 +88,7 @@ namespace Totem.Timeline.EventStore.DbOperations
         case SliceReadStatus.Success:
           return result;
         default:
-          throw new Exception($"Unexpected result when reading {_stream} to resume: {result.Status}");
+          throw new Exception($"Unexpected result when reading {TimelineStreams.Schedule} to resume: {result.Status}");
       }
     }
   }

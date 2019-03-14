@@ -5,17 +5,17 @@ using System.Collections.Generic;
 namespace Totem.Timeline.Area
 {
   /// <summary>
-  /// A set of events observed within a <see cref="Flow"/>, indexed by key and declared type
+  /// A set of events observed within a <see cref="Flow"/>, indexed by name and declared type
   /// </summary>
   public class FlowObservationSet : IReadOnlyCollection<FlowObservation>
   {
-    readonly Dictionary<MapTypeKey, FlowObservation> _byKey = new Dictionary<MapTypeKey, FlowObservation>();
+    readonly Dictionary<AreaTypeName, FlowObservation> _byName = new Dictionary<AreaTypeName, FlowObservation>();
     readonly Dictionary<Type, FlowObservation> _byDeclaredType = new Dictionary<Type, FlowObservation>();
 
-    public FlowObservationSet()
+    internal FlowObservationSet()
     {}
 
-    public FlowObservationSet(IEnumerable<FlowObservation> observations)
+    internal FlowObservationSet(IEnumerable<FlowObservation> observations)
     {
       foreach(var observation in observations)
       {
@@ -23,17 +23,17 @@ namespace Totem.Timeline.Area
       }
     }
 
-    public int Count => _byKey.Count;
-    public FlowObservation this[MapTypeKey key] => _byKey[key];
-    public FlowObservation this[EventType type] => _byKey[type.Key];
+    public int Count => _byName.Count;
+    public FlowObservation this[AreaTypeName name] => _byName[name];
+    public FlowObservation this[EventType type] => _byName[type.Name];
     public FlowObservation this[Type declaredType] => _byDeclaredType[declaredType];
     public FlowObservation this[Event e] => _byDeclaredType[e.GetType()];
 
-    public IEnumerator<FlowObservation> GetEnumerator() => _byKey.Values.GetEnumerator();
+    public IEnumerator<FlowObservation> GetEnumerator() => _byName.Values.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public bool Contains(MapTypeKey key) =>
-      _byKey.ContainsKey(key);
+    public bool Contains(AreaTypeName name) =>
+      _byName.ContainsKey(name);
 
     public bool Contains(EventType e) =>
       Contains(e.DeclaredType);
@@ -44,8 +44,8 @@ namespace Totem.Timeline.Area
     public bool Contains(Event e) =>
       Contains(e.GetType());
 
-    public bool TryGet(MapTypeKey key, out FlowObservation observation) =>
-      _byKey.TryGetValue(key, out observation);
+    public bool TryGet(AreaTypeName name, out FlowObservation observation) =>
+      _byName.TryGetValue(name, out observation);
 
     public bool TryGet(EventType type, out FlowObservation observation) =>
       TryGet(type.DeclaredType, out observation);
@@ -56,11 +56,11 @@ namespace Totem.Timeline.Area
     public bool TryGet(Event e, out FlowObservation observation) =>
       TryGet(e.GetType(), out observation);
 
-    public FlowObservation Get(MapTypeKey key)
+    public FlowObservation Get(AreaTypeName name)
     {
-      if(!TryGet(key, out var observation))
+      if(!TryGet(name, out var observation))
       {
-        throw new KeyNotFoundException($"This set does not contain the specified key: {key}");
+        throw new KeyNotFoundException($"This set does not contain the specified name: {name}");
       }
 
       return observation;
@@ -70,7 +70,7 @@ namespace Totem.Timeline.Area
     {
       if(!TryGet(type, out var observation))
       {
-        throw new KeyNotFoundException($"This set does not contain the specified event: {type}");
+        throw new KeyNotFoundException($"This set does not contain the specified event type: {type}");
       }
 
       return observation;
@@ -80,7 +80,7 @@ namespace Totem.Timeline.Area
     {
       if(!TryGet(declaredType, out var observation))
       {
-        throw new KeyNotFoundException($"This set does not contain the specified event: {declaredType}");
+        throw new KeyNotFoundException($"This set does not contain the specified event type: {declaredType}");
       }
 
       return observation;
@@ -98,7 +98,7 @@ namespace Totem.Timeline.Area
 
     internal void Declare(FlowObservation observation)
     {
-      _byKey[observation.EventType.Key] = observation;
+      _byName[observation.EventType.Name] = observation;
       _byDeclaredType[observation.EventType.DeclaredType] = observation;
     }
   }

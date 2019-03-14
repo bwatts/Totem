@@ -272,13 +272,13 @@ namespace Totem.Timeline.Runtime
       {
         SetErrorPosition();
 
-        await WriteStopped(error);
+        await WriteCheckpoint();
 
         CompleteTask(error);
       }
       catch(Exception writeError)
       {
-        Log.Error(writeError, "[timeline] Flow {Key} failed to push FlowStopped to the timeline", Key);
+        Log.Error(writeError, "[timeline] Failed to write {Key} to timeline", Key);
 
         CompleteTask(new AggregateException(error, writeError));
       }
@@ -290,16 +290,6 @@ namespace Totem.Timeline.Runtime
       {
         Flow.Context.ErrorPosition = Point.Position;
       }
-    }
-
-    Task WriteStopped(Exception error)
-    {
-      var stopped = new FlowStopped(Key, error.ToString());
-
-      Event.Traits.CommandId.Bind(Point.Event, stopped);
-      Event.Traits.UserId.Bind(Point.Event, stopped);
-
-      return Db.WriteStopped(Point.Position, stopped);
     }
   }
 }

@@ -14,7 +14,7 @@ namespace Totem.Timeline.Area
     readonly Lazy<Func<Event, Id>> _callSingle;
     readonly Lazy<Func<Event, IEnumerable<Id>>> _callMultiple;
 
-    public FlowRoute(MethodInfo info, EventType eventType, FlowType flowType, bool first) : base(info, eventType)
+    internal FlowRoute(MethodInfo info, EventType eventType, FlowType flowType, bool first) : base(info, eventType)
     {
       FlowType = flowType;
       First = first;

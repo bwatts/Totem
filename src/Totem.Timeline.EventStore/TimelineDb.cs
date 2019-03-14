@@ -88,7 +88,7 @@ namespace Totem.Timeline.EventStore
           var etag = QueryETag.From(query.Context.Key, checkpoint).ToString();
 
           await _context.Connection.AppendToStreamAsync(
-            _context.Area.GetChangedQueriesStream(),
+            TimelineStreams.ChangedQueries,
             ExpectedVersion.Any,
             _context.GetQueryChangedEventData(new QueryChanged(etag)));
         }
@@ -97,25 +97,6 @@ namespace Totem.Timeline.EventStore
           Log.Error(error, "Failed to write QueryChanged for {Query} - subscribers will not be aware of the change until the query observes another event.", query);
         }
       }
-    }
-
-    public Task WriteStopped(TimelinePosition cause, FlowStopped e)
-    {
-      var stream = _context.Area.ToString();
-
-      var type = _context.GetEventType(e);
-
-      var data = _context.GetAreaEventData(
-        e,
-        cause,
-        e.When,
-        Event.Traits.WhenOccurs.Get(e),
-        Event.Traits.CommandId.Get(e),
-        Event.Traits.UserId.Get(e),
-        null,
-        type.GetRoutes(e).ToMany());
-
-      return _context.Connection.AppendToStreamAsync(stream, ExpectedVersion.Any, data);
     }
   }
 }

@@ -12,13 +12,11 @@ namespace Totem.Timeline.Runtime
   public class TopicScope : FlowScope<Topic>
   {
     readonly IServiceProvider _services;
-    readonly AreaMap _area;
 
-    public TopicScope(FlowKey key, ITimelineDb db, IServiceProvider services, AreaMap area)
+    public TopicScope(FlowKey key, ITimelineDb db, IServiceProvider services)
       : base(key, db)
     {
       _services = services;
-      _area = area;
     }
 
     protected new TopicObservation Observation =>
@@ -90,22 +88,8 @@ namespace Totem.Timeline.Runtime
 
       try
       {
-        foreach(var call in immediateGivens.Calls)
-        {
-          var observation = (TopicObservation) call.Observation;
+        CallImmediateGivens(immediateGivens);
 
-          var hasWhen = observation.HasWhen(scheduled: true) || observation.HasWhen(scheduled: false);
-
-          Flow.Context.CallGiven(call, advanceCheckpoint: !hasWhen);
-        }
-      }
-      catch(Exception error)
-      {
-        await Stop(error);
-      }
-
-      try
-      {
         await WriteCheckpoint();
       }
       catch(Exception error)
@@ -113,6 +97,18 @@ namespace Totem.Timeline.Runtime
         await Stop(new Exception(
           $"Topic {Key} added events to the timeline, but failed to save its checkpoint. This should be vanishingly rare and would be surprising if it occurred. This can be reconciled when resuming via AreaEventMetadata.Topic, but that is not in place yet, so the flow is stopped. Manual resolution is required.",
           error));
+      }
+    }
+
+    void CallImmediateGivens(ImmediateGivens immediateGivens)
+    {
+      foreach(var call in immediateGivens.Calls)
+      {
+        var observation = (TopicObservation) call.Observation;
+
+        var hasWhen = observation.HasWhen(scheduled: true) || observation.HasWhen(scheduled: false);
+
+        Flow.Context.CallGiven(call, advanceCheckpoint: !hasWhen);
       }
     }
   }

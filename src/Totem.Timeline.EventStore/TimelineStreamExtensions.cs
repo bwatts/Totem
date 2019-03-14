@@ -3,21 +3,13 @@ using Totem.Timeline.Area;
 namespace Totem.Timeline.EventStore
 {
   /// <summary>
-  /// Extends <see cref="AreaKey"/> and <see cref="FlowKey"/> to build stream names
+  /// The names of streams in the timeline event store
   /// </summary>
-  internal static class TimelineStreamExtensions
+  internal static class TimelineStreams
   {
-    internal static string GetStream(this AreaMap area, string suffix) =>
-      $"{area}-{suffix}";
-
-    internal static string GetResumeStream(this AreaMap area) =>
-      area.GetStream("resume");
-
-    internal static string GetScheduleStream(this AreaMap area) =>
-      area.GetStream("schedule");
-
-    internal static string GetChangedQueriesStream(this AreaMap area) =>
-      area.GetStream("changed-queries");
+    internal const string Resume = "resume";
+    internal const string Schedule = "schedule";
+    internal const string ChangedQueries = "changed-queries";
 
     internal static string GetStream(this FlowKey key, string suffix)
     {

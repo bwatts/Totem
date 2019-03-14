@@ -5,9 +5,9 @@ namespace Totem.Timeline.Area
   /// <summary>
   /// An event observed by a <see cref="Topic"/>
   /// </summary>
-  public class TopicObservation : FlowObservation
+  public sealed class TopicObservation : FlowObservation
   {
-    public TopicObservation(
+    internal TopicObservation(
       FlowType flowType,
       EventType eventType,
       FlowRoute route,

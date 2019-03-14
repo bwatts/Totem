@@ -10,7 +10,7 @@ namespace Totem.Runtime.Hosting
   [EditorBrowsable(EditorBrowsableState.Never)]
   public static class HostedServiceExtensions
   {
-    public static IServiceCollection AddHostedServiceWith<TAdditionalService, THostedService>(this IServiceCollection services)
+    public static IServiceCollection AddHostedServiceAs<TAdditionalService, THostedService>(this IServiceCollection services)
       where TAdditionalService : class
       where THostedService : class, IHostedService, TAdditionalService
     {

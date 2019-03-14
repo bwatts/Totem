@@ -51,7 +51,7 @@ namespace Totem.Timeline.EventStore.Client
     async Task<EventStoreSubscription> SubscribeToStream()
     {
       var task = _context.Connection.SubscribeToStreamAsync(
-        _context.Area.GetChangedQueriesStream(),
+        TimelineStreams.ChangedQueries,
         resolveLinkTos: false,
         eventAppeared: (_, e) => OnChanged(e),
         subscriptionDropped: (_, reason, error) => OnDropped(reason, error));

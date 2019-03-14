@@ -7,9 +7,9 @@ namespace Totem.Timeline.Area
   /// <summary>
   /// A parameter to a .When method representing a service resolved at call time
   /// </summary>
-  public class TopicWhenDependency
+  public sealed class TopicWhenDependency
   {
-    public TopicWhenDependency(ParameterInfo parameter)
+    internal TopicWhenDependency(ParameterInfo parameter)
     {
       Parameter = parameter;
     }

@@ -11,7 +11,7 @@ namespace Totem.Timeline.Area
   {
     readonly Lazy<Action<Flow, Event>> _call;
 
-    public FlowGiven(MethodInfo info, EventType eventType) : base(info, eventType)
+    internal FlowGiven(MethodInfo info, EventType eventType) : base(info, eventType)
     {
       _call = new Lazy<Action<Flow, Event>>(CompileCall);
     }

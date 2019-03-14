@@ -9,12 +9,12 @@ namespace Totem.Timeline.Area
   /// <summary>
   /// Makes decisions in reaction to an event within a <see cref="Topic"/>
   /// </summary>
-  public class TopicWhen : FlowMethod
+  public sealed class TopicWhen : FlowMethod
   {
     readonly Lazy<Action<Topic, Event, IServiceProvider>> _call;
     readonly Lazy<Func<Topic, Event, IServiceProvider, Task>> _callAsync;
 
-    public TopicWhen(MethodInfo info, EventType eventType, Many<TopicWhenDependency> dependencies)
+    internal TopicWhen(MethodInfo info, EventType eventType, Many<TopicWhenDependency> dependencies)
       : base(info, eventType)
     {
       Dependencies = dependencies;

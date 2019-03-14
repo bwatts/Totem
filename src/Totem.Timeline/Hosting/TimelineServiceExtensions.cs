@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Totem.Runtime.Hosting;
 using Totem.Timeline.Runtime;
@@ -9,23 +8,27 @@ namespace Totem.Timeline.Hosting
   /// <summary>
   /// Extends <see cref="IServiceCollection"/> to declare the timeline host
   /// </summary>
-  [EditorBrowsable(EditorBrowsableState.Never)]
   public static class TimelineServiceExtensions
   {
-    public static IServiceCollection AddTimeline<TArea>(this IServiceCollection services)
-      where TArea : TimelineArea, new()
+    public static IServiceCollection AddTimeline(this IServiceCollection services) =>
+      services
+      .AddAreaMap()
+      .AddOptionsSetup<TimelineJsonFormatOptionsSetup>()
+      .AddHostedService<TimelineHost>();
+
+    public static IServiceCollection AddTimeline(this IServiceCollection services, Action<ITimelineBuilder> configure)
     {
-      services.AddSingleton(_ => new TArea().BuildMap());
+      services.AddTimeline();
 
-      services.AddOptionsSetup<TimelineJsonFormatOptionsSetup>();
-
-      services.AddHostedService<TimelineHost>();
+      configure(new TimelineBuilder(services));
 
       return services;
     }
 
-    public static IServiceCollection AddTimeline<TArea>(this IServiceCollection services, Action<ITimelineBuilder> configure)
-      where TArea : TimelineArea, new()
+    public static IServiceCollection AddTimeline<TArea>(this IServiceCollection services) where TArea : TimelineArea, new() =>
+      services.AddTimeline().ConfigureArea<TArea>();
+
+    public static IServiceCollection AddTimeline<TArea>(this IServiceCollection services, Action<ITimelineBuilder> configure) where TArea : TimelineArea, new()
     {
       services.AddTimeline<TArea>();
 

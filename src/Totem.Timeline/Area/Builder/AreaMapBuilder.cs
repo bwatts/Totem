@@ -1,32 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
-namespace Totem.Timeline.Area.Reflection
+namespace Totem.Timeline.Area.Builder
 {
   /// <summary>
-  /// Builds the map of a timeline area assembly
+  /// Builds a map of the types in a timeline area
   /// </summary>
-  internal sealed class MapBuilder
+  internal sealed class AreaMapBuilder
   {
     readonly Dictionary<Type, EventType> _eventsByDeclaredType = new Dictionary<Type, EventType>();
     readonly List<TopicType> _topics = new List<TopicType>();
     readonly List<QueryType> _queries = new List<QueryType>();
-    readonly AreaKey _key;
-    readonly Assembly _assembly;
+    readonly IEnumerable<AreaTypeInfo> _types;
 
-    internal MapBuilder(AreaKey key, Assembly assembly)
+    internal AreaMapBuilder(IEnumerable<AreaTypeInfo> types)
     {
-      _key = key;
-      _assembly = assembly;
+      _types = types;
     }
 
     internal AreaMap Build()
     {
       DeclareEventsAndFlows();
-
-      DeclareFlowStopped();
 
       return CreateMap();
     }
@@ -36,25 +31,25 @@ namespace Totem.Timeline.Area.Reflection
 
     void DeclareEventsAndFlows()
     {
-      var typesByIsEvent = _assembly.GetTypes().ToLookup(typeof(Event).IsAssignableFrom);
+      var typesByIsEvent = _types.ToLookup(type => type.IsEvent);
 
       foreach(var eventType in typesByIsEvent[true])
       {
-        DeclareEvent(new MapTypeInfo(_key, eventType));
+        DeclareEvent(eventType);
       }
 
-      foreach(var type in typesByIsEvent[false])
+      foreach(var flowType in typesByIsEvent[false])
       {
-        TryDeclareFlow(type);
+        DeclareFlow(flowType);
       }
     }
 
-    void DeclareEvent(MapTypeInfo info) =>
+    void DeclareEvent(AreaTypeInfo info) =>
       _eventsByDeclaredType.Add(info.DeclaredType, new EventType(info));
 
-    void TryDeclareFlow(Type type)
+    void DeclareFlow(AreaTypeInfo type)
     {
-      var builder = new FlowBuilder(this, _key, type);
+      var builder = new FlowTypeBuilder(this, type);
 
       if(builder.TryBuildTopic(out var topic))
       {
@@ -69,14 +64,9 @@ namespace Totem.Timeline.Area.Reflection
       }
     }
 
-    void DeclareFlowStopped() =>
-      DeclareEvent(new MapTypeInfo(AreaKey.From("timeline"), typeof(FlowStopped)));
-
-    AreaMap CreateMap() =>
-      new AreaMap(
-        _key,
-        new MapTypeSet<EventType>(_eventsByDeclaredType.Values),
-        new MapTypeSet<TopicType>(_topics),
-        new MapTypeSet<QueryType>(_queries));
+    AreaMap CreateMap() => new AreaMap(
+      new AreaTypeSet<EventType>(_eventsByDeclaredType.Values),
+      new AreaTypeSet<TopicType>(_topics),
+      new AreaTypeSet<QueryType>(_queries));
   }
 }

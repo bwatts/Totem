@@ -18,7 +18,7 @@ namespace Totem.Timeline.EventStore
     public Id CommandId;
     public Id UserId;
     public FlowKey Topic;
-    public List<MapTypeKey> RouteTypes;
+    public List<AreaTypeName> RouteTypes;
     public List<RouteTypeIds> RouteIds;
 
     public class RouteTypeIds
@@ -35,11 +35,11 @@ namespace Totem.Timeline.EventStore
         let type = idsByType.Key
         select new
         {
-          Type = type.Key,
+          Type = type.Name,
           Ids = type.IsSingleInstance ? null : idsByType.ToList()
         };
 
-      RouteTypes = new List<MapTypeKey>();
+      RouteTypes = new List<AreaTypeName>();
       RouteIds = new List<RouteTypeIds>();
 
       var typeIndex = 0;

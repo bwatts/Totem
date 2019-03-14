@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Totem.Runtime;
 using Totem.Runtime.Hosting;
-using Totem.Timeline.Area;
 
 namespace Totem.Timeline.Runtime
 {
@@ -16,12 +15,12 @@ namespace Totem.Timeline.Runtime
     readonly ScheduleHost _schedule;
     readonly FlowHost _flows;
 
-    public TimelineHost(IServiceProvider services, ITimelineDb db, AreaMap area)
+    public TimelineHost(IServiceProvider services, ITimelineDb db)
     {
       _db = db;
 
       _schedule = new ScheduleHost(db);
-      _flows = new FlowHost(services, db, area);
+      _flows = new FlowHost(services, db);
     }
 
     protected override async Task Open()

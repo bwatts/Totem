@@ -1,50 +1,40 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Totem.Timeline.Area.Builder;
 
 namespace Totem.Timeline.Area
 {
   /// <summary>
-  /// A map of the elements in an area of the timeline
+  /// A map of the types in a timeline area
   /// </summary>
   public class AreaMap
   {
-    public AreaMap(
-      AreaKey key,
-      MapTypeSet<EventType> events,
-      MapTypeSet<TopicType> topics,
-      MapTypeSet<QueryType> queries)
+    internal AreaMap(AreaTypeSet<EventType> events, AreaTypeSet<TopicType> topics, AreaTypeSet<QueryType> queries)
     {
-      Key = key;
       Events = events;
       Topics = topics;
       Queries = queries;
     }
 
-    public readonly AreaKey Key;
-    public readonly MapTypeSet<EventType> Events;
-    public readonly MapTypeSet<TopicType> Topics;
-    public readonly MapTypeSet<QueryType> Queries;
+    public readonly AreaTypeSet<EventType> Events;
+    public readonly AreaTypeSet<TopicType> Topics;
+    public readonly AreaTypeSet<QueryType> Queries;
 
-    public override string ToString() =>
-      Key.ToString();
+    public IEnumerable<FlowType> FlowTypes => Topics.Cast<FlowType>().Concat(Queries);
+    public IEnumerable<AreaType> Types => Events.Cast<AreaType>().Concat(FlowTypes);
 
-    public IEnumerable<MapType> Types =>
-      Events.Cast<MapType>().Concat(FlowTypes);
-
-    public IEnumerable<FlowType> FlowTypes =>
-      Topics.Cast<FlowType>().Concat(Queries);
-
-    public bool TryGet(MapTypeKey key, out MapType type)
+    public bool TryGet(AreaTypeName name, out AreaType type)
     {
-      if(Events.TryGet(key, out var e))
+      if(Events.TryGet(name, out var e))
       {
         type = e;
       }
-      else if(Topics.TryGet(key, out var topic))
+      else if(Topics.TryGet(name, out var topic))
       {
         type = topic;
       }
-      else if(Queries.TryGet(key, out var query))
+      else if(Queries.TryGet(name, out var query))
       {
         type = query;
       }
@@ -56,13 +46,13 @@ namespace Totem.Timeline.Area
       return type != null;
     }
 
-    public bool TryGetFlow(MapTypeKey key, out FlowType type)
+    public bool TryGetFlow(AreaTypeName name, out FlowType type)
     {
-      if(Topics.TryGet(key, out var topic))
+      if(Topics.TryGet(name, out var topic))
       {
         type = topic;
       }
-      else if(Queries.TryGet(key, out var query))
+      else if(Queries.TryGet(name, out var query))
       {
         type = query;
       }
@@ -74,24 +64,39 @@ namespace Totem.Timeline.Area
       return type != null;
     }
 
-    public MapType Get(MapTypeKey key)
+    public AreaType Get(AreaTypeName name)
     {
-      if(!TryGet(key, out var type))
+      if(!TryGet(name, out var type))
       {
-        throw new KeyNotFoundException($"The map does not contain the specified key: {key}");
+        throw new KeyNotFoundException($"This map does not contain a type with the specified name: {name}");
       }
 
       return type;
     }
 
-    public FlowType GetFlow(MapTypeKey key)
+    public FlowType GetFlow(AreaTypeName name)
     {
-      if(!TryGetFlow(key, out var type))
+      if(!TryGetFlow(name, out var type))
       {
-        throw new KeyNotFoundException($"The map does not contain the specified flow key: {key}");
+        throw new KeyNotFoundException($"This map does not contain a flow with the specified name: {name}");
       }
 
       return type;
+    }
+
+    public static AreaMap From(IEnumerable<Type> potentialTypes)
+    {
+      var areaTypes = new List<AreaTypeInfo>();
+
+      foreach(var type in potentialTypes)
+      {
+        if(AreaTypeInfo.TryFrom(type, out var areaType))
+        {
+          areaTypes.Add(areaType);
+        }
+      }
+
+      return new AreaMapBuilder(areaTypes).Build();
     }
   }
 }

@@ -43,14 +43,14 @@ namespace Totem.Timeline
     public static bool operator >=(FlowKey x, FlowKey y) => Cmp.Op(x, y) >= 0;
     public static bool operator <=(FlowKey x, FlowKey y) => Cmp.Op(x, y) <= 0;
 
-    public static bool TryFrom(string value, AreaMap map, out FlowKey key)
+    public static bool TryFrom(string value, AreaMap area, out FlowKey key)
     {
       var idIndex = value.IndexOf(Id.Separator);
 
       var typePart = idIndex == -1 ? value : value.Substring(0, idIndex);
       var idPart = idIndex == -1 ? "" : value.Substring(idIndex + 1);
 
-      key = MapTypeKey.TryFrom(typePart, out var typeKey) && map.TryGetFlow(typeKey, out var type)
+      key = AreaTypeName.TryFrom(typePart, out var typeKey) && area.TryGetFlow(typeKey, out var type)
         ? new FlowKey(type, Id.From(idPart))
         : null;
 
@@ -63,9 +63,9 @@ namespace Totem.Timeline
     public static FlowKey From(FlowType type) =>
       new FlowKey(type, Id.Unassigned);
 
-    public static FlowKey From(string value, AreaMap map)
+    public static FlowKey From(string value, AreaMap area)
     {
-      if(!TryFrom(value, map, out var key))
+      if(!TryFrom(value, area, out var key))
       {
         throw new FormatException($"Failed to parse the specified key: {value}");
       }

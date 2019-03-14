@@ -17,7 +17,5 @@ namespace Totem.Timeline.Runtime
     Task<ImmediateGivens> WriteNewEvents(TimelinePosition cause, FlowKey topicKey, Many<Event> newEvents);
 
     Task WriteCheckpoint(Flow flow);
-
-    Task WriteStopped(TimelinePosition cause, FlowStopped e);
   }
 }

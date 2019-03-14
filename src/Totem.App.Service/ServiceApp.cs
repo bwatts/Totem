@@ -65,7 +65,6 @@ namespace Totem.App.Service
       host.ConfigureServices(services =>
         services
         .AddOptions()
-        .AddHttpClient()
         .AddTotemRuntime()
         .AddTimeline<TArea>(timeline => timeline.AddEventStore().BindOptionsToConfiguration()));
   }

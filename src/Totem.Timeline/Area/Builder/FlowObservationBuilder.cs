@@ -5,10 +5,10 @@ using System.Reflection;
 using Totem.Reflection;
 using Totem.Runtime;
 
-namespace Totem.Timeline.Area.Reflection
+namespace Totem.Timeline.Area.Builder
 {
   /// <summary>
-  /// Builds the observations of a flow in an area map
+  /// Builds the observations of a flow in a timeline area
   /// </summary>
   /// <remarks>
   /// This stateful builder finds the Route, When, and Given methods defined by tye flow type.
@@ -26,13 +26,13 @@ namespace Totem.Timeline.Area.Reflection
     readonly Dictionary<EventType, FlowRoute> _routesByEvent = new Dictionary<EventType, FlowRoute>();
     readonly Dictionary<EventType, FlowMethodSet<FlowGiven>> _givensByEvent = new Dictionary<EventType, FlowMethodSet<FlowGiven>>();
     readonly Dictionary<EventType, FlowMethodSet<TopicWhen>> _whensByEvent = new Dictionary<EventType, FlowMethodSet<TopicWhen>>();
-    readonly MapBuilder _map;
+    readonly AreaMapBuilder _map;
     readonly FlowType _flow;
     MethodInfo _method;
     string _methodPath;
     EventType _event;
 
-    internal FlowObservationBuilder(MapBuilder map, FlowType flow)
+    internal FlowObservationBuilder(AreaMapBuilder map, FlowType flow)
     {
       _map = map;
       _flow = flow;

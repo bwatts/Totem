@@ -41,13 +41,13 @@ namespace Totem.Timeline.Client
     public static bool operator ==(QueryETag x, QueryETag y) => Eq.Op(x, y);
     public static bool operator !=(QueryETag x, QueryETag y) => Eq.OpNot(x, y);
 
-    public static bool TryFrom(string value, AreaMap map, out QueryETag etag)
+    public static bool TryFrom(string value, AreaMap area, out QueryETag etag)
     {
       etag = null;
 
       var parts = value.Split('@');
 
-      if(parts.Length > 0 && FlowKey.TryFrom(parts[0], map, out var key))
+      if(parts.Length > 0 && FlowKey.TryFrom(parts[0], area, out var key))
       {
         var checkpoint = parts.Length == 2 && long.TryParse(parts[1], out var position)
           ? new TimelinePosition(position)
@@ -65,9 +65,9 @@ namespace Totem.Timeline.Client
     public static QueryETag From(FlowKey key, TimelinePosition checkpoint) =>
       new QueryETag(key, checkpoint);
 
-    public static QueryETag From(string value, AreaMap map)
+    public static QueryETag From(string value, AreaMap area)
     {
-      if(!TryFrom(value, map, out var etag))
+      if(!TryFrom(value, area, out var etag))
       {
         throw new FormatException($"Failed to parse query ETag: \"{value}\"");
       }

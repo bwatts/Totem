@@ -1,5 +1,5 @@
-using Totem.Timeline.Area;
-using Totem.Timeline.Area.Reflection;
+using System;
+using System.Collections.Generic;
 
 namespace Totem.Timeline.Hosting
 {
@@ -8,17 +8,7 @@ namespace Totem.Timeline.Hosting
   /// </summary>
   public abstract class TimelineArea
   {
-    protected TimelineArea(string key)
-    {
-      Key = AreaKey.From(key);
-    }
-
-    public readonly AreaKey Key;
-
-    public override string ToString() =>
-      Key.ToString();
-
-    public AreaMap BuildMap() =>
-      new MapBuilder(Key, GetType().Assembly).Build();
+    public virtual IEnumerable<Type> GetTypes() =>
+      GetType().Assembly.GetTypes();
   }
 }

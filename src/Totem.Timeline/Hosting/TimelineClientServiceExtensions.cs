@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Totem.Runtime.Hosting;
 using Totem.Timeline.Client;
@@ -7,25 +6,20 @@ using Totem.Timeline.Client;
 namespace Totem.Timeline.Hosting
 {
   /// <summary>
-  /// Extends <see cref="IServiceCollection"/> to declare the timeline command host
+  /// Extends <see cref="IServiceCollection"/> to declare the timeline client
   /// </summary>
-  [EditorBrowsable(EditorBrowsableState.Never)]
   public static class TimelineClientServiceExtensions
   {
-    public static IServiceCollection AddTimelineClient<TArea>(this IServiceCollection services)
-      where TArea : TimelineArea, new()
-    {
-      services.AddSingleton(_ => new TArea().BuildMap());
+    public static IServiceCollection AddTimelineClient(this IServiceCollection services) =>
+      services
+      .AddAreaMap()
+      .AddOptionsSetup<TimelineJsonFormatOptionsSetup>()
+      .AddHostedServiceAs<ICommandHost, CommandHost>();
 
-      services.AddOptionsSetup<TimelineJsonFormatOptionsSetup>();
+    public static IServiceCollection AddTimelineClient<TArea>(this IServiceCollection services) where TArea : TimelineArea, new() =>
+      services.AddTimelineClient().ConfigureArea<TArea>();
 
-      services.AddHostedServiceWith<ICommandHost, CommandHost>();
-
-      return services;
-    }
-
-    public static IServiceCollection AddTimelineClient<TArea>(this IServiceCollection services, Action<ITimelineClientBuilder> configure)
-      where TArea : TimelineArea, new()
+    public static IServiceCollection AddTimelineClient<TArea>(this IServiceCollection services, Action<ITimelineClientBuilder> configure) where TArea : TimelineArea, new()
     {
       services.AddTimelineClient<TArea>();
 

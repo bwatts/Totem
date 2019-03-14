@@ -7,11 +7,11 @@ namespace Totem.Timeline.Area
   /// <summary>
   /// Initiates the lifecycle of a <see cref="Flow"/>
   /// </summary>
-  public class FlowConstructor
+  public sealed class FlowConstructor
   {
     readonly Lazy<Func<Flow>> _call;
 
-    public FlowConstructor(ConstructorInfo info)
+    internal FlowConstructor(ConstructorInfo info)
     {
       Info = info;
 

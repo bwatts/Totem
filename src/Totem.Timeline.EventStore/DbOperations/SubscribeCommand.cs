@@ -31,9 +31,10 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     internal async Task<ResumeInfo> Execute()
     {
-      var stream = _context.Area.GetResumeStream();
-
-      var result = await _context.Connection.ReadEventAsync(stream, StreamPosition.End, resolveLinkTos: false);
+      var result = await _context.Connection.ReadEventAsync(
+        TimelineStreams.Resume,
+        StreamPosition.End,
+        resolveLinkTos: false);
 
       switch(result.Status)
       {
@@ -43,7 +44,7 @@ namespace Totem.Timeline.EventStore.DbOperations
         case EventReadStatus.Success:
           return await ReadResumeInfo(result.Event?.Event.Data);
         default:
-          throw new Exception($"Unexpected result when reading {stream} to resume: {result.Status}");
+          throw new Exception($"Unexpected result when reading {TimelineStreams.Resume} to resume: {result.Status}");
       }
     }
 
@@ -72,7 +73,7 @@ namespace Totem.Timeline.EventStore.DbOperations
       {
         if(typeItem is JArray multiInstance)
         {
-          var type = _context.Area.GetFlow(MapTypeKey.From(multiInstance[0].Value<string>()));
+          var type = _context.Area.GetFlow(AreaTypeName.From(multiInstance[0].Value<string>()));
 
           foreach(var idItem in multiInstance.Skip(1))
           {

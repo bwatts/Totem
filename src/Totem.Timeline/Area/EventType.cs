@@ -4,11 +4,11 @@ using System.Linq;
 namespace Totem.Timeline.Area
 {
   /// <summary>
-  /// A .NET type representing an event on the timeline
+  /// A .NET type declaring an event on the timeline
   /// </summary>
-  public class EventType : MapType
+  public sealed class EventType : AreaType
   {
-    public EventType(MapTypeInfo type, Many<FlowObservation> observations = null) : base(type)
+    internal EventType(AreaTypeInfo info, Many<FlowObservation> observations = null) : base(info)
     {
       Observations = observations ?? new Many<FlowObservation>();
     }

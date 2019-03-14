@@ -133,7 +133,7 @@ namespace Totem.Timeline.EventStore
       context.Json.FromJsonUtf8<AreaEventMetadata>(e.Event.Metadata);
 
     internal static EventType ReadEventType(this EventStoreContext context, ResolvedEvent e) =>
-      context.Area.Events.Get(MapTypeKey.From(e.Event.EventType));
+      context.Area.Events.Get(AreaTypeName.From(e.Event.EventType));
 
     static Event ReadEvent(this EventStoreContext context, ResolvedEvent e, EventType type) =>
       (Event) context.Json.FromJsonUtf8(e.Event.Data, type.DeclaredType);

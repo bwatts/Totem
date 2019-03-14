@@ -1,11 +1,16 @@
 namespace Totem.Timeline.Area
 {
   /// <summary>
-  /// A .NET type representing a topic on the timeline
+  /// A .NET type declaring a topic in a timeline area
   /// </summary>
-  public class TopicType : FlowType
+  public sealed class TopicType : FlowType
   {
-    public TopicType(FlowTypeInfo info) : base(info)
+    internal TopicType(
+      AreaTypeInfo info,
+      FlowConstructor constructor,
+      FlowObservationSet observations,
+      ResumeAlgorithm resumeAlgorithm)
+      : base(info, constructor, observations, resumeAlgorithm)
     {}
   }
 }

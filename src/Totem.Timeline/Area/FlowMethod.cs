@@ -7,7 +7,7 @@ namespace Totem.Timeline.Area
   /// </summary>
   public abstract class FlowMethod
   {
-    protected FlowMethod(MethodInfo info, EventType eventType)
+    internal FlowMethod(MethodInfo info, EventType eventType)
     {
       Info = info;
       EventType = eventType;
