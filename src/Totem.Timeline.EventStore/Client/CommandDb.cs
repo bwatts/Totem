@@ -28,17 +28,15 @@ namespace Totem.Timeline.EventStore.Client
 
     public async Task<IDisposable> Subscribe(ITimelineObserver observer) =>
       await _context.Connection.SubscribeToStreamAsync(
-        _context.Area.ToString(),
+        TimelineStreams.Timeline,
         resolveLinkTos: false,
         eventAppeared: (_, e) =>
           observer.OnNext(_context.ReadAreaPoint(e)),
         subscriptionDropped: (_, reason, error) =>
           observer.OnDropped(reason.ToString(), error));
 
-    public Task WriteEvent(Event e)
+    public async Task<TimelinePosition> WriteEvent(Event e)
     {
-      var stream = _context.Area.ToString();
-
       var type = _context.GetEventType(e);
 
       var data = _context.GetAreaEventData(
@@ -46,12 +44,15 @@ namespace Totem.Timeline.EventStore.Client
         TimelinePosition.None,
         e.When,
         Event.Traits.WhenOccurs.Get(e),
+        Event.Traits.EventId.Get(e),
         Event.Traits.CommandId.Get(e),
         Event.Traits.UserId.Get(e),
         null,
         type.GetRoutes(e).ToMany());
 
-      return _context.Connection.AppendToStreamAsync(stream, ExpectedVersion.Any, data);
+      var result = await _context.Connection.AppendToStreamAsync(TimelineStreams.Timeline, ExpectedVersion.Any, data);
+
+      return new TimelinePosition(result.NextExpectedVersion);
     }
   }
 }

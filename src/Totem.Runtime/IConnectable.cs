@@ -10,7 +10,7 @@ namespace Totem.Runtime
   {
     ConnectionState State { get; }
 
-    Task Connect(CancellationToken cancellationToken);
+    Task Connect(CancellationToken cancellationToken = default(CancellationToken));
 
     Task Connect(IConnectable connection);
 

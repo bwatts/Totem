@@ -64,7 +64,6 @@ namespace Totem.App.Service
     public static IHostBuilder DefaultConfigureServices<TArea>(this IHostBuilder host) where TArea : TimelineArea, new() =>
       host.ConfigureServices(services =>
         services
-        .AddOptions()
         .AddTotemRuntime()
         .AddTimeline<TArea>(timeline => timeline.AddEventStore().BindOptionsToConfiguration()));
   }

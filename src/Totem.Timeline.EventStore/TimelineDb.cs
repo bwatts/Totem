@@ -62,12 +62,13 @@ namespace Totem.Timeline.EventStore
         cause.Position,
         Clock.Now,
         null,
+        Id.FromGuid(),
         cause.CommandId,
         cause.UserId,
         null,
         cause.Type.GetRoutes(e, scheduled: false).ToMany());
 
-      return _context.Connection.AppendToStreamAsync(_context.Area.ToString(), ExpectedVersion.Any, data);
+      return _context.Connection.AppendToStreamAsync(TimelineStreams.Timeline, ExpectedVersion.Any, data);
     }
 
     public Task<ImmediateGivens> WriteNewEvents(TimelinePosition cause, FlowKey topicKey, Many<Event> newEvents) =>

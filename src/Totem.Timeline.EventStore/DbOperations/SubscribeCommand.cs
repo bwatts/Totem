@@ -65,7 +65,7 @@ namespace Totem.Timeline.EventStore.DbOperations
     }
 
     TimelinePosition ReadCheckpoint(JToken json) =>
-      json == null ? TimelinePosition.None : new TimelinePosition(json.Value<long>());
+      json.Type == JTokenType.Null ? TimelinePosition.None : new TimelinePosition(json.Value<long>());
 
     IEnumerable<FlowKey> ReadResumeFlows(JArray json)
     {

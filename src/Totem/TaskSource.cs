@@ -26,6 +26,9 @@ namespace Totem
 
     public void SetResult() =>
       SetResult(null);
+
+    public bool TrySetResult() =>
+      TrySetResult(null);
   }
 
   /// <summary>

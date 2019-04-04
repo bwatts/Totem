@@ -59,7 +59,7 @@ namespace Totem.Timeline.EventStore.Client
       }
     }
 
-    class QueryWindow : Notion
+    class QueryWindow
     {
       readonly QueryETag _etag;
       readonly DateTimeOffset _whenChanged;

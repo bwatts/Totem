@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using EventStore.ClientAPI;
 using Totem.Runtime.Json;
@@ -12,7 +11,6 @@ namespace Totem.Timeline.EventStore
   /// <summary>
   /// Extends <see cref="EventStoreContext"/> with database operations
   /// </summary>
-  [EditorBrowsable(EditorBrowsableState.Never)]
   internal static class EventStoreContextExtensions
   {
     internal static EventType GetEventType(this EventStoreContext context, Event e) =>
@@ -31,6 +29,7 @@ namespace Totem.Timeline.EventStore
       TimelinePosition cause,
       DateTimeOffset when,
       DateTimeOffset? whenOccurs,
+      Id eventId,
       Id commandId,
       Id userId,
       FlowKey topic,
@@ -51,7 +50,7 @@ namespace Totem.Timeline.EventStore
       metadata.ApplyRoutes(type, routes);
 
       return new EventData(
-        Guid.NewGuid(),
+        eventId.IsUnassigned ? Guid.NewGuid() : Guid.Parse(eventId.ToString()),
         type.ToString(),
         isJson: true,
         data: context.ToJson(e),
@@ -70,6 +69,7 @@ namespace Totem.Timeline.EventStore
         cause,
         e.When,
         Event.Traits.WhenOccurs.Get(e),
+        Event.Traits.EventId.Get(e),
         Event.Traits.CommandId.Get(e),
         Event.Traits.UserId.Get(e),
         topic,
@@ -109,6 +109,7 @@ namespace Totem.Timeline.EventStore
         type,
         metadata.When,
         metadata.WhenOccurs,
+        Id.From(e.Event.EventId),
         metadata.CommandId,
         metadata.UserId,
         metadata.Topic,

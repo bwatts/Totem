@@ -23,10 +23,10 @@ namespace Totem.Timeline.EventStore.Hosting
       {
         services.AddSingleton<ILogger, EventStoreLogAdapter>();
 
-        services.AddSingleton(s => new EventStoreContext(
-          s.BuildConnection(),
-          s.GetRequiredService<IJsonFormat>(),
-          s.GetRequiredService<AreaMap>()));
+        services.AddSingleton(p => new EventStoreContext(
+          p.BuildConnection(),
+          p.GetRequiredService<IJsonFormat>(),
+          p.GetRequiredService<AreaMap>()));
 
         services.AddSingleton<ICommandDb, CommandDb>();
         services.AddSingleton<IQueryDb, QueryDb>();

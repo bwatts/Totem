@@ -1,0 +1,46 @@
+using System.Threading.Tasks;
+using Xunit;
+
+namespace Totem.Timeline.IntegrationTests
+{
+  /// <summary>
+  /// Tests that the cause of an event is set by the When method
+  /// </summary>
+  public class Cause : TestArea
+  {
+    [Fact]
+    public async Task SetByWhen()
+    {
+      await Append(new StartTest());
+
+      await Expect<TestStarted>();
+
+      var observed = await Expect<TestStartedObserved>();
+
+      Expect(observed.Cause).Is(new TimelinePosition(0));
+      Expect(observed.Position).Is(new TimelinePosition(1));
+    }
+
+    class TestTopic : Topic
+    {
+      void When(StartTest e) =>
+        Then(new TestStarted());
+
+      void When(TestStarted e) =>
+        Then(new TestStartedObserved
+        {
+          Cause = Context.Call.Point.Cause,
+          Position = Context.Call.Point.Position
+        });
+    }
+
+    class StartTest : Event { }
+    class TestStarted : Event { }
+
+    class TestStartedObserved : Event
+    {
+      public TimelinePosition Cause;
+      public TimelinePosition Position;
+    }
+  }
+}

@@ -20,7 +20,7 @@ namespace Totem.Runtime
     // Connecting
     //
 
-    public async Task Connect(CancellationToken cancellationToken)
+    public async Task Connect(CancellationToken cancellationToken = default(CancellationToken))
     {
       State.OnConnecting(cancellationToken);
 

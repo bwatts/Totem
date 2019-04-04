@@ -28,14 +28,8 @@ namespace Totem.Timeline.Hosting
     public static IServiceCollection AddTimeline<TArea>(this IServiceCollection services) where TArea : TimelineArea, new() =>
       services.AddTimeline().ConfigureArea<TArea>();
 
-    public static IServiceCollection AddTimeline<TArea>(this IServiceCollection services, Action<ITimelineBuilder> configure) where TArea : TimelineArea, new()
-    {
-      services.AddTimeline<TArea>();
-
-      configure(new TimelineBuilder(services));
-
-      return services;
-    }
+    public static IServiceCollection AddTimeline<TArea>(this IServiceCollection services, Action<ITimelineBuilder> configure) where TArea : TimelineArea, new() =>
+      services.AddTimeline(configure).ConfigureArea<TArea>();
 
     class TimelineBuilder : ITimelineBuilder
     {

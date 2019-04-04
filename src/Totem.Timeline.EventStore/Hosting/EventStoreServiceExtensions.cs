@@ -25,20 +25,20 @@ namespace Totem.Timeline.EventStore.Hosting
       {
         services.AddSingleton<ILogger, EventStoreLogAdapter>();
 
-        services.AddSingleton<ITimelineDb>(s => new TimelineDb(
-          s.GetRequiredService<EventStoreContext>(),
-          s.BuildSubscriptionSettings(),
-          s.GetRequiredService<IResumeProjection>()));
+        services.AddSingleton<ITimelineDb>(p => new TimelineDb(
+          p.GetRequiredService<EventStoreContext>(),
+          p.BuildSubscriptionSettings(),
+          p.GetRequiredService<IResumeProjection>()));
 
-        services.AddSingleton(s => new EventStoreContext(
-          s.BuildConnection(),
-          s.GetRequiredService<IJsonFormat>(),
-          s.GetRequiredService<AreaMap>()));
+        services.AddSingleton(p => new EventStoreContext(
+          p.BuildConnection(),
+          p.GetRequiredService<IJsonFormat>(),
+          p.GetRequiredService<AreaMap>()));
 
-        services.AddSingleton<IResumeProjection>(s => new ResumeProjection(
-          s.GetRequiredService<AreaMap>(),
-          s.GetRequiredService<ProjectionsManager>(),
-          s.BuildProjectionsCredentials()));
+        services.AddSingleton<IResumeProjection>(p => new ResumeProjection(
+          p.GetRequiredService<AreaMap>(),
+          p.GetRequiredService<ProjectionsManager>(),
+          p.BuildProjectionsCredentials()));
 
         services.AddSingleton(BuildProjectionsManager);
       });

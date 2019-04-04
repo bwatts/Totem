@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using Totem.Runtime.Json;
 using Totem.Timeline.Client;
+using Totem.Timeline.EventStore.DbOperations;
 
 namespace Totem.Timeline.EventStore.Client
 {
   /// <summary>
-  /// Monitors changed queries via the {area}-changed-queries stream
+  /// Monitors changed queries via the changed-queries stream
   /// </summary>
   public sealed class QueryDb : IQueryDb
   {
@@ -38,9 +39,7 @@ namespace Totem.Timeline.EventStore.Client
       {
         case EventReadStatus.NoStream:
         case EventReadStatus.NotFound:
-          var defaultData = _context.Json.ToJsonUtf8(etag.Key.Type.New());
-
-          return new QueryState(etag.WithoutCheckpoint(), new MemoryStream(defaultData));
+          return new QueryState(etag.WithoutCheckpoint(), GetDefaultData(etag));
         case EventReadStatus.Success:
           var number = result.Event?.Event.EventNumber;
           var data = result.Event?.Event.Data;
@@ -54,6 +53,18 @@ namespace Totem.Timeline.EventStore.Client
           throw new Exception($"Unexpected result when reading {stream}: {result.Status}");
       }
     }
+
+    public async Task<Stream> ReadContent(QueryETag etag) =>
+      etag.Checkpoint.IsNone
+        ? GetDefaultData(etag)
+        : await new ReadQueryContentCommand(_context, etag).Execute();
+
+    Stream GetDefaultData(QueryETag etag) =>
+      new MemoryStream(_context.Json.ToJsonUtf8(etag.Key.Type.New()));
+
+    //
+    // Subscriptions
+    //
 
     public async Task SubscribeToChanged(Id connectionId, QueryETag etag)
     {

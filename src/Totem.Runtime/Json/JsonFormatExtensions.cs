@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Totem.IO;
@@ -10,6 +11,16 @@ namespace Totem.Runtime.Json
   /// </summary>
   public static class JsonFormatExtensions
   {
+    //
+    // To
+    //
+
+    public static string ToJson(this IJsonFormat format, object value) =>
+      format.Apply(settings => JsonConvert.SerializeObject(value, settings));
+
+    public static string ToJson(this IJsonFormat format, object value, Type type) =>
+      format.Apply(settings => JsonConvert.SerializeObject(value, type, settings));
+
     public static JObject ToJObject(this IJsonFormat format, object value) =>
       format.Apply(settings => JObject.Parse(JsonConvert.SerializeObject(value, settings)));
 
@@ -19,11 +30,9 @@ namespace Totem.Runtime.Json
     public static JObject ToJObject(this IJsonFormat format, string json) =>
       JObject.Parse(json);
 
-    public static string ToJson(this IJsonFormat format, object value) =>
-      format.Apply(settings => JsonConvert.SerializeObject(value, settings));
-
-    public static string ToJson(this IJsonFormat format, object value, Type type) =>
-      format.Apply(settings => JsonConvert.SerializeObject(value, type, settings));
+    //
+    // From
+    //
 
     public static T FromJson<T>(this IJsonFormat format, string json) =>
       format.Apply(settings => JsonConvert.DeserializeObject<T>(json, settings));
@@ -38,8 +47,14 @@ namespace Totem.Runtime.Json
       format.Apply(settings => JsonConvert.PopulateObject(json, target, settings));
 
     //
-    // Binary
+    // To (binary)
     //
+
+    public static Binary ToJsonUtf8(this IJsonFormat format, object value) =>
+      Binary.FromUtf8(format.ToJson(value));
+
+    public static Binary ToJsonUtf8(this IJsonFormat format, object value, Type type) =>
+      Binary.FromUtf8(format.ToJson(value, type));
 
     public static JObject ToJObjectUtf8(this IJsonFormat format, Binary json) =>
       format.ToJObject(json.ToStringUtf8());
@@ -47,11 +62,9 @@ namespace Totem.Runtime.Json
     public static JObject ToJObjectUtf8(this IJsonFormat format, byte[] json) =>
       format.ToJObjectUtf8(Binary.From(json));
 
-    public static Binary ToJsonUtf8(this IJsonFormat format, object value) =>
-      Binary.FromUtf8(format.ToJson(value));
-
-    public static Binary ToJsonUtf8(this IJsonFormat format, object value, Type type) =>
-      Binary.FromUtf8(format.ToJson(value, type));
+    //
+    // From (binary)
+    //
 
     public static T FromJsonUtf8<T>(this IJsonFormat format, Binary json) =>
       format.FromJson<T>(json.ToStringUtf8());
@@ -75,6 +88,18 @@ namespace Totem.Runtime.Json
       format.FromJsonUtf8(Binary.From(json), type);
 
     public static void FromJsonUtf8(this IJsonFormat format, byte[] json, object target) =>
+      format.FromJsonUtf8(Binary.From(json), target);
+
+    public static T FromJsonUtf8<T>(this IJsonFormat format, Stream json) =>
+      format.FromJsonUtf8<T>(Binary.From(json));
+
+    public static object FromJsonUtf8(this IJsonFormat format, Stream json) =>
+      format.FromJsonUtf8(Binary.From(json));
+
+    public static object FromJsonUtf8(this IJsonFormat format, Stream json, Type type) =>
+      format.FromJsonUtf8(Binary.From(json), type);
+
+    public static void FromJsonUtf8(this IJsonFormat format, Stream json, object target) =>
       format.FromJsonUtf8(Binary.From(json), target);
   }
 }

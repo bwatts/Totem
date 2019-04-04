@@ -70,5 +70,8 @@ namespace Totem.Timeline.Area
 
       return type;
     }
+
+    public T Get<TDeclared>() =>
+      Get(typeof(TDeclared));
   }
 }

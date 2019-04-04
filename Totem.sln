@@ -15,9 +15,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Timeline.Mvc", "src\T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Timeline.SignalR", "src\Totem.Timeline.SignalR\Totem.Timeline.SignalR.csproj", "{D5457111-A91E-4C99-82FB-D25651DA4FF9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.App.Service", "src\Totem.App.Service\Totem.App.Service.csproj", "{24E68249-6182-4FA2-8504-2973B1926FBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.App.Service", "src\Totem.App.Service\Totem.App.Service.csproj", "{24E68249-6182-4FA2-8504-2973B1926FBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.App.Web", "src\Totem.App.Web\Totem.App.Web.csproj", "{608B4716-40D6-4A8C-8DBA-C49EB06B1984}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.App.Web", "src\Totem.App.Web\Totem.App.Web.csproj", "{608B4716-40D6-4A8C-8DBA-C49EB06B1984}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{61D62A6C-0B81-48F7-8204-76924E273C7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.Timeline.IntegrationTests", "tests\Totem.Timeline.IntegrationTests\Totem.Timeline.IntegrationTests.csproj", "{FA17F2BF-3BAD-4AC4-A970-16E7C81D2852}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,9 +61,16 @@ Global
 		{608B4716-40D6-4A8C-8DBA-C49EB06B1984}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{608B4716-40D6-4A8C-8DBA-C49EB06B1984}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{608B4716-40D6-4A8C-8DBA-C49EB06B1984}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA17F2BF-3BAD-4AC4-A970-16E7C81D2852}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA17F2BF-3BAD-4AC4-A970-16E7C81D2852}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA17F2BF-3BAD-4AC4-A970-16E7C81D2852}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA17F2BF-3BAD-4AC4-A970-16E7C81D2852}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FA17F2BF-3BAD-4AC4-A970-16E7C81D2852} = {61D62A6C-0B81-48F7-8204-76924E273C7D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8A4B0755-4E1A-46B2-A3CF-245702E48290}

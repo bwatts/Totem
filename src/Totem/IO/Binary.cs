@@ -98,6 +98,9 @@ namespace Totem.IO
 
     public static readonly Binary None = new Binary();
 
+    public static Binary From(byte[] value) =>
+      new Binary(value);
+
     public static Binary From(IEnumerable<byte> value) =>
       new Binary(value.ToArray());
 

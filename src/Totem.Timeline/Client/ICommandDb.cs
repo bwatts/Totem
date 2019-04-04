@@ -12,6 +12,6 @@ namespace Totem.Timeline.Client
   {
     Task<IDisposable> Subscribe(ITimelineObserver observer);
 
-    Task WriteEvent(Event e);
+    Task<TimelinePosition> WriteEvent(Event e);
   }
 }

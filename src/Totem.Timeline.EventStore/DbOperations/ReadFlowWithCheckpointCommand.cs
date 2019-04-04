@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using Totem.Runtime.Json;
-using Totem.Timeline.Area;
 using Totem.Timeline.Runtime;
 
 namespace Totem.Timeline.EventStore.DbOperations
@@ -13,7 +12,7 @@ namespace Totem.Timeline.EventStore.DbOperations
   internal class ReadFlowWithCheckpointCommand
   {
     readonly Many<TimelinePoint> _points = new Many<TimelinePoint>();
-    readonly EventStoreContext _db;
+    readonly EventStoreContext _context;
     readonly FlowKey _key;
     readonly RecordedEvent _checkpoint;
     readonly string _stream;
@@ -22,9 +21,9 @@ namespace Totem.Timeline.EventStore.DbOperations
     long _streamCheckpoint;
     int _batchIndex;
 
-    internal ReadFlowWithCheckpointCommand(EventStoreContext db, FlowKey key, RecordedEvent checkpoint)
+    internal ReadFlowWithCheckpointCommand(EventStoreContext context, FlowKey key, RecordedEvent checkpoint)
     {
-      _db = db;
+      _context = context;
       _key = key;
       _checkpoint = checkpoint;
 
@@ -48,7 +47,7 @@ namespace Totem.Timeline.EventStore.DbOperations
     }
 
     CheckpointMetadata ReadMetadata() =>
-      _db.Json.FromJsonUtf8<CheckpointMetadata>(_checkpoint.Metadata);
+      _context.Json.FromJsonUtf8<CheckpointMetadata>(_checkpoint.Metadata);
 
     void BindFlow(TimelinePosition position)
     {
@@ -60,7 +59,7 @@ namespace Totem.Timeline.EventStore.DbOperations
     }
 
     Flow ReadData() =>
-      (Flow) _db.Json.FromJsonUtf8(_checkpoint.Data, _key.Type.DeclaredType);
+      (Flow) _context.Json.FromJsonUtf8(_checkpoint.Data, _key.Type.DeclaredType);
 
     async Task ReadPoints()
     {
@@ -73,7 +72,7 @@ namespace Totem.Timeline.EventStore.DbOperations
     }
 
     Task<EventReadResult> ReadLastRoute() =>
-      _db.Connection.ReadEventAsync(_stream, StreamPosition.End, resolveLinkTos: true);
+      _context.Connection.ReadEventAsync(_stream, StreamPosition.End, resolveLinkTos: true);
 
     async Task ReadPoints(ResolvedEvent lastRoute)
     {
@@ -90,7 +89,7 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     void AddPoint(ResolvedEvent e)
     {
-      _points.Write.Insert(0, _db.ReadAreaPoint(e));
+      _points.Write.Insert(0, _context.ReadAreaPoint(e));
 
       _streamCheckpoint = e.Link.EventNumber;
     }
@@ -119,7 +118,7 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     async Task<StreamEventsSlice> ReadBatch()
     {
-      var result = await _db.Connection.ReadStreamEventsBackwardAsync(
+      var result = await _context.Connection.ReadStreamEventsBackwardAsync(
         _stream,
         NextBatchStart,
         NextBatchSize,

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Totem.Timeline.Client
@@ -8,6 +9,8 @@ namespace Totem.Timeline.Client
   public interface IQueryDb
   {
     Task<QueryState> ReadState(QueryETag etag);
+
+    Task<Stream> ReadContent(QueryETag etag);
 
     Task SubscribeToChanged(Id connectionId, QueryETag queryETag);
 

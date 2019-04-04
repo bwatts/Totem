@@ -31,6 +31,7 @@ namespace Totem.Timeline
     {
       public static readonly Field<DateTimeOffset> When = Field.Declare(() => When);
       public static readonly Field<DateTimeOffset?> WhenOccurs = Field.Declare(() => WhenOccurs);
+      public static readonly Field<Id> EventId = Field.Declare(() => EventId);
       public static readonly Field<Id> CommandId = Field.Declare(() => CommandId);
       public static readonly Field<Id> UserId = Field.Declare(() => UserId);
     }

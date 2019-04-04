@@ -1,5 +1,3 @@
-using Totem.Timeline.Area;
-
 namespace Totem.Timeline.EventStore
 {
   /// <summary>
@@ -7,8 +5,9 @@ namespace Totem.Timeline.EventStore
   /// </summary>
   internal static class TimelineStreams
   {
-    internal const string Resume = "resume";
+    internal const string Timeline = "timeline";
     internal const string Schedule = "schedule";
+    internal const string Resume = "resume";
     internal const string ChangedQueries = "changed-queries";
 
     internal static string GetStream(this FlowKey key, string suffix)

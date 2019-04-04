@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
-using Totem.Timeline.Area;
 using Totem.Timeline.Runtime;
 
 namespace Totem.Timeline.EventStore.DbOperations
@@ -12,16 +11,16 @@ namespace Totem.Timeline.EventStore.DbOperations
   internal class ReadFlowWithoutCheckpointCommand
   {
     readonly Many<TimelinePoint> _points = new Many<TimelinePoint>();
-    readonly EventStoreContext _db;
+    readonly EventStoreContext _context;
     readonly FlowKey _key;
     readonly string _stream;
     Flow _flow;
     long? _streamCheckpoint;
     int _batchIndex;
 
-    internal ReadFlowWithoutCheckpointCommand(EventStoreContext db, FlowKey key)
+    internal ReadFlowWithoutCheckpointCommand(EventStoreContext context, FlowKey key)
     {
-      _db = db;
+      _context = context;
       _key = key;
 
       _stream = key.GetRoutesStream();
@@ -58,7 +57,7 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     async Task<StreamEventsSlice> ReadBatch()
     {
-      var result = await _db.Connection.ReadStreamEventsForwardAsync(
+      var result = await _context.Connection.ReadStreamEventsForwardAsync(
         _stream,
         NextBatchStart,
         NextBatchSize,
@@ -100,11 +99,11 @@ namespace Totem.Timeline.EventStore.DbOperations
     }
 
     void AddPoint(ResolvedEvent e) =>
-      _points.Write.Add(_db.ReadAreaPoint(e));
+      _points.Write.Add(_context.ReadAreaPoint(e));
 
     bool CanBeFirst(ResolvedEvent e)
     {
-      var type = _db.ReadEventType(e);
+      var type = _context.ReadEventType(e);
 
       var observation = _key.Type.Observations.Get(type);
 

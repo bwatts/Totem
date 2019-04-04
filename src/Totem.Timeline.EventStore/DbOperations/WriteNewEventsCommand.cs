@@ -45,7 +45,7 @@ namespace Totem.Timeline.EventStore.DbOperations
       // EventStore was not happy when the enumerator failed - eagerly evaluate the event data
 
       var result = await _context.Connection.AppendToStreamAsync(
-        _context.Area.ToString(),
+        TimelineStreams.Timeline,
         ExpectedVersion.Any,
         _context.GetNewEventData(_cause, _topicKey, _newEvents).ToMany());
 
@@ -84,6 +84,7 @@ namespace Totem.Timeline.EventStore.DbOperations
           type,
           e.When,
           Event.Traits.WhenOccurs.Get(e),
+          Event.Traits.EventId.Get(e),
           Event.Traits.CommandId.Get(e),
           Event.Traits.UserId.Get(e),
           _topicKey,

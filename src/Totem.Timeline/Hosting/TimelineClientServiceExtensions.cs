@@ -16,17 +16,20 @@ namespace Totem.Timeline.Hosting
       .AddOptionsSetup<TimelineJsonFormatOptionsSetup>()
       .AddHostedServiceAs<ICommandHost, CommandHost>();
 
-    public static IServiceCollection AddTimelineClient<TArea>(this IServiceCollection services) where TArea : TimelineArea, new() =>
-      services.AddTimelineClient().ConfigureArea<TArea>();
-
-    public static IServiceCollection AddTimelineClient<TArea>(this IServiceCollection services, Action<ITimelineClientBuilder> configure) where TArea : TimelineArea, new()
+    public static IServiceCollection AddTimelineClient(this IServiceCollection services, Action<ITimelineClientBuilder> configure)
     {
-      services.AddTimelineClient<TArea>();
+      services.AddTimelineClient();
 
       configure(new TimelineClientBuilder(services));
 
       return services;
     }
+
+    public static IServiceCollection AddTimelineClient<TArea>(this IServiceCollection services) where TArea : TimelineArea, new() =>
+      services.AddTimelineClient().ConfigureArea<TArea>();
+
+    public static IServiceCollection AddTimelineClient<TArea>(this IServiceCollection services, Action<ITimelineClientBuilder> configure) where TArea : TimelineArea, new() =>
+      services.AddTimelineClient(configure).ConfigureArea<TArea>();
 
     class TimelineClientBuilder : ITimelineClientBuilder
     {

@@ -142,7 +142,7 @@ namespace Totem.Timeline.Runtime
 
         StartFlowIfFirst();
 
-        if(Running)
+        if(Running && Flow != null)
         {
           await ObservePoint();
 
@@ -229,15 +229,20 @@ namespace Totem.Timeline.Runtime
 
     void StartFlowIfFirst()
     {
-      if(Flow == null)
+      if(Flow != null)
       {
-        if(Observation.CanBeFirst)
-        {
-          Flow = (T) Key.Type.New();
+        return;
+      }
 
-          FlowContext.Bind(Flow, Key);
-        }
-        else
+      if(Observation.CanBeFirst)
+      {
+        Flow = (T) Key.Type.New();
+
+        FlowContext.Bind(Flow, Key);
+      }
+      else
+      {
+        if(_queue.Count == 0)
         {
           CompleteTask(FlowResult.Ignored);
         }

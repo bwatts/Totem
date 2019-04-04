@@ -9,7 +9,7 @@
 // https://eventstore.org/docs/projections/user-defined-projections/
 
 options({
-  resultStreamName: area + "-resume"
+  resultStreamName: "resume"
 });
 
 fromAll()
@@ -20,7 +20,7 @@ fromAll()
       flows: {}
     }),
     $any: (s, e) => {
-      if(e.streamId === area) {
+      if(e.streamId === "timeline") {
         updateArea(s, e);
       }
       else {
@@ -102,7 +102,7 @@ function updateRecord(records, key, update) {
 
 function updateSchedule(s, e, checkpoint) {
   if(e.metadata.whenOccurs) {
-    linkTo(area + "-schedule", e);
+    linkTo("schedule", e);
 
     s.schedule[s.checkpoint] = null;
   }

@@ -31,7 +31,7 @@ namespace Totem.Timeline.EventStore
     protected override Task Open()
     {
       _subscription = _context.Connection.SubscribeToStreamFrom(
-        _context.Area.ToString(),
+        TimelineStreams.Timeline,
         _checkpoint.ToInt64OrNull(),
         _settings,
         eventAppeared: (_, e) =>

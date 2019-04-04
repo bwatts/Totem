@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -7,7 +6,6 @@ namespace Totem.Runtime.Hosting
   /// <summary>
   /// Extends <see cref="IServiceCollection"/> to declare hosted services
   /// </summary>
-  [EditorBrowsable(EditorBrowsableState.Never)]
   public static class HostedServiceExtensions
   {
     public static IServiceCollection AddHostedServiceAs<TAdditionalService, THostedService>(this IServiceCollection services)

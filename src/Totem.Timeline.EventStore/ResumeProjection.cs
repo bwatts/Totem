@@ -27,19 +27,17 @@ namespace Totem.Timeline.EventStore
 
     public async Task Synchronize()
     {
-      var name = $"{_area}-resume";
-
-      if(await NotFound(name))
+      if(await StreamNotFound())
       {
-        await Create(name);
+        await CreateStream();
       }
     }
 
-    async Task<bool> NotFound(string name)
+    async Task<bool> StreamNotFound()
     {
       try
       {
-        await _manager.GetStatusAsync(name, _credentials);
+        await _manager.GetStatusAsync(TimelineStreams.Resume, _credentials);
 
         return false;
       }
@@ -54,11 +52,11 @@ namespace Totem.Timeline.EventStore
       }
     }
 
-    async Task Create(string name)
+    async Task CreateStream()
     {
-      await _manager.CreateContinuousAsync(name, await ReadScript(), _credentials);
+      await _manager.CreateContinuousAsync(TimelineStreams.Resume, await ReadScript(), _credentials);
 
-      Log.Debug("[timeline] Created projection {Name}", name);
+      Log.Debug("[timeline] Created projection {Name}", TimelineStreams.Resume);
     }
 
     async Task<string> ReadScript()
@@ -68,28 +66,7 @@ namespace Totem.Timeline.EventStore
       using(var resource = type.Assembly.GetManifestResourceStream(type, "resume-projection.js"))
       using(var reader = new StreamReader(resource))
       {
-        var content = await reader.ReadToEndAsync();
-
-        return new StringBuilder("let area = ")
-          .Append('"')
-          .Append(_area)
-          .Append("\";")
-          .AppendLine()
-          .AppendLine()
-          .Append(content)
-          .ToString();
-      }
-    }
-
-    public static IResumeProjection Assumed() => new AssumedProjection();
-
-    class AssumedProjection : Notion, IResumeProjection
-    {
-      public Task Synchronize()
-      {
-        Log.Debug("[timeline] Assuming resume projection is installed");
-
-        return Task.CompletedTask;
+        return await reader.ReadToEndAsync();
       }
     }
   }
