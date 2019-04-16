@@ -2,6 +2,22 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.1</LangVersion>
+    <RootNamespace>Totem.Runtime</RootNamespace>
+    <Company>Totem</Company>
+    <Authors>Totem Contributors</Authors>
+    <Product>Totem</Product>
+    <Version>1.0.0-beta</Version>
+    <Copyright>2019 Totem Contributors</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bwatts/Totem</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/bwatts/Totem/releases</PackageReleaseNotes>
+    <PackageTags>totem;dotnet;dotnet-core;csharp;utilities</PackageTags>
+    <RepositoryUrl>https://github.com/bwatts/Totem</RepositoryUrl>
+    <Description>A collection of tools for working in the .NET runtime</Description>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,12 +31,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Totem\Totem.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Connection.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 
 </Project>

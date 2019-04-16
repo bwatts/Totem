@@ -2,8 +2,22 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.1</LangVersion>
+    <RootNamespace>Totem.Timeline.Mvc</RootNamespace>
+    <Company>Totem</Company>
     <Authors>Totem Contributors</Authors>
-    <Company />
+    <Product>Totem</Product>
+    <Version>1.0.0-beta</Version>
+    <Copyright>2019 Totem Contributors</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bwatts/Totem</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/bwatts/Totem/releases</PackageReleaseNotes>
+    <PackageTags>totem;ddd;cqrs;event-sourcing;dotnet;dotnet-core;csharp;aspnet-core;mvc</PackageTags>
+    <RepositoryUrl>https://github.com/bwatts/Totem</RepositoryUrl>
+    <Description>An ASP.NET Core MVC server connected to the Totem timeline</Description>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
