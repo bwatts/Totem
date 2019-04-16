@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Totem.Timeline.Mvc.Hosting
 {
   /// <summary>
-  /// Extends <see cref="ITotemHostBuilder"/> to declare timeline MVC extensions
+  /// Extends <see cref="IMvcBuilder"/> to declare timeline MVC extensions
   /// </summary>
   [EditorBrowsable(EditorBrowsableState.Never)]
   public static class TimelineMvcBuilderExtensions

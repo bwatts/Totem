@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Totem.Runtime.Hosting
 {
   /// <summary>
-  /// Extends <see cref="IWebHostBuilder"/> to declare the Totem JSON format
+  /// Extends <see cref="IServiceCollection"/> to declare the Totem runtime
   /// </summary>
   [EditorBrowsable(EditorBrowsableState.Never)]
   public static class RuntimeServiceExtensions
