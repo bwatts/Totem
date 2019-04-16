@@ -54,6 +54,9 @@ namespace Totem.Timeline.IntegrationTests.Hosting
       _stopBlock.Set();
     }
 
+    internal Assembly GetAreaAssembly() =>
+      _area.GetType().Assembly;
+
     internal IEnumerable<Type> GetAreaTypes() =>
       _area.GetType().GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic);
 

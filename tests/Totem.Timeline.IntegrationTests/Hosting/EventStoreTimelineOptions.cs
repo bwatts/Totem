@@ -7,7 +7,7 @@ namespace Totem.Timeline.IntegrationTests.Hosting
   /// </summary>
   public class EventStoreProcessOptions
   {
-    public string ExeFile { get; set; }
-    public TimeSpan ReadyDelay { get; set; } = TimeSpan.FromMilliseconds(500);
+    public string ExeFile { get; set; } = "<user secret>";
+    public TimeSpan ReadyDelay { get; set; } = TimeSpan.FromSeconds(2);
   }
 }

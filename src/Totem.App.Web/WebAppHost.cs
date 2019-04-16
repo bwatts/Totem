@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -51,7 +52,15 @@ namespace Totem.App.Web
       _builder.UseWebRoot("wwwroot/dist");
 
     void ConfigureAppConfiguration() =>
-      _builder.ConfigureAppConfiguration(_configure.ConfigureAppConfiguration);
+      _builder.ConfigureAppConfiguration((context, appConfiguration) =>
+      {
+        if(context.HostingEnvironment.IsDevelopment())
+        {
+          appConfiguration.AddUserSecrets(Assembly.GetEntryAssembly(), optional: true);
+        }
+
+        _configure.ConfigureAppConfiguration(context, appConfiguration);
+      });
 
     void ConfigureApp() =>
       _builder.Configure(app =>
