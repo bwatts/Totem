@@ -10,14 +10,16 @@
     <Version>1.0.0-beta</Version>
     <Copyright>2019 Totem Contributors</Copyright>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bwatts/Totem</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/bwatts/totem/next/icon.png</PackageIconUrl>
     <PackageReleaseNotes>https://github.com/bwatts/Totem/releases</PackageReleaseNotes>
     <PackageTags>totem;ddd;cqrs;event-sourcing;dotnet;dotnet-core;csharp</PackageTags>
     <RepositoryUrl>https://github.com/bwatts/Totem</RepositoryUrl>
     <Description>A base configuration for Totem service applications, including the timeline, EventStore, and Serilog</Description>
-    <NoWarn>1591</NoWarn>
+    <NoWarn>1591;NU5105</NoWarn>
   </PropertyGroup>
   
   <ItemGroup>

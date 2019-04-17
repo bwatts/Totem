@@ -1,0 +1,56 @@
+version: 1.0.0-beta.{build}
+
+image: Visual Studio 2017
+configuration: Release
+platform: Any CPU
+
+branches:
+  only:
+  - next
+
+pull_requests:
+  do_not_increment_build_number: true
+
+nuget:
+  account_feed: false
+  project_feed: false
+  disable_publish_on_pr: true
+
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+
+environment:
+  NETCORE_ENVIRONMENT: Production
+  ASPNETCORE_ENVIRONMENT: Production
+
+before_build:
+  - nuget restore -verbosity quiet
+
+build:
+  project: Totem.sln
+  publish_nuget: false
+  publish_nuget_symbols: false
+  include_nuget_references: false
+  verbosity: minimal
+
+test: off
+
+artifacts:
+  path: '**\*.nupkg'
+
+deploy:
+  - provider: NuGet
+    server: https://nuget.org/
+    api_key:
+      secure: axs1WkLxGnTX4D1kKOt3FM3x0Krj/X9GIY1xSOsbFPa2bsqX79inSwPUwGoiGoIk
+    skip_symbols: true
+    artifact: /.*\.nupkg/
+
+cache:
+  - '%LocalAppData%\NuGet\v3-cache'
