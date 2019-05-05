@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.1</LangVersion>
+    <RootNamespace>Totem.Timeline.EventStore</RootNamespace>
+    <Company>Totem</Company>
+    <Authors>Totem Contributors</Authors>
+    <Product>Totem</Product>
+    <Version>1.0.0-beta</Version>
+    <Copyright>2019 Totem Contributors</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/bwatts/Totem</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/bwatts/totem/master/icon.png</PackageIconUrl>
+    <PackageReleaseNotes>https://github.com/bwatts/Totem/releases</PackageReleaseNotes>
+    <PackageTags>totem;ddd;cqrs;event-sourcing;dotnet;dotnet-core;csharp;eventstore</PackageTags>
+    <RepositoryUrl>https://github.com/bwatts/Totem</RepositoryUrl>
+    <Description>Persistence for the Totem timeline in an EventStore database (https://eventstore.org/)</Description>
+    <NoWarn>1591;NU5105</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="resume-projection.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0.23" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
+    <PackageReference Include="System.Reactive.Linq" Version="4.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj" />
+    <ProjectReference Include="..\Totem.Timeline\Totem.Timeline.csproj" />
+    <ProjectReference Include="..\Totem\Totem.csproj" />
+  </ItemGroup>
+
+</Project>

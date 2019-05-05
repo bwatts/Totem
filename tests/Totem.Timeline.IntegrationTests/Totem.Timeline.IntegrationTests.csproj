@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <UserSecretsId>89a65faa-2680-45c8-92be-9b40ef83234f</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Totem.Runtime\Totem.Runtime.csproj" />
+    <ProjectReference Include="..\..\src\Totem.Timeline.EventStore\Totem.Timeline.EventStore.csproj" />
+    <ProjectReference Include="..\..\src\Totem.Timeline\Totem.Timeline.csproj" />
+    <ProjectReference Include="..\..\src\Totem\Totem.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

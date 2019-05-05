@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.1</LangVersion>
+    <RootNamespace>Totem.Timeline.Mvc</RootNamespace>
+    <Company>Totem</Company>
+    <Authors>Totem Contributors</Authors>
+    <Product>Totem</Product>
+    <Version>1.0.0-beta</Version>
+    <Copyright>2019 Totem Contributors</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/bwatts/Totem</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/bwatts/totem/master/icon.png</PackageIconUrl>
+    <PackageReleaseNotes>https://github.com/bwatts/Totem/releases</PackageReleaseNotes>
+    <PackageTags>totem;ddd;cqrs;event-sourcing;dotnet;dotnet-core;csharp;aspnet-core;mvc</PackageTags>
+    <RepositoryUrl>https://github.com/bwatts/Totem</RepositoryUrl>
+    <Description>An ASP.NET Core MVC server connected to the Totem timeline</Description>
+    <NoWarn>1591;NU5105</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj" />
+    <ProjectReference Include="..\Totem.Timeline\Totem.Timeline.csproj" />
+    <ProjectReference Include="..\Totem\Totem.csproj" />
+  </ItemGroup>
+
+</Project>

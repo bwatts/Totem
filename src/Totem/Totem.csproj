@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>7.1</LangVersion>
+    <RootNamespace>Totem</RootNamespace>
+    <Company>Totem</Company>
+    <Authors>Totem Contributors</Authors>
+    <Product>Totem</Product>
+    <Version>1.0.0-beta</Version>
+    <Copyright>2019 Totem Contributors</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/bwatts/Totem</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/bwatts/totem/master/icon.png</PackageIconUrl>
+    <PackageReleaseNotes>https://github.com/bwatts/Totem/releases</PackageReleaseNotes>
+    <PackageTags>totem;dotnet;dotnet-core;csharp;utilities</PackageTags>
+    <RepositoryUrl>https://github.com/bwatts/Totem</RepositoryUrl>
+    <Description>A collection of tools for common development scenarios in .NET</Description>
+    <NoWarn>1591;NU5105</NoWarn>
+  </PropertyGroup>
+
+</Project>
