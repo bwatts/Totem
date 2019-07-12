@@ -4,9 +4,9 @@ using System.Diagnostics;
 namespace Totem
 {
   /// <summary>
-  /// A test fixture with instance-based access to Expect* methods
+  /// A test fixture with instance-based access to <see cref="Totem.Expect"/> methods
   /// </summary>
-  public abstract class Tests
+  public abstract class Expectations
   {
     [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
     protected static Expect<T> Expect<T>(T target) =>

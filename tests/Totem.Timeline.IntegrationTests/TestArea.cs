@@ -10,7 +10,7 @@ namespace Totem.Timeline.IntegrationTests
   /// <summary>
   /// A test fixture declaring timeline area types
   /// </summary>
-  public abstract class TestArea : Tests, IDisposable
+  public abstract class TestArea : Expectations, IDisposable
   {
     readonly TestApp _app;
 
