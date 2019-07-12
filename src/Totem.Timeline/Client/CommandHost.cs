@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Totem.Runtime;
 using Totem.Runtime.Hosting;
+using Totem.Threading;
 using Totem.Timeline.Runtime;
 
 namespace Totem.Timeline.Client

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Totem
+namespace Totem.Threading
 {
   /// <summary>
   /// A <see cref="TaskCompletionSource{TResult}"/> with an <see cref="object"/>
