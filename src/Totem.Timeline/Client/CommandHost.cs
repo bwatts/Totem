@@ -3,37 +3,24 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Totem.Runtime;
-using Totem.Runtime.Hosting;
 using Totem.Threading;
-using Totem.Timeline.Runtime;
 
 namespace Totem.Timeline.Client
 {
   /// <summary>
   /// Hosts commands executing on the timeline as a service in the .NET runtime
   /// </summary>
-  public class CommandHost : ConnectedService, ITimelineObserver, ICommandHost
+  internal sealed class CommandHost : ICommandHost
   {
     readonly ConcurrentDictionary<Id, WaitingCommand> _commandsById = new ConcurrentDictionary<Id, WaitingCommand>();
-    readonly ICommandDb _db;
+    readonly IClientDb _clientDb;
 
-    public CommandHost(ICommandDb db)
+    public CommandHost(IClientDb clientDb)
     {
-      _db = db;
+      _clientDb = clientDb;
     }
 
-    protected override async Task Open()
-    {
-      // Tracking the database doesn't connect it immediately - it must connect before subscribing
-
-      await _db.Connect(this);
-
-      Track(_db);
-      Track(await _db.Subscribe(this));
-    }
-
-    public async Task OnNext(TimelinePoint point)
+    internal async Task OnNext(TimelinePoint point)
     {
       if(_commandsById.TryGetValue(point.CommandId, out var command))
       {
@@ -41,16 +28,14 @@ namespace Totem.Timeline.Client
       }
     }
 
-    public void OnDropped(string reason, Exception error)
+    internal Task OnFailed(Id commandId, string error)
     {
-      if(error != null)
+      if(_commandsById.TryGetValue(commandId, out var command))
       {
-        Log.Error(error, "Dropped timeline subscription ({Reason})", reason);
+        command.OnFailed(error);
       }
-      else
-      {
-        Log.Debug("Dropped timeline subscription ({Reason})", reason);
-      }
+
+      return Task.CompletedTask;
     }
 
     public async Task<TResponse> Execute<TResponse>(Command command, IEnumerable<ICommandWhen<TResponse>> whens)
@@ -66,7 +51,7 @@ namespace Totem.Timeline.Client
 
       var waitForResponseTask = WaitForResponse(id, whens);
 
-      await _db.WriteEvent(command);
+      await _clientDb.WriteEvent(command);
 
       return await waitForResponseTask;
     }
@@ -101,6 +86,8 @@ namespace Totem.Timeline.Client
     abstract class WaitingCommand
     {
       internal abstract Task OnNext(TimelinePoint point);
+
+      internal abstract void OnFailed(string error);
     }
 
     class WaitingCommand<TResponse> : WaitingCommand
@@ -124,6 +111,9 @@ namespace Totem.Timeline.Client
           _taskSource.SetResult(await eventWhen.Respond(point.Event));
         }
       }
+
+      internal override void OnFailed(string error) =>
+        _taskSource.SetException(new Exception("Command failed with the following error: " + error));
     }
   }
 }

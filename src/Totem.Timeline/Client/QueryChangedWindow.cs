@@ -4,7 +4,7 @@ using System.Linq;
 using Totem.Runtime;
 using Totem.Timeline.Client;
 
-namespace Totem.Timeline.EventStore.Client
+namespace Totem.Timeline.Client
 {
   /// <summary>
   /// A 5-second window of changed query notifications
@@ -16,7 +16,7 @@ namespace Totem.Timeline.EventStore.Client
   ///
   /// This window ensures a connection subscribing with a stale ETag will receive a change notification.
   /// </remarks>
-  internal class QueryChangedWindow : Notion
+  internal sealed class QueryChangedWindow : Notion
   {
     static readonly TimeSpan _trimDelay = TimeSpan.FromSeconds(5);
     readonly ConcurrentDictionary<FlowKey, QueryWindow> _queriesByKey = new ConcurrentDictionary<FlowKey, QueryWindow>();

@@ -66,6 +66,9 @@ namespace Totem.Timeline.Runtime
     protected void CompleteTask(Exception error) =>
       _taskSource.SetException(error);
 
+    protected Task WriteCheckpoint() =>
+      Db.WriteCheckpoint(Flow, Point);
+
     //
     // Resuming
     //
@@ -82,7 +85,7 @@ namespace Totem.Timeline.Runtime
             // .Flow remains null, which .StartFlowIfFirst checks to start the flow
             break;
           case FlowResumeInfo.Stopped stopped:
-            CompleteTask(new Exception($"Flow is stopped at {stopped.Position}"));
+            CompleteTask(new Exception($"Flow is stopped at {stopped.Position} with this error: {stopped.Error}"));
             break;
           case FlowResumeInfo.Loaded loaded:
             Resume(loaded);
@@ -141,7 +144,7 @@ namespace Totem.Timeline.Runtime
         Point = await DequeueNextPoint();
         Observation = GetPointObservation();
 
-        StartFlowIfFirst();
+        StartIfFirst();
 
         if(Running && Flow != null)
         {
@@ -228,7 +231,7 @@ namespace Totem.Timeline.Runtime
     FlowObservation GetPointObservation() =>
       Key.Type.Observations.Get(Point.Type);
 
-    void StartFlowIfFirst()
+    void StartIfFirst()
     {
       if(Flow != null)
       {
@@ -263,20 +266,13 @@ namespace Totem.Timeline.Runtime
 
     protected abstract Task ObservePoint();
 
-    //
-    // Writes
-    //
-
-    protected Task WriteCheckpoint() =>
-      Db.WriteCheckpoint(Flow);
-
-    protected async Task Stop(Exception error)
+    async Task Stop(Exception error)
     {
       Log.Error(error, "[timeline] Flow {Key} stopped", Key);
 
       try
       {
-        SetErrorPosition();
+        Flow.Context.SetError(Point.Position, error.ToString());
 
         await WriteCheckpoint();
 
@@ -284,17 +280,9 @@ namespace Totem.Timeline.Runtime
       }
       catch(Exception writeError)
       {
-        Log.Error(writeError, "[timeline] Failed to write {Key} to timeline", Key);
+        Log.Error(writeError, "[timeline] Failed to write stoppage of {Key} to timeline", Key);
 
         CompleteTask(new AggregateException(error, writeError));
-      }
-    }
-
-    void SetErrorPosition()
-    {
-      if(Flow != null)
-      {
-        Flow.Context.ErrorPosition = Point.Position;
       }
     }
   }

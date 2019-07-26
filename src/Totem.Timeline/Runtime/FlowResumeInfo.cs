@@ -13,12 +13,14 @@ namespace Totem.Timeline.Runtime
 
     public class Stopped : FlowResumeInfo
     {
-      public Stopped(TimelinePosition position)
+      public Stopped(TimelinePosition position, string error)
       {
         Position = position;
+        Error = error;
       }
 
       public readonly TimelinePosition Position;
+      public readonly string Error;
     }
 
     public class Loaded : FlowResumeInfo

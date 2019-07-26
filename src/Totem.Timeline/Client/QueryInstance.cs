@@ -1,20 +1,20 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Totem.Timeline.EventStore.Client
+namespace Totem.Timeline.Client
 {
   /// <summary>
   /// A query notifying one or more connections when it changes
   /// </summary>
-  internal class QueryInstance
+  internal sealed class QueryInstance
   {
     readonly ConcurrentDictionary<Id, bool> _connectionIds = new ConcurrentDictionary<Id, bool>();
-    readonly QueryDb _db;
+    readonly QueryHost _host;
 
-    internal QueryInstance(FlowKey key, QueryDb db)
+    internal QueryInstance(FlowKey key, QueryHost host)
     {
       Key = key;
-      _db = db;
+      _host = host;
     }
 
     internal FlowKey Key { get; set; }
@@ -25,11 +25,11 @@ namespace Totem.Timeline.EventStore.Client
 
     internal void Unsubscribe(QueryConnection connection)
     {
-      _connectionIds.TryRemove(connection.Id, out var _);
+      _connectionIds.TryRemove(connection.Id, out _);
 
       if(_connectionIds.Count == 0)
       {
-        _db.RemoveInstance(this);
+        _host.RemoveInstance(this);
       }
     }
   }

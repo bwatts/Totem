@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using Totem.Runtime.Json;
 using Totem.Timeline.Area;
-using Totem.Timeline.EventStore.Client;
 
 namespace Totem.Timeline.EventStore
 {
@@ -57,14 +57,13 @@ namespace Totem.Timeline.EventStore
         metadata: context.ToJson(metadata));
     }
 
-    internal static IEnumerable<EventData> GetNewEventData(
+    internal static Many<EventData> GetNewEventData(
       this EventStoreContext context,
       TimelinePosition cause,
       FlowKey topic,
       Many<Event> newEvents) =>
 
-      from e in newEvents
-      select context.GetAreaEventData(
+      newEvents.ToMany(e => context.GetAreaEventData(
         e,
         cause,
         e.When,
@@ -73,7 +72,19 @@ namespace Totem.Timeline.EventStore
         Event.Traits.CommandId.Get(e),
         Event.Traits.UserId.Get(e),
         topic,
-        context.GetEventType(e).GetRoutes(e).ToMany());
+        context.GetEventType(e).GetRoutes(e).ToMany()));
+
+    internal static EventData GetScheduledEventData(this EventStoreContext context, TimelinePoint cause, DateTimeOffset now) =>
+      context.GetAreaEventData(
+        cause.Event,
+        cause.Position,
+        now,
+        null,
+        Id.FromGuid(),
+        cause.CommandId,
+        cause.UserId,
+        null,
+        cause.Type.GetRoutes(cause.Event).ToMany());
 
     internal static EventData GetCheckpointEventData(this EventStoreContext context, Flow flow) =>
       new EventData(
@@ -84,13 +95,14 @@ namespace Totem.Timeline.EventStore
         metadata: context.ToJson(new CheckpointMetadata
         {
           Position = flow.Context.CheckpointPosition,
-          ErrorPosition = flow.Context.ErrorPosition
+          ErrorPosition = flow.Context.ErrorPosition,
+          ErrorMessage = flow.Context.ErrorMessage
         }));
 
-    internal static EventData GetQueryChangedEventData(this EventStoreContext context, QueryChanged e) =>
+    internal static EventData GetClientEventData(this EventStoreContext context, Event e) =>
       new EventData(
         Guid.NewGuid(),
-        "timeline:QueryChanged",
+        $"timeline:{e.GetType().Name}",
         isJson: true,
         data: context.ToJson(e),
         metadata: null);
@@ -133,10 +145,32 @@ namespace Totem.Timeline.EventStore
     internal static AreaEventMetadata ReadAreaMetadata(this EventStoreContext context, ResolvedEvent e) =>
       context.Json.FromJsonUtf8<AreaEventMetadata>(e.Event.Metadata);
 
+    internal static CheckpointMetadata ReadCheckpointMetadata(this EventStoreContext context, ResolvedEvent e) =>
+      context.Json.FromJsonUtf8<CheckpointMetadata>(e.Event.Metadata);
+
     internal static EventType ReadEventType(this EventStoreContext context, ResolvedEvent e) =>
       context.Area.Events.Get(AreaTypeName.From(e.Event.EventType));
 
     static Event ReadEvent(this EventStoreContext context, ResolvedEvent e, EventType type) =>
       (Event) context.Json.FromJsonUtf8(e.Event.Data, type.DeclaredType);
+
+    //
+    // Appends
+    //
+
+    static Task<WriteResult> AppendEvent(this EventStoreContext context, string stream, EventData data) =>
+      context.Connection.AppendToStreamAsync(stream, ExpectedVersion.Any, data);
+
+    internal static Task<WriteResult> AppendToTimeline(this EventStoreContext context, IEnumerable<EventData> data) =>
+      context.Connection.AppendToStreamAsync(TimelineStreams.Timeline, ExpectedVersion.Any, data);
+
+    internal static Task<WriteResult> AppendToTimeline(this EventStoreContext context, EventData data) =>
+      context.AppendEvent(TimelineStreams.Timeline, data);
+
+    internal static Task<WriteResult> AppendToCheckpoint(this EventStoreContext context, Flow flow) =>
+      context.AppendEvent(flow.Context.Key.GetCheckpointStream(), context.GetCheckpointEventData(flow));
+
+    internal static Task<WriteResult> AppendToClient(this EventStoreContext context, Event e) =>
+      context.Connection.AppendToStreamAsync(TimelineStreams.Client, ExpectedVersion.Any, context.GetClientEventData(e));
   }
 }

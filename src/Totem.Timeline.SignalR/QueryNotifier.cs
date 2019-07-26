@@ -18,9 +18,12 @@ namespace Totem.Timeline.SignalR
     }
 
     public Task NotifyChanged(QueryETag etag, IEnumerable<Id> subscriberIds) =>
-      _hubContext
-      .Clients
-      .Clients(subscriberIds.ToMany(id => id.ToString()))
-      .SendAsync("onChanged", etag.ToString());
+      GetClients(subscriberIds).SendAsync("onChanged", etag.ToString());
+
+    public Task NotifyStopped(QueryETag etag, string error, IEnumerable<Id> subscriberIds) =>
+      GetClients(subscriberIds).SendAsync("onStopped", etag.ToString(), error);
+
+    IClientProxy GetClients(IEnumerable<Id> subscriberIds) =>
+      _hubContext.Clients.Clients(subscriberIds.ToMany(id => id.ToString()));
   }
 }

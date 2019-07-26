@@ -110,7 +110,7 @@ namespace Totem.Timeline.EventStore.DbOperations
         case EventReadStatus.NoStream:
           return await new ReadFlowWithoutCheckpointCommand(_context, key).Execute();
         case EventReadStatus.Success:
-          return await new ReadFlowWithCheckpointCommand(_context, key, result.Event?.Event).Execute();
+          return await new ReadFlowWithCheckpointCommand(_context, key, result.Event.Value).Execute();
         default:
           throw new Exception($"Unexpected result when reading {stream} to resume: {result.Status}");
       }

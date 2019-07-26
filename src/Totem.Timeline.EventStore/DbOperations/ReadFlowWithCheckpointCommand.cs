@@ -14,14 +14,14 @@ namespace Totem.Timeline.EventStore.DbOperations
     readonly Many<TimelinePoint> _points = new Many<TimelinePoint>();
     readonly EventStoreContext _context;
     readonly FlowKey _key;
-    readonly RecordedEvent _checkpoint;
+    readonly ResolvedEvent _checkpoint;
     readonly string _stream;
     Flow _flow;
     long _areaCheckpoint;
     long _streamCheckpoint;
     int _batchIndex;
 
-    internal ReadFlowWithCheckpointCommand(EventStoreContext context, FlowKey key, RecordedEvent checkpoint)
+    internal ReadFlowWithCheckpointCommand(EventStoreContext context, FlowKey key, ResolvedEvent checkpoint)
     {
       _context = context;
       _key = key;
@@ -32,11 +32,11 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     internal async Task<FlowResumeInfo> Execute()
     {
-      var metadata = ReadMetadata();
+      var metadata = _context.ReadCheckpointMetadata(_checkpoint);
 
       if(metadata.ErrorPosition.IsSome)
       {
-        return new FlowResumeInfo.Stopped(metadata.ErrorPosition);
+        return new FlowResumeInfo.Stopped(metadata.ErrorPosition, metadata.ErrorMessage);
       }
 
       BindFlow(metadata.Position);
@@ -45,9 +45,6 @@ namespace Totem.Timeline.EventStore.DbOperations
 
       return new FlowResumeInfo.Loaded(_flow, _points);
     }
-
-    CheckpointMetadata ReadMetadata() =>
-      _context.Json.FromJsonUtf8<CheckpointMetadata>(_checkpoint.Metadata);
 
     void BindFlow(TimelinePosition position)
     {
@@ -59,7 +56,7 @@ namespace Totem.Timeline.EventStore.DbOperations
     }
 
     Flow ReadData() =>
-      (Flow) _context.Json.FromJsonUtf8(_checkpoint.Data, _key.Type.DeclaredType);
+      (Flow) _context.Json.FromJsonUtf8(_checkpoint.Event.Data, _key.Type.DeclaredType);
 
     async Task ReadPoints()
     {

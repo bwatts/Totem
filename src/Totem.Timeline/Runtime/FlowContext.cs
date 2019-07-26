@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Totem.Timeline.Runtime;
@@ -31,9 +32,10 @@ namespace Totem.Timeline
 
     public readonly FlowKey Key;
     public TimelinePosition CheckpointPosition { get; private set; }
-    public TimelinePosition ErrorPosition { get; internal set; }
+    public TimelinePosition ErrorPosition { get; private set; }
+    public string ErrorMessage { get; private set; }
     public FlowCall Call { get; private set; }
-    public bool Done { get; internal set; }
+    public bool Done { get; private set; }
 
     public override string ToString() =>
       Key.ToString();
@@ -75,6 +77,15 @@ namespace Totem.Timeline
 
     void AdvanceCheckpoint() =>
       CheckpointPosition = Call.Point.Position;
+
+    internal void SetError(TimelinePosition position, string message)
+    {
+      ErrorPosition = position;
+      ErrorMessage = message;
+    }
+
+    internal void SetDone() =>
+      Done = true;
 
     internal async Task<User> ReadUser()
     {

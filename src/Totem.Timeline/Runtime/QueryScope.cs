@@ -20,18 +20,16 @@ namespace Totem.Timeline.Runtime
 
     protected override async Task ObservePoint()
     {
-      try
+      CallGiven();
+
+      if(_batchCount < _batchSize)
       {
-        CallGiven();
+        _batchCount++;
       }
-      catch
+      else
       {
         await CompleteBatch();
-
-        throw;
       }
-
-      await AdvanceBatch();
     }
 
     protected override Task OnPendingDequeue() =>
@@ -46,26 +44,9 @@ namespace Totem.Timeline.Runtime
       Flow.OnChanged();
     }
 
-    async Task AdvanceBatch()
-    {
-      if(_batchCount < _batchSize)
-      {
-        _batchCount++;
-      }
-      else
-      {
-        await CompleteBatch();
-      }
-    }
-
     async Task CompleteBatch()
     {
-      if(_batchCount == 0)
-      {
-        return;
-      }
-
-      try
+      if(_batchCount > 0)
       {
         await WriteCheckpoint();
 
@@ -75,12 +56,6 @@ namespace Totem.Timeline.Runtime
         }
 
         _batchCount = 0;
-      }
-      catch(Exception error)
-      {
-        Log.Error(error, "[timeline] Failed to write {Key} to timeline after batch of {BatchCount}", Key, _batchCount);
-
-        CompleteTask(error);
       }
     }
   }
