@@ -22,7 +22,19 @@ namespace Totem.Timeline.EventStore.Client
 
     protected override Task Open()
     {
-      Track(_context);
+      // This is a slight hack.
+      //
+      // Normally this class is mutually exclusive with TimelineDb, which runs the timeline.
+      // Both assume they are the top-level component, and connect to EventStore.
+      //
+      // However, the tests in Totem.Timeline.IntegrationTests need to host the timeline
+      // while also acting as a client. This class and TimelineDb are both present in that
+      // case, so do not attempt to connect to EventStore if TimelineDb already did.
+
+      if(_context.State.IsDisconnected)
+      {
+        Track(_context);
+      }
 
       return base.Open();
     }
@@ -56,9 +68,15 @@ namespace Totem.Timeline.EventStore.Client
       return new TimelinePosition(result.NextExpectedVersion);
     }
 
-    public async Task<QueryState> ReadQuery(QueryETag etag)
+    public Task<QueryState> ReadQuery(QueryETag etag) =>
+      ReadQueryCheckpoint(etag.Key, () => GetDefaultState(etag), e => GetCheckpointState(etag, e));
+
+    public Task<Query> ReadQueryContent(FlowKey key) =>
+      ReadQueryCheckpoint(key, () => GetDefaultContent(key), e => GetCheckpointContent(key, e));
+
+    async Task<TResult> ReadQueryCheckpoint<TResult>(FlowKey key, Func<TResult> getDefault, Func<ResolvedEvent, TResult> getCheckpoint)
     {
-      var stream = etag.Key.GetCheckpointStream();
+      var stream = key.GetCheckpointStream();
 
       var result = await _context.Connection.ReadEventAsync(stream, StreamPosition.End, resolveLinkTos: false);
 
@@ -66,9 +84,9 @@ namespace Totem.Timeline.EventStore.Client
       {
         case EventReadStatus.NoStream:
         case EventReadStatus.NotFound:
-          return GetDefaultState(etag);
+          return getDefault();
         case EventReadStatus.Success:
-          return GetCheckpointState(etag, result.Event.Value);
+          return getCheckpoint(result.Event.Value);
         default:
           throw new Exception($"Unexpected result when reading {stream}: {result.Status}");
       }
@@ -95,6 +113,21 @@ namespace Totem.Timeline.EventStore.Client
       return checkpoint == etag.Checkpoint
         ? new QueryState(etag)
         : new QueryState(etag.WithCheckpoint(checkpoint), new MemoryStream(e.Event.Data));
+    }
+
+    Query GetDefaultContent(FlowKey key) =>
+      (Query) key.Type.New();
+
+    Query GetCheckpointContent(FlowKey key, ResolvedEvent e)
+    {
+      var metadata = _context.ReadCheckpointMetadata(e);
+
+      if(metadata.ErrorPosition.IsSome)
+      {
+        throw new Exception($"Query is stopped at {metadata.ErrorPosition} with the following error: {metadata.ErrorMessage}");
+      }
+
+      return (Query) _context.Json.FromJsonUtf8(e.Event.Data, key.Type.DeclaredType);
     }
   }
 }

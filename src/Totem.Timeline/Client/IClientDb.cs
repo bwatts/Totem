@@ -14,5 +14,7 @@ namespace Totem.Timeline.Client
     Task<TimelinePosition> WriteEvent(Event e);
 
     Task<QueryState> ReadQuery(QueryETag etag);
+
+    Task<Query> ReadQueryContent(FlowKey key);
   }
 }

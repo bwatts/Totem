@@ -6,7 +6,7 @@ namespace Totem.Timeline.Client
   /// <summary>
   /// Hosts query subscriptions as a service in the .NET runtime
   /// </summary>
-  internal sealed class QueryHost : IQueryHost
+  public sealed class QueryHost : IQueryHost
   {
     readonly ConcurrentDictionary<Id, QueryConnection> _connectionsById = new ConcurrentDictionary<Id, QueryConnection>();
     readonly ConcurrentDictionary<FlowKey, QueryInstance> _instancesByKey = new ConcurrentDictionary<FlowKey, QueryInstance>();

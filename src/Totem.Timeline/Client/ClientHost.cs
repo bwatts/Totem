@@ -8,7 +8,7 @@ namespace Totem.Timeline.Client
   /// <summary>
   /// Hosts a timeline client as a service in the .NET runtime
   /// </summary>
-  internal sealed class ClientHost : ConnectedService, IClientObserver
+  public class ClientHost : ConnectedService, IClientObserver
   {
     readonly IClientDb _db;
     readonly CommandHost _commands;
@@ -23,9 +23,11 @@ namespace Totem.Timeline.Client
 
     protected override async Task Open()
     {
+      Track(_db);
+
+      // Tracking doesn't connect immediately - do so before subscribing
       await _db.Connect(this);
 
-      Track(_db);
       Track(await _db.Subscribe(this));
     }
 

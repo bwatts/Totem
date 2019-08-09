@@ -59,7 +59,7 @@ namespace Totem.Timeline.EventStore
 
       var result = await _context.AppendToTimeline(data);
 
-      return new TimelinePosition(result.NextExpectedVersion);
+      return new TimelinePosition(result.NextExpectedVersion - newEvents.Count + 1);
     }
 
     public Task WriteScheduledEvent(TimelinePoint cause)

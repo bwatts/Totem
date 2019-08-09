@@ -25,12 +25,12 @@ namespace Totem.Timeline.Runtime
 
     protected override async Task Open()
     {
-      // Tracking the database doesn't connect it immediately - connect before resuming the subscription
-
-      await _db.Connect(this);
-
       Track(_db);
       Track(_flows);
+
+      // Tracking doesn't connect immediately - do so before resuming
+      await _db.Connect(this);
+
       Track(await ResumeSubscription());
     }
 
