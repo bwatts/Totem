@@ -42,17 +42,28 @@ namespace Totem.App.Tests
       await host.Append(e);
     }
 
-    protected Task<TEvent> Expect<TEvent>(ExpectTimeout timeout = null) where TEvent : Event =>
-      GetOrStartAndExpect<TEvent>(timeout, false);
-
-    protected Task<TEvent> ExpectScheduled<TEvent>(ExpectTimeout timeout = null) where TEvent : Event =>
-      GetOrStartAndExpect<TEvent>(timeout, true);
-
-    async Task<TEvent> GetOrStartAndExpect<TEvent>(ExpectTimeout timeout, bool scheduled) where TEvent : Event
+    protected async Task<TEvent> Expect<TEvent>(ExpectTimeout timeout = null) where TEvent : Event
     {
       var host = await GetOrStartHost();
 
-      return await host.Expect<TEvent>(timeout ?? ExpectTimeout.Default, scheduled);
+      return await host.Expect<TEvent>(timeout ?? ExpectTimeout.Default, scheduled: false);
+    }
+
+    protected async Task<TEvent> ExpectScheduled<TEvent>(ExpectTimeout timeout = null) where TEvent : Event
+    {
+      var host = await GetOrStartHost();
+
+      return await host.Expect<TEvent>(timeout ?? ExpectTimeout.Default, scheduled: true);
+    }
+
+    protected Task ExpectDone(ExpectTimeout timeout = null) =>
+      ExpectDone(Id.Unassigned, timeout);
+
+    protected async Task ExpectDone(Id instanceId, ExpectTimeout timeout = null)
+    {
+      var host = await GetOrStartHost();
+
+      await host.ExpectDone(instanceId, timeout ?? ExpectTimeout.Default);
     }
   }
 }

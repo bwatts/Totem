@@ -15,8 +15,8 @@ namespace Totem.Timeline.IntegrationTests.Hosting
   internal sealed class IntegrationApp : Connection, IClientObserver, IDisposable
   {
     readonly ConcurrentDictionary<Id, bool> _appendedEventIds = new ConcurrentDictionary<Id, bool>();
+    readonly ConcurrentDictionary<FlowKey, QueryInstance> _queriesByKey = new ConcurrentDictionary<FlowKey, QueryInstance>();
     readonly ExpectQueue _expectQueue = new ExpectQueue();
-    readonly QueryChangeWait _queryChangeWait;
     readonly AreaMap _area;
     readonly EventStoreProcess _eventStoreProcess;
     readonly IClientDb _clientDb;
@@ -26,8 +26,6 @@ namespace Totem.Timeline.IntegrationTests.Hosting
       _area = area;
       _eventStoreProcess = eventStoreProcess;
       _clientDb = clientDb;
-
-      _queryChangeWait = new QueryChangeWait(this, area);
     }
 
     protected override async Task Open()
@@ -51,7 +49,7 @@ namespace Totem.Timeline.IntegrationTests.Hosting
 
       if(_eventStoreProcess.State.IsConnected)
       {
-        _eventStoreProcess.Disconnect().GetAwaiter().GetResult();
+        Task.Run(_eventStoreProcess.Disconnect).GetAwaiter().GetResult();
       }
     }
 
@@ -64,21 +62,37 @@ namespace Totem.Timeline.IntegrationTests.Hosting
       Event.Traits.EventId.Set(e, eventId);
       Event.Traits.CommandId.Set(e, Id.FromGuid());
 
-      return await _clientDb.WriteEvent(e);
+      var position = await _clientDb.WriteEvent(e);
+
+      // This is slightly hacky, as the client db calculates the routes too, but doesn't return them.
+
+      var type = _area.Events[e.GetType()];
+
+      foreach(var route in type.GetRoutes(e))
+      {
+        if(route.Type.IsQuery)
+        {
+          GetQueryInstance(route).OnAppended(position);
+        }
+      }
+
+      return position;
     }
 
     internal Task<TEvent> Expect<TEvent>(ExpectTimeout timeout, bool scheduled) where TEvent : Event =>
       _expectQueue.Dequeue<TEvent>(timeout, scheduled);
 
-    internal Task<TQuery> AppendAndGet<TQuery>(Id queryId, Event e, ExpectTimeout changeTimeout) where TQuery : Query =>
-      _queryChangeWait.AppendAndGet<TQuery>(queryId, e, changeTimeout);
-
-    internal async Task<TQuery> Get<TQuery>(Id queryId) where TQuery : Query
+    internal async Task<TQuery> GetQuery<TQuery>(Id instanceId, ExpectTimeout timeout) where TQuery : Query
     {
-      var key = _area.Queries.Get<TQuery>().CreateKey(queryId);
+      var key = _area.Queries.Get<TQuery>().CreateKey(instanceId);
+
+      await GetQueryInstance(key).WaitForLatest(timeout);
 
       return (TQuery) await _clientDb.ReadQueryContent(key);
     }
+
+    QueryInstance GetQueryInstance(FlowKey key) =>
+      _queriesByKey.GetOrAdd(key, _ => new QueryInstance());
 
     //
     // IClientObserver
@@ -96,10 +110,17 @@ namespace Totem.Timeline.IntegrationTests.Hosting
 
     Task IClientObserver.OnDropped(string reason, Exception error)
     {
-      var dropped = new Exception($"Subscription dropped with reason {reason}", error);
+      if(error != null)
+      {
+        var dropped = new Exception($"Subscription dropped with reason {reason}", error);
 
-      _expectQueue.OnError(dropped);
-      _queryChangeWait.OnDropped(dropped);
+        _expectQueue.OnError(dropped);
+
+        foreach(var query in _queriesByKey.Values)
+        {
+          query.OnError(dropped);
+        }
+      }
 
       return Task.CompletedTask;
     }
@@ -115,14 +136,14 @@ namespace Totem.Timeline.IntegrationTests.Hosting
 
     Task IClientObserver.OnQueryChanged(QueryETag query)
     {
-      _queryChangeWait.OnChanged(query);
+      GetQueryInstance(query.Key).OnChanged(query.Checkpoint);
 
       return Task.CompletedTask;
     }
 
     Task IClientObserver.OnQueryStopped(QueryETag query, string error)
     {
-      _queryChangeWait.OnStopped(query, new Exception($"Query {query} stopped with the following error: {error}"));
+      GetQueryInstance(query.Key).OnError(new Exception($"Query {query} stopped with the following error: {error}"));
 
       return Task.CompletedTask;
     }

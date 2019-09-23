@@ -1,6 +1,6 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Totem.Runtime;
 using Totem.Timeline.Runtime;
 
 namespace Totem.Timeline
@@ -35,7 +35,7 @@ namespace Totem.Timeline
     public TimelinePosition ErrorPosition { get; private set; }
     public string ErrorMessage { get; private set; }
     public FlowCall Call { get; private set; }
-    public bool Done { get; private set; }
+    public bool IsDone { get; private set; }
 
     public override string ToString() =>
       Key.ToString();
@@ -85,7 +85,7 @@ namespace Totem.Timeline
     }
 
     internal void SetDone() =>
-      Done = true;
+      IsDone = true;
 
     internal async Task<User> ReadUser()
     {

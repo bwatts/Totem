@@ -35,10 +35,7 @@ namespace Totem.Timeline.IntegrationTests.Hosting
     internal Task<TEvent> Expect<TEvent>(ExpectTimeout timeout, bool scheduled) where TEvent : Event =>
       _app.Expect<TEvent>(timeout, scheduled);
 
-    internal Task<TQuery> AppendAndGet<TQuery>(Id queryId, Event e, ExpectTimeout timeout) where TQuery : Query =>
-      _app.AppendAndGet<TQuery>(queryId, e, timeout);
-
-    internal Task<TQuery> Get<TQuery>(Id queryId) where TQuery : Query =>
-      _app.Get<TQuery>(queryId);
+    internal Task<TQuery> GetQuery<TQuery>(Id instanceId, ExpectTimeout timeout) where TQuery : Query =>
+      _app.GetQuery<TQuery>(instanceId, timeout);
   }
 }

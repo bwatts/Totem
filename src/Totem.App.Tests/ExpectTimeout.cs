@@ -24,6 +24,7 @@ namespace Totem.App.Tests
 
     public readonly TimeSpan TimeSpan;
 
+    public override string ToString() => TimeSpan.ToString();
     public TimedWait ToTimedWait() => new TimedWait(TimeSpan);
 
     public const int DefaultMilliseconds = 1000;

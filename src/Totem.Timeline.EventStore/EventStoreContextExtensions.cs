@@ -29,6 +29,7 @@ namespace Totem.Timeline.EventStore
       TimelinePosition cause,
       DateTimeOffset when,
       DateTimeOffset? whenOccurs,
+      bool fromSchedule,
       Id eventId,
       Id commandId,
       Id userId,
@@ -42,6 +43,7 @@ namespace Totem.Timeline.EventStore
         Cause = cause,
         When = when,
         WhenOccurs = whenOccurs,
+        FromSchedule = fromSchedule,
         CommandId = commandId,
         UserId = userId,
         Topic = topic
@@ -68,6 +70,7 @@ namespace Totem.Timeline.EventStore
         cause,
         e.When,
         Event.Traits.WhenOccurs.Get(e),
+        false,
         Event.Traits.EventId.Get(e),
         Event.Traits.CommandId.Get(e),
         Event.Traits.UserId.Get(e),
@@ -80,6 +83,7 @@ namespace Totem.Timeline.EventStore
         cause.Position,
         now,
         null,
+        true,
         Id.FromGuid(),
         cause.CommandId,
         cause.UserId,
@@ -96,7 +100,8 @@ namespace Totem.Timeline.EventStore
         {
           Position = flow.Context.CheckpointPosition,
           ErrorPosition = flow.Context.ErrorPosition,
-          ErrorMessage = flow.Context.ErrorMessage
+          ErrorMessage = flow.Context.ErrorMessage,
+          IsDone = flow.Context.IsDone
         }));
 
     internal static EventData GetClientEventData(this EventStoreContext context, Event e) =>
@@ -172,5 +177,12 @@ namespace Totem.Timeline.EventStore
 
     internal static Task<WriteResult> AppendToClient(this EventStoreContext context, Event e) =>
       context.Connection.AppendToStreamAsync(TimelineStreams.Client, ExpectedVersion.Any, context.GetClientEventData(e));
+
+    //
+    // Metadata
+    //
+
+    internal static Task<WriteResult> SetCheckpointStreamMetadata(this EventStoreContext context, Flow flow, StreamMetadata value) =>
+      context.Connection.SetStreamMetadataAsync(flow.Context.Key.GetCheckpointStream(), ExpectedVersion.Any, value);
   }
 }

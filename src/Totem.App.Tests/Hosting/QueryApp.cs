@@ -1,75 +1,54 @@
-using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Totem.Threading;
 using Totem.Timeline;
+using Totem.Timeline.Area;
 
 namespace Totem.App.Tests.Hosting
 {
   /// <summary>
-  /// An application applying a test to a query type
+  /// An application applying a test to instances of a query type
   /// </summary>
   internal sealed class QueryApp
   {
+    readonly ConcurrentDictionary<Id, QueryInstance> _instancesById = new ConcurrentDictionary<Id, QueryInstance>();
     readonly QueryAppTimelineDb _timelineDb;
-    Id _changeWaitId;
-    TimelinePosition _changeWaitPosition;
-    TimedWait _changeWait;
-    Query _changedQuery;
+    readonly QueryType _queryType;
 
-    public QueryApp(QueryAppTimelineDb timelineDb)
+    public QueryApp(QueryAppTimelineDb timelineDb, QueryType queryType)
     {
       _timelineDb = timelineDb;
+      _queryType = queryType;
 
       timelineDb.SubscribeApp(this);
     }
 
-    internal Task Append(Event e) =>
-      _timelineDb.WriteFromApp(e);
-
-    internal async Task<TQuery> AppendAndGet<TQuery>(Id queryId, Event e, ExpectTimeout changeTimeout) where TQuery : Query
+    internal async Task Append(Event e)
     {
-      _changeWaitId = queryId;
-      _changeWaitPosition = await _timelineDb.WriteFromApp(e);
-      
-      try
+      var point = await _timelineDb.WriteFromApp(e);
+
+      foreach(var route in point.Routes)
       {
-        // The timeline might call OnCheckpoint before _changeWaitPosition gets assigned, in which case we store
-        // the instance and do an eager check here before waiting.
-
-        if(_changedQuery == null || _changedQuery.Context.CheckpointPosition != _changeWaitPosition)
+        if(route.Type == _queryType)
         {
-          _changeWait = changeTimeout.ToTimedWait();
-
-          await _changeWait.Task;
+          GetInstance(route.Id).OnAppended(point);
         }
-
-        if(_changedQuery.Context.ErrorPosition.IsSome)
-        {
-          throw new Exception($"Query {_changedQuery} stopped with the following error: {_changedQuery.Context.ErrorMessage}");
-        }
-
-        return (TQuery) _changedQuery;
-      }
-      finally
-      {
-        _changeWaitId = Id.Unassigned;
-        _changeWaitPosition = TimelinePosition.None;
-        _changeWait = null;
-        _changedQuery = null;
       }
     }
 
-    internal void OnCheckpoint(Query query)
-    {
-      if(query.Context.Key.Id == _changeWaitId)
-      {
-        _changedQuery = query;
+    internal Task<TQuery> GetQuery<TQuery>(Id instanceId, ExpectTimeout timeout) where TQuery : Query =>
+      GetInstance(instanceId).Get<TQuery>(timeout);
 
-        if(_changeWait != null && query.Context.CheckpointPosition == _changeWaitPosition)
-        {
-          _changeWait.OnOccurred();
-        }
-      }
+    internal Task ExpectDone(Id instanceId, ExpectTimeout timeout) =>
+      GetInstance(instanceId).ExpectDone(timeout);
+
+    internal void OnCheckpoint(Query query) =>
+      GetInstance(query.Id).OnCheckpoint(query);
+
+    QueryInstance GetInstance(Id id)
+    {
+      _queryType.ExpectIdMatchesCardinality(id);
+
+      return _instancesById.GetOrAdd(id, _ => new QueryInstance(_queryType.CreateKey(id)));
     }
   }
 }

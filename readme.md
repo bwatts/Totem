@@ -68,6 +68,7 @@ This is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) containing the Tote
 | [Totem.Timeline.Mvc](https://www.nuget.org/packages/Totem.Timeline.Mvc) | An [ASP.NET Core MVC](https://docs.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-2.2) server connected to the timeline
 | [Totem.Timeline.SignalR](https://www.nuget.org/packages/Totem.Timeline.SignalR) | An [ASP.NET Core SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-2.2) server connected to the timeline
 | [Totem.App.Service](https://www.nuget.org/packages/Totem.App.Service) | A base configuration for service applications, including the timeline, [EventStore](https://eventstore.org/), and [Serilog](https://serilog.net/)
+| [Totem.App.Tests](https://www.nuget.org/packages/Totem.App.Tests) | A base configuration for testing applications, including an in-memory timeline and support for any test framework
 | [Totem.App.Web](https://www.nuget.org/packages/Totem.App.Web) | A base configuration for web applications, including the timeline, [EventStore](https://eventstore.org/), [Serilog](https://serilog.net/), and [ASP.NET Core MVC](https://docs.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-2.2) + [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-2.2)
 
 *NOTE: Versions are prerelease until some internal systems are vetted in production for a bit longer.*
@@ -127,7 +128,7 @@ using Totem.Timeline;
 
 namespace Acme.ProductImport
 {
-  public class StartImport : Command
+  public class StartImport : Event
   {
     public StartImport(string reason)
     {

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Totem.Timeline.IntegrationTests.Hosting;
 using Xunit;
 
 namespace Totem.Timeline.IntegrationTests
@@ -6,7 +7,7 @@ namespace Totem.Timeline.IntegrationTests
   /// <summary>
   /// Tests that routing to a multi-instance flow creates all specified instances
   /// </summary>
-  public class RoutingToLatentInstance : TestArea
+  public class RoutingToLatentInstance : IntegrationTest
   {
     [Fact]
     public async Task OnlyCreatesForRouteFirst()

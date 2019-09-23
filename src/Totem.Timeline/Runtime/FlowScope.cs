@@ -13,7 +13,7 @@ namespace Totem.Timeline.Runtime
   /// <typeparam name="T">The type of <see cref="Totem.Timeline.Flow"/> in the scope</typeparam>
   public abstract class FlowScope<T> : Connection, IFlowScope where T : Flow
   {
-    readonly TaskSource<FlowResult> _taskSource = new TaskSource<FlowResult>();
+    readonly TaskSource<FlowResult> _lifetime = new TaskSource<FlowResult>();
     readonly Queue<TimelinePoint> _queue = new Queue<TimelinePoint>();
     Queue<TimelinePoint> _resumeQueue = new Queue<TimelinePoint>();
     TimelinePosition _resumeCheckpoint;
@@ -26,10 +26,11 @@ namespace Totem.Timeline.Runtime
     }
 
     public FlowKey Key { get; }
-    public Task<FlowResult> Task => _taskSource.Task;
-
     protected ITimelineDb Db { get; }
-    protected bool Running => !Task.IsCompleted;
+
+    public Task<FlowResult> LifetimeTask => _lifetime.Task;
+    protected bool Running => !LifetimeTask.IsCompleted;
+    protected bool HasPointEnqueued { get; private set; }
 
     protected T Flow { get; private set; }
     protected TimelinePoint Point { get; private set; }
@@ -44,13 +45,13 @@ namespace Totem.Timeline.Runtime
 
     protected override Task Close()
     {
-      _taskSource.TrySetCanceled();
+      _lifetime.TrySetCanceled();
 
       return base.Close();
     }
 
     void ObserveQueue() =>
-      System.Threading.Tasks.Task.Run(async () =>
+      Task.Run(async () =>
       {
         await Resume();
 
@@ -61,10 +62,10 @@ namespace Totem.Timeline.Runtime
       });
 
     protected void CompleteTask(FlowResult result) =>
-      _taskSource.SetResult(result);
+      _lifetime.SetResult(result);
 
     protected void CompleteTask(Exception error) =>
-      _taskSource.SetException(error);
+      _lifetime.SetException(error);
 
     protected Task WriteCheckpoint() =>
       Db.WriteCheckpoint(Flow, Point);
@@ -133,6 +134,8 @@ namespace Totem.Timeline.Runtime
         else
         {
           _queue.Enqueue(point);
+
+          HasPointEnqueued = true;
         }
       }
     }
@@ -172,6 +175,8 @@ namespace Totem.Timeline.Runtime
       {
         if(TryDequeueResumePoint(out var nextPoint) || TryDequeuePoint(out nextPoint))
         {
+          SetHasPointsEnqueued();
+
           return nextPoint;
         }
 
@@ -179,8 +184,6 @@ namespace Totem.Timeline.Runtime
 
         _pendingDequeue = pendingDequeue;
       }
-
-      await OnPendingDequeue();
 
       return await pendingDequeue.Task;
     }
@@ -224,6 +227,9 @@ namespace Totem.Timeline.Runtime
       return nextPoint != null;
     }
 
+    void SetHasPointsEnqueued() =>
+      HasPointEnqueued = (_resumeQueue?.Count ?? 0) + _queue.Count > 0;
+
     bool IsAfterCheckpoint(TimelinePosition position) =>
       (_resumeCheckpoint.IsNone || position > _resumeCheckpoint)
       && (Flow == null || position > Flow.Context.CheckpointPosition);
@@ -255,14 +261,11 @@ namespace Totem.Timeline.Runtime
 
     void CheckDone()
     {
-      if(Flow.Context.Done)
+      if(Flow.Context.IsDone)
       {
         CompleteTask(FlowResult.Done);
       }
     }
-
-    protected virtual Task OnPendingDequeue() =>
-      System.Threading.Tasks.Task.CompletedTask;
 
     protected abstract Task ObservePoint();
 

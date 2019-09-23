@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Totem.Runtime;
 using Totem.Runtime.Json;
@@ -15,14 +14,16 @@ namespace Totem.App.Tests.Hosting
   {
     readonly AreaMap _area;
     readonly IJsonFormat _json;
+    readonly TopicType _topicType;
     TopicApp _app;
     ITimelineObserver _observer;
     TimelinePosition _currentPosition;
 
-    public TopicAppTimelineDb(AreaMap area, IJsonFormat json)
+    public TopicAppTimelineDb(AreaMap area, IJsonFormat json, TopicType topicType)
     {
       _area = area;
       _json = json;
+      _topicType = topicType;
     }
 
     internal void SubscribeApp(TopicApp app) =>
@@ -58,7 +59,7 @@ namespace Totem.App.Tests.Hosting
           () => copy));
       }
 
-      return new TimelinePosition(_currentPosition.ToInt64() - newEvents.Count + 1);
+      return new TimelinePosition(_currentPosition.ToInt64() - newEvents.Count);
     }
 
     public Task WriteScheduledEvent(TimelinePoint cause)
@@ -84,19 +85,18 @@ namespace Totem.App.Tests.Hosting
 
     public Task WriteCheckpoint(Flow flow, TimelinePoint point)
     {
-      if(flow.Context.ErrorPosition.IsSome)
-      {
-        _app.OnError(new Exception(flow.Context.ErrorMessage));
-      }
+      _app.OnCheckpoint((Topic) flow);
 
       return Task.CompletedTask;
     }
 
-    internal Task WriteFromApp(Event e)
+    internal async Task<TimelinePoint> WriteFromApp(Event e)
     {
       var (copy, type) = CopyEvent(e);
 
-      return OnNext(new TimelinePoint(
+      _topicType.ExpectObserves(type);
+
+      var point = new TimelinePoint(
         AdvancePosition(),
         TimelinePosition.None,
         type,
@@ -107,7 +107,11 @@ namespace Totem.App.Tests.Hosting
         Event.Traits.UserId.Get(copy),
         null,
         type.GetRoutes(copy, Event.IsScheduled(copy)).ToMany(),
-        () => copy));
+        () => copy);
+
+      await OnNext(point);
+
+      return point;
     }
 
     //

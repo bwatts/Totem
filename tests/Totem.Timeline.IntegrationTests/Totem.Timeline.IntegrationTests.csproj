@@ -13,14 +13,16 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Totem.App.Tests\Totem.App.Tests.csproj" />
     <ProjectReference Include="..\..\src\Totem.Runtime\Totem.Runtime.csproj" />
     <ProjectReference Include="..\..\src\Totem.Timeline.EventStore\Totem.Timeline.EventStore.csproj" />
     <ProjectReference Include="..\..\src\Totem.Timeline\Totem.Timeline.csproj" />
     <ProjectReference Include="..\..\src\Totem\Totem.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Content Include="appsettings.json">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

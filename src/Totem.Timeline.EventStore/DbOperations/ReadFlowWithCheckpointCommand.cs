@@ -34,25 +34,30 @@ namespace Totem.Timeline.EventStore.DbOperations
     {
       var metadata = _context.ReadCheckpointMetadata(_checkpoint);
 
+      if(metadata.IsDone)
+      {
+        return new FlowResumeInfo.NotFound();
+      }
+
       if(metadata.ErrorPosition.IsSome)
       {
         return new FlowResumeInfo.Stopped(metadata.ErrorPosition, metadata.ErrorMessage);
       }
 
-      BindFlow(metadata.Position);
-
-      await ReadPoints();
-
-      return new FlowResumeInfo.Loaded(_flow, _points);
+      return await LoadCheckpoint(metadata.Position);
     }
 
-    void BindFlow(TimelinePosition position)
+    async Task<FlowResumeInfo> LoadCheckpoint(TimelinePosition position)
     {
       _flow = ReadData();
 
       FlowContext.Bind(_flow, _key, position, TimelinePosition.None);
 
       _areaCheckpoint = position.ToInt64();
+
+      await ReadPoints();
+
+      return new FlowResumeInfo.Loaded(_flow, _points);
     }
 
     Flow ReadData() =>

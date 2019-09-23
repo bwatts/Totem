@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Totem.Runtime.Hosting;
 using Totem.Timeline;
+using Totem.Timeline.Area;
 using Totem.Timeline.Hosting;
 using Totem.Timeline.Runtime;
 
@@ -24,13 +25,12 @@ namespace Totem.App.Tests.Hosting
       .AddTotemRuntime()
       .AddTimeline()
       .ConfigureArea(GetAreaTypes())
+      .AddSingleton(p => p.GetService<AreaMap>().Queries[FlowType])
+      .AddSingleton(this)
       .AddSingleton<QueryApp>()
       .AddSingleton<QueryAppTimelineDb>()
       .AddSingleton<ITimelineDb>(p => p.GetService<QueryAppTimelineDb>())
-      .AddSingleton<IHostLifetime>(p => new QueryAppLifetime(
-        this,
-        p.GetService<QueryApp>(),
-        p.GetService<IApplicationLifetime>()));
+      .AddSingleton<IHostLifetime, QueryAppLifetime>();
 
     internal void SetApp(QueryApp app) =>
       _app = app;
@@ -38,7 +38,10 @@ namespace Totem.App.Tests.Hosting
     internal Task Append(Event e) =>
       _app.Append(e);
 
-    internal Task<TQuery> AppendAndGet<TQuery>(Id queryId, Event e, ExpectTimeout changeTimeout) where TQuery : Query =>
-      _app.AppendAndGet<TQuery>(queryId, e, changeTimeout ?? ExpectTimeout.Default);
+    internal Task<TQuery> GetQuery<TQuery>(Id instanceId, ExpectTimeout timeout) where TQuery : Query =>
+      _app.GetQuery<TQuery>(instanceId, timeout);
+
+    internal Task ExpectDone(Id instanceId, ExpectTimeout timeout) =>
+      _app.ExpectDone(instanceId, timeout);
   }
 }

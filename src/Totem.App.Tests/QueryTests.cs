@@ -20,14 +20,24 @@ namespace Totem.App.Tests
       await host.Append(e);
     }
 
-    protected Task<TQuery> AppendAndGet(Event e, ExpectTimeout timeout = null) =>
-      AppendAndGet(Id.Unassigned, e, timeout);
+    protected Task<TQuery> GetQuery(ExpectTimeout timeout = null) =>
+      GetQuery(Id.Unassigned, timeout);
 
-    protected async Task<TQuery> AppendAndGet(Id queryId, Event e, ExpectTimeout changeTimeout = null)
+    protected async Task<TQuery> GetQuery(Id instanceId, ExpectTimeout timeout = null)
     {
       var host = await GetOrStartHost();
 
-      return await host.AppendAndGet<TQuery>(queryId, e, changeTimeout ?? ExpectTimeout.Default);
+      return await host.GetQuery<TQuery>(instanceId, timeout ?? ExpectTimeout.Default);
+    }
+
+    protected Task ExpectDone(ExpectTimeout timeout = null) =>
+      ExpectDone(Id.Unassigned, timeout);
+
+    protected async Task ExpectDone(Id instanceId, ExpectTimeout timeout = null)
+    {
+      var host = await GetOrStartHost();
+
+      await host.ExpectDone(instanceId, timeout ?? ExpectTimeout.Default);
     }
   }
 }

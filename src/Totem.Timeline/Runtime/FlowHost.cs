@@ -98,7 +98,7 @@ namespace Totem.Timeline.Runtime
     }
 
     void RemoveWhenDone(IFlowScope flow) =>
-      flow.Task.ContinueWith(task => 
+      flow.LifetimeTask.ContinueWith(task => 
       {
         _flowsByKey.Remove(flow.Key);
 

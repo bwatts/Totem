@@ -41,37 +41,28 @@ namespace Totem.Timeline.IntegrationTests.Hosting
       return await host.Append(e);
     }
 
-    protected Task<TEvent> Expect<TEvent>(ExpectTimeout timeout = null) where TEvent : Event =>
-      GetOrStartAndExpect<TEvent>(timeout, false);
-
-    protected Task<TEvent> ExpectScheduled<TEvent>(ExpectTimeout timeout = null) where TEvent : Event =>
-      GetOrStartAndExpect<TEvent>(timeout, true);
-
-    async Task<TEvent> GetOrStartAndExpect<TEvent>(ExpectTimeout timeout, bool scheduled) where TEvent : Event
+    protected async Task<TEvent> Expect<TEvent>(ExpectTimeout timeout = null) where TEvent : Event
     {
       var host = await GetOrStartHost();
 
-      return await host.Expect<TEvent>(timeout ?? ExpectTimeout.Default, scheduled);
+      return await host.Expect<TEvent>(timeout ?? ExpectTimeout.Default, scheduled: false);
     }
 
-    protected Task<TQuery> AppendAndGet<TQuery>(Event e, ExpectTimeout changedTimeout = null) where TQuery : Query =>
-      AppendAndGet<TQuery>(Id.Unassigned, e, changedTimeout ?? ExpectTimeout.Default);
-
-    protected async Task<TQuery> AppendAndGet<TQuery>(Id queryId, Event e, ExpectTimeout changedTimeout = null) where TQuery : Query
+    protected async Task<TEvent> ExpectScheduled<TEvent>(ExpectTimeout timeout = null) where TEvent : Event
     {
       var host = await GetOrStartHost();
 
-      return await host.AppendAndGet<TQuery>(queryId, e, changedTimeout ?? ExpectTimeout.Default);
+      return await host.Expect<TEvent>(timeout ?? ExpectTimeout.Default, scheduled: true);
     }
 
-    protected Task<TQuery> Get<TQuery>() where TQuery : Query =>
-      Get<TQuery>(Id.Unassigned);
+    protected Task<TQuery> GetQuery<TQuery>(ExpectTimeout timeout = null) where TQuery : Query =>
+      GetQuery<TQuery>(Id.Unassigned, timeout);
 
-    protected async Task<TQuery> Get<TQuery>(Id queryId) where TQuery : Query
+    protected async Task<TQuery> GetQuery<TQuery>(Id instanceId, ExpectTimeout timeout = null) where TQuery : Query
     {
       var host = await GetOrStartHost();
 
-      return await host.Get<TQuery>(queryId);
+      return await host.GetQuery<TQuery>(instanceId, timeout ?? ExpectTimeout.Default);
     }
   }
 }

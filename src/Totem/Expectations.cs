@@ -17,14 +17,6 @@ namespace Totem
       Totem.Expect.Not(target);
 
     [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-    protected static void ExpectTrue(bool result, Text issue = null) =>
-      Totem.Expect.True(result, issue);
-
-    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
-    protected static void ExpectFalse(bool result, Text issue = null) =>
-      Totem.Expect.False(result, issue);
-
-    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
     protected static void ExpectThrows(Func<object> func, Text issue = null) =>
       Totem.Expect.Throws(func, issue);
 

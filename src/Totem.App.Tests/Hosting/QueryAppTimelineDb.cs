@@ -13,13 +13,15 @@ namespace Totem.App.Tests.Hosting
   internal sealed class QueryAppTimelineDb : Connection, ITimelineDb
   {
     readonly AreaMap _area;
+    readonly QueryType _queryType;
     QueryApp _app;
     ITimelineObserver _observer;
     TimelinePosition _currentPosition;
 
-    public QueryAppTimelineDb(AreaMap area)
+    public QueryAppTimelineDb(AreaMap area, QueryType queryType)
     {
       _area = area;
+      _queryType = queryType;
     }
 
     internal void SubscribeApp(QueryApp app) =>
@@ -48,26 +50,30 @@ namespace Totem.App.Tests.Hosting
       return Task.CompletedTask;
     }
 
-    internal async Task<TimelinePosition> WriteFromApp(Event e)
+    internal async Task<TimelinePoint> WriteFromApp(Event e)
     {
-      var type = _area.Events[e.GetType()];
+      var eventType = _area.Events[e.GetType()];
+
+      _queryType.ExpectObserves(eventType);
 
       _currentPosition = _currentPosition.Next();
 
-      await _observer.OnNext(new TimelinePoint(
+      var point = new TimelinePoint(
         _currentPosition,
         TimelinePosition.None,
-        type,
+        eventType,
         e.When,
         Event.Traits.WhenOccurs.Get(e),
         Event.Traits.EventId.Get(e),
         Event.Traits.CommandId.Get(e),
         Event.Traits.UserId.Get(e),
         null,
-        type.GetRoutes(e, Event.IsScheduled(e)).ToMany(),
-        () => e));
+        eventType.GetRoutes(e, Event.IsScheduled(e)).ToMany(),
+        () => e);
 
-      return _currentPosition;
+      await _observer.OnNext(point);
+
+      return point;
     }
   }
 }

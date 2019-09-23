@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Totem.Runtime.Hosting;
 using Totem.Timeline;
+using Totem.Timeline.Area;
 using Totem.Timeline.Hosting;
 using Totem.Timeline.Runtime;
 
@@ -31,13 +32,12 @@ namespace Totem.App.Tests.Hosting
       .AddTotemRuntime()
       .AddTimeline()
       .ConfigureArea(GetAreaTypes())
+      .AddSingleton(p => p.GetService<AreaMap>().Topics[FlowType])
+      .AddSingleton(this)
       .AddSingleton<TopicApp>()
       .AddSingleton<TopicAppTimelineDb>()
       .AddSingleton<ITimelineDb>(p => p.GetService<TopicAppTimelineDb>())
-      .AddSingleton<IHostLifetime>(p => new TopicAppLifetime(
-        this,
-        p.GetService<TopicApp>(),
-        p.GetService<IApplicationLifetime>()))
+      .AddSingleton<IHostLifetime, TopicAppLifetime>()
       .Add(_appServices);
 
     internal void SetApp(TopicApp app) =>
@@ -48,5 +48,8 @@ namespace Totem.App.Tests.Hosting
 
     internal Task<TEvent> Expect<TEvent>(ExpectTimeout timeout, bool scheduled) where TEvent : Event =>
       _app.Expect<TEvent>(timeout, scheduled);
+
+    internal Task ExpectDone(Id instanceId, ExpectTimeout timeout) =>
+      _app.ExpectDone(instanceId, timeout);
   }
 }

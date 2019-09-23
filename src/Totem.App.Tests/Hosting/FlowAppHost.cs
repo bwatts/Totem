@@ -12,12 +12,12 @@ namespace Totem.App.Tests.Hosting
   /// </summary>
   public abstract class FlowAppHost : AppHost
   {
-    readonly Type _flowType;
-
     internal FlowAppHost(Type flowType)
     {
-      _flowType = flowType;
+      FlowType = flowType;
     }
+
+    protected readonly Type FlowType;
 
     protected override IHostBuilder CreateBuilder()
     {
@@ -32,7 +32,7 @@ namespace Totem.App.Tests.Hosting
 
     protected IEnumerable<Type> GetAreaTypes()
     {
-      yield return _flowType;
+      yield return FlowType;
 
       foreach(var eventType in GetEventTypes())
       {
@@ -41,6 +41,6 @@ namespace Totem.App.Tests.Hosting
     }
 
     IEnumerable<Type> GetEventTypes() =>
-      _flowType.Assembly.GetTypes().Where(typeof(Event).IsAssignableFrom);
+      FlowType.Assembly.GetTypes().Where(typeof(Event).IsAssignableFrom);
   }
 }

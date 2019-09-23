@@ -178,11 +178,11 @@ namespace Totem.Timeline.Runtime
         {
           latestPoint = given.Point;
 
-          LogPoint(given.Point);
+          LogPoint(latestPoint);
 
           var observation = (TopicObservation) given.Observation;
 
-          var hasWhen = observation.HasWhen(scheduled: true) || observation.HasWhen(scheduled: false);
+          var hasWhen = observation.HasWhen(latestPoint.Scheduled);
 
           advanceCheckpoint = advanceCheckpoint && !hasWhen;
 

@@ -71,8 +71,47 @@ namespace Totem.Timeline.EventStore
 
     public async Task WriteCheckpoint(Flow flow, TimelinePoint point)
     {
-      await _context.AppendToCheckpoint(flow);
+      var result = await _context.AppendToCheckpoint(flow);
 
+      if(flow.Context.CheckpointPosition.IsNone)
+      {
+        await TryWriteInitialMetadata(flow);
+      }
+
+      if(flow.Context.IsDone)
+      {
+        await TryWriteDoneMetadata(flow, result.NextExpectedVersion);
+      }
+
+      await TryWriteToClient(flow, point);
+    }
+
+    async Task TryWriteInitialMetadata(Flow flow)
+    {
+      try
+      {
+        await _context.SetCheckpointStreamMetadata(flow, StreamMetadata.Create(maxCount: 1));
+      }
+      catch(Exception error)
+      {
+        Log.Error(error, "Failed to set initial metadata of checkpoint stream for {Key}. The stream will contain data for every checkpoint, not just the latest.", flow);
+      }
+    }
+
+    async Task TryWriteDoneMetadata(Flow flow, long position)
+    {
+      try
+      {
+        await _context.SetCheckpointStreamMetadata(flow, StreamMetadata.Create(maxCount: 1, truncateBefore: position));
+      }
+      catch(Exception error)
+      {
+        Log.Warning(error, "Failed to set done metadata of checkpoint stream for {Key}. The timeline can recover from this, but it warrants further investigation.", flow);
+      }
+    }
+
+    async Task TryWriteToClient(Flow flow, TimelinePoint point)
+    {
       var isQuery = flow is Query;
       var isStopped = flow.Context.ErrorPosition.IsSome;
 

@@ -57,6 +57,7 @@ namespace Totem.Timeline.EventStore.Client
         TimelinePosition.None,
         e.When,
         Event.Traits.WhenOccurs.Get(e),
+        false,
         Event.Traits.EventId.Get(e),
         Event.Traits.CommandId.Get(e),
         Event.Traits.UserId.Get(e),

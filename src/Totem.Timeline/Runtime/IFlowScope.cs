@@ -10,7 +10,7 @@ namespace Totem.Timeline.Runtime
   {
     FlowKey Key { get; }
 
-    Task<FlowResult> Task { get; }
+    Task<FlowResult> LifetimeTask { get; }
 
     void Enqueue(TimelinePoint point);
   }

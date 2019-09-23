@@ -9,7 +9,7 @@ namespace Totem.App.Tests.Hosting
   /// </summary>
   internal sealed class QueryAppLifetime : IHostLifetime
   {
-    internal QueryAppLifetime(QueryAppHost host, QueryApp app, IApplicationLifetime lifetimeService)
+    public QueryAppLifetime(QueryAppHost host, QueryApp app, IApplicationLifetime lifetimeService)
     {
       host.SetApp(app);
       host.SetLifetimeService(lifetimeService);

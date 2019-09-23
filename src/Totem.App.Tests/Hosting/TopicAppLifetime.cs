@@ -9,7 +9,7 @@ namespace Totem.App.Tests.Hosting
   /// </summary>
   internal sealed class TopicAppLifetime : IHostLifetime
   {
-    internal TopicAppLifetime(TopicAppHost host, TopicApp app, IApplicationLifetime lifetimeService)
+    public TopicAppLifetime(TopicAppHost host, TopicApp app, IApplicationLifetime lifetimeService)
     {
       host.SetApp(app);
       host.SetLifetimeService(lifetimeService);

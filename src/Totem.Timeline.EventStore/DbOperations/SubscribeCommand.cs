@@ -56,12 +56,12 @@ namespace Totem.Timeline.EventStore.DbOperations
       var json = _context.Json.ToJObjectUtf8(data);
 
       var checkpoint = ReadCheckpoint(json["checkpoint"]);
-      var flows = ReadResumeFlows(json["flows"].Value<JArray>()).ToMany();
+      var routes = ReadResumeFlows(json["routes"].Value<JArray>()).ToMany();
       var schedule = await ReadResumeSchedule(json["schedule"].Value<JArray>());
 
       var subscription = new TimelineSubscription(_context, _settings, checkpoint, _observer);
 
-      return new ResumeInfo(checkpoint, flows, schedule, subscription);
+      return new ResumeInfo(checkpoint, routes, schedule, subscription);
     }
 
     TimelinePosition ReadCheckpoint(JToken json) =>

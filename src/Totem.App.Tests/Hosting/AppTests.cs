@@ -33,7 +33,7 @@ namespace Totem.App.Tests.Hosting
       _host.Value;
 
     void IDisposable.Dispose() =>
-      StopHost().GetAwaiter().GetResult();
+      Task.Run(StopHost).GetAwaiter().GetResult();
 
     async Task StopHost()
     {

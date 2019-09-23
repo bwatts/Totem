@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Totem.Runtime;
 using Totem.Timeline.Area;
@@ -22,18 +21,8 @@ namespace Totem.Timeline.Runtime
     {
       CallGiven();
 
-      if(_batchCount < _batchSize)
-      {
-        _batchCount++;
-      }
-      else
-      {
-        await CompleteBatch();
-      }
+      await AdvanceBatch();
     }
-
-    protected override Task OnPendingDequeue() =>
-      CompleteBatch();
 
     void CallGiven()
     {
@@ -44,18 +33,17 @@ namespace Totem.Timeline.Runtime
       Flow.OnChanged();
     }
 
-    async Task CompleteBatch()
+    async Task AdvanceBatch()
     {
-      if(_batchCount > 0)
+      if(_batchCount < _batchSize && HasPointEnqueued)
       {
-        await WriteCheckpoint();
-
-        if(_batchCount > 1)
-        {
-          Log.Debug("[timeline] Wrote {Key} to timeline after batch of {BatchCount}", Key, _batchCount);
-        }
-
+        _batchCount++;
+      }
+      else
+      {
         _batchCount = 0;
+
+        await WriteCheckpoint();
       }
     }
   }
