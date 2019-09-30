@@ -14,8 +14,7 @@ namespace Totem.Timeline.Runtime
   {
     readonly IServiceProvider _services;
 
-    public TopicScope(FlowKey key, ITimelineDb db, IServiceProvider services)
-      : base(key, db)
+    public TopicScope(FlowKey key, ITimelineDb db, IServiceProvider services) : base(key, db)
     {
       _services = services;
     }
@@ -55,7 +54,7 @@ namespace Totem.Timeline.Runtime
       LogPoint(Point);
 
     void LogPoint(TimelinePoint point) =>
-      Log.Debug("[timeline] #{Position} => {Key}", point.Position.ToInt64(), Key);
+      Log.Trace("[timeline] #{Position} => {Key}", point.Position.ToInt64(), Key);
 
     void CallGivenBeforeWhen() =>
       Flow.Context.CallGiven(new FlowCall.Given(Point, Observation));
@@ -201,21 +200,21 @@ namespace Totem.Timeline.Runtime
 
     async Task StopAfterNewEvents(TimelinePoint latestPoint, Exception error)
     {
-      Log.Error(error, "[timeline] Flow {Key} stopped", Key);
-
       try
       {
         Flow.Context.SetError(latestPoint.Position, error.ToString());
 
         await Db.WriteCheckpoint(Flow, latestPoint);
 
+        Flow.Context.SetNotNew();
+
         CompleteTask(error);
       }
       catch(Exception writeError)
       {
-        Log.Error(writeError, "[timeline] Topic {Topic} added events to the timeline, but failed to save its checkpoint. This should be vanishingly rare and would be surprising if it occurred. This can be reconciled when resuming via each new point's topic key, but that is not in place yet, so the flow is stopped. Manual resolution is required.", Key);
-
-        CompleteTask(new AggregateException(error, writeError));
+        CompleteTask(new Exception(
+          $"Topic {Key} added events to the timeline, but failed to save its checkpoint. This should be vanishingly rare and would be surprising if it occurred. This can be reconciled when resuming via each new point's topic key, but that is not in place yet, so the flow is stopped. Manual resolution is required.",
+          new AggregateException(error, writeError)));
       }
     }
   }

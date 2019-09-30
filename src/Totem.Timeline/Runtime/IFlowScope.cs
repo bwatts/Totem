@@ -12,6 +12,8 @@ namespace Totem.Timeline.Runtime
 
     Task<FlowResult> LifetimeTask { get; }
 
+    void ResumeWhenConnected();
+
     void Enqueue(TimelinePoint point);
   }
 }

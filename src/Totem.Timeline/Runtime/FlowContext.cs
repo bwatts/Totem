@@ -17,6 +17,7 @@ namespace Totem.Timeline
     {
       _flow = flow;
       Key = key;
+      IsNew = true;
     }
 
     FlowContext(
@@ -28,6 +29,7 @@ namespace Totem.Timeline
     {
       CheckpointPosition = checkpointPosition;
       ErrorPosition = errorPosition;
+      IsNew = false;
     }
 
     public readonly FlowKey Key;
@@ -35,6 +37,7 @@ namespace Totem.Timeline
     public TimelinePosition ErrorPosition { get; private set; }
     public string ErrorMessage { get; private set; }
     public FlowCall Call { get; private set; }
+    public bool IsNew { get; private set; }
     public bool IsDone { get; private set; }
 
     public override string ToString() =>
@@ -83,6 +86,9 @@ namespace Totem.Timeline
       ErrorPosition = position;
       ErrorMessage = message;
     }
+
+    internal void SetNotNew() =>
+      IsNew = false;
 
     internal void SetDone() =>
       IsDone = true;

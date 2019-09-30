@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Totem.Runtime;
 using Totem.Runtime.Json;
@@ -36,8 +37,11 @@ namespace Totem.App.Tests.Hosting
       return Task.FromResult(new ResumeInfo(None));
     }
 
-    public Task<FlowResumeInfo> ReadFlowResumeInfo(FlowKey key) =>
-      Task.FromResult(new FlowResumeInfo.NotFound() as FlowResumeInfo);
+    public Task<FlowInfo> ReadFlow(FlowKey key) =>
+      Task.FromResult(new FlowInfo.NotFound() as FlowInfo);
+
+    public Task<FlowResumeInfo> ReadFlowToResume(FlowKey key) =>
+      throw new InvalidOperationException("The timeline does not resume during topic tests");
 
     public async Task<TimelinePosition> WriteNewEvents(TimelinePosition cause, FlowKey topicKey, Many<Event> newEvents)
     {

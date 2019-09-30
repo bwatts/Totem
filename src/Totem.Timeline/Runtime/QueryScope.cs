@@ -26,7 +26,7 @@ namespace Totem.Timeline.Runtime
 
     void CallGiven()
     {
-      Log.Debug("[timeline] #{Position} => {Key}", Point.Position.ToInt64(), Key);
+      Log.Trace("[timeline] #{Position} => {Key}", Point.Position.ToInt64(), Key);
 
       Flow.Context.CallGiven(new FlowCall.Given(Point, Observation), advanceCheckpoint: true);
 

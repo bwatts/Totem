@@ -128,7 +128,7 @@ using Totem.Timeline;
 
 namespace Acme.ProductImport
 {
-  public class StartImport : Event
+  public class StartImport : Command
   {
     public StartImport(string reason)
     {

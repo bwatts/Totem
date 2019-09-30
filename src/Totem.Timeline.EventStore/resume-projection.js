@@ -28,7 +28,10 @@ function onNext(state, event) {
   observe();
 
   function observe() {
-    if(streamId === "timeline") {
+    if(streamId.startsWith("$")) {
+      return;
+    }
+    else if(streamId === "timeline") {
       updateArea();
     }
     else {

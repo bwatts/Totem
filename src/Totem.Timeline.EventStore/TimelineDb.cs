@@ -35,23 +35,11 @@ namespace Totem.Timeline.EventStore
     public Task<ResumeInfo> Subscribe(ITimelineObserver observer) =>
       new SubscribeCommand(_context, _subscriptionSettings, observer).Execute();
 
-    public async Task<FlowResumeInfo> ReadFlowResumeInfo(FlowKey key)
-    {
-      var stream = key.GetCheckpointStream();
+    public Task<FlowInfo> ReadFlow(FlowKey key) =>
+      new ReadFlowCommand(_context, key).Execute();
 
-      var result = await _context.Connection.ReadEventAsync(stream, StreamPosition.End, resolveLinkTos: false);
-
-      switch(result.Status)
-      {
-        case EventReadStatus.NoStream:
-        case EventReadStatus.NotFound:
-          return await new ReadFlowWithoutCheckpointCommand(_context, key).Execute();
-        case EventReadStatus.Success:
-          return await new ReadFlowWithCheckpointCommand(_context, key, result.Event.Value).Execute();
-        default:
-          throw new Exception($"Unexpected result when reading {stream} to resume: {result.Status}");
-      }
-    }
+    public Task<FlowResumeInfo> ReadFlowToResume(FlowKey key) =>
+      new ReadFlowToResumeCommand(_context, key).Execute();
 
     public async Task<TimelinePosition> WriteNewEvents(TimelinePosition cause, FlowKey topicKey, Many<Event> newEvents)
     {
@@ -73,7 +61,7 @@ namespace Totem.Timeline.EventStore
     {
       var result = await _context.AppendToCheckpoint(flow);
 
-      if(flow.Context.CheckpointPosition.IsNone)
+      if(flow.Context.IsNew)
       {
         await TryWriteInitialMetadata(flow);
       }
@@ -168,7 +156,7 @@ namespace Totem.Timeline.EventStore
       }
       catch(Exception error)
       {
-        Log.Error(error, "Failed to write failed of command {CommandId} to the client stream. The pending request will not know about the error.", commandId);
+        Log.Error(error, "Failed to write failure of command {CommandId} to the client stream. The pending request will not know about the error.", commandId);
       }
     }
   }

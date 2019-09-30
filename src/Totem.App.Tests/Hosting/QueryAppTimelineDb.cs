@@ -34,8 +34,11 @@ namespace Totem.App.Tests.Hosting
       return Task.FromResult(new ResumeInfo(None));
     }
 
-    public Task<FlowResumeInfo> ReadFlowResumeInfo(FlowKey key) =>
-      Task.FromResult(new FlowResumeInfo.NotFound() as FlowResumeInfo);
+    public Task<FlowInfo> ReadFlow(FlowKey key) =>
+      Task.FromResult(new FlowInfo.NotFound() as FlowInfo);
+
+    public Task<FlowResumeInfo> ReadFlowToResume(FlowKey key) =>
+      throw new InvalidOperationException("The timeline does not resume during query tests");
 
     public Task WriteScheduledEvent(TimelinePoint cause) =>
       throw new InvalidOperationException("Scheduled events do not occur during query tests");

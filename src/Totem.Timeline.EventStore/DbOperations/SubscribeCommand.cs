@@ -98,22 +98,5 @@ namespace Totem.Timeline.EventStore.DbOperations
 
       return await new ReadResumeScheduleCommand(_context, schedule).Execute();
     }
-
-    public async Task<FlowResumeInfo> ReadFlowResumeInfo(FlowKey key)
-    {
-      var stream = key.GetCheckpointStream();
-
-      var result = await _context.Connection.ReadEventAsync(stream, StreamPosition.End, resolveLinkTos: false);
-
-      switch(result.Status)
-      {
-        case EventReadStatus.NoStream:
-          return await new ReadFlowWithoutCheckpointCommand(_context, key).Execute();
-        case EventReadStatus.Success:
-          return await new ReadFlowWithCheckpointCommand(_context, key, result.Event.Value).Execute();
-        default:
-          throw new Exception($"Unexpected result when reading {stream} to resume: {result.Status}");
-      }
-    }
   }
 }

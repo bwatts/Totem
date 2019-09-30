@@ -15,12 +15,12 @@ namespace Totem.Timeline.Runtime
     readonly ScheduleHost _schedule;
     readonly FlowHost _flows;
 
-    public TimelineHost(IServiceProvider services, ITimelineDb db)
+    public TimelineHost(ITimelineDb db, IServiceProvider services)
     {
       _db = db;
 
       _schedule = new ScheduleHost(db);
-      _flows = new FlowHost(services, db);
+      _flows = new FlowHost(db, services);
     }
 
     protected override async Task Open()
