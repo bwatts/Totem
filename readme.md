@@ -14,6 +14,8 @@ A framework for building timeline-based applications on .NET Core
 
 [Concepts](#concepts)
 
+[Testing](#testing)
+
 [Background](#background)
 
 # Introduction
@@ -514,6 +516,164 @@ The command goes on the timeline, where a topic handles it. The command's identi
 
 *That's it for concepts!*
 
+# Testing
+
+`Totem.App.Tests` supports automated testing of queries and topics. Each test spins up a full .NET Core app hosting an in-memory timeline. This isolation lets tests run in parallel without issue.
+
+Timeline tests focus on a single query or topic type, ignoring everything else. Test classes derive from `QueryTests<>` or `TopicTests<>` and specify the tested type. Each has a small API to interact with the timeline.
+
+<sup><sub>NOTE: These classes currently run under xUnit only, as they use the constructor and `IDisposable` to start and stop the timeline. Shims to other frameworks should be straightforward.</sup></sub>
+
+### Queries
+
+To declare tests for the [`ImportStatus`](#query) query (above):
+
+```csharp
+using Acme.ProductImport.Queries;
+using Totem.App.Tests;
+
+public class ImportStatusTests : QueryTests<ImportStatus>
+{
+  ...
+}
+```
+
+Testing a query involves two methods:
+
+1. `Append(Event)` puts events on the timeline to observe.
+2. `GetQuery()` returns query data after observing all appended events.
+
+For example, to test how [`ImportStatus`](#query) reacts to the import starting:
+
+```csharp
+[Fact]
+public async Task ImportStarted()
+{
+  var reason = "Testing";
+
+  await Append(new ImportStarted(reason));
+
+  var query = await GetQuery();
+
+  Expect(query.Importing).IsTrue();
+  Expect(query.Reason).Is(reason);
+  Expect(query.Error).IsNull();
+}
+```
+
+To test how [`ImportStatus`](#query) reacts to the import finishing:
+
+```csharp
+[Fact]
+public async Task ImportFinished()
+{
+  await Append(new ImportStarted());
+  await Append(new ImportFinished());
+
+  var query = await GetQuery();
+
+  Expect(query.Importing).IsFalse();
+}
+```
+
+Finally, to test how [`ImportStatus`](#query) reacts to the import failing:
+
+```csharp
+[Fact]
+public async Task ImportFailed()
+{
+  var error = "Error";
+
+  await Append(new ImportStarted());
+  await Append(new ImportFailed(error));
+
+  var query = await GetQuery();
+
+  Expect(query.Importing).IsFalse();
+  Expect(query.Error).Is(error);
+}
+```
+
+<sup><sub>NOTE: The `Expect` syntax is available by default, but any assertion library will work.</sup></sub>
+
+### Topics
+
+Declaring tests for the [`ImportProcess`](#topic) topic (above):
+
+```csharp
+using Acme.ProductImport.Topics;
+using Totem.App.Tests;
+
+public class ImportProcessTests : TopicTests<ImportProcess>
+{
+  ...
+}
+```
+
+Testing a topic involves two methods and a property:
+
+1. `Append(Event)` puts events on the timeline to observe.
+2. `Expect<TEvent>` gets the next event and asserts it is the specified type.
+3. `Services` allows registration of fake objects available to `When` methods.
+
+For example, to test how [`ImportProcess`](#topic) decides to start the import:
+
+```csharp
+[Fact]
+public async Task Start()
+{
+  await Append(new StartImport());
+
+  await Expect<ImportStarted>();
+}
+```
+
+To test how [`ImportProcess`](#topic) decides to handle overlapping imports:
+
+```csharp
+[Fact]
+public async Task StartTwice()
+{
+  await Append(new StartImport());
+
+  await Expect<ImportStarted>();
+
+  await Append(new StartImport());
+
+  await Expect<ImportAlreadyStarted>();
+}
+```
+
+#### Dependencies
+
+Topics such as [`ImportSteps`](#interacting-with-the-world) (above) declare dependences in `When` methods. These seams fake the outside world to provide data to the tests:
+
+```csharp
+[Fact]
+public async Task DiffProducts()
+{
+  Services.AddSingleton<IProductFile, FakeProductFile>();
+  
+  await Append(new ImportStarted());
+  
+  var diffed = await Expect<ProductsDiffed>();
+  
+  Expect(diffed.AddedProducts.Count).Is(1);
+}
+
+[Fact]
+public async Task DiffProductsError()
+{
+  Services.AddSingleton<IProductFile, ErrorProductFile>();
+  
+  await Append(new ImportStarted());
+  
+  await Expect<ImportFailed>();
+}
+```
+
+This works with any library that produces fakes/mocks/stubs/etc.
+
 # Background
 
 Totem is a synthesis of various design paradigms in contemporary software, including:
@@ -533,8 +693,8 @@ Totem grew up at [DealerOn](http://www.dealeron.com/) and powers several of its 
 
 ## Further Reading
 
-[Finding Humanity in Software](https://medium.com/dealeron-dev/finding-humanity-in-software-b4bf669a24a5)
+[Finding Humanity in Software](https://dev.to/dealeron/finding-humanity-in-software-5a45)
 <br/>*A look at system design through the lens of human activity*
 
-[The Myth of Software Collaboration](https://medium.com/dealeron-dev/the-myth-of-software-collaboration-599ce6d5c21e)
+[The Myth of Software Collaboration](https://dev.to/dealeron/the-myth-of-software-collaboration-1126)
 <br/>*Exploring why our systems feel lonely*
