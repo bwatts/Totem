@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Totem.Timeline.IntegrationTests.Hosting;
 using Xunit;
 
 namespace Totem.Timeline.IntegrationTests
@@ -6,7 +7,7 @@ namespace Totem.Timeline.IntegrationTests
   /// <summary>
   /// Tests that the cause of an event is set by the When method
   /// </summary>
-  public class Cause : TestArea
+  public class Cause : IntegrationTest
   {
     [Fact]
     public async Task SetByWhen()
@@ -34,7 +35,7 @@ namespace Totem.Timeline.IntegrationTests
         });
     }
 
-    class StartTest : Event { }
+    class StartTest : Command { }
     class TestStarted : Event { }
 
     class TestStartedObserved : Event

@@ -8,7 +8,7 @@ namespace Totem.Timeline.EventStore
     internal const string Timeline = "timeline";
     internal const string Schedule = "schedule";
     internal const string Resume = "resume";
-    internal const string ChangedQueries = "changed-queries";
+    internal const string Client = "client";
 
     internal static string GetStream(this FlowKey key, string suffix)
     {

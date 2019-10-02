@@ -2,8 +2,9 @@
 //
 // Observes the area stream and flow checkpoint streams to:
 //
-// 1. Link area events to a stream for each routed flow
-// 2. Maintain a list of flows with pending work, to use when resuming
+// 1. Link area events to a stream for each flow instance
+// 2. Maintain a list of instances with pending work, to use when resuming
+// 3. Maintain a schedule of pending events
 //
 // More information on EventStore projections:
 // https://eventstore.org/docs/projections/user-defined-projections/
@@ -13,192 +14,228 @@ options({
 });
 
 fromAll()
-  .when({
-    $init: () => ({
-      checkpoint: null,
-      schedule: {},
-      flows: {}
-    }),
-    $any: (s, e) => {
-      if(e.streamId === "timeline") {
-        updateArea(s, e);
-      }
-      else {
-        tryUpdateProgress(s, e);
-      }
-    }
-  })
+  .when({ $init: defaultState, $any: onNext })
   .transformBy(getResumeState)
   .outputState();
 
-function updateArea(s, e) {
-  s.checkpoint = parseInt(e.sequenceNumber);
-
-  updateRoutes(s, e);
-  updateSchedule(s, e);
+function defaultState() {
+  return { checkpoint: null, schedule: {}, instances: {} };
 }
 
-//
-// Routes
-//
+function onNext(state, event) {
+  let { streamId, metadata } = event;
 
-function updateRoutes(s, e) {
-  let flows = e.metadata.routeTypes.slice(0);
+  observe();
 
-  for(let { type, ids } of e.metadata.routeIds) {
-    for(let id of ids) {
-      updateMultiInstanceRoute(s, e, flows[type], id);
+  function observe() {
+    if(streamId.startsWith("$")) {
+      return;
     }
-
-    flows[type] = null;
-  }
-
-  for(let flow of flows) {
-    if(flow) {
-      updateSingleInstanceRoute(s, e, flow);
-    }
-  }
-}
-
-function updateMultiInstanceRoute(s, e, type, id) {
-  linkTo(`${type}|${id}-routes`, e);
-
-  let ids = s.flows[type];
-
-  if(!ids) {
-    ids = {};
-
-    s.flows[type] = ids;
-  }
-
-  updateRecord(ids, id, record => {
-    record[0] = s.checkpoint;
-  });
-}
-
-function updateSingleInstanceRoute(s, e, type) {
-  linkTo(type + "-routes", e);
-
-  updateRecord(s.flows, type, record => {
-    record[0] = s.checkpoint;
-  });
-}
-
-function updateRecord(records, key, update) {
-  let record = records[key];
-
-  if(!record) {
-    record = [null, null, false];
-
-    records[key] = record;
-  }
-
-  update(record);
-}
-
-//
-// Schedule
-//
-
-function updateSchedule(s, e, checkpoint) {
-  if(e.metadata.whenOccurs) {
-    linkTo("schedule", e);
-
-    s.schedule[s.checkpoint] = null;
-  }
-  else {
-    if(e.metadata.cause !== null) {
-      let cause = parseInt(e.metadata.cause);
-
-      delete s.schedule[cause];
-    }
-  }
-}
-
-//
-// Progress
-//
-
-function tryUpdateProgress(s, e) {
-  const suffix = "-checkpoint";
-
-  if(e.streamId.endsWith(suffix)) {
-    let flow = e.streamId.substring(0, e.streamId.length - suffix.length);
-
-    let separatorIndex = flow.indexOf("|");
-
-    if(separatorIndex === -1) {
-      updateProgress(s.flows, flow, e);
+    else if(streamId === "timeline") {
+      updateArea();
     }
     else {
-      let type = flow.substring(0, separatorIndex);
-      let id = flow.substring(separatorIndex + 1);
-
-      let ids = s.flows[type];
-
-      if(!ids) {
-        ids = {};
-
-        s.flows[type] = ids;
+      if(streamId.endsWith("-checkpoint")) {
+        updateProgress();
       }
-
-      updateProgress(ids, id, e);
     }
   }
-}
 
-function updateProgress(records, key, e) {
-  updateRecord(records, key, record => {
-    record[1] = e.metadata.position;
-    record[2] = record[2] || e.metadata.errorPosition !== null;
-  });
+  function updateArea() {
+    state.checkpoint = parseInt(event.sequenceNumber);
+
+    updateRoutes();
+    updateSchedule();
+  }
+
+  //
+  // Routes
+  //
+
+  function updateRoutes() {
+    let types = metadata.routeTypes.slice(0);
+
+    for(let { type, ids } of metadata.routeIds) {
+      for(let id of ids) {
+        updateMultiInstanceRoute(types[type], id);
+      }
+
+      types[type] = null;
+    }
+
+    for(let type of types) {
+      if(type) {
+        updateSingleInstanceRoute(type);
+      }
+    }
+  }
+
+  function updateSingleInstanceRoute(type) {
+    linkTo(type + "-routes", event);
+
+    updateInstanceLatest(state.instances, type);
+  }
+
+  function updateMultiInstanceRoute(type, id) {
+    linkTo(`${type}|${id}-routes`, event);
+
+    updateInstanceLatest(getInstanceIds(type), id);
+  }
+
+  function updateInstanceLatest(instances, key) {
+    updateInstance(instances, key, instance => instance[0] = state.checkpoint);
+  }
+
+  function updateInstance(instances, key, update) {
+    let instance = instances[key];
+
+    if(!instance) {
+      let latest = null;
+      let checkpoint = null;
+      let isStopped = false;
+
+      instance = [latest, checkpoint, isStopped];
+
+      instances[key] = instance;
+    }
+
+    update(instance);
+  }
+
+  function getInstanceIds(type) {
+    let ids = state.instances[type];
+
+    if(!ids) {
+      ids = {};
+
+      state.instances[type] = ids;
+    }
+
+    return ids;
+  }
+
+  //
+  // Schedule
+  //
+
+  function updateSchedule() {
+    if(metadata.whenOccurs) {
+      appendToSchedule();
+    }
+    else {
+      if(metadata.cause !== null && metadata.fromSchedule) {
+        removeFromSchedule();
+      }
+    }
+  }
+
+  function appendToSchedule() {
+    linkTo("schedule", event);
+
+    state.schedule[state.checkpoint] = null;
+  }
+
+  function removeFromSchedule() {
+    let cause = parseInt(metadata.cause);
+
+    delete state.schedule[cause];
+  }
+
+  //
+  // Progress
+  //
+
+  function updateProgress() {
+    let flowKey = streamId.substring(0, streamId.length - "-checkpoint".length);
+
+    let separatorIndex = flowKey.indexOf("|");
+
+    if(separatorIndex === -1) {
+      updateSingleInstanceProgress(flowKey);
+    }
+    else {
+      let type = flowKey.substring(0, separatorIndex);
+      let id = flowKey.substring(separatorIndex + 1);
+
+      updateMultiInstanceProgress(type, id);
+    }
+  }
+
+  function updateSingleInstanceProgress(type) {
+    if(metadata.isDone) {
+      delete state.instances[type];
+    }
+    else {
+      updateInstanceProgress(state.instances, type);
+    }
+  }
+
+  function updateMultiInstanceProgress(type, id) {
+    let instanceIds = getInstanceIds(type);
+
+    if(metadata.isDone) {
+      delete instanceIds[id];
+
+      if(Object.keys(instanceIds).length === 0) {
+        delete state.instances[type];
+      }
+    }
+    else {
+      updateInstanceProgress(instanceIds, id);
+    }
+  }
+
+  function updateInstanceProgress(instances, key) {
+    updateInstance(instances, key, instance => {
+      instance[1] = metadata.position;
+      instance[2] = instance[2] || metadata.errorPosition !== null;
+    });
+  }
 }
 
 //
 // Resume state
 //
 
-function getResumeState(s) {
-  return {
-    checkpoint: s.checkpoint,
-    flows: getFlowsState(s),
-    schedule: getScheduleState(s)
-  };
-}
+function getResumeState(state) {
+  let routes = [];
+  let schedule;
 
-function getFlowsState(s) {
-  let flows = [];
+  buildRoutes();
+  buildSchedule();
 
-  for(let type in s.flows) {
-    let typeState = s.flows[type];
+  return { checkpoint: state.checkpoint, routes, schedule };
 
+  function buildRoutes() {
+    for(let type in state.instances) {
+      buildTypeRoutes(type, state.instances[type]);
+    }
+  }
+
+  function buildSchedule() {
+    schedule = Object.keys(state.schedule).map(position => parseInt(position));
+
+    schedule.sort((a, b) => a - b);
+  }
+
+  function buildTypeRoutes(type, typeState) {
     if(Array.isArray(typeState)) {
       if(isResumable(typeState)) {
-        flows.push(type);
+        routes.push(type);
       }
     }
     else {
       let resumableIds = Object.keys(typeState).filter(id => isResumable(typeState[id]));
 
       if(resumableIds.length > 0) {
-        flows.push([type, ...resumableIds]);
+        routes.push([type, ...resumableIds]);
       }
     }
   }
 
-  return flows;
-}
-
-function getScheduleState(s) {
-  let schedule = Object.keys(s.schedule).map(position => parseInt(position));
-
-  schedule.sort((a, b) => a - b);
-
-  return schedule;
-}
-
-function isResumable([latestRoute, checkpoint, stopped]) {
-  return !stopped &&
-    latestRoute !== null &&
-    (checkpoint === null || checkpoint < latestRoute);
+  function isResumable([latest, checkpoint, isStopped]) {
+    return !isStopped &&
+      latest !== null &&
+      (checkpoint === null || checkpoint < latest);
+  }
 }

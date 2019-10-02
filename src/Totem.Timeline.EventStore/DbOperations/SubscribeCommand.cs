@@ -56,12 +56,12 @@ namespace Totem.Timeline.EventStore.DbOperations
       var json = _context.Json.ToJObjectUtf8(data);
 
       var checkpoint = ReadCheckpoint(json["checkpoint"]);
-      var flows = ReadResumeFlows(json["flows"].Value<JArray>()).ToMany();
+      var routes = ReadResumeFlows(json["routes"].Value<JArray>()).ToMany();
       var schedule = await ReadResumeSchedule(json["schedule"].Value<JArray>());
 
       var subscription = new TimelineSubscription(_context, _settings, checkpoint, _observer);
 
-      return new ResumeInfo(checkpoint, flows, schedule, subscription);
+      return new ResumeInfo(checkpoint, routes, schedule, subscription);
     }
 
     TimelinePosition ReadCheckpoint(JToken json) =>
@@ -97,23 +97,6 @@ namespace Totem.Timeline.EventStore.DbOperations
       var schedule = json.Values<long>().ToMany();
 
       return await new ReadResumeScheduleCommand(_context, schedule).Execute();
-    }
-
-    public async Task<FlowResumeInfo> ReadFlowResumeInfo(FlowKey key)
-    {
-      var stream = key.GetCheckpointStream();
-
-      var result = await _context.Connection.ReadEventAsync(stream, StreamPosition.End, resolveLinkTos: false);
-
-      switch(result.Status)
-      {
-        case EventReadStatus.NoStream:
-          return await new ReadFlowWithoutCheckpointCommand(_context, key).Execute();
-        case EventReadStatus.Success:
-          return await new ReadFlowWithCheckpointCommand(_context, key, result.Event?.Event).Execute();
-        default:
-          throw new Exception($"Unexpected result when reading {stream} to resume: {result.Status}");
-      }
     }
   }
 }

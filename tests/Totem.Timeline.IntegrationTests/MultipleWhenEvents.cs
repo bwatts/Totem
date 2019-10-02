@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Totem.Timeline.IntegrationTests.Hosting;
 using Xunit;
 
 namespace Totem.Timeline.IntegrationTests
@@ -6,7 +7,7 @@ namespace Totem.Timeline.IntegrationTests
   /// <summary>
   /// Tests that multiple events in a When method get written after it completes
   /// </summary>
-  public class MultipleWhenEvents : TestArea
+  public class MultipleWhenEvents : IntegrationTest
   {
     [Fact]
     public async Task WrittenAfterWhen()

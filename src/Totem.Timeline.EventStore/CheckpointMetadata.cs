@@ -10,5 +10,7 @@ namespace Totem.Timeline.EventStore
   {
     public TimelinePosition Position;
     public TimelinePosition ErrorPosition;
+    public string ErrorMessage;
+    public bool IsDone;
   }
 }
