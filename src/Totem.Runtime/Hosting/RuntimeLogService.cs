@@ -19,7 +19,7 @@ namespace Totem.Runtime.Hosting
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-      Notion.Traits.Log.SetDefault(binding => _factory.CreateLogger(binding.GetType()));
+      Notion.Traits.SetLog(binding => _factory.CreateLogger(binding.GetType()));
 
       return Task.CompletedTask;
     }

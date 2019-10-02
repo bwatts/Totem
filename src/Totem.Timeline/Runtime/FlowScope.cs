@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Totem.Runtime;
+using Totem.Threading;
 using Totem.Timeline.Area;
 
 namespace Totem.Timeline.Runtime
@@ -12,11 +12,9 @@ namespace Totem.Timeline.Runtime
   /// <typeparam name="T">The type of <see cref="Totem.Timeline.Flow"/> in the scope</typeparam>
   public abstract class FlowScope<T> : Connection, IFlowScope where T : Flow
   {
-    readonly TaskSource<FlowResult> _taskSource = new TaskSource<FlowResult>();
-    readonly Queue<TimelinePoint> _queue = new Queue<TimelinePoint>();
-    Queue<TimelinePoint> _resumeQueue = new Queue<TimelinePoint>();
-    TimelinePosition _resumeCheckpoint;
-    TaskSource<TimelinePoint> _pendingDequeue;
+    readonly TaskSource<FlowResult> _lifetime = new TaskSource<FlowResult>();
+    readonly FlowQueue _queue = new FlowQueue();
+    bool _resumeWhenConnected;
 
     protected FlowScope(FlowKey key, ITimelineDb db)
     {
@@ -25,14 +23,21 @@ namespace Totem.Timeline.Runtime
     }
 
     public FlowKey Key { get; }
-    public Task<FlowResult> Task => _taskSource.Task;
-
     protected ITimelineDb Db { get; }
-    protected bool Running => !Task.IsCompleted;
+
+    public Task<FlowResult> LifetimeTask => _lifetime.Task;
+    protected bool Running => !LifetimeTask.IsCompleted;
+    protected bool HasPointEnqueued => _queue.HasPoint;
 
     protected T Flow { get; private set; }
     protected TimelinePoint Point { get; private set; }
     protected FlowObservation Observation { get; private set; }
+
+    public void ResumeWhenConnected() =>
+      _resumeWhenConnected = true;
+
+    public void Enqueue(TimelinePoint point) =>
+      _queue.Enqueue(point);
 
     protected override Task Open()
     {
@@ -43,15 +48,31 @@ namespace Totem.Timeline.Runtime
 
     protected override Task Close()
     {
-      _taskSource.TrySetCanceled();
+      _lifetime.TrySetCanceled();
 
       return base.Close();
     }
 
+    protected void CompleteTask(FlowResult result) =>
+      _lifetime.SetResult(result);
+
+    protected void CompleteTask(Exception error) =>
+      _lifetime.SetException(error);
+
+    protected async Task WriteCheckpoint()
+    {
+      await Db.WriteCheckpoint(Flow, Point);
+
+      Flow.Context.SetNotNew();
+    }
+
     void ObserveQueue() =>
-      System.Threading.Tasks.Task.Run(async () =>
+      Task.Run(async () =>
       {
-        await Resume();
+        if(_resumeWhenConnected)
+        {
+          await Resume();
+        }
 
         while(Running)
         {
@@ -59,77 +80,19 @@ namespace Totem.Timeline.Runtime
         }
       });
 
-    protected void CompleteTask(FlowResult result) =>
-      _taskSource.SetResult(result);
-
-    protected void CompleteTask(Exception error) =>
-      _taskSource.SetException(error);
-
-    //
-    // Resuming
-    //
-
     async Task Resume()
     {
       try
       {
-        var info = await Db.ReadFlowResumeInfo(Key);
+        var info = await Db.ReadFlowToResume(Key);
 
-        switch(info)
-        {
-          case FlowResumeInfo.NotFound notFound:
-            // .Flow remains null, which .StartFlowIfFirst checks to start the flow
-            break;
-          case FlowResumeInfo.Stopped stopped:
-            CompleteTask(new Exception($"Flow is stopped at {stopped.Position}"));
-            break;
-          case FlowResumeInfo.Loaded loaded:
-            Resume(loaded);
-            break;
-          default:
-            throw new NotSupportedException($"Unknown resume info type {info.GetType()}");
-        }
+        Flow = (T) info.Flow;
+
+        _queue.ResumeWith(info.Points);
       }
       catch(Exception error)
       {
-        Log.Error(error, "[timeline] Error resuming {Key}", Key);
-
-        CompleteTask(error);
-      }
-    }
-
-    void Resume(FlowResumeInfo.Loaded info)
-    {
-      Flow = (T) info.Flow;
-
-      lock(_queue)
-      {
-        foreach(var point in info.Points)
-        {
-          _resumeQueue.Enqueue(point);
-
-          _resumeCheckpoint = point.Position;
-        }
-      }
-    }
-
-    //
-    // Points
-    //
-
-    public void Enqueue(TimelinePoint point)
-    {
-      lock(_queue)
-      {
-        if(_resumeQueue == null && _pendingDequeue != null)
-        {
-          _pendingDequeue.SetResult(point);
-          _pendingDequeue = null;
-        }
-        else
-        {
-          _queue.Enqueue(point);
-        }
+        CompleteTask(new Exception($"Error while resuming {Key}", error));
       }
     }
 
@@ -137,16 +100,12 @@ namespace Totem.Timeline.Runtime
     {
       try
       {
-        Point = await DequeueNextPoint();
-        Observation = GetPointObservation();
+        Point = await _queue.Dequeue();
+        Observation = Key.Type.Observations.Get(Point.Type);
 
-        StartFlowIfFirst();
-
-        if(Running && Flow != null)
+        if(PointIsAfterCheckpoint)
         {
-          await ObservePoint();
-
-          CheckDone();
+          await ObservePointIfStarted();
         }
       }
       catch(Exception error)
@@ -160,80 +119,48 @@ namespace Totem.Timeline.Runtime
       }
     }
 
-    async Task<TimelinePoint> DequeueNextPoint()
+    bool PointIsAfterCheckpoint =>
+      Flow == null || Point.Position > Flow.Context.CheckpointPosition;
+
+    async Task ObservePointIfStarted()
     {
-      var pendingDequeue = null as TaskSource<TimelinePoint>;
-
-      lock(_queue)
+      if(Flow == null)
       {
-        if(TryDequeueResumePoint(out var nextPoint) || TryDequeuePoint(out nextPoint))
-        {
-          return nextPoint;
-        }
-
-        pendingDequeue = new TaskSource<TimelinePoint>();
-
-        _pendingDequeue = pendingDequeue;
+        await TryStart();
       }
 
-      await OnPendingDequeue();
-
-      return await pendingDequeue.Task;
-    }
-
-    bool TryDequeueResumePoint(out TimelinePoint nextPoint)
-    {
-      nextPoint = null;
-
-      if(_resumeQueue != null)
+      if(Running && Flow != null)
       {
-        if(_resumeQueue.Count > 0)
-        {
-          nextPoint = _resumeQueue.Dequeue();
-        }
+        await ObservePoint();
 
-        if(_resumeQueue.Count == 0)
+        if(Flow.Context.IsDone)
         {
-          _resumeQueue = null;
+          CompleteTask(FlowResult.Done);
         }
       }
-
-      return nextPoint != null;
     }
 
-    bool TryDequeuePoint(out TimelinePoint nextPoint)
+    async Task TryStart()
     {
-      nextPoint = null;
+      var info = await Db.ReadFlow(Key);
 
-      while(_queue.Count > 0)
+      switch(info)
       {
-        var point = _queue.Dequeue();
-
-        if(IsAfterCheckpoint(point.Position))
-        {
-          nextPoint = point;
-
+        case FlowInfo.NotFound notFound:
+          StartIfFirst();
           break;
-        }
+        case FlowInfo.Stopped stopped:
+          throw new Exception($"Flow is stopped at {stopped.Position} with this error: {stopped.Error}");
+        case FlowInfo.Loaded loaded:
+          Flow = (T) loaded.Flow;
+          break;
+        default:
+          throw new NotSupportedException($"Unknown resume info type {info.GetType()}");
       }
-
-      return nextPoint != null;
     }
 
-    bool IsAfterCheckpoint(TimelinePosition position) =>
-      (_resumeCheckpoint.IsNone || position > _resumeCheckpoint)
-      && (Flow == null || position > Flow.Context.CheckpointPosition);
-
-    FlowObservation GetPointObservation() =>
-      Key.Type.Observations.Get(Point.Type);
-
-    void StartFlowIfFirst()
+    void StartIfFirst()
     {
-      if(Flow != null)
-      {
-        return;
-      }
-
       if(Observation.CanBeFirst)
       {
         Flow = (T) Key.Type.New();
@@ -242,58 +169,28 @@ namespace Totem.Timeline.Runtime
       }
       else
       {
-        if(_queue.Count == 0)
+        if(!_queue.HasPoint)
         {
           CompleteTask(FlowResult.Ignored);
         }
       }
     }
 
-    void CheckDone()
-    {
-      if(Flow.Context.Done)
-      {
-        CompleteTask(FlowResult.Done);
-      }
-    }
-
-    protected virtual Task OnPendingDequeue() =>
-      System.Threading.Tasks.Task.CompletedTask;
-
     protected abstract Task ObservePoint();
 
-    //
-    // Writes
-    //
-
-    protected Task WriteCheckpoint() =>
-      Db.WriteCheckpoint(Flow);
-
-    protected async Task Stop(Exception error)
+    async Task Stop(Exception error)
     {
-      Log.Error(error, "[timeline] Flow {Key} stopped", Key);
-
       try
       {
-        SetErrorPosition();
+        Flow.Context.SetError(Point.Position, error.ToString());
 
         await WriteCheckpoint();
 
-        CompleteTask(error);
+        CompleteTask(new Exception($"Flow {Key} stopped at position {Point.Position}", error));
       }
       catch(Exception writeError)
       {
-        Log.Error(writeError, "[timeline] Failed to write {Key} to timeline", Key);
-
-        CompleteTask(new AggregateException(error, writeError));
-      }
-    }
-
-    void SetErrorPosition()
-    {
-      if(Flow != null)
-      {
-        Flow.Context.ErrorPosition = Point.Position;
+        CompleteTask(new Exception($"Failed to write stoppage of {Key} at {Point.Position} to timeline", new AggregateException(error, writeError)));
       }
     }
   }

@@ -45,7 +45,7 @@ namespace Totem.Timeline.Client
     {
       etag = null;
 
-      var parts = value.Split('@');
+      var parts = (value ?? "").Split('@');
 
       if(parts.Length > 0 && FlowKey.TryFrom(parts[0], area, out var key))
       {

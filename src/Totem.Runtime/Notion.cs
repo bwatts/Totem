@@ -16,7 +16,7 @@ namespace Totem.Runtime
   /// </remarks>
   public abstract class Notion : IBindable
   {
-    [Transient]
+    [Transient, DebuggerBrowsable(DebuggerBrowsableState.Never)]
     Fields _fields;
 
     [Transient, DebuggerHidden, DebuggerNonUserCode, DebuggerBrowsable(DebuggerBrowsableState.Never)]

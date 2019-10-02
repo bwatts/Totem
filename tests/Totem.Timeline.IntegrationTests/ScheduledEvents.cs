@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Totem.Timeline.IntegrationTests.Hosting;
 using Xunit;
 
 namespace Totem.Timeline.IntegrationTests
@@ -7,7 +8,7 @@ namespace Totem.Timeline.IntegrationTests
   /// <summary>
   /// Tests that scheduled events occur within 50ms of the due time
   /// </summary>
-  public class ScheduledEvents : TestArea
+  public class ScheduledEvents : IntegrationTest
   {
     [Fact]
     public async Task OccurWithin50Ms()

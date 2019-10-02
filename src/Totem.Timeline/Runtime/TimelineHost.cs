@@ -15,22 +15,22 @@ namespace Totem.Timeline.Runtime
     readonly ScheduleHost _schedule;
     readonly FlowHost _flows;
 
-    public TimelineHost(IServiceProvider services, ITimelineDb db)
+    public TimelineHost(ITimelineDb db, IServiceProvider services)
     {
       _db = db;
 
       _schedule = new ScheduleHost(db);
-      _flows = new FlowHost(services, db);
+      _flows = new FlowHost(db, services);
     }
 
     protected override async Task Open()
     {
-      // Tracking the database doesn't connect it immediately - connect before resuming the subscription
-
-      await _db.Connect(this);
-
       Track(_db);
       Track(_flows);
+
+      // Tracking doesn't connect immediately - do so before resuming
+      await _db.Connect(this);
+
       Track(await ResumeSubscription());
     }
 

@@ -17,7 +17,7 @@ namespace Totem.Timeline
       Context.ToString();
 
     protected void ThenDone() =>
-      Context.Done = true;
+      Context.SetDone();
 
     protected Task<User> ReadUser() =>
       Context.ReadUser();
