@@ -73,7 +73,7 @@ namespace Totem.App.Web
       {
         var environment = app.ApplicationServices.GetRequiredService<Microsoft.Extensions.Hosting.IHostingEnvironment>();
 
-        if (environment.IsDevelopment())
+        if(environment.IsDevelopment())
         {
           app.UseDeveloperExceptionPage();
         }
