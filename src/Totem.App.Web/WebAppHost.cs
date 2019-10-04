@@ -25,7 +25,9 @@ namespace Totem.App.Web
   /// <typeparam name="TArea">The type of timeline area hosted by the application</typeparam>
   internal sealed class WebAppHost<TArea> where TArea : TimelineArea, new()
   {
-    readonly IWebHostBuilder _builder = WebHost.CreateDefaultBuilder().UseEnvironment(Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? Microsoft.Extensions.Hosting.Environments.Development);
+    readonly IWebHostBuilder _builder = WebHost.CreateDefaultBuilder()
+      .UseEnvironment(Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT")
+      ?? Environments.Development);
     readonly ConfigureWebApp _configure;
 
     internal WebAppHost(ConfigureWebApp configure)
@@ -35,32 +37,30 @@ namespace Totem.App.Web
 
     internal Task Run()
     {
-        var asm = _configure.Server;
-
-      SetStartupAssembly(asm);
+      SetStartupAssembly();
       SetWebRoot();
 
-      ConfigureAppConfiguration(asm);
+      ConfigureAppConfiguration();
       ConfigureApp();
-      ConfigureServices(asm);
+      ConfigureServices();
       ConfigureSerilog();
       ConfigureHost();
       
       return _builder.Build().RunAsync();
     }
 
-    void SetStartupAssembly(Assembly asm) =>
-      _builder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, asm.FullName);
+    void SetStartupAssembly() =>
+      _builder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Assembly.GetEntryAssembly().FullName);
 
     void SetWebRoot() =>
       _builder.UseWebRoot("wwwroot/dist");
 
-        void ConfigureAppConfiguration(Assembly asm) =>
+        void ConfigureAppConfiguration() =>
       _builder.ConfigureAppConfiguration((context, appConfiguration) =>
       {
         if(context.HostingEnvironment.IsDevelopment())
         {
-          appConfiguration.AddUserSecrets(asm, optional: true);
+          appConfiguration.AddUserSecrets(Assembly.GetEntryAssembly(), optional: true);
         }
 
         _configure.ConfigureAppConfiguration(context, appConfiguration);
@@ -72,10 +72,11 @@ namespace Totem.App.Web
           _configure.ConfigureApp(app);
       });
 
-    void ConfigureServices(Assembly asm) =>
+    void ConfigureServices() =>
       _builder.ConfigureServices((context, services) =>
       {
         services.AddTotemRuntime();
+
         services.AddTimelineClient<TArea>(timeline =>
         {
           var eventStore = timeline.AddEventStore().BindOptionsToConfiguration();
