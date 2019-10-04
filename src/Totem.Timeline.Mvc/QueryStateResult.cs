@@ -20,7 +20,7 @@ namespace Totem.Timeline.Mvc
     public override async Task ExecuteResultAsync(ActionContext context)
     {
       context.HttpContext.Response.StatusCode = 200;
-      context.HttpContext.Response.Headers[HeaderNames.ETag] = State.ETag.ToString();
+      context.HttpContext.Response.Headers[HeaderNames.ETag] = $"\"{State.ETag.ToString()}\"";
 
       await State
         .ReadContent()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
@@ -14,6 +15,8 @@ using Totem.Timeline.EventStore.Hosting;
 using Totem.Timeline.Hosting;
 using Totem.Timeline.Mvc.Hosting;
 using Totem.Timeline.SignalR.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Totem.Timeline.SignalR;
 
 namespace Totem.App.Web
 {
@@ -23,7 +26,10 @@ namespace Totem.App.Web
   /// <typeparam name="TArea">The type of timeline area hosted by the application</typeparam>
   internal sealed class WebAppHost<TArea> where TArea : TimelineArea, new()
   {
-    readonly IWebHostBuilder _builder = WebHost.CreateDefaultBuilder();
+    readonly IWebHostBuilder _builder = WebHost.CreateDefaultBuilder()
+      .UseEnvironment(Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT")
+      ?? Environments.Development);
+
     readonly ConfigureWebApp _configure;
 
     internal WebAppHost(ConfigureWebApp configure)
@@ -67,7 +73,7 @@ namespace Totem.App.Web
       {
         var environment = app.ApplicationServices.GetRequiredService<Microsoft.Extensions.Hosting.IHostingEnvironment>();
 
-        if(environment.IsDevelopment())
+        if (environment.IsDevelopment())
         {
           app.UseDeveloperExceptionPage();
         }
@@ -75,13 +81,16 @@ namespace Totem.App.Web
         app.UseStaticFiles();
 
         app.UseMvc(_configure.ConfigureMvcRoutes);
-
+        //  Deprecated method of mapping the query hub.
         app.UseSignalR(routes =>
         {
           routes.MapQueryHub();
 
           _configure.ConfigureSignalRRoutes(routes);
         });
+
+        ////  Suggested implementation
+        //app.UseEndpoints(endpoints => { endpoints.MapHub<QueryHub>("/hubs/query"); });
 
         _configure.ConfigureApp(app);
       });
@@ -102,8 +111,9 @@ namespace Totem.App.Web
 
         var mvc = services
           .AddMvc()
+          .AddApplicationPart(Assembly.GetEntryAssembly())
           .AddCommandsAndQueries()
-          .AddApplicationPart(Assembly.GetEntryAssembly());
+          .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
         _configure.ConfigureMvc(context, mvc);
 
