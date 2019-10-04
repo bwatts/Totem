@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0" />
-    <PackageReference Include="System.Reactive.Linq" Version="4.2.0-preview.625" />
+    <PackageReference Include="System.Reactive.Linq" Version="4.2.0-preview.625" /> 
     <PackageReference Include="System.Reactive.PlatformServices" Version="4.2.0-preview.625" />
   </ItemGroup>
 
