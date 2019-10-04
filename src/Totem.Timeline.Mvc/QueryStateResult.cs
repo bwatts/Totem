@@ -17,10 +17,10 @@ namespace Totem.Timeline.Mvc
 
     public readonly QueryState State;
 
-        public override async Task ExecuteResultAsync(ActionContext context)
-        {
-            context.HttpContext.Response.StatusCode = 200;
-            context.HttpContext.Response.Headers[HeaderNames.ETag] = "\"" + State.ETag.ToString() + "\"";
+    public override async Task ExecuteResultAsync(ActionContext context)
+    {
+      context.HttpContext.Response.StatusCode = 200;
+      context.HttpContext.Response.Headers[HeaderNames.ETag] = $"\"{State.ETag.ToString()}\"";
 
       await State
         .ReadContent()
