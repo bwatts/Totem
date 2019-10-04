@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Totem.Timeline.IntegrationTests.Hosting;
 using Xunit;
 
 namespace Totem.Timeline.IntegrationTests
@@ -6,7 +7,7 @@ namespace Totem.Timeline.IntegrationTests
   /// <summary>
   /// Tests that Given methods occur before When methods for the same event
   /// </summary>
-  public class GivenWhenOrder : TestArea
+  public class GivenWhenOrder : IntegrationTest
   {
     [Fact]
     public async Task GivenBeforeWhenForSameEvent()

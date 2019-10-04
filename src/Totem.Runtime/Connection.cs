@@ -11,8 +11,7 @@ namespace Totem.Runtime
   /// </summary>
   public abstract class Connection : Notion, IConnectable
   {
-    readonly List<IDisposable> _trackedLifetimes = new List<IDisposable>();
-    readonly List<IConnectable> _trackedConnections = new List<IConnectable>();
+    readonly List<object> _trackedObjects = new List<object>();
 
     public ConnectionState State { get; } = new ConnectionState();
 
@@ -20,7 +19,7 @@ namespace Totem.Runtime
     // Connecting
     //
 
-    public async Task Connect(CancellationToken cancellationToken = default(CancellationToken))
+    public async Task Connect(CancellationToken cancellationToken = default)
     {
       State.OnConnecting(cancellationToken);
 
@@ -41,40 +40,26 @@ namespace Totem.Runtime
 
     async Task TryOpen()
     {
-      var errors = new List<Exception>();
+      await Open();
+
+      State.OnConnected();
 
       try
       {
-        await Open();
-
-        State.OnConnected();
-      }
-      catch(Exception error)
-      {
-        errors.Add(error);
-
-        State.OnDisconnected();
-      }
-
-      if(errors.Count == 0)
-      {
         await StartTracking();
       }
-      else
+      catch(Exception startError)
       {
         try
         {
           await StopTracking();
         }
-        catch(Exception error)
+        catch(Exception stopError)
         {
-          errors.Add(error);
+          throw new AggregateException(startError, stopError);
         }
 
-        if(errors.Any())
-        {
-          throw new AggregateException($"Connection of type {GetType()} failed to open", errors).Flatten();
-        }
+        throw;
       }
     }
 
@@ -101,30 +86,8 @@ namespace Totem.Runtime
 
     async Task TryClose()
     {
-      var errors = new List<Exception>();
-
-      try
-      {
-        await StopTracking();
-      }
-      catch(Exception error)
-      {
-        errors.Add(error);
-      }
-
-      try
-      {
-        await Close();
-      }
-      catch(Exception error)
-      {
-        errors.Add(error);
-      }
-
-      if(errors.Count > 0)
-      {
-        throw new AggregateException($"Connection of type {GetType()} failed to close", errors).Flatten();
-      }
+      await StopTracking();
+      await Close();
     }
 
     protected virtual Task Close() =>
@@ -138,54 +101,38 @@ namespace Totem.Runtime
     {
       State.ExpectConnecting();
 
-      _trackedLifetimes.Add(lifetime);
+      _trackedObjects.Add(lifetime);
     }
 
     protected void Track(IEnumerable<IDisposable> lifetimes)
     {
       State.ExpectConnecting();
 
-      _trackedLifetimes.AddRange(lifetimes);
+      _trackedObjects.AddRange(lifetimes);
     }
 
     protected void Track(IConnectable connection)
     {
       State.ExpectConnecting();
 
-      _trackedConnections.Add(connection);
+      _trackedObjects.Add(connection);
     }
 
     protected void Track(IEnumerable<IConnectable> connections)
     {
       State.ExpectConnecting();
 
-      _trackedConnections.AddRange(connections);
+      _trackedObjects.AddRange(connections);
     }
 
     async Task StartTracking()
     {
-      var errors = new List<Exception>();
-
-      foreach(var connection in _trackedConnections)
+      foreach(var connection in _trackedObjects.OfType<IConnectable>())
       {
-        if(connection.State.IsConnected)
+        if(connection.State.IsDisconnected)
         {
-          continue;
+          await connection.Connect(this);
         }
-
-        try
-        {
-          await connection.Connect(State.CancellationToken);
-        }
-        catch(Exception error)
-        {
-          errors.Add(error);
-        }
-      }
-
-      if(errors.Count > 0)
-      {
-        throw new AggregateException($"Connection of type {GetType()} failed to start tracking", errors).Flatten();
       }
     }
 
@@ -193,23 +140,21 @@ namespace Totem.Runtime
     {
       var errors = new List<Exception>();
 
-      foreach(var lifetime in _trackedLifetimes.AsEnumerable().Reverse())
+      foreach(var trackedObject in _trackedObjects.AsEnumerable().Reverse())
       {
         try
         {
-          lifetime.Dispose();
-        }
-        catch(Exception error)
-        {
-          errors.Add(error);
-        }
-      }
-
-      foreach(var connection in _trackedConnections.AsEnumerable().Reverse())
-      {
-        try
-        {
-          await connection.Disconnect();
+          if(trackedObject is IConnectable connection)
+          {
+            if(connection.State.IsConnected)
+            {
+              await connection.Disconnect();
+            }
+          }
+          else
+          {
+            ((IDisposable) trackedObject).Dispose();
+          }
         }
         catch(Exception error)
         {
@@ -219,7 +164,16 @@ namespace Totem.Runtime
 
       if(errors.Count > 0)
       {
-        throw new AggregateException($"Connection of type {GetType()} failed to stop tracking", errors).Flatten();
+        var message = $"Connection failed to stop tracking one or more objects: {GetType()} ";
+
+        if(errors.Count == 1)
+        {
+          throw new Exception(message, errors[0]);
+        }
+        else
+        {
+          throw new AggregateException(message, errors).Flatten();
+        }
       }
     }
 
@@ -233,7 +187,7 @@ namespace Totem.Runtime
     {
       public ConnectionState State { get; } = new ConnectionState();
 
-      public Task Connect(CancellationToken cancellationToken = default(CancellationToken)) =>
+      public Task Connect(CancellationToken cancellationToken = default) =>
         Task.CompletedTask;
 
       public Task Connect(IConnectable connection) =>

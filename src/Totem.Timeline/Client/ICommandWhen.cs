@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 
 namespace Totem.Timeline.Client
@@ -9,8 +8,8 @@ namespace Totem.Timeline.Client
   /// <typeparam name="TResponse">The type of initiated response</typeparam>
   public interface ICommandWhen<TResponse>
   {
-    Type EventType { get; }
+    bool CanRespond(TimelinePoint point);
 
-    Task<TResponse> Respond(Event e);
+    Task<TResponse> Respond(TimelinePoint point);
   }
 }

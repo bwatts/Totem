@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using Totem.Runtime;
 using Totem.Runtime.Json;
+using Totem.Threading;
 using Totem.Timeline.Area;
 
 namespace Totem.Timeline.EventStore

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Totem.Timeline.IntegrationTests.Hosting;
 using Xunit;
 
 namespace Totem.Timeline.IntegrationTests
@@ -6,7 +7,7 @@ namespace Totem.Timeline.IntegrationTests
   /// <summary>
   /// Tests that the timeline position increases from 0
   /// </summary>
-  public class Position : TestArea
+  public class Position : IntegrationTest
   {
     [Fact]
     public async Task IncreasesFrom0()

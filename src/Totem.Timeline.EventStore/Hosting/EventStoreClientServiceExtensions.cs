@@ -20,23 +20,20 @@ namespace Totem.Timeline.EventStore.Hosting
     public static IEventStoreTimelineClientBuilder AddEventStore(this ITimelineClientBuilder client)
     {
       client.ConfigureServices(services =>
-      {
-        services.AddSingleton<ILogger, EventStoreLogAdapter>();
-
-        services.AddSingleton(p => new EventStoreContext(
+        services
+        .AddSingleton<ILogger, EventStoreLogAdapter>()
+        .AddSingleton(p => new EventStoreContext(
           p.BuildConnection(),
           p.GetRequiredService<IJsonFormat>(),
-          p.GetRequiredService<AreaMap>()));
-
-        services.AddSingleton<ICommandDb, CommandDb>();
-        services.AddSingleton<IQueryDb, QueryDb>();
-      });
+          p.GetRequiredService<AreaMap>()))
+        .AddSingleton<IClientDb, ClientDb>());
 
       return new EventStoreTimelineClientBuilder(client);
     }
 
     public static IEventStoreTimelineClientBuilder BindOptionsToConfiguration(this IEventStoreTimelineClientBuilder client, string key = "totem.timeline.eventStore") =>
-      client.ConfigureServices(services => services.BindOptionsToConfiguration<EventStoreTimelineOptions>(key));
+      client.ConfigureServices(services =>
+        services.BindOptionsToConfiguration<EventStoreTimelineOptions>(key));
 
     class EventStoreTimelineClientBuilder : IEventStoreTimelineClientBuilder
     {

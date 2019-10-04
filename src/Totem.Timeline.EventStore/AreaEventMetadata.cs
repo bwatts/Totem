@@ -15,6 +15,7 @@ namespace Totem.Timeline.EventStore
     public TimelinePosition Cause;
     public DateTimeOffset When;
     public DateTimeOffset? WhenOccurs;
+    public bool FromSchedule;
     public Id CommandId;
     public Id UserId;
     public FlowKey Topic;
