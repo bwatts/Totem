@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
@@ -12,8 +13,12 @@ using Serilog.Events;
 using Totem.Runtime.Hosting;
 using Totem.Timeline.EventStore.Hosting;
 using Totem.Timeline.Hosting;
-using Totem.Timeline.Mvc.Hosting;
+using Totem.Timeline.SignalR;
 using Totem.Timeline.SignalR.Hosting;
+using Totem.Timeline.Mvc.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
+using Microsoft.AspNetCore.Components;
 
 namespace Totem.App.Web
 {
@@ -23,7 +28,7 @@ namespace Totem.App.Web
   /// <typeparam name="TArea">The type of timeline area hosted by the application</typeparam>
   internal sealed class WebAppHost<TArea> where TArea : TimelineArea, new()
   {
-    readonly IWebHostBuilder _builder = WebHost.CreateDefaultBuilder();
+    readonly IWebHostBuilder _builder = WebHost.CreateDefaultBuilder().UseEnvironment(Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? Microsoft.Extensions.Hosting.Environments.Development);
     readonly ConfigureWebApp _configure;
 
     internal WebAppHost(ConfigureWebApp configure)
@@ -33,30 +38,32 @@ namespace Totem.App.Web
 
     internal Task Run()
     {
-      SetStartupAssembly();
+        var asm = _configure.Server;
+
+      SetStartupAssembly(asm);
       SetWebRoot();
 
-      ConfigureAppConfiguration();
+      ConfigureAppConfiguration(asm);
       ConfigureApp();
-      ConfigureServices();
+      ConfigureServices(asm);
       ConfigureSerilog();
       ConfigureHost();
       
       return _builder.Build().RunAsync();
     }
 
-    void SetStartupAssembly() =>
-      _builder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Assembly.GetEntryAssembly().FullName);
+    void SetStartupAssembly(Assembly asm) =>
+      _builder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, asm.FullName);
 
     void SetWebRoot() =>
       _builder.UseWebRoot("wwwroot/dist");
 
-    void ConfigureAppConfiguration() =>
+        void ConfigureAppConfiguration(Assembly asm) =>
       _builder.ConfigureAppConfiguration((context, appConfiguration) =>
       {
         if(context.HostingEnvironment.IsDevelopment())
         {
-          appConfiguration.AddUserSecrets(Assembly.GetEntryAssembly(), optional: true);
+          appConfiguration.AddUserSecrets(asm, optional: true);
         }
 
         _configure.ConfigureAppConfiguration(context, appConfiguration);
@@ -65,32 +72,13 @@ namespace Totem.App.Web
     void ConfigureApp() =>
       _builder.Configure(app =>
       {
-        var environment = app.ApplicationServices.GetRequiredService<Microsoft.Extensions.Hosting.IHostingEnvironment>();
-
-        if(environment.IsDevelopment())
-        {
-          app.UseDeveloperExceptionPage();
-        }
-
-        app.UseStaticFiles();
-
-        app.UseMvc(_configure.ConfigureMvcRoutes);
-
-        app.UseSignalR(routes =>
-        {
-          routes.MapQueryHub();
-
-          _configure.ConfigureSignalRRoutes(routes);
-        });
-
-        _configure.ConfigureApp(app);
+          _configure.ConfigureApp(app);
       });
 
-    void ConfigureServices() =>
+    void ConfigureServices(Assembly asm) =>
       _builder.ConfigureServices((context, services) =>
       {
         services.AddTotemRuntime();
-
         services.AddTimelineClient<TArea>(timeline =>
         {
           var eventStore = timeline.AddEventStore().BindOptionsToConfiguration();
@@ -100,12 +88,13 @@ namespace Totem.App.Web
           _configure.ConfigureTimeline(context, timeline);
         });
 
-        var mvc = services
-          .AddMvc()
-          .AddCommandsAndQueries()
-          .AddApplicationPart(Assembly.GetEntryAssembly());
+          var mvc = services
+            .AddMvc()
+            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
+            .AddApplicationPart(Assembly.GetEntryAssembly())
+            .AddCommandsAndQueries();
 
-        _configure.ConfigureMvc(context, mvc);
+          _configure.ConfigureMvc(context, mvc);
 
         var signalR = services.AddSignalR().AddQueryNotifications();
 
@@ -141,5 +130,16 @@ namespace Totem.App.Web
 
     void ConfigureHost() =>
       _configure.ConfigureHost(_builder);
-  }
+    void ConfigureHostConfiguration() =>
+      _builder.Configure
+            (hostConfiguration =>
+      {
+          var pairs = new Dictionary<string, string>
+          {
+              [HostDefaults.EnvironmentKey] = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? Microsoft.Extensions.Hosting.Environments.Development
+          };
+
+          //hostConfiguration.AddInMemoryCollection(pairs);
+      });
+    }
 }

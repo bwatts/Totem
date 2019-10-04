@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Totem.Timeline.Area;
@@ -22,8 +23,11 @@ namespace Totem.Timeline.SignalR
 
     Id ConnectionId => Id.From(Context.ConnectionId);
 
-    public Task SubscribeToChanged(string etag) =>
-      _db.SubscribeToChanged(ConnectionId, QueryETag.From(etag, _area));
+    public Task SubscribeToChanged(string etag)
+    {
+      Debug.WriteLine("Totem received subscription for " + etag);
+      return _db.SubscribeToChanged(ConnectionId, QueryETag.From(etag, _area));
+    }
 
     public void UnsubscribeFromChanged(string key) =>
       _db.UnsubscribeFromChanged(ConnectionId, FlowKey.From(key, _area));

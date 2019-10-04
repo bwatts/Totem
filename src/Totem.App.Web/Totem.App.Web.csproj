@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <LangVersion>7.1</LangVersion>
+    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+    <PreserveCompilationReferences>true</PreserveCompilationReferences>
+    <LangVersion>preview</LangVersion>
     <RootNamespace>Totem.App.Web</RootNamespace>
     <Company>Totem</Company>
     <Authors>Totem Contributors</Authors>
@@ -23,22 +25,34 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="3.0.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Antiforgery" Version="2.2.0" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="3.0.0-preview9.19465.2" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="3.0.0-preview9.19465.2" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.0.0" />
+
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0" />
+
+    <PackageReference Include="Serilog.AspNetCore" Version="3.0.1-dev-00109" />
+
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="3.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.1-dev-00209" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.2-dev-00824" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\BlazorUI.Client\BlazorUI.Client.csproj" />
+    <ProjectReference Include="..\..\..\BlazorUI.Shared\BlazorUI.Shared.csproj" />
     <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj" />
     <ProjectReference Include="..\Totem.Timeline.EventStore\Totem.Timeline.EventStore.csproj" />
     <ProjectReference Include="..\Totem.Timeline.Mvc\Totem.Timeline.Mvc.csproj" />
     <ProjectReference Include="..\Totem.Timeline.SignalR\Totem.Timeline.SignalR.csproj" />
     <ProjectReference Include="..\Totem.Timeline\Totem.Timeline.csproj" />
     <ProjectReference Include="..\Totem\Totem.csproj" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>

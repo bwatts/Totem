@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Totem.Timeline.Area;
 
 namespace Totem.Timeline.Client
@@ -67,7 +68,18 @@ namespace Totem.Timeline.Client
 
     public static QueryETag From(string value, AreaMap area)
     {
-      if(!TryFrom(value, area, out var etag))
+      if (value.Contains("\"")) 
+      {
+         var span = value.AsSpan();
+         var builder = new StringBuilder();
+         for (int i = 0; i < span.Length; i++)
+         {
+            if (span[i] != '"')
+              builder.Append(span[i]);
+         }
+         value = builder.ToString();
+      }
+      if (!TryFrom(value, area, out var etag))
       {
         throw new FormatException($"Failed to parse query ETag: \"{value}\"");
       }
