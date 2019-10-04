@@ -34,12 +34,10 @@ namespace Totem.Timeline.Area
     public bool Contains(AreaTypeName name) =>
       _byName.ContainsKey(name);
 
-        public bool TryGet(AreaTypeName name, out T type)
-        {
-            return _byName.TryGetValue(name, out type);
-        }
+    public bool TryGet(AreaTypeName name, out T type) =>
+      _byName.TryGetValue(name, out type);
 
-        public T Get(AreaTypeName name)
+    public T Get(AreaTypeName name)
     {
       if(!TryGet(name, out var type))
       {
