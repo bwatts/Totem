@@ -22,5 +22,5 @@ namespace Totem.App.Web
 
     public static Task Run<TArea>() where TArea : TimelineArea, new() =>
       Run<TArea>(new ConfigureWebApp());
-    }
+  }
 }
