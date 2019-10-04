@@ -15,11 +15,7 @@ namespace Totem.Timeline.Area
     {
       Info = info;
 
-      _call = Compile(CompileCall);
-    }
-    private Lazy<Func<Flow>> Compile(Func<Func<Flow>> toCall)
-    {
-      return new Lazy<Func<Flow>>(toCall);
+      _call = new Lazy<Func<Flow>>(CompileCall);
     }
 
     public readonly ConstructorInfo Info;
