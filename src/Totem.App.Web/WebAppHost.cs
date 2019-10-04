@@ -28,6 +28,7 @@ namespace Totem.App.Web
     readonly IWebHostBuilder _builder = WebHost.CreateDefaultBuilder()
       .UseEnvironment(Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT")
       ?? Environments.Development);
+
     readonly ConfigureWebApp _configure;
 
     internal WebAppHost(ConfigureWebApp configure)
@@ -55,7 +56,7 @@ namespace Totem.App.Web
     void SetWebRoot() =>
       _builder.UseWebRoot("wwwroot/dist");
 
-        void ConfigureAppConfiguration() =>
+    void ConfigureAppConfiguration() =>
       _builder.ConfigureAppConfiguration((context, appConfiguration) =>
       {
         if(context.HostingEnvironment.IsDevelopment())
@@ -69,7 +70,7 @@ namespace Totem.App.Web
     void ConfigureApp() =>
       _builder.Configure(app =>
       {
-          _configure.ConfigureApp(app);
+        _configure.ConfigureApp(app);
       });
 
     void ConfigureServices() =>
@@ -86,13 +87,13 @@ namespace Totem.App.Web
           _configure.ConfigureTimeline(context, timeline);
         });
 
-          var mvc = services
-            .AddMvc()
-            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
-            .AddApplicationPart(Assembly.GetEntryAssembly())
-            .AddCommandsAndQueries();
+        var mvc = services
+          .AddMvc()
+          .AddApplicationPart(Assembly.GetEntryAssembly())
+          .AddCommandsAndQueries()
+          .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
-          _configure.ConfigureMvc(context, mvc);
+        _configure.ConfigureMvc(context, mvc);
 
         var signalR = services.AddSignalR().AddQueryNotifications();
 
