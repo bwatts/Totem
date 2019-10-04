@@ -16,6 +16,7 @@ using Totem.Timeline.Hosting;
 using Totem.Timeline.Mvc.Hosting;
 using Totem.Timeline.SignalR.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Totem.Timeline.SignalR;
 
 namespace Totem.App.Web
 {
@@ -70,6 +71,27 @@ namespace Totem.App.Web
     void ConfigureApp() =>
       _builder.Configure(app =>
       {
+        var environment = app.ApplicationServices.GetRequiredService<Microsoft.Extensions.Hosting.IHostingEnvironment>();
+
+        if (environment.IsDevelopment())
+        {
+          app.UseDeveloperExceptionPage();
+        }
+
+        app.UseStaticFiles();
+
+        app.UseMvc(_configure.ConfigureMvcRoutes);
+        //  Deprecated method of mapping the query hub.
+        app.UseSignalR(routes =>
+        {
+          routes.MapQueryHub();
+
+          _configure.ConfigureSignalRRoutes(routes);
+        });
+
+        ////  Suggested implementation
+        //app.UseEndpoints(endpoints => { endpoints.MapHub<QueryHub>("/hubs/query"); });
+
         _configure.ConfigureApp(app);
       });
 
@@ -129,5 +151,5 @@ namespace Totem.App.Web
 
     void ConfigureHost() =>
       _configure.ConfigureHost(_builder);
-    }
+  }
 }
