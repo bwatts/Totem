@@ -13,12 +13,9 @@ using Serilog.Events;
 using Totem.Runtime.Hosting;
 using Totem.Timeline.EventStore.Hosting;
 using Totem.Timeline.Hosting;
-using Totem.Timeline.SignalR;
-using Totem.Timeline.SignalR.Hosting;
 using Totem.Timeline.Mvc.Hosting;
+using Totem.Timeline.SignalR.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http;
-using Microsoft.AspNetCore.Components;
 
 namespace Totem.App.Web
 {
