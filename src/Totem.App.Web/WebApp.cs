@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,8 +22,5 @@ namespace Totem.App.Web
 
     public static Task Run<TArea>() where TArea : TimelineArea, new() =>
       Run<TArea>(new ConfigureWebApp());
-
-    public static Task Run<TArea>(Assembly asm) where TArea : TimelineArea, new() =>
-        Run<TArea>(new ConfigureWebApp(asm));
     }
 }
