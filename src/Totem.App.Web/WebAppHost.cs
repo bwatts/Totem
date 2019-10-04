@@ -129,16 +129,5 @@ namespace Totem.App.Web
 
     void ConfigureHost() =>
       _configure.ConfigureHost(_builder);
-    void ConfigureHostConfiguration() =>
-      _builder.Configure
-            (hostConfiguration =>
-      {
-          var pairs = new Dictionary<string, string>
-          {
-              [HostDefaults.EnvironmentKey] = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? Microsoft.Extensions.Hosting.Environments.Development
-          };
-
-          //hostConfiguration.AddInMemoryCollection(pairs);
-      });
     }
 }
