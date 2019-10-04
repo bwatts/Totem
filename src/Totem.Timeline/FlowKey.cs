@@ -10,6 +10,8 @@ namespace Totem.Timeline
   {
     FlowKey(FlowType type, Id id)
     {
+      type.ExpectIdMatchesCardinality(id);
+
       Type = type;
       Id = id;
     }

@@ -1,36 +1,17 @@
 namespace Totem.Timeline.Runtime
 {
   /// <summary>
-  /// A flow's current state and the points to resume its activity
+  /// The state of a flow record in the database and the points to resume its activity
   /// </summary>
-  public abstract class FlowResumeInfo
+  public class FlowResumeInfo
   {
-    internal FlowResumeInfo()
-    {}
-
-    public class NotFound : FlowResumeInfo
-    {}
-
-    public class Stopped : FlowResumeInfo
+    public FlowResumeInfo(Flow flow, Many<TimelinePoint> points)
     {
-      public Stopped(TimelinePosition position)
-      {
-        Position = position;
-      }
-
-      public readonly TimelinePosition Position;
+      Flow = flow;
+      Points = points;
     }
 
-    public class Loaded : FlowResumeInfo
-    {
-      public Loaded(Flow flow, Many<TimelinePoint> points)
-      {
-        Flow = flow;
-        Points = points;
-      }
-
-      public readonly Flow Flow;
-      public readonly Many<TimelinePoint> Points;
-    }
+    public readonly Flow Flow;
+    public readonly Many<TimelinePoint> Points;
   }
 }

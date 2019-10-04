@@ -24,14 +24,18 @@ namespace Totem.Timeline.Area
     public bool IsSingleInstance { get; internal set; }
     public bool IsMultiInstance { get; internal set; }
 
-    public FlowKey CreateKey(Id id)
+    public Flow New() => Constructor.Call();
+
+    public FlowKey CreateKey(Id id) =>
+      FlowKey.From(this, id);
+
+    public void ExpectIdMatchesCardinality(Id id)
     {
       Expect.False(IsSingleInstance && id.IsAssigned, $"Flow {this} is single-instance and cannot have an assigned id of {id}");
       Expect.False(IsMultiInstance && id.IsUnassigned, $"Flow {this} is multi-instance and must have an assigned id");
-
-      return FlowKey.From(this, id);
     }
 
-    public Flow New() => Constructor.Call();
+    public void ExpectObserves(EventType e) =>
+      Expect.True(Observations.Contains(e), $"Flow {this} does not observe event {e}");
   }
 }

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Totem.Timeline.IntegrationTests.Hosting;
 using Xunit;
 
 namespace Totem.Timeline.IntegrationTests
@@ -6,15 +7,24 @@ namespace Totem.Timeline.IntegrationTests
   /// <summary>
   /// Tests that query state updates after each Given method
   /// </summary>
-  public class Queries : TestArea
+  public class Queries : IntegrationTest
   {
     [Fact]
     public async Task StateUpdatesAfterGiven()
     {
-      var initial = await Get<TestQuery>();
-      var afterAdded = await GetAfter<TestQuery>(new Added("DEF"));
-      var afterAddedAgain = await GetAfter<TestQuery>(new Added("GHI"));
-      var afterReplaced = await GetAfter<TestQuery>(new Replaced("123"));
+      var initial = await GetQuery<TestQuery>();
+
+      await Append(new Added("DEF"));
+
+      var afterAdded = await GetQuery<TestQuery>();
+
+      await Append(new Added("GHI"));
+
+      var afterAddedAgain = await GetQuery<TestQuery>();
+
+      await Append(new Replaced("123"));
+
+      var afterReplaced = await GetQuery<TestQuery>();
 
       Expect(initial.Value).Is("ABC");
       Expect(afterAdded.Value).Is("ABCDEF");

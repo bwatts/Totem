@@ -15,13 +15,13 @@ namespace Totem.Timeline.Mvc
   public sealed class QueryServer : IQueryServer
   {
     readonly AreaMap _area;
-    readonly IQueryDb _db;
+    readonly IClientDb _clientDb;
     readonly IHttpContextAccessor _httpContextAccessor;
 
-    public QueryServer(AreaMap area, IQueryDb db, IHttpContextAccessor httpContextAccessor)
+    public QueryServer(AreaMap area, IClientDb clientDb, IHttpContextAccessor httpContextAccessor)
     {
       _area = area;
-      _db = db;
+      _clientDb = clientDb;
       _httpContextAccessor = httpContextAccessor;
     }
 
@@ -29,7 +29,7 @@ namespace Totem.Timeline.Mvc
     {
       var etag = ReadETag(type, id);
 
-      var state = await _db.ReadState(etag);
+      var state = await _clientDb.ReadQuery(etag);
 
       return state.NotModified
         ? new QueryNotModifiedResult(etag)

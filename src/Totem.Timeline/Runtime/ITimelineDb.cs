@@ -10,12 +10,14 @@ namespace Totem.Timeline.Runtime
   {
     Task<ResumeInfo> Subscribe(ITimelineObserver observer);
 
-    Task<FlowResumeInfo> ReadFlowResumeInfo(FlowKey key);
+    Task<FlowInfo> ReadFlow(FlowKey key);
+
+    Task<FlowResumeInfo> ReadFlowToResume(FlowKey key);
+
+    Task<TimelinePosition> WriteNewEvents(TimelinePosition cause, FlowKey topicKey, Many<Event> newEvents);
 
     Task WriteScheduledEvent(TimelinePoint cause);
 
-    Task<ImmediateGivens> WriteNewEvents(TimelinePosition cause, FlowKey topicKey, Many<Event> newEvents);
-
-    Task WriteCheckpoint(Flow flow);
+    Task WriteCheckpoint(Flow flow, TimelinePoint point);
   }
 }

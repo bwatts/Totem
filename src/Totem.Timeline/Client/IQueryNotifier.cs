@@ -9,5 +9,7 @@ namespace Totem.Timeline.Client
   public interface IQueryNotifier
   {
     Task NotifyChanged(QueryETag etag, IEnumerable<Id> connectionIds);
+
+    Task NotifyStopped(QueryETag etag, string error, IEnumerable<Id> connectionIds);
   }
 }

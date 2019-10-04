@@ -14,7 +14,11 @@ namespace Totem.Timeline.Hosting
       services
       .AddAreaMap()
       .AddOptionsSetup<TimelineJsonFormatOptionsSetup>()
-      .AddHostedServiceAs<ICommandHost, CommandHost>();
+      .AddSingleton<CommandHost>()
+      .AddSingleton<QueryHost>()
+      .AddSingleton<ICommandHost>(p => p.GetService<CommandHost>())
+      .AddSingleton<IQueryHost>(p => p.GetService<QueryHost>())
+      .AddHostedService<ClientHost>();
 
     public static IServiceCollection AddTimelineClient(this IServiceCollection services, Action<ITimelineClientBuilder> configure)
     {

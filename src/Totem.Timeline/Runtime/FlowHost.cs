@@ -13,23 +13,24 @@ namespace Totem.Timeline.Runtime
     readonly Dictionary<FlowKey, IFlowScope> _flowsByKey = new Dictionary<FlowKey, IFlowScope>();
     readonly HashSet<FlowKey> _ignored = new HashSet<FlowKey>();
     readonly HashSet<FlowKey> _stopped = new HashSet<FlowKey>();
-    readonly IServiceProvider _services;
     readonly ITimelineDb _db;
+    readonly IServiceProvider _services;
 
-    internal FlowHost(IServiceProvider services, ITimelineDb db)
+    internal FlowHost(ITimelineDb db, IServiceProvider services)
     {
-      _services = services;
       _db = db;
+      _services = services;
     }
 
     internal async Task Resume(Many<FlowKey> routes)
     {
       foreach(var route in routes)
       {
-        if(!_ignored.Contains(route) && !_stopped.Contains(route))
-        {
-          await ConnectFlow(route);
-        }
+        var flow = AddFlow(route);
+
+        flow.ResumeWhenConnected();
+
+        await ConnectFlow(flow);
       }
     }
 
@@ -37,87 +38,101 @@ namespace Totem.Timeline.Runtime
     {
       foreach(var route in point.Routes)
       {
-        if(_ignored.Contains(route))
+        if(!Ignore(point, route))
         {
-          if(route.Type.Observations.Get(point.Type).CanBeFirst)
-          {
-            _ignored.Remove(route);
-          }
-          else
-          {
-            continue;
-          }
-        }
-
-        if(!_stopped.Contains(route))
-        {
-          (await GetOrConnectFlow(route)).Enqueue(point);
+          await Enqueue(point, route);
         }
       }
     }
 
-    async Task<IFlowScope> ConnectFlow(FlowKey route)
-    {
-      var flow = CreateFlow(route);
+    //
+    // Flows
+    //
 
-      _flowsByKey[route] = flow;
+    IFlowScope AddFlow(FlowKey key)
+    {
+      var flow = key.Type.IsTopic ?
+        new TopicScope(key, _db, _services) :
+        new QueryScope(key, _db) as IFlowScope;
+
+      _flowsByKey[key] = flow;
 
       RemoveWhenDone(flow);
 
-      await flow.Connect(State.CancellationToken);
-
       return flow;
     }
 
-    async Task<IFlowScope> GetOrConnectFlow(FlowKey route)
+    async Task ConnectFlow(IFlowScope flow)
     {
-      if(!_flowsByKey.TryGetValue(route, out var flow))
+      try
       {
-        flow = await ConnectFlow(route);
-
-        _flowsByKey[route] = flow;
+        await flow.Connect(this);
       }
+      catch(Exception error)
+      {
+        Log.Error(error, "Failed to connect flow {Flow}; treating as stopped", flow.Key);
 
-      return flow;
-    }
-
-    IFlowScope CreateFlow(FlowKey key)
-    {
-      if(key.Type.IsTopic)
-      {
-        return new TopicScope(key, _db, _services);
-      }
-      else if(key.Type.IsQuery)
-      {
-        return new QueryScope(key, _db);
-      }
-      else
-      {
-        throw new Exception($"Expected topic or query type, received {key.Type}");
+        _stopped.Add(flow.Key);
       }
     }
 
     void RemoveWhenDone(IFlowScope flow) =>
-      flow.Task.ContinueWith(task => 
+      flow.LifetimeTask.ContinueWith(task =>
       {
         _flowsByKey.Remove(flow.Key);
 
-        if(task.Status == TaskStatus.RanToCompletion)
+        if(task.Status == TaskStatus.Faulted)
         {
-          switch(task.Result)
+          Log.Error(task.Exception, "[timeline] Flow lifetime ended with an error");
+
+          _stopped.Add(flow.Key);
+        }
+        else
+        {
+          if(task.Result == FlowResult.Ignored)
           {
-            case FlowResult.Done:
-              break;
-            case FlowResult.Ignored:
-              _ignored.Add(flow.Key);
-              break;
-            case FlowResult.Stopped:
-              _stopped.Add(flow.Key);
-              break;
-            default:
-              throw new NotSupportedException($"Unknown flow result: {task.Result}");
+            _ignored.Add(flow.Key);
           }
         }
       });
+
+    //
+    // Points
+    //
+
+    bool Ignore(TimelinePoint point, FlowKey route)
+    {
+      if(!_ignored.Contains(route))
+      {
+        return false;
+      }
+      else if(route.Type.Observations.Get(point.Type).CanBeFirst)
+      {
+        _ignored.Remove(route);
+
+        return false;
+      }
+      else
+      {
+        return true;
+      }
+    }
+
+    async Task Enqueue(TimelinePoint point, FlowKey route)
+    {
+      if(_stopped.Contains(route))
+      {
+        return;
+      }
+
+      if(!_flowsByKey.TryGetValue(route, out var flow))
+      {
+        flow = AddFlow(route);
+
+        await ConnectFlow(flow);
+      }
+
+      flow.Enqueue(point);
+    }
   }
 }

@@ -5,8 +5,7 @@ namespace Totem.Timeline.Runtime
   /// </summary>
   public enum FlowResult
   {
-    Done,
     Ignored,
-    Stopped
+    Done
   }
 }
