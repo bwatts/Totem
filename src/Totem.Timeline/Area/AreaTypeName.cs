@@ -48,7 +48,7 @@ namespace Totem.Timeline.Area
     // Factory
     //
 
-    public static bool Quoted(ReadOnlySpan<char> tag) => tag[0].Equals('\\') || tag[^1].Equals('\\');
+    public static bool Quoted(ReadOnlySpan<char> tag) => tag[0].Equals('\"') || tag[^1].Equals('\"');
     public static bool TryFrom(string value, out AreaTypeName name)
     {
       var span = value.AsSpan();

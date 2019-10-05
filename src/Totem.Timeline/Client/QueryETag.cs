@@ -66,7 +66,7 @@ namespace Totem.Timeline.Client
     public static QueryETag From(FlowKey key, TimelinePosition checkpoint) =>
       new QueryETag(key, checkpoint);
 
-    public static bool Quoted(ReadOnlySpan<char> tag) => tag[0].Equals('\\') || tag[^1].Equals('\\');
+    public static bool Quoted(ReadOnlySpan<char> tag) => tag[0].Equals('\"') || tag[^1].Equals('\"');
     public static QueryETag From(string value, AreaMap area)
     {
       var span = value.AsSpan();
