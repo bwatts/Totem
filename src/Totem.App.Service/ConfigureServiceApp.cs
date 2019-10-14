@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +26,15 @@ namespace Totem.App.Service
     readonly ServiceStep<IServiceCollection> _services = new ServiceStep<IServiceCollection>();
     readonly ServiceStep<ITimelineBuilder> _timeline = new ServiceStep<ITimelineBuilder>();
     readonly ServiceStep<LoggerConfiguration> _serilog = new ServiceStep<LoggerConfiguration>();
+    CancellationToken _cancellationToken;
     bool _disableSerilog;
+
+    public ConfigureServiceApp CancellationToken(CancellationToken token)
+    {
+      _cancellationToken = token;
+
+      return this;
+    }
 
     public ConfigureServiceApp DisableSerilog()
     {
@@ -176,6 +185,10 @@ namespace Totem.App.Service
           services.AddTimeline<TArea>(timeline =>
             _timeline.Apply(context, timeline, () =>
               timeline.AddEventStore().BindOptionsToConfiguration()));
+
+          // Allow an external host (such as a Windows Service) to stop the application
+          services.AddSingleton<IHostedService>(p =>
+            new ServiceAppCancellation(p.GetService<IApplicationLifetime>(), _cancellationToken));
         }));
 
     public void ApplySerilog(IHostBuilder host)
