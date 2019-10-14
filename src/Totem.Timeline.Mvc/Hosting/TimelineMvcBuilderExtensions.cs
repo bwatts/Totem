@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -20,5 +21,8 @@ namespace Totem.Timeline.Mvc.Hosting
 
       return mvc;
     }
+
+    public static IMvcBuilder AddEntryAssemblyPart(this IMvcBuilder mvc) =>
+      mvc.AddApplicationPart(Assembly.GetEntryAssembly());
   }
 }
