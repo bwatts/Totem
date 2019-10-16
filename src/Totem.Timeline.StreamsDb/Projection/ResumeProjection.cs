@@ -1,7 +1,5 @@
-using StreamsDB.Driver;
 using System.Threading.Tasks;
 using Totem.Runtime;
-using Totem.Timeline.Area;
 
 namespace Totem.Timeline.StreamsDb
 {
@@ -19,8 +17,14 @@ namespace Totem.Timeline.StreamsDb
 
     public Task Synchronize()
     {
-      var projection = new ResumeProjectionSubscriber(_context);
-      projection.Start("default");
+      var resumeAreaProjection = new ResumeAreaSubscriber(_context);
+      resumeAreaProjection.Start();
+
+      foreach(var flowType in _context.Area.FlowTypes)
+      {
+        var resumeProgressProjection = new ResumeProgressSubscriber(_context, flowType);
+        resumeProgressProjection.Start();
+      }
 
       Log.Debug("[timeline] Created projection {Name}", TimelineStreams.Resume);
 

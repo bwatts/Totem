@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Acme.ProductImport;
-using Acme.ProductImport.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Totem.Timeline.Mvc;
 

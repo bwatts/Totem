@@ -34,4 +34,7 @@
     <ProjectReference Include="..\Totem\Totem.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Projection\" />
+  </ItemGroup>
 </Project>
