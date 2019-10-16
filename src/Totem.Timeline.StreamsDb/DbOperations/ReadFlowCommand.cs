@@ -4,19 +4,19 @@ using StreamsDB.Driver;
 using Totem.Runtime.Json;
 using Totem.Timeline.Runtime;
 
-namespace Totem.Timeline.EventStore.DbOperations
+namespace Totem.Timeline.StreamsDb.DbOperations
 {
   /// <summary>
   /// Reads the <see cref="FlowInfo"/> for a particular flow
   /// </summary>
   internal sealed class ReadFlowCommand
   {
-    readonly EventStoreContext _context;
+    readonly StreamsDbContext _context;
     readonly FlowKey _key;
     Message _checkpoint;
     CheckpointMetadata _metadata;
 
-    internal ReadFlowCommand(EventStoreContext context, FlowKey key)
+    internal ReadFlowCommand(StreamsDbContext context, FlowKey key)
     {
       _context = context;
       _key = key;
@@ -26,7 +26,7 @@ namespace Totem.Timeline.EventStore.DbOperations
     {
       var stream = _key.GetCheckpointStream();
 
-      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream(stream);
+      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream($"{_context.AreaName}-{stream}");
 
       if (!found)
       {

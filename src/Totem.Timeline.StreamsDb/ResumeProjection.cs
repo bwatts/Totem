@@ -3,28 +3,28 @@ using System.Threading.Tasks;
 using Totem.Runtime;
 using Totem.Timeline.Area;
 
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   /// <summary>
   /// The projection installed to track the set of flows to resume
   /// </summary>
   public sealed class ResumeProjection : Notion, IResumeProjection
   {
-    private readonly StreamsDBClient _streamsDbClient;
-    private readonly AreaKey _area;
+    private readonly StreamsDbContext _context;
 
-    public ResumeProjection(StreamsDBClient streamsDbClient, AreaKey area)
+    public ResumeProjection(StreamsDbContext context)
     {
-      _streamsDbClient = streamsDbClient;
-      _area = area;
+      _context = context;
     }
 
-    public async Task Synchronize()
+    public Task Synchronize()
     {
-      var projection = new ResumeProjectionSubscriber(_streamsDbClient);
-      await projection.Start(_area.ToString());
+      var projection = new ResumeProjectionSubscriber(_context);
+      projection.Start("default");
 
       Log.Debug("[timeline] Created projection {Name}", TimelineStreams.Resume);
+
+      return Task.CompletedTask;
     }   
   }
 }

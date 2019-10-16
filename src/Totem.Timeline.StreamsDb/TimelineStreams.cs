@@ -1,4 +1,4 @@
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   /// <summary>
   /// The names of streams in the timeline event store

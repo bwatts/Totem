@@ -6,16 +6,16 @@ using Totem.Runtime;
 using Totem.Runtime.Json;
 using Totem.Timeline.Client;
 
-namespace Totem.Timeline.EventStore.Client
+namespace Totem.Timeline.StreamsDb.Client
 {
   /// <summary>
   /// An EventStore database containing timeline data relevant to clients
   /// </summary>
   public sealed class ClientDb : Connection, IClientDb
   {
-    readonly EventStoreContext _context;
+    readonly StreamsDbContext _context;
 
-    public ClientDb(EventStoreContext context)
+    public ClientDb(StreamsDbContext context)
     {
       _context = context;
     }

@@ -2,21 +2,21 @@ using System;
 using System.Threading.Tasks;
 using Totem.Runtime;
 using Totem.Timeline.Client;
-using Totem.Timeline.EventStore.Client;
-using Totem.Timeline.EventStore.DbOperations;
+using Totem.Timeline.StreamsDb.Client;
+using Totem.Timeline.StreamsDb.DbOperations;
 using Totem.Timeline.Runtime;
 
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   /// <summary>
   /// An EventStore database containing an area's events and flows
   /// </summary>
   public sealed class TimelineDb : Connection, ITimelineDb
   {
-    readonly EventStoreContext _context;
+    readonly StreamsDbContext _context;
     readonly IResumeProjection _resumeProjection;
 
-    public TimelineDb(EventStoreContext context, IResumeProjection resumeProjection)
+    public TimelineDb(StreamsDbContext context, IResumeProjection resumeProjection)
     {
       _context = context;
       _resumeProjection = resumeProjection;
@@ -24,8 +24,7 @@ namespace Totem.Timeline.EventStore
 
     protected override async Task Open()
     {
-      Track(_context);
-
+      await _context.Connect(this);
       await _resumeProjection.Synchronize();
     }
 

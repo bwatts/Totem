@@ -5,22 +5,24 @@ using Totem.Runtime.Hosting;
 using Totem.Runtime.Json;
 using Totem.Timeline.Area;
 using Totem.Timeline.Client;
-using Totem.Timeline.EventStore.Client;
+using Totem.Timeline.StreamsDb.Client;
 using Totem.Timeline.Hosting;
 
-namespace Totem.Timeline.EventStore.Hosting
+namespace Totem.Timeline.StreamsDb.Hosting
 {
   /// <summary>
   /// Extends <see cref="ITimelineBuilder"/> to declare the EventStore timeline database
   /// </summary>
   [EditorBrowsable(EditorBrowsableState.Never)]
-  public static class EventStoreClientServiceExtensions
+  public static class StreamsDbClientServiceExtensions
   {
-    public static IEventStoreTimelineClientBuilder AddEventStore(this ITimelineClientBuilder client)
+    public static IStreamsDbTimelineClientBuilder AddStreamsDb(this ITimelineClientBuilder client, string connectionString, string areaName)
     {
       client.ConfigureServices(services =>
         services
-        .AddSingleton(p => new EventStoreContext(
+        .AddSingleton(p => new StreamsDbContext(
+          connectionString,
+          areaName,
           p.GetRequiredService<IJsonFormat>(),
           p.GetRequiredService<AreaMap>()))
         .AddSingleton<IClientDb, ClientDb>());
@@ -28,11 +30,11 @@ namespace Totem.Timeline.EventStore.Hosting
       return new EventStoreTimelineClientBuilder(client);
     }
 
-    public static IEventStoreTimelineClientBuilder BindOptionsToConfiguration(this IEventStoreTimelineClientBuilder client, string key = "totem.timeline.eventStore") =>
+    public static IStreamsDbTimelineClientBuilder BindOptionsToConfiguration(this IStreamsDbTimelineClientBuilder client, string key = "totem.timeline.streamsdb") =>
       client.ConfigureServices(services =>
-        services.BindOptionsToConfiguration<EventStoreTimelineOptions>(key));
+        services.BindOptionsToConfiguration<StreamsDbTimelineOptions>(key));
 
-    class EventStoreTimelineClientBuilder : IEventStoreTimelineClientBuilder
+    class EventStoreTimelineClientBuilder : IStreamsDbTimelineClientBuilder
     {
       readonly ITimelineClientBuilder _client;
 
@@ -41,7 +43,7 @@ namespace Totem.Timeline.EventStore.Hosting
         _client = client;
       }
 
-      public IEventStoreTimelineClientBuilder ConfigureServices(Action<IServiceCollection> configure)
+      public IStreamsDbTimelineClientBuilder ConfigureServices(Action<IServiceCollection> configure)
       {
         _client.ConfigureServices(configure);
 

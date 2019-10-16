@@ -5,19 +5,19 @@ using StreamsDB.Driver;
 using Totem.Runtime.Json;
 using Totem.Timeline.Client;
 
-namespace Totem.Timeline.EventStore.Client
+namespace Totem.Timeline.StreamsDb.Client
 {
   /// <summary>
   /// A subscription to the client stream in EventStore
   /// </summary>
   internal sealed class ClientSubscription : IDisposable
   {
-    readonly EventStoreContext _context;
+    readonly StreamsDbContext _context;
     readonly IClientObserver _observer;
     IStreamSubscription _timelineSubscription;
     IStreamSubscription _clientSubscription;
 
-    internal ClientSubscription(EventStoreContext context, IClientObserver observer)
+    internal ClientSubscription(StreamsDbContext context, IClientObserver observer)
     {
       _context = context;
       _observer = observer;
@@ -40,7 +40,7 @@ namespace Totem.Timeline.EventStore.Client
       await Task.Run(async () =>
       {
         _timelineSubscription = _context.Client.DB().SubscribeStream(
-          TimelineStreams.Timeline,
+          $"{_context.AreaName}-{TimelineStreams.Timeline}",
           0
         );
 
@@ -63,7 +63,7 @@ namespace Totem.Timeline.EventStore.Client
       await Task.Run(async () =>
       {
         _clientSubscription = _context.Client.DB().SubscribeStream(
-          TimelineStreams.Client,
+          $"{_context.AreaName}-{TimelineStreams.Client}",
           0
         );
 

@@ -6,17 +6,17 @@ using StreamsDB.Driver;
 using Totem.Runtime.Json;
 using Totem.Timeline.Area;
 
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   /// <summary>
-  /// Extends <see cref="EventStoreContext"/> with database operations
+  /// Extends <see cref="StreamsDbContext"/> with database operations
   /// </summary>
-  internal static class EventStoreContextExtensions
+  internal static class StreamsDbContextExtensions
   {
-    internal static EventType GetEventType(this EventStoreContext context, Event e) =>
+    internal static EventType GetEventType(this StreamsDbContext context, Event e) =>
       context.Area.Events.Get(e.GetType());
 
-    internal static byte[] ToJson(this EventStoreContext context, object value) =>
+    internal static byte[] ToJson(this StreamsDbContext context, object value) =>
       value == null ? null : context.Json.ToJsonUtf8(value).ToBytes();
 
     //
@@ -24,7 +24,7 @@ namespace Totem.Timeline.EventStore
     //
 
     internal static MessageInput GetAreaEventData(
-      this EventStoreContext context,
+      this StreamsDbContext context,
       Event e,
       TimelinePosition cause,
       DateTimeOffset when,
@@ -61,7 +61,7 @@ namespace Totem.Timeline.EventStore
     }
 
     internal static Many<MessageInput> GetNewEventData(
-      this EventStoreContext context,
+      this StreamsDbContext context,
       TimelinePosition cause,
       FlowKey topic,
       Many<Event> newEvents) =>
@@ -78,7 +78,7 @@ namespace Totem.Timeline.EventStore
         topic,
         context.GetEventType(e).GetRoutes(e).ToMany()));
 
-    internal static MessageInput GetScheduledEventData(this EventStoreContext context, TimelinePoint cause, DateTimeOffset now) =>
+    internal static MessageInput GetScheduledEventData(this StreamsDbContext context, TimelinePoint cause, DateTimeOffset now) =>
       context.GetAreaEventData(
         cause.Event,
         cause.Position,
@@ -91,7 +91,7 @@ namespace Totem.Timeline.EventStore
         null,
         cause.Type.GetRoutes(cause.Event).ToMany());
 
-    internal static MessageInput GetCheckpointEventData(this EventStoreContext context, Flow flow) =>
+    internal static MessageInput GetCheckpointEventData(this StreamsDbContext context, Flow flow) =>
       new MessageInput
       {
         ID = Guid.NewGuid().ToString(),
@@ -106,7 +106,7 @@ namespace Totem.Timeline.EventStore
         })
       };
 
-    internal static MessageInput GetClientEventData(this EventStoreContext context, Event e) =>
+    internal static MessageInput GetClientEventData(this StreamsDbContext context, Event e) =>
       new MessageInput
       {
         ID = Guid.NewGuid().ToString(),
@@ -119,7 +119,7 @@ namespace Totem.Timeline.EventStore
     // Reads
     //
 
-    internal static TimelinePoint ReadAreaPoint(this EventStoreContext context, Message e, AreaEventMetadata metadata)
+    internal static TimelinePoint ReadAreaPoint(this StreamsDbContext context, Message e, AreaEventMetadata metadata)
     {
       var type = context.ReadEventType(e);
 
@@ -147,46 +147,45 @@ namespace Totem.Timeline.EventStore
         });
     }
 
-    internal static TimelinePoint ReadAreaPoint(this EventStoreContext context, Message e) =>
+    internal static TimelinePoint ReadAreaPoint(this StreamsDbContext context, Message e) =>
       context.ReadAreaPoint(e, context.ReadAreaMetadata(e));
 
-    internal static AreaEventMetadata ReadAreaMetadata(this EventStoreContext context, Message e) =>
+    internal static AreaEventMetadata ReadAreaMetadata(this StreamsDbContext context, Message e) =>
       context.Json.FromJsonUtf8<AreaEventMetadata>(e.Header);
 
-    internal static CheckpointMetadata ReadCheckpointMetadata(this EventStoreContext context, Message e) =>
+    internal static CheckpointMetadata ReadCheckpointMetadata(this StreamsDbContext context, Message e) =>
       context.Json.FromJsonUtf8<CheckpointMetadata>(e.Header);
 
-    internal static EventType ReadEventType(this EventStoreContext context, Message e) =>
+    internal static EventType ReadEventType(this StreamsDbContext context, Message e) =>
       context.Area.Events.Get(AreaTypeName.From(e.Type));
 
-    static Event ReadEvent(this EventStoreContext context, Message e, EventType type) =>
+    static Event ReadEvent(this StreamsDbContext context, Message e, EventType type) =>
       (Event)context.Json.FromJsonUtf8(e.Value, type.DeclaredType);
 
     //
     // Appends
     //
 
-    static async Task<long> AppendEvent(this EventStoreContext context, string stream, MessageInput data)
+    static async Task<long> AppendEvent(this StreamsDbContext context, string stream, MessageInput data)
     {
-      var firstWrittenMessage = await context.Client.DB().AppendStream(stream, data);
+      var firstWrittenMessage = await context.Client.DB().AppendStream($"{context.AreaName}-{stream}", data);
       return firstWrittenMessage + 1;
     }
 
-
-    internal static async Task<long> AppendToTimeline(this EventStoreContext context, IEnumerable<MessageInput> data)
+    internal static async Task<long> AppendToTimeline(this StreamsDbContext context, IEnumerable<MessageInput> data)
     {
-      var firstWrittenMessage = await context.Client.DB().AppendStream(TimelineStreams.Timeline, data);
+      var firstWrittenMessage = await context.Client.DB().AppendStream($"{context.AreaName}-{TimelineStreams.Timeline}", data);
       return firstWrittenMessage + data.Count();
     }
 
-    internal static Task<long> AppendToTimelineAsync(this EventStoreContext context, MessageInput data) => context.AppendEvent(TimelineStreams.Timeline, data);
+    internal static Task<long> AppendToTimelineAsync(this StreamsDbContext context, MessageInput data) => context.AppendEvent(TimelineStreams.Timeline, data);
 
-    internal static Task<long> AppendToCheckpoint(this EventStoreContext context, Flow flow) =>
+    internal static Task<long> AppendToCheckpoint(this StreamsDbContext context, Flow flow) =>
       context.AppendEvent(flow.Context.Key.GetCheckpointStream(), context.GetCheckpointEventData(flow));
 
-    internal static async Task<long> AppendToClient(this EventStoreContext context, Event e)
+    internal static async Task<long> AppendToClient(this StreamsDbContext context, Event e)
     {
-      var firstWrittenMessage = await context.Client.DB().AppendStream(TimelineStreams.Client, context.GetClientEventData(e));
+      var firstWrittenMessage = await context.Client.DB().AppendStream($"{context.AreaName}-{TimelineStreams.Client}", context.GetClientEventData(e));
       return firstWrittenMessage + 1;
     }      
 

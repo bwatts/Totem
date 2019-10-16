@@ -5,22 +5,25 @@ using Totem.Runtime.Json;
 using Totem.Threading;
 using Totem.Timeline.Area;
 
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   /// <summary>
   /// The connection, JSON format, and area map in effect for the EventStore timeline
   /// </summary>
-  public class EventStoreContext : Connection
+  public class StreamsDbContext : Connection
   {
-    TaskSource _connectInitially;
-
-    public EventStoreContext(IJsonFormat json, AreaMap area)
+    public StreamsDbContext(string connectionString, string areaName, IJsonFormat json, AreaMap area)
     {
+      ConnectionString = connectionString;
+      AreaName = areaName;
       Json = json;
       Area = area;
     }
 
     public StreamsDBClient Client;
+
+    public readonly string ConnectionString;
+    public readonly string AreaName;
     public readonly IJsonFormat Json;
     public readonly AreaMap Area;
 
@@ -38,18 +41,7 @@ namespace Totem.Timeline.EventStore
 
     async Task ConnectInitially()
     {
-      _connectInitially = new TaskSource();
-
-      try
-      {
-        Client = await StreamsDBClient.Connect("");
-
-        await _connectInitially.Task;
-      }
-      finally
-      {
-        _connectInitially = null;
-      }
+      Client = await StreamsDBClient.Connect(ConnectionString);
     }
   }
 }

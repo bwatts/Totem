@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using StreamsDB.Driver;
 using Totem.Timeline.Runtime;
 
-namespace Totem.Timeline.EventStore.DbOperations
+namespace Totem.Timeline.StreamsDb.DbOperations
 {
   /// <summary>
   /// Reads the <see cref="FlowResumeInfo"/> for a particular flow
@@ -11,14 +11,14 @@ namespace Totem.Timeline.EventStore.DbOperations
   internal sealed class ReadFlowToResumeCommand
   {
     readonly Many<TimelinePoint> _points = new Many<TimelinePoint>();
-    readonly EventStoreContext _context;
+    readonly StreamsDbContext _context;
     readonly FlowKey _key;
     readonly string _routesStream;
     long? _areaCheckpoint;
     long _routesCheckpoint;
     int _batchIndex;
 
-    internal ReadFlowToResumeCommand(EventStoreContext context, FlowKey key)
+    internal ReadFlowToResumeCommand(StreamsDbContext context, FlowKey key)
     {
       _context = context;
       _key = key;
@@ -127,7 +127,7 @@ namespace Totem.Timeline.EventStore.DbOperations
     async Task<IStreamSlice> ReadBatch()
     {
       var result = await _context.Client.DB().ReadStreamBackward(
-        _routesStream,
+        $"{_context.AreaName}-{_routesStream}",
         _routesCheckpoint - 1,
         _key.Type.ResumeAlgorithm.GetNextBatchSize(_batchIndex));
 

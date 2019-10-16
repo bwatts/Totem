@@ -5,18 +5,18 @@ using Totem.Runtime.Json;
 using Totem.Timeline.Client;
 using Totem.Timeline.Runtime;
 
-namespace Totem.Timeline.EventStore.DbOperations
+namespace Totem.Timeline.StreamsDb.DbOperations
 {
   /// <summary>
   /// Reads the <see cref="FlowResumeInfo"/> for a particular flow with a checkpoint
   /// </summary>
   internal class ReadQueryContentCommand
   {
-    readonly EventStoreContext _context;
+    readonly StreamsDbContext _context;
     readonly QueryETag _etag;
     readonly string _stream;
 
-    internal ReadQueryContentCommand(EventStoreContext context, QueryETag etag)
+    internal ReadQueryContentCommand(StreamsDbContext context, QueryETag etag)
     {
       _context = context;
       _etag = etag;
@@ -51,7 +51,7 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     async Task<IStreamSlice> ReadCheckpointEventsBackward(long start)
     {
-      var slice = await _context.Client.DB().ReadStreamBackward(_stream, start, 3);
+      var slice = await _context.Client.DB().ReadStreamBackward($"{_context.AreaName}-{_stream}", start, 3);
       return slice;
     }
 

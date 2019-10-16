@@ -7,18 +7,18 @@ using Totem.Runtime.Json;
 using Totem.Timeline.Area;
 using Totem.Timeline.Runtime;
 
-namespace Totem.Timeline.EventStore.DbOperations
+namespace Totem.Timeline.StreamsDb.DbOperations
 {
   /// <summary>
   /// Subscribes to the timeline of the hosted area
   /// </summary>
   internal class SubscribeCommand
   {
-    readonly EventStoreContext _context;
+    readonly StreamsDbContext _context;
     readonly ITimelineObserver _observer;
 
     internal SubscribeCommand(
-      EventStoreContext context,
+      StreamsDbContext context,
       ITimelineObserver observer)
     {
       _context = context;
@@ -27,7 +27,7 @@ namespace Totem.Timeline.EventStore.DbOperations
 
     internal async Task<ResumeInfo> Execute()
     {
-      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream(TimelineStreams.Resume);
+      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream($"{_context.AreaName}-{TimelineStreams.Resume}");
 
       if (!found)
       {

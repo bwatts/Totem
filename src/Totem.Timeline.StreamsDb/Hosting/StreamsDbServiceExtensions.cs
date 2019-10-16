@@ -1,47 +1,45 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
+using StreamsDB.Driver;
 using Totem.Runtime.Hosting;
 using Totem.Runtime.Json;
 using Totem.Timeline.Area;
 using Totem.Timeline.Hosting;
 using Totem.Timeline.Runtime;
 
-namespace Totem.Timeline.EventStore.Hosting
+namespace Totem.Timeline.StreamsDb.Hosting
 {
   /// <summary>
   /// Extends <see cref="ITimelineBuilder"/> to declare the EventStore timeline database
   /// </summary>
   [EditorBrowsable(EditorBrowsableState.Never)]
-  public static class EventStoreServiceExtensions
+  public static class StreamsDbServiceExtensions
   {
-    public static IEventStoreTimelineBuilder AddEventStore(this ITimelineBuilder timeline)
+    public static IStreamsDbTimelineBuilder AddStreamsDb(this ITimelineBuilder timeline, string connectionString, string areaName)
     {
       timeline.ConfigureServices(services =>
       {
         services.AddSingleton<ITimelineDb>(p => new TimelineDb(
-          p.GetRequiredService<EventStoreContext>(),
+          p.GetRequiredService<StreamsDbContext>(),
           p.GetRequiredService<IResumeProjection>()));
 
-        services.AddSingleton(p => new EventStoreContext(
+        services.AddSingleton(p => new StreamsDbContext(
+          connectionString,
+          areaName,
           p.GetRequiredService<IJsonFormat>(),
           p.GetRequiredService<AreaMap>()));
 
-        //services.AddSingleton<IResumeProjection>(p => new ResumeProjection(
-        //  p.GetRequiredService<AreaMap>(),
-        //  p.GetRequiredService<ProjectionsManager>(),
-        //  p.BuildProjectionsCredentials()));
-
-        //services.AddSingleton(BuildProjectionsManager);
+        services.AddSingleton<IResumeProjection, ResumeProjection>();
       });
 
       return new EventStoreTimelineBuilder(timeline);
     }
 
-    public static IEventStoreTimelineBuilder BindOptionsToConfiguration(this IEventStoreTimelineBuilder timeline, string key = "totem.timeline.eventStore") =>
-      timeline.ConfigureServices(services => services.BindOptionsToConfiguration<EventStoreTimelineOptions>(key));
+    public static IStreamsDbTimelineBuilder BindOptionsToConfiguration(this IStreamsDbTimelineBuilder timeline, string key = "totem.timeline.eventStore") =>
+      timeline.ConfigureServices(services => services.BindOptionsToConfiguration<StreamsDbTimelineOptions>(key));
 
-    class EventStoreTimelineBuilder : IEventStoreTimelineBuilder
+    class EventStoreTimelineBuilder : IStreamsDbTimelineBuilder
     {
       readonly ITimelineBuilder _timeline;
 
@@ -50,7 +48,7 @@ namespace Totem.Timeline.EventStore.Hosting
         _timeline = timeline;
       }
 
-      public IEventStoreTimelineBuilder ConfigureServices(Action<IServiceCollection> configure)
+      public IStreamsDbTimelineBuilder ConfigureServices(Action<IServiceCollection> configure)
       {
         _timeline.ConfigureServices(configure);
 

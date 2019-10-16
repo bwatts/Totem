@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using StreamsDB.Driver;
 using Totem.Timeline.Area;
 
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   public class ResumeProjectionState
   {
@@ -37,29 +37,36 @@ namespace Totem.Timeline.EventStore
 
   public class ResumeProjectionSubscriber
   {
-    private readonly StreamsDBClient _streamsDBClient;
+    private readonly StreamsDbContext _context;
     private readonly ResumeProjectionState _state;
 
-    public ResumeProjectionSubscriber(StreamsDBClient streamsDBClient)
+    private string _areaName;
+
+    public ResumeProjectionSubscriber(StreamsDbContext context)
     {
-      _streamsDBClient = streamsDBClient;
+      _context = context;
       _state = new ResumeProjectionState();
     }
 
-    public async Task Start(string area)
+    public Task Start(string areaName)
     {
-      var subscription = _streamsDBClient.DB().SubscribeStream(area.ToString(), 0);
+      _areaName = areaName;
+      var subscription = _context.Client.DB().SubscribeStream($"#{areaName}", 0);
 
-      do
+      return Task.Run(async () =>
       {
-        if (!await subscription.MoveNext())
+        do
         {
-          await Task.Delay(1000);
-        }
+          if (!await subscription.MoveNext())
+          {
+            await Task.Delay(1000);
+            continue;
+          }
 
-        await Observe(subscription.Current);
-      }
-      while (true);
+          await Observe(subscription.Current);
+        }
+        while (true);
+      });      
     }
 
     private async Task Observe(Message message)
@@ -68,7 +75,7 @@ namespace Totem.Timeline.EventStore
       {
         return;
       }
-      else if (message.Stream == "timeline")
+      else if (message.Stream.EndsWith("-timeline", StringComparison.InvariantCultureIgnoreCase))
       {
         var areaEventMetadata = JsonConvert.DeserializeObject<AreaEventMetadata>(System.Text.Encoding.UTF8.GetString(message.Header));
         await UpdateArea(message, areaEventMetadata);
@@ -131,7 +138,7 @@ namespace Totem.Timeline.EventStore
         Header = message.Header
       };
 
-      await _streamsDBClient.DB().AppendStream(type + "-routes", messageInput);
+      await _context.Client.DB().AppendStream($"{_areaName}-{type}-routes", messageInput);
 
       ResumeProjectInstance instance;
 
@@ -158,7 +165,7 @@ namespace Totem.Timeline.EventStore
         Header = message.Header
       };
 
-      await _streamsDBClient.DB().AppendStream($"{type}|{id}-routes", messageInput);
+      await _context.Client.DB().AppendStream($"{_areaName}-{type}|{id}-routes", messageInput);
 
       Dictionary<Id, ResumeProjectInstance> instances;
 
@@ -216,7 +223,7 @@ namespace Totem.Timeline.EventStore
         Header = message.Header
       };
 
-      await _streamsDBClient.DB().AppendStream("schedule", messageInput);
+      await _context.Client.DB().AppendStream($"{_areaName}-schedule", messageInput);
 
       _state.Schedule[_state.Checkpoint] = null;
     }

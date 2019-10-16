@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   /// <summary>
   /// Describes the projection installed to track the set of flows to resume

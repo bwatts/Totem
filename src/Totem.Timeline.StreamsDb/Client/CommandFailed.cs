@@ -1,4 +1,4 @@
-namespace Totem.Timeline.EventStore.Client
+namespace Totem.Timeline.StreamsDb.Client
 {
   /// <summary>
   /// Indicates a command failed when applied to an area

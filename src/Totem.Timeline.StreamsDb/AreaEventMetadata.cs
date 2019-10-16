@@ -4,7 +4,7 @@ using System.Linq;
 using Totem.Runtime;
 using Totem.Timeline.Area;
 
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   /// <summary>
   /// Data describing an event appended to an area timeline

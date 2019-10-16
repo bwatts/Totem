@@ -1,4 +1,4 @@
-namespace Totem.Timeline.EventStore.Client
+namespace Totem.Timeline.StreamsDb.Client
 {
   /// <summary>
   /// Indicates a query stopped and has a new ETag

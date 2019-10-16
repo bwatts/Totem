@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using StreamsDB.Driver;
 
-namespace Totem.Timeline.EventStore.DbOperations
+namespace Totem.Timeline.StreamsDb.DbOperations
 {
   /// <summary>
   /// Reads the events for which to set timers when resuming
@@ -11,7 +11,7 @@ namespace Totem.Timeline.EventStore.DbOperations
   internal class ReadResumeScheduleCommand
   {
     readonly Many<TimelinePoint> _points = new Many<TimelinePoint>();
-    readonly EventStoreContext _context;
+    readonly StreamsDbContext _context;
     readonly ResumeAlgorithm _algorithm;
     readonly Many<long> _schedule;
     readonly long _scheduleFirst;
@@ -19,7 +19,7 @@ namespace Totem.Timeline.EventStore.DbOperations
     long _readCheckpoint;
     int _batchIndex;
 
-    internal ReadResumeScheduleCommand(EventStoreContext context, Many<long> schedule)
+    internal ReadResumeScheduleCommand(StreamsDbContext context, Many<long> schedule)
     {
       _context = context;
       _schedule = schedule;
@@ -77,7 +77,7 @@ namespace Totem.Timeline.EventStore.DbOperations
     async Task<IStreamSlice> ReadBatch()
     {
       var result = await _context.Client.DB().ReadStreamBackward(
-        TimelineStreams.Schedule,
+        $"{_context.AreaName}-{TimelineStreams.Schedule}",
         _readCheckpoint,
         _algorithm.GetNextBatchSize(_batchIndex));
 

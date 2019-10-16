@@ -1,11 +1,11 @@
 using System;
 
-namespace Totem.Timeline.EventStore.Hosting
+namespace Totem.Timeline.StreamsDb.Hosting
 {
   /// <summary>
   /// Configures the timeline's connection to an instance of EventStore
   /// </summary>
-  public class EventStoreTimelineOptions
+  public class StreamsDbTimelineOptions
   {
     public bool Verbose { get; set; } = false;
     public ServerOptions Server { get; set; } = new ServerOptions();

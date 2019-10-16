@@ -1,6 +1,6 @@
 using Totem.Runtime;
 
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   /// <summary>
   /// Data describing an event representing a flow checkpoint

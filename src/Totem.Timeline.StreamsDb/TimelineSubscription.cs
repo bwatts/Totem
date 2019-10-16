@@ -5,21 +5,21 @@ using StreamsDB.Driver;
 using Totem.Runtime;
 using Totem.Timeline.Runtime;
 
-namespace Totem.Timeline.EventStore
+namespace Totem.Timeline.StreamsDb
 {
   /// <summary>
   /// A resumable EventStore subscription to the hosted timeline area
   /// </summary>
   public class TimelineSubscription : Connection
   {
-    readonly EventStoreContext _context;
+    readonly StreamsDbContext _context;
     readonly TimelinePosition _checkpoint;
     readonly ITimelineObserver _observer;
     IStreamSubscription _subscription;
     CancellationTokenSource _cancellationTokenSource;
 
     public TimelineSubscription(
-      EventStoreContext context,
+      StreamsDbContext context,
       TimelinePosition checkpoint,
       ITimelineObserver observer)
     {
@@ -32,9 +32,11 @@ namespace Totem.Timeline.EventStore
 
     protected override Task Open()
     {
+      var position = _checkpoint.ToInt64OrNull();
+
       _subscription = _context.Client.DB().SubscribeStream(
-        TimelineStreams.Timeline,
-        _checkpoint.ToInt64()
+        $"{_context.AreaName}-{TimelineStreams.Timeline}",
+        position.HasValue ? position.Value : 0
       );
 
       Task.Run(async () =>
@@ -45,6 +47,7 @@ namespace Totem.Timeline.EventStore
           if (!hasNext)
           {
             await Task.Delay(1000);
+            continue;
           }
 
           await _observer.OnNext(_context.ReadAreaPoint(_subscription.Current));
