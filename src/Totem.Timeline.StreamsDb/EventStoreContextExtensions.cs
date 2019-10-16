@@ -129,7 +129,7 @@ namespace Totem.Timeline.EventStore
         type,
         metadata.When,
         metadata.WhenOccurs,
-        Id.From(e.Event.EventId),
+        Id.From($"{e.Stream}-{e.Position}"),
         metadata.CommandId,
         metadata.UserId,
         metadata.Topic,
