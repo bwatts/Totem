@@ -45,8 +45,15 @@ namespace Totem.Timeline.StreamsDb
 
     private void Observe(Message message)
     {
-      var checkpointMetadata = JsonConvert.DeserializeObject<CheckpointMetadata>(System.Text.Encoding.UTF8.GetString(message.Header));
-      UpdateProgress(message, checkpointMetadata);
+      try
+      {
+        var checkpointMetadata = JsonConvert.DeserializeObject<CheckpointMetadata>(System.Text.Encoding.UTF8.GetString(message.Header));
+        UpdateProgress(message, checkpointMetadata);
+      }
+      catch (Exception ex)
+      {
+        throw;
+      }
     }
 
     //

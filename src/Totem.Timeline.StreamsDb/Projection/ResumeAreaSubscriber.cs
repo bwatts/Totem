@@ -43,8 +43,15 @@ namespace Totem.Timeline.StreamsDb
 
     private async Task Observe(Message message)
     {
-      var areaEventMetadata = JsonConvert.DeserializeObject<AreaEventMetadata>(System.Text.Encoding.UTF8.GetString(message.Header));
-      await UpdateArea(message, areaEventMetadata);
+      try
+      {
+        var areaEventMetadata = JsonConvert.DeserializeObject<AreaEventMetadata>(System.Text.Encoding.UTF8.GetString(message.Header));
+        await UpdateArea(message, areaEventMetadata);
+      }
+      catch (Exception ex)
+      {
+        throw;
+      } 
     }
 
     private async Task UpdateArea(Message message, AreaEventMetadata metadata)
