@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using StreamsDB.Driver;
 using Totem.Timeline.Area;
+using Totem.Timeline.Json;
 
 namespace Totem.Timeline.StreamsDb
 {
@@ -13,12 +14,14 @@ namespace Totem.Timeline.StreamsDb
     private readonly StreamsDbContext _context;
     private readonly FlowType _flowType;
     private readonly ResumeProjectionState _state;
+    private readonly Func<Task> _onProjectionChanged;
 
-    public ResumeProgressSubscriber(StreamsDbContext context, FlowType flowType)
+    public ResumeProgressSubscriber(StreamsDbContext context, ResumeProjectionState state, FlowType flowType, Func<Task> onProjectionChanged)
     {
       _context = context;
       _flowType = flowType;
-      _state = new ResumeProjectionState();
+      _state = state;
+      _onProjectionChanged = onProjectionChanged;
     }
 
     public Task Start()
@@ -29,15 +32,9 @@ namespace Totem.Timeline.StreamsDb
       {
         do
         {
-          var hasNext = await subscription.MoveNext();
-
-          if (!hasNext)
-          {
-            await Task.Delay(1000);
-            continue;
-          }
-
+          await subscription.MoveNext();
           Observe(subscription.Current);
+          await _onProjectionChanged();
         }
         while (true);
       });      
@@ -45,15 +42,8 @@ namespace Totem.Timeline.StreamsDb
 
     private void Observe(Message message)
     {
-      try
-      {
-        var checkpointMetadata = JsonConvert.DeserializeObject<CheckpointMetadata>(System.Text.Encoding.UTF8.GetString(message.Header));
-        UpdateProgress(message, checkpointMetadata);
-      }
-      catch (Exception ex)
-      {
-        throw;
-      }
+      var checkpointMetadata = JsonConvert.DeserializeObject<CheckpointMetadata>(System.Text.Encoding.UTF8.GetString(message.Header), new TimelinePositionConverter());
+      UpdateProgress(message, checkpointMetadata);
     }
 
     //
@@ -62,7 +52,7 @@ namespace Totem.Timeline.StreamsDb
 
     private void UpdateProgress(Message message, CheckpointMetadata metadata)
     {
-      var flowKey = message.Stream.Substring(0, message.Stream.Length - "-checkpoint".Length);
+      var flowKey = message.Stream.Substring($"{_context.AreaName}-".Length, message.Stream.Length - $"{_context.AreaName}-".Length - "-checkpoint".Length);
       var separatorIndex = flowKey.IndexOf("|");
 
       if (separatorIndex == -1)
@@ -148,77 +138,6 @@ namespace Totem.Timeline.StreamsDb
         instance.Checkpoint = metadata.Position.ToInt64OrNull();
         instance.IsStopped = instance.IsStopped || metadata.ErrorPosition != null;
       }
-    }
-
-    //
-    // Resume state
-    //
-
-    private ResumeState GetResumeState(Message message)
-    {
-      var routes = BuildRoutes();
-      var schedule = BuildSchedule();
-
-      return new ResumeState
-      {
-        Checkpoint = _state.Checkpoint,
-        Routes = routes,
-        Schedule = schedule
-      };
-    }
-
-    private List<string> BuildRoutes()
-    {
-      var routes = new List<string>();
-
-      foreach (var instance in _state.SingleInstances)
-      {
-        var singleTypeRoutes = BuildSingleTypeRoutes(instance.Key, instance.Value);
-        routes.AddRange(singleTypeRoutes);
-      }
-
-      foreach (var instance in _state.MultiInstances)
-      {
-        var multiTypeRoutes = BuildMultiTypeRoutes(instance.Key, instance.Value);
-        routes.AddRange(multiTypeRoutes);
-      }
-
-      return routes;
-    }
-
-    private List<long> BuildSchedule()
-    {
-      return _state.Schedule.Keys.OrderBy(x => x).ToList();
-    }
-
-    private List<string> BuildSingleTypeRoutes(AreaTypeName type, ResumeProjectInstance instance)
-    {
-      var routes = new List<string>();
-
-      if (IsResumable(instance))
-      {
-        routes.Add(type.ToString());
-      }
-
-      return routes;
-    }
-
-    private List<string> BuildMultiTypeRoutes(AreaTypeName type, Dictionary<Id, ResumeProjectInstance> instances)
-    {
-      var resumableIds = instances.Where(instance => IsResumable(instance.Value)).Select(instance => instance.Key);
-      var routes = new List<string>();
-
-      routes.Add(type.ToString());
-      routes.AddRange(resumableIds.Select(id => id.ToString()));
-
-      return routes;
-    }
-
-    private bool IsResumable(ResumeProjectInstance instance)
-    {
-      return !instance.IsStopped &&
-        instance.Latest != null &&
-        (instance.Checkpoint == null || instance.Checkpoint < instance.Latest);
     }
   }
 }

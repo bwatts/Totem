@@ -1,9 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StreamsDB.Driver;
+using Totem.Runtime.Json;
 using Totem.Timeline.Area;
+using Totem.Timeline.Json;
+using Totem.Timeline.Runtime;
+using Totem.Timeline.StreamsDb.DbOperations;
 
 namespace Totem.Timeline.StreamsDb
 {
@@ -12,46 +18,51 @@ namespace Totem.Timeline.StreamsDb
   {
     private readonly StreamsDbContext _context;
     private readonly ResumeProjectionState _state;
+    private readonly Func<Task> _onProjectionChanged;
 
-    public ResumeAreaSubscriber(StreamsDbContext context)
+    public ResumeAreaSubscriber(StreamsDbContext context, ResumeProjectionState state, Func<Task> onProjectionChanged)
     {
       _context = context;
-      _state = new ResumeProjectionState();
+      _state = state;
+      _onProjectionChanged = onProjectionChanged;
     }
 
-    public Task Start()
+    public async Task Start()
     {
-      var subscription = _context.Client.DB().SubscribeStream($"{_context.AreaName}-{TimelineStreams.Timeline}", 0);
+      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream($"{_context.AreaName}-{TimelineStreams.Resume}");
 
-      return Task.Run(async () =>
+      long position = 0;
+
+      if (found)
+      {
+        var json = _context.Json.ToJObjectUtf8(message.Value);
+        var checkpoint = ReadCheckpoint(json["checkpoint"]);
+        position = checkpoint.ToInt64();
+      }
+
+      var subscription = _context.Client.DB().SubscribeStream($"{_context.AreaName}-{TimelineStreams.Timeline}", position + 1);
+
+      await Task.Run(async () =>
       {
         do
         {
-          var hasNext = await subscription.MoveNext();
-
-          if (!hasNext)
-          {
-            await Task.Delay(1000);
-            continue;
-          }
-
+          await subscription.MoveNext();
           await Observe(subscription.Current);
+          await _onProjectionChanged();
         }
         while (true);
-      });      
+      });
     }
+
+    TimelinePosition ReadCheckpoint(JToken json) =>
+     json.Type == JTokenType.Null ? TimelinePosition.None : new TimelinePosition(json.Value<long>());
 
     private async Task Observe(Message message)
     {
-      try
-      {
-        var areaEventMetadata = JsonConvert.DeserializeObject<AreaEventMetadata>(System.Text.Encoding.UTF8.GetString(message.Header));
-        await UpdateArea(message, areaEventMetadata);
-      }
-      catch (Exception ex)
-      {
-        throw;
-      } 
+      var areaEventMetadata = JsonConvert.DeserializeObject<AreaEventMetadata>(System.Text.Encoding.UTF8.GetString(message.Header),
+        new TimelinePositionConverter(), new FlowKeyConverter(_context.Area));
+
+      await UpdateArea(message, areaEventMetadata);
     }
 
     private async Task UpdateArea(Message message, AreaEventMetadata metadata)

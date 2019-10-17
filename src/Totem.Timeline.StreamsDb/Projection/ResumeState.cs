@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using StreamsDB.Driver;
+using System.Collections.Generic;
 
 namespace Totem.Timeline.StreamsDb
 {
@@ -8,4 +9,13 @@ namespace Totem.Timeline.StreamsDb
         public List<string> Routes { get; set; }
         public List<long> Schedule { get; set; }
     }
+
+  public class HeaderWithOriginalStream<T>: T
+  {
+    public MessageInputWithOriginalStream(MessageInput messageInput)
+    {
+      ID = messageInput.ID;
+      messageInput.
+    }
+  }
 }

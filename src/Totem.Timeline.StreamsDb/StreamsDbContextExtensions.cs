@@ -168,14 +168,13 @@ namespace Totem.Timeline.StreamsDb
 
     static async Task<long> AppendEvent(this StreamsDbContext context, string stream, MessageInput data)
     {
-      var firstWrittenMessage = await context.Client.DB().AppendStream($"{context.AreaName}-{stream}", data);
-      return firstWrittenMessage + 1;
+      return await context.Client.DB().AppendStream($"{context.AreaName}-{stream}", data);
     }
 
     internal static async Task<long> AppendToTimeline(this StreamsDbContext context, IEnumerable<MessageInput> data)
     {
       var firstWrittenMessage = await context.Client.DB().AppendStream($"{context.AreaName}-{TimelineStreams.Timeline}", data);
-      return firstWrittenMessage + data.Count();
+      return firstWrittenMessage + data.Count() - 1;
     }
 
     internal static Task<long> AppendToTimelineAsync(this StreamsDbContext context, MessageInput data) => context.AppendEvent(TimelineStreams.Timeline, data);
@@ -185,8 +184,7 @@ namespace Totem.Timeline.StreamsDb
 
     internal static async Task<long> AppendToClient(this StreamsDbContext context, Event e)
     {
-      var firstWrittenMessage = await context.Client.DB().AppendStream($"{context.AreaName}-{TimelineStreams.Client}", context.GetClientEventData(e));
-      return firstWrittenMessage + 1;
+      return await context.Client.DB().AppendStream($"{context.AreaName}-{TimelineStreams.Client}", context.GetClientEventData(e));
     }      
 
     //

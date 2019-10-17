@@ -80,11 +80,11 @@ namespace Totem.Timeline.StreamsDb.DbOperations
     }
 
     Task<(Message, bool)> ReadLastRoute() =>
-      _context.Client.DB().ReadLastMessageFromStream(_routesStream);
+      _context.Client.DB().ReadLastMessageFromStream($"{_context.AreaName}-{_routesStream}");
 
     async Task ReadPoints(Message lastRoute)
     {
-      if(_areaCheckpoint == null || _areaCheckpoint < lastRoute.Position)
+      if(_areaCheckpoint == null || _areaCheckpoint < lastRoute.Position + 1)
       {
         AddPoint(lastRoute);
 

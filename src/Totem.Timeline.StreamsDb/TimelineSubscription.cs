@@ -36,20 +36,14 @@ namespace Totem.Timeline.StreamsDb
 
       _subscription = _context.Client.DB().SubscribeStream(
         $"{_context.AreaName}-{TimelineStreams.Timeline}",
-        position.HasValue ? position.Value : 0
+        position.HasValue ? position.Value + 1 : 0
       );
 
       Task.Run(async () =>
       {
         do
         {
-          var hasNext = await _subscription.MoveNext();
-          if (!hasNext)
-          {
-            await Task.Delay(1000);
-            continue;
-          }
-
+          await _subscription.MoveNext();
           await _observer.OnNext(_context.ReadAreaPoint(_subscription.Current));
         }
         while (!_cancellationTokenSource.IsCancellationRequested);
