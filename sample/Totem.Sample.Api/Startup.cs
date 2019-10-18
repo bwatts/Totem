@@ -37,7 +37,7 @@ namespace Totem.Sample.Api
 
       services.AddTimelineClient<ProductImportArea>(timeline =>
       {
-        timeline.AddStreamsDb("", "sample");
+        timeline.AddStreamsDb("sdb://promontis:21b1a99af382bcebfa60e9408e063283@sdb-01.streamsdb.io:443/stylister-7?block=1", "sample1");
       });
 
       services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

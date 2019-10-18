@@ -7,6 +7,6 @@ namespace Totem.Timeline.StreamsDb
   /// </summary>
   public interface IResumeProjection
   {
-    Task Synchronize();
+    Task SynchronizeAsync();
   }
 }

@@ -44,7 +44,7 @@ namespace Totem.Timeline.StreamsDb.DbOperations
     {
       var json = _context.Json.ToJObjectUtf8(data);
 
-      var checkpoint = ReadCheckpoint(json["checkpoint"]);
+      var checkpoint = ReadCheckpoint(json["checkpoints"].Value<JObject>(), $"{_context.AreaName}-{TimelineStreams.Timeline}");
       var routes = ReadResumeFlows(json["routes"].Value<JArray>()).ToMany();
       var schedule = await ReadResumeSchedule(json["schedule"].Value<JArray>());
 
@@ -53,8 +53,21 @@ namespace Totem.Timeline.StreamsDb.DbOperations
       return new ResumeInfo(checkpoint, routes, schedule, subscription);
     }
 
-    TimelinePosition ReadCheckpoint(JToken json) =>
-      json.Type == JTokenType.Null ? TimelinePosition.None : new TimelinePosition(json.Value<long>());
+    TimelinePosition ReadCheckpoint(JObject json, string stream)
+    {
+      if (json.Type != JTokenType.Null)
+      {
+        foreach (JProperty prop in json.Properties())
+        {
+          if (prop.Name == stream)
+          {
+            return new TimelinePosition(prop.Value.Value<long>());
+          }
+        }
+      }   
+
+      return TimelinePosition.None;
+    }
 
     IEnumerable<FlowKey> ReadResumeFlows(JArray json)
     {

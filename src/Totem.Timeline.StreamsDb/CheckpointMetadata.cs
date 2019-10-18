@@ -12,6 +12,5 @@ namespace Totem.Timeline.StreamsDb
     public TimelinePosition ErrorPosition;
     public string ErrorMessage;
     public bool IsDone;
-    public string Stream;
   }
 }

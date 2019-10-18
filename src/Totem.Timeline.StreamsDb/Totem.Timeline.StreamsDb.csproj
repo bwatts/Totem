@@ -23,18 +23,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Projection\ResumeAreaSubscriber.cs" />
+    <Compile Remove="Projection\ResumeProgressSubscriber.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
     <PackageReference Include="System.Reactive.Linq" Version="4.1.2" />
     <PackageReference Include="StreamsDB.Driver" Version="0.9.5-dev.28" />
+    <PackageReference Include="System.Threading.Channels" Version="4.6.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj" />
     <ProjectReference Include="..\Totem.Timeline\Totem.Timeline.csproj" />
     <ProjectReference Include="..\Totem\Totem.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Projection\" />
   </ItemGroup>
 </Project>

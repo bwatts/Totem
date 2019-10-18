@@ -21,7 +21,6 @@ namespace Totem.Timeline.StreamsDb
     public FlowKey Topic;
     public List<AreaTypeName> RouteTypes;
     public List<RouteTypeIds> RouteIds;
-    public string Stream;
 
     public class RouteTypeIds
     {

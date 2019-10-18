@@ -25,7 +25,7 @@ namespace Totem.Timeline.StreamsDb
     protected override async Task Open()
     {
       await _context.Connect(this);
-      await _resumeProjection.Synchronize();
+      await _resumeProjection.SynchronizeAsync();
     }
 
     public Task<ResumeInfo> Subscribe(ITimelineObserver observer) =>

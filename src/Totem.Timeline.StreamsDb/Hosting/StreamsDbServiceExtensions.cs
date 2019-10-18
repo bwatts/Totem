@@ -7,6 +7,7 @@ using Totem.Runtime.Json;
 using Totem.Timeline.Area;
 using Totem.Timeline.Hosting;
 using Totem.Timeline.Runtime;
+using Totem.Timeline.StreamsDb.Projection;
 
 namespace Totem.Timeline.StreamsDb.Hosting
 {
