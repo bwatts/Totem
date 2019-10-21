@@ -39,10 +39,7 @@ namespace Totem.Timeline.StreamsDb.Client
     {
       await Task.Run(async () =>
       {
-        _timelineSubscription = _context.Client.DB().SubscribeStream(
-          $"{_context.AreaName}-{TimelineStreams.Timeline}",
-          0
-        );
+        _timelineSubscription = _context.Client.DB().SubscribeStream(TimelineStreams.GetTimelineStream(_context.AreaName), 0);
 
         do
         {
@@ -60,21 +57,13 @@ namespace Totem.Timeline.StreamsDb.Client
 
     async Task SubscribeToClient()
     {
+      _clientSubscription = _context.Client.DB().SubscribeStream(TimelineStreams.GetClientStream(_context.AreaName), 0);
+
       await Task.Run(async () =>
       {
-        _clientSubscription = _context.Client.DB().SubscribeStream(
-          $"{_context.AreaName}-{TimelineStreams.Client}",
-          0
-        );
-
         do
         {
-          if (!await _clientSubscription.MoveNext())
-          {
-            await Task.Delay(1000);
-            continue;
-          }
-
+          await _clientSubscription.MoveNext();
           await OnNextFromClient(_clientSubscription.Current);
         }
         while (true);

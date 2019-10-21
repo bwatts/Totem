@@ -77,7 +77,7 @@ namespace Totem.Timeline.StreamsDb.DbOperations
     async Task<IStreamSlice> ReadBatch()
     {
       var result = await _context.Client.DB().ReadStreamBackward(
-        $"{_context.AreaName}-{TimelineStreams.Schedule}",
+        TimelineStreams.GetScheduleStream(_context.AreaName),
         _readCheckpoint,
         _algorithm.GetNextBatchSize(_batchIndex));
 

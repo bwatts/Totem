@@ -21,7 +21,7 @@ namespace Totem.Timeline.StreamsDb.DbOperations
       _context = context;
       _etag = etag;
 
-      _stream = etag.Key.GetCheckpointStream();
+      _stream = etag.Key.GetCheckpointStream(context.AreaName);
     }
 
     internal async Task<Stream> Execute()

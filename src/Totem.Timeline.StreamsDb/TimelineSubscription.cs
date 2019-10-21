@@ -35,7 +35,7 @@ namespace Totem.Timeline.StreamsDb
       var position = _checkpoint.ToInt64OrNull();
 
       _subscription = _context.Client.DB().SubscribeStream(
-        $"{_context.AreaName}-{TimelineStreams.Timeline}",
+        TimelineStreams.GetTimelineStream(_context.AreaName),
         position.HasValue ? position.Value + 1 : 0
       );
 

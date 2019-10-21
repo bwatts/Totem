@@ -32,28 +32,29 @@ namespace Totem.Timeline.StreamsDb.Projection
       var checkpoints = await GetCheckpoints();
       _state = new ResumeProjectionState(checkpoints);
 
-      SubscribeToStream(channel.Writer, $"{_context.AreaName}-{TimelineStreams.Timeline}", ResumeEventStreamType.Timeline, checkpoints);
+      SubscribeToStream(channel.Writer, TimelineStreams.GetTimelineStream(_context.AreaName), ResumeEventStreamType.Timeline, checkpoints);
 
-      foreach (var flowType in _context.Area.FlowTypes)
+      foreach(var flowType in _context.Area.FlowTypes)
       {
-        SubscribeToStream(channel.Writer, $"{_context.AreaName}-{flowType.Name}-checkpoint", ResumeEventStreamType.Checkpoint, checkpoints);
+        SubscribeToStream(channel.Writer, TimelineStreams.GetCheckpointStream(flowType, _context.AreaName), ResumeEventStreamType.Checkpoint, checkpoints);
       }
-
+      
       StartProjection(channel);
     }
 
     private async Task<Dictionary<string, long>> GetCheckpoints()
     {
-      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream($"{_context.AreaName}-{TimelineStreams.Resume}");
+      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream(TimelineStreams.GetResumeStream(_context.AreaName));
 
       var checkpoints = new Dictionary<string, long>()
       {
-        { $"{_context.AreaName}-{TimelineStreams.Timeline}", 0 }
+        { TimelineStreams.GetTimelineStream(_context.AreaName), 0 }
       };
 
       foreach (var flowType in _context.Area.FlowTypes)
       {
-        checkpoints[$"{_context.AreaName}-{flowType.Name}-checkpoint"] = 0;
+        var stream = TimelineStreams.GetCheckpointStream(flowType, _context.AreaName);
+        checkpoints[stream] = 0;
       }
 
       if (found)
@@ -135,7 +136,7 @@ namespace Totem.Timeline.StreamsDb.Projection
         Header = null
       };
 
-      await _context.Client.DB().AppendStream($"{_context.AreaName}-{TimelineStreams.Resume}", messageInput);
+      await _context.Client.DB().AppendStream(TimelineStreams.GetResumeStream(_context.AreaName), messageInput);
     }
 
     private async Task UpdateArea(Message message, AreaEventMetadata metadata)
@@ -179,12 +180,12 @@ namespace Totem.Timeline.StreamsDb.Projection
       var messageInput = new MessageInput
       {
         ID = Guid.NewGuid().ToString(),
-        Type = message.Type,
+        Type = $"singleInstanceRoute:{message.Type}",
         Value = message.Value,
         Header = message.Header
       };
 
-      await _context.Client.DB().AppendStream($"{_context.AreaName}-{type}-routes", messageInput);
+      await _context.Client.DB().AppendStream(type.GetRoutesStream(_context.AreaName), messageInput);
 
       ResumeProjectInstance instance;
 
@@ -206,12 +207,12 @@ namespace Totem.Timeline.StreamsDb.Projection
       var messageInput = new MessageInput
       {
         ID = Guid.NewGuid().ToString(),
-        Type = message.Type,
+        Type = $"multiInstanceRoute:{message.Type}",
         Value = message.Value,
         Header = message.Header
       };
-
-      await _context.Client.DB().AppendStream($"{_context.AreaName}-{type}|{id}-routes", messageInput);
+      
+      await _context.Client.DB().AppendStream(type.GetRoutesStream(_context.AreaName, id), messageInput);
 
       Dictionary<Id, ResumeProjectInstance> instances;
 
@@ -269,7 +270,7 @@ namespace Totem.Timeline.StreamsDb.Projection
         Header = message.Header
       };
 
-      await _context.Client.DB().AppendStream($"{_context.AreaName}-schedule", messageInput);
+      await _context.Client.DB().AppendStream(TimelineStreams.GetScheduleStream(_context.AreaName), messageInput);
 
       _state.Schedule[_state.Checkpoints[message.Stream]] = null;
     }

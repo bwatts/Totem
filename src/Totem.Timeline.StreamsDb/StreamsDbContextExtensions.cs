@@ -54,7 +54,7 @@ namespace Totem.Timeline.StreamsDb
       return new MessageInput
       {
         ID = eventId.IsUnassigned ? Guid.NewGuid().ToString() : eventId.ToString(),
-        Type = type.ToString(),
+        Type = $"timeline:{type}",
         Value = context.ToJson(e),
         Header = context.ToJson(metadata)
       };
@@ -95,7 +95,7 @@ namespace Totem.Timeline.StreamsDb
       new MessageInput
       {
         ID = Guid.NewGuid().ToString(),
-        Type = "timeline:Checkpoint",
+        Type = "checkpoint",
         Value = context.ToJson(flow),
         Header = context.ToJson(new CheckpointMetadata
         {
@@ -156,8 +156,12 @@ namespace Totem.Timeline.StreamsDb
     internal static CheckpointMetadata ReadCheckpointMetadata(this StreamsDbContext context, Message e) =>
       context.Json.FromJsonUtf8<CheckpointMetadata>(e.Header);
 
-    internal static EventType ReadEventType(this StreamsDbContext context, Message e) =>
-      context.Area.Events.Get(AreaTypeName.From(e.Type));
+    internal static EventType ReadEventType(this StreamsDbContext context, Message e)
+    {
+      var typeWithPrefix = e.Type;
+      var type = typeWithPrefix.Substring("timeline:".Length);
+      return context.Area.Events.Get(AreaTypeName.From(type));
+    } 
 
     static Event ReadEvent(this StreamsDbContext context, Message e, EventType type) =>
       (Event)context.Json.FromJsonUtf8(e.Value, type.DeclaredType);
@@ -168,23 +172,23 @@ namespace Totem.Timeline.StreamsDb
 
     static async Task<long> AppendEvent(this StreamsDbContext context, string stream, MessageInput data)
     {
-      return await context.Client.DB().AppendStream($"{context.AreaName}-{stream}", data);
+      return await context.Client.DB().AppendStream(stream, data);
     }
 
     internal static async Task<long> AppendToTimeline(this StreamsDbContext context, IEnumerable<MessageInput> data)
     {
-      var firstWrittenMessage = await context.Client.DB().AppendStream($"{context.AreaName}-{TimelineStreams.Timeline}", data);
+      var firstWrittenMessage = await context.Client.DB().AppendStream(TimelineStreams.GetTimelineStream(context.AreaName), data);
       return firstWrittenMessage + data.Count() - 1;
     }
 
-    internal static Task<long> AppendToTimelineAsync(this StreamsDbContext context, MessageInput data) => context.AppendEvent(TimelineStreams.Timeline, data);
+    internal static Task<long> AppendToTimelineAsync(this StreamsDbContext context, MessageInput data) => context.AppendEvent(TimelineStreams.GetTimelineStream(context.AreaName), data);
 
     internal static Task<long> AppendToCheckpoint(this StreamsDbContext context, Flow flow) =>
-      context.AppendEvent(flow.Context.Key.GetCheckpointStream(), context.GetCheckpointEventData(flow));
+      context.AppendEvent(flow.Context.Key.GetCheckpointStream(context.AreaName), context.GetCheckpointEventData(flow));
 
     internal static async Task<long> AppendToClient(this StreamsDbContext context, Event e)
     {
-      return await context.Client.DB().AppendStream($"{context.AreaName}-{TimelineStreams.Client}", context.GetClientEventData(e));
+      return await context.Client.DB().AppendStream(TimelineStreams.GetClientStream(context.AreaName), context.GetClientEventData(e));
     }      
 
     //

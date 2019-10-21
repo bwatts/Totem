@@ -77,7 +77,7 @@ namespace Totem.Timeline.StreamsDb.Client
 
     async Task<TResult> ReadQueryCheckpoint<TResult>(FlowKey key, Func<TResult> getDefault, Func<Message, TResult> getCheckpoint)
     {
-      var stream = key.GetCheckpointStream();
+      var stream = key.GetCheckpointStream(_context.AreaName);
 
       var (message, found) = await _context.Client.DB().ReadLastMessageFromStream(stream);
 

@@ -23,7 +23,7 @@ namespace Totem.Timeline.StreamsDb.DbOperations
       _context = context;
       _key = key;
 
-      _routesStream = key.GetRoutesStream();
+      _routesStream = key.GetRoutesStream(context.AreaName);
     }
 
     internal async Task<FlowResumeInfo> Execute()

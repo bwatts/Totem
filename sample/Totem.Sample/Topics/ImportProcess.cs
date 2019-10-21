@@ -29,5 +29,17 @@ namespace Acme.ProductImport.Topics
         Then(new ImportStarted(e.Reason));
       }
     }
+
+    void When(FinishImport e)
+    {
+      if (_importing)
+      {
+        Then(new ImportFinished());
+      }
+      else
+      {
+        Then(new ImportNotStarted());
+      }
+    }
   }
 }

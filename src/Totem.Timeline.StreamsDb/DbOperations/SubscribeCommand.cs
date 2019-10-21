@@ -27,7 +27,7 @@ namespace Totem.Timeline.StreamsDb.DbOperations
 
     internal async Task<ResumeInfo> Execute()
     {
-      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream($"{_context.AreaName}-{TimelineStreams.Resume}");
+      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream(TimelineStreams.GetResumeStream(_context.AreaName));
 
       if (!found)
       {
@@ -44,7 +44,7 @@ namespace Totem.Timeline.StreamsDb.DbOperations
     {
       var json = _context.Json.ToJObjectUtf8(data);
 
-      var checkpoint = ReadCheckpoint(json["checkpoints"].Value<JObject>(), $"{_context.AreaName}-{TimelineStreams.Timeline}");
+      var checkpoint = ReadCheckpoint(json["checkpoints"].Value<JObject>(), TimelineStreams.GetTimelineStream(_context.AreaName));
       var routes = ReadResumeFlows(json["routes"].Value<JArray>()).ToMany();
       var schedule = await ReadResumeSchedule(json["schedule"].Value<JArray>());
 

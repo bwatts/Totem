@@ -24,9 +24,9 @@ namespace Totem.Timeline.StreamsDb.DbOperations
 
     internal async Task<FlowInfo> Execute()
     {
-      var stream = _key.GetCheckpointStream();
+      var stream = _key.GetCheckpointStream(_context.AreaName);
 
-      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream($"{_context.AreaName}-{stream}");
+      var (message, found) = await _context.Client.DB().ReadLastMessageFromStream(stream);
 
       if (!found)
       {
