@@ -163,7 +163,7 @@ namespace Totem.Timeline.StreamsDb
       return context.Area.Events.Get(AreaTypeName.From(type));
     } 
 
-    static Event ReadEvent(this StreamsDbContext context, Message e, EventType type) =>
+    internal static Event ReadEvent(this StreamsDbContext context, Message e, EventType type) =>
       (Event)context.Json.FromJsonUtf8(e.Value, type.DeclaredType);
 
     //

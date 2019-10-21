@@ -33,4 +33,9 @@ namespace Totem.Sample.Api.Controllers
         When<ImportNotStarted>.ThenConflict);
     }
   }
+
+  public class SetBalanceRequest
+  {
+    public int Balance { get; set; }
+  }
 }

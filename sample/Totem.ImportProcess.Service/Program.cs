@@ -28,7 +28,7 @@ namespace Totem.Sample.Service
 
         services.AddTimeline<ProductImportArea>(timeline =>
         {
-          timeline.AddStreamsDb("", "sample");
+          timeline.AddStreamsDb("", "sample10");
         });
       });
 

@@ -1,12 +1,14 @@
 using System;
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
-using StreamsDB.Driver;
 using Totem.Runtime.Hosting;
 using Totem.Runtime.Json;
 using Totem.Timeline.Area;
+using Totem.Timeline.Client;
 using Totem.Timeline.Hosting;
 using Totem.Timeline.Runtime;
+using Totem.Timeline.StreamsDb.Client;
+using Totem.Timeline.StreamsDb.Integration;
 using Totem.Timeline.StreamsDb.Projection;
 
 namespace Totem.Timeline.StreamsDb.Hosting
@@ -23,7 +25,8 @@ namespace Totem.Timeline.StreamsDb.Hosting
       {
         services.AddSingleton<ITimelineDb>(p => new TimelineDb(
           p.GetRequiredService<StreamsDbContext>(),
-          p.GetRequiredService<IResumeProjection>()));
+          p.GetRequiredService<IResumeProjection>(),
+          p.GetRequiredService<IIntegrationSubscriber>()));
 
         services.AddSingleton(p => new StreamsDbContext(
           connectionString,
@@ -32,6 +35,8 @@ namespace Totem.Timeline.StreamsDb.Hosting
           p.GetRequiredService<AreaMap>()));
 
         services.AddSingleton<IResumeProjection, ResumeProjection>();
+        services.AddSingleton<IIntegrationSubscriber, IntegrationSubscriber>();
+        services.AddSingleton<IClientDb, ClientDb>();
       });
 
       return new EventStoreTimelineBuilder(timeline);
