@@ -37,7 +37,7 @@ namespace Totem.Sample.Api
 
       services.AddTimelineClient<ProductImportArea>(timeline =>
       {
-        timeline.AddStreamsDb("", "sample10");
+        timeline.AddStreamsDb("", "sample13-importprocess");
       });
 
       services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

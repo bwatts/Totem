@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Totem.Timeline\Totem.Timeline.csproj" />
-    <ProjectReference Include="..\Totem.ImportProcess\Totem.ImportProcess.csproj" />
   </ItemGroup>
 
 </Project>

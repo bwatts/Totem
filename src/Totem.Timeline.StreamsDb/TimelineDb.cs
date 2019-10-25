@@ -5,7 +5,6 @@ using Totem.Timeline.Client;
 using Totem.Timeline.StreamsDb.Client;
 using Totem.Timeline.StreamsDb.DbOperations;
 using Totem.Timeline.Runtime;
-using Totem.Timeline.StreamsDb.Integration;
 
 namespace Totem.Timeline.StreamsDb
 {
@@ -16,20 +15,17 @@ namespace Totem.Timeline.StreamsDb
   {
     readonly StreamsDbContext _context;
     readonly IResumeProjection _resumeProjection;
-    private readonly IIntegrationSubscriber _integrationSubscriber;
 
-    public TimelineDb(StreamsDbContext context, IResumeProjection resumeProjection, IIntegrationSubscriber integrationSubscriber)
+    public TimelineDb(StreamsDbContext context, IResumeProjection resumeProjection)
     {
       _context = context;
       _resumeProjection = resumeProjection;
-      _integrationSubscriber = integrationSubscriber;
     }
 
     protected override async Task Open()
     {
       await _context.Connect(this);
       await _resumeProjection.SynchronizeAsync();
-      _integrationSubscriber.Synchronize();
     }
 
     public Task<ResumeInfo> Subscribe(ITimelineObserver observer) =>

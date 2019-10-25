@@ -16,10 +16,5 @@ namespace Acme.ProductImport.Topics
     {
       _balance = e.Balance;
     }
-
-    void When(ImportStarted e)
-    {
-      Then(new BalanceWithdrew(10));
-    }
   }
 }

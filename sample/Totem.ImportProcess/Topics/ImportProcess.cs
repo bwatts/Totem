@@ -16,7 +16,6 @@ namespace Acme.ProductImport.Topics
     {
       _importing = false;
     }
-      
 
     void When(StartImport e)
     {

@@ -41,6 +41,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.ImportProcess.Api", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.ImportProcess.Service", "sample\Totem.ImportProcess.Service\Totem.ImportProcess.Service.csproj", "{6A5E43BF-1A2C-4EA9-855C-2555F2CA74B3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.EventBus", "Totem.EventBus\Totem.EventBus.csproj", "{B0BF3A7B-DE73-4016-AEF0-48BBFA91BE7F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totem.EventBus.StreamsDb", "Totem.EventBus.StreamsDb\Totem.EventBus.StreamsDb.csproj", "{8B466FC1-328A-4F85-8904-231AE93B1B63}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,6 +119,14 @@ Global
 		{6A5E43BF-1A2C-4EA9-855C-2555F2CA74B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A5E43BF-1A2C-4EA9-855C-2555F2CA74B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A5E43BF-1A2C-4EA9-855C-2555F2CA74B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0BF3A7B-DE73-4016-AEF0-48BBFA91BE7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0BF3A7B-DE73-4016-AEF0-48BBFA91BE7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0BF3A7B-DE73-4016-AEF0-48BBFA91BE7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0BF3A7B-DE73-4016-AEF0-48BBFA91BE7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B466FC1-328A-4F85-8904-231AE93B1B63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B466FC1-328A-4F85-8904-231AE93B1B63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B466FC1-328A-4F85-8904-231AE93B1B63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B466FC1-328A-4F85-8904-231AE93B1B63}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +139,8 @@ Global
 		{6B5E7976-7C2E-48AB-9024-42568293D77A} = {1E83E25F-0817-44AC-9432-C259839E1028}
 		{CB833795-0369-47F9-B3C5-599913EDF40D} = {1E83E25F-0817-44AC-9432-C259839E1028}
 		{6A5E43BF-1A2C-4EA9-855C-2555F2CA74B3} = {1E83E25F-0817-44AC-9432-C259839E1028}
+		{B0BF3A7B-DE73-4016-AEF0-48BBFA91BE7F} = {1E83E25F-0817-44AC-9432-C259839E1028}
+		{8B466FC1-328A-4F85-8904-231AE93B1B63} = {1E83E25F-0817-44AC-9432-C259839E1028}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8A4B0755-4E1A-46B2-A3CF-245702E48290}

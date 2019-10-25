@@ -1,4 +1,4 @@
-﻿using Totem.Timeline;
+using Totem.Timeline;
 
 namespace Acme.ProductImport
 {

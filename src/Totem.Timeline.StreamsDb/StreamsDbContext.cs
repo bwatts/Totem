@@ -25,7 +25,7 @@ namespace Totem.Timeline.StreamsDb
     public readonly string ConnectionString;
     public readonly string AreaName;
     public readonly IJsonFormat Json;
-    public readonly AreaMap Area;
+    public readonly AreaMap Area;    
 
     protected override Task Open()
     {

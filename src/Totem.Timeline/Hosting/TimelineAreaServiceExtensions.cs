@@ -23,6 +23,6 @@ namespace Totem.Timeline.Hosting
       services.Configure<TimelineAreaOptions>(options => options.Types.AddRange(types));
 
     public static IServiceCollection ConfigureArea<TArea>(this IServiceCollection services) where TArea : TimelineArea, new() =>
-      services.ConfigureArea(new TArea().GetTypes());
+      services.ConfigureArea(new TArea().GetTypes());   
   }
 }
