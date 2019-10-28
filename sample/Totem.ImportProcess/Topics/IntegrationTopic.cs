@@ -4,18 +4,11 @@ using Totem.Timeline;
 
 namespace Acme.ProductImport.Topics
 {
-  public class IntegrationTopic : Query //Topic
+  public class IntegrationTopic : Topic
   {
-    private readonly IEventBus _eventBus;
-
-    public IntegrationTopic(IEventBus eventBus)
+    void When(ImportStarted e, IEventBus eventBus)
     {
-      _eventBus = eventBus;
-    }
-
-    void Given(ImportStarted e)
-    {
-      _eventBus.Publish(new ImportStartedIntegrationEvent());
+      eventBus.Publish(new ImportStartedIntegrationEvent());
     }
   }
 }

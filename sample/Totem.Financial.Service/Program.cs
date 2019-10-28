@@ -2,6 +2,7 @@ using Acme.ProductImport;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
+using Totem.EventBus;
 using Totem.EventBus.StreamsDb;
 using Totem.Financial.Service;
 using Totem.Runtime.Hosting;
@@ -37,8 +38,9 @@ namespace Totem.Sample.Service
         services.AddScoped<ICommandServer, CommandServer>();
         services.AddSingleton<IntegrationEventHandler>();
 
-        services.AddStreamsDbEventBus(eventBus =>
+        services.AddEventBus(eventBus =>
         {
+          eventBus.AddStreamsDb("", "");
           eventBus.Subscribe<ImportStartedIntegrationEvent, IntegrationEventHandler>(nameof(ImportStartedIntegrationEvent));
         });
         

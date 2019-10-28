@@ -11,22 +11,20 @@ namespace Totem.EventBus.StreamsDb
 {
   public class StreamsDbEventBus : IEventBus, IDisposable
   {
-    const string STREAM_NAME = "eventbus";
-
-    private readonly StreamsDBClient _client;
+    private readonly StreamsDbEventBusContext _eventBusContext;
     private readonly Func<Type, IIntegrationEventHandler> _eventHandlerResolver;
     private readonly List<SubscriptionInfo> _subscriptions;
 
-    public StreamsDbEventBus(StreamsDBClient client, Func<Type, IIntegrationEventHandler> eventHandlerResolver)
+    public StreamsDbEventBus(StreamsDbEventBusContext eventBusContext, Func<Type, IIntegrationEventHandler> eventHandlerResolver)
     {
-      _client = client;
+      _eventBusContext = eventBusContext;
       _eventHandlerResolver = eventHandlerResolver;
       _subscriptions = new List<SubscriptionInfo>();
     }
 
     public void Start()
     {
-      var subscription = _client.DB().SubscribeStream(STREAM_NAME, 0);
+      var subscription = _eventBusContext.Client.DB().SubscribeStream(_eventBusContext.Stream, 0);
 
       Task.Run(async () =>
       {
@@ -53,7 +51,7 @@ namespace Totem.EventBus.StreamsDb
         Value = body
       };
 
-      await _client.DB().AppendStream(STREAM_NAME, messageInput);
+      await _eventBusContext.Client.DB().AppendStream(_eventBusContext.Stream, messageInput);
     }
 
     public void Subscribe<T, TH>(string eventName)
@@ -72,7 +70,7 @@ namespace Totem.EventBus.StreamsDb
 
     public void Dispose()
     {
-      _client.Close();
+      _eventBusContext.Disconnect();
     }
 
     private async Task ProcessEvent(Message message)

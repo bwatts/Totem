@@ -1,32 +1,55 @@
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using StreamsDB.Driver;
-using System;
 
 namespace Totem.EventBus.StreamsDb
 {
   public static class ServiceExtensions
   {
-    public static void AddStreamsDbEventBus(this IServiceCollection services, Action<IEventBusBuilder> configure)
+    public static void AddStreamsDb(this IEventBusBuilder builder, string connectionString, string stream)
     {
-      services.AddSingleton<IEventBus>(sp =>
+      builder.ConfigureServices(services =>
       {
-        var streamsDbClient = sp.GetRequiredService<StreamsDBClient>();
-        var eventBus = new StreamsDbEventBus(streamsDbClient, type => (IIntegrationEventHandler)sp.GetRequiredService(type));
-        configure(new EventBusBuilder(eventBus));
-        eventBus.Start();
-        return eventBus;
+        var context = new StreamsDbEventBusContext(connectionString, stream);
+
+        services.AddSingleton<IEventBusContext>(context);
+
+        services.AddSingleton<IEventBus>(p =>
+        {
+          var eventBus = new StreamsDbEventBus(
+            context,
+            type => (IIntegrationEventHandler)p.GetRequiredService(type)
+          );
+
+          eventBus.Start();
+
+          return eventBus;
+        });
       });
     }
+  }
 
-    public static void AddStreamsDbEventBus(this IServiceCollection services)
+  public class StreamsDbEventBusContext : IEventBusContext
+  {
+    private readonly string _connectionString;
+    
+    public string Stream { get; }
+    public StreamsDBClient Client { get; private set; }
+
+    public StreamsDbEventBusContext(string connectionString, string stream)
     {
-      services.AddSingleton<IEventBus>(sp =>
-      {
-        var streamsDbClient = sp.GetRequiredService<StreamsDBClient>();
-        var eventBus = new StreamsDbEventBus(streamsDbClient, type => (IIntegrationEventHandler)sp.GetRequiredService(type));
-        // eventBus.Start();
-        return eventBus;
-      });
+      _connectionString = connectionString;
+      Stream = stream;
+    }
+
+    public async Task Connect()
+    {
+      Client = await StreamsDBClient.Connect(_connectionString);
+    }
+
+    public void Disconnect()
+    {
+      throw new System.NotImplementedException();
     }
   }
 }

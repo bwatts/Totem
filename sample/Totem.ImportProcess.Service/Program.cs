@@ -1,11 +1,12 @@
 using Acme.ProductImport;
 using Microsoft.Extensions.Hosting;
-using System;
 using System.Threading.Tasks;
 using Totem.EventBus.StreamsDb;
 using Totem.Runtime.Hosting;
 using Totem.Timeline.Hosting;
 using Totem.Timeline.StreamsDb.Hosting;
+using Microsoft.Extensions.Logging;
+using Totem.EventBus;
 
 namespace Totem.Sample.Service
 {
@@ -22,17 +23,22 @@ namespace Totem.Sample.Service
       })
       .ConfigureLogging((hostingContext, logging) =>
       {
+        logging.AddConsole();
       })
       .ConfigureServices((hostContext, services) =>
       {
-        services.AddStreamsDbEventBus();
-
         services.AddTotemRuntime();
 
         services.AddTimeline<ProductImportArea>(timeline =>
         {
-          timeline.AddStreamsDb("", "sample13-importprocess");
+          timeline.AddStreamsDb("", "sample21-importprocess");
         });
+
+        services.AddEventBus(eventBus =>
+        {
+          eventBus.AddStreamsDb("", "sample21-eventbus");
+        });
+
       });
 
       await builder.RunConsoleAsync();
