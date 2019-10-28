@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Totem.EventBus\Totem.EventBus.csproj" />
     <ProjectReference Include="..\..\src\Totem.Timeline\Totem.Timeline.csproj" />
-    <ProjectReference Include="..\..\Totem.EventBus\Totem.EventBus.csproj" />
   </ItemGroup>
 
 </Project>

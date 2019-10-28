@@ -1,9 +1,8 @@
 using Totem.EventBus;
 
-namespace Totem.ImportProcess.Service
+namespace Totem.ImportProcess.Events
 {
   public class ImportStartedIntegrationEvent: IntegrationEvent
   {
-
   }
 }

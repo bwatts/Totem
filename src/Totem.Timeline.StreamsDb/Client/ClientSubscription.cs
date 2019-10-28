@@ -35,31 +35,28 @@ namespace Totem.Timeline.StreamsDb.Client
       await SubscribeToClient();
     }
 
-    async Task SubscribeToTimeline()
+    Task SubscribeToTimeline()
     {
-      await Task.Run(async () =>
-      {
-        _timelineSubscription = _context.Client.DB().SubscribeStream(TimelineStreams.GetTimelineStream(_context.AreaName), 0);
+      _timelineSubscription = _context.Client.DB().SubscribeStream(TimelineStreams.GetTimelineStream(_context.AreaName), 0);
 
+      Task.Run(async () =>
+      {
         do
         {
-          if (!await _timelineSubscription.MoveNext())
-          {
-            await Task.Delay(1000);
-            continue;
-          }
-
+          await _timelineSubscription.MoveNext();
           await OnNextFromTimeline(_timelineSubscription.Current);
         }
         while (true);
       });
+
+      return Task.CompletedTask;
     }
 
-    async Task SubscribeToClient()
+    Task SubscribeToClient()
     {
       _clientSubscription = _context.Client.DB().SubscribeStream(TimelineStreams.GetClientStream(_context.AreaName), 0);
 
-      await Task.Run(async () =>
+      Task.Run(async () =>
       {
         do
         {
@@ -68,6 +65,8 @@ namespace Totem.Timeline.StreamsDb.Client
         }
         while (true);
       });
+
+      return Task.CompletedTask;
     }
 
     Task OnNextFromTimeline(Message e) =>

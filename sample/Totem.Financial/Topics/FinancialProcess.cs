@@ -11,7 +11,6 @@ namespace Acme.ProductImport.Topics
       _balance = _balance - e.Amount;
     }
 
-
     void When(SetBalance e)
     {
       _balance = e.Balance;

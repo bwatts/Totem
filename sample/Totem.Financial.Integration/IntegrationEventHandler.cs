@@ -1,23 +1,23 @@
 using Acme.ProductImport;
 using System.Threading.Tasks;
 using Totem.EventBus;
-using Totem.Timeline.Mvc;
+using Totem.Timeline.Client;
 
-namespace Totem.Financial.Service
+namespace Totem.Financial.Integration
 {
   public class IntegrationEventHandler:
     IIntegrationEventHandler<ImportStartedIntegrationEvent>
   {
-    private readonly ICommandServer _commandServer;
+    private readonly IClientDb _clientDb;
 
-    public IntegrationEventHandler(ICommandServer commandServer)
+    public IntegrationEventHandler(IClientDb clientDb)
     {
-      _commandServer = commandServer;
+      _clientDb = clientDb;
     }
 
     public async Task Handle(ImportStartedIntegrationEvent @event)
     {
-      await _commandServer.Execute(new SetBalance(10));
+      await _clientDb.WriteEvent(new BalanceSet(10));
     }
   }
 }

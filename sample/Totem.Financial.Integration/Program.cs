@@ -1,16 +1,15 @@
 using Acme.ProductImport;
-using Acme.ProductImport.Topics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
+using Totem.EventBus;
+using Totem.EventBus.StreamsDb;
 using Totem.Runtime.Hosting;
 using Totem.Timeline.Client;
 using Totem.Timeline.Hosting;
-using Totem.Timeline.Mvc;
 using Totem.Timeline.StreamsDb.Hosting;
 
-namespace Totem.Sample.Service
+namespace Totem.Financial.Integration
 {
   class Program
   {
@@ -28,19 +27,21 @@ namespace Totem.Sample.Service
       })
       .ConfigureServices((hostContext, services) =>
       {
-        services.AddTotemRuntime(); 
+        services.AddTotemRuntime();
 
-        services.AddTimeline<FinancialArea>(timeline =>
+        services.AddTimelineClient<FinancialArea>(timeline =>
         {
           timeline.AddStreamsDb("", "sample21-financial");
         });
 
-        services.AddSingleton<FinancialProcess>();
+        services.AddEventBus(eventBus =>
+        {
+          eventBus.AddStreamsDb("", "sample21-eventbus");
 
-        services.AddScoped<IQueryServer, QueryServer>();
-        services.AddScoped<ICommandServer, CommandServer>();
+          eventBus.Subscribe<ImportStartedIntegrationEvent, IntegrationEventHandler>(nameof(ImportStartedIntegrationEvent));
+        });
+
         services.AddSingleton<IQueryNotifier, EmptyQueryNotifier>();
-
       });
 
       await builder.RunConsoleAsync();

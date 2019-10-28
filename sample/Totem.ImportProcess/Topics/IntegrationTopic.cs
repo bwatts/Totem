@@ -1,5 +1,5 @@
 using Totem.EventBus;
-using Totem.ImportProcess.Service;
+using Totem.ImportProcess.Events;
 using Totem.Timeline;
 
 namespace Acme.ProductImport.Topics

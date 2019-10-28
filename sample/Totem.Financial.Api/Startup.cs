@@ -37,13 +37,13 @@ namespace Totem.Sample.Api
 
       services.AddTimelineClient<FinancialArea>(timeline =>
       {
-        timeline.AddStreamsDb("", "sample10");
+        timeline.AddStreamsDb("", "sample21");
       });
 
       services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
       services.AddScoped<IQueryServer, QueryServer>();
       services.AddScoped<ICommandServer, CommandServer>();
-      services.AddSingleton<IQueryNotifier, QueryNotifier>();
+      services.AddSingleton<IQueryNotifier, EmptyQueryNotifier>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

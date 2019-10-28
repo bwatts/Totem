@@ -1,9 +1,8 @@
-﻿using Totem.EventBus;
+using Totem.EventBus;
 
-namespace Totem.Financial.Service
+namespace Totem.Financial.Integration
 {
   public class ImportStartedIntegrationEvent: IntegrationEvent
   {
-
   }
 }

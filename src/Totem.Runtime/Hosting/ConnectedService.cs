@@ -11,8 +11,19 @@ namespace Totem.Runtime.Hosting
   {
     readonly CancellationTokenSource _stopToken = new CancellationTokenSource();
 
-    public virtual Task StartAsync(CancellationToken cancellationToken) =>
-      Connect(_stopToken.Token);
+    public virtual async Task StartAsync(CancellationToken cancellationToken)
+    {
+      try
+      {
+        await Connect(_stopToken.Token);
+      }
+      catch (System.Exception ex)
+      {
+
+        throw;
+      }
+    }
+    
 
     public virtual async Task StopAsync(CancellationToken cancellationToken)
     {

@@ -43,7 +43,7 @@ namespace Totem.Sample.Api
       services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
       services.AddScoped<IQueryServer, QueryServer>();
       services.AddScoped<ICommandServer, CommandServer>();
-      services.AddSingleton<IQueryNotifier, QueryNotifier>();
+      services.AddSingleton<IQueryNotifier, EmptyQueryNotifier>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

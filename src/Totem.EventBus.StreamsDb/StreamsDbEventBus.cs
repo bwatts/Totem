@@ -13,25 +13,27 @@ namespace Totem.EventBus.StreamsDb
   {
     private readonly StreamsDbEventBusContext _eventBusContext;
     private readonly Func<Type, IIntegrationEventHandler> _eventHandlerResolver;
-    private readonly List<SubscriptionInfo> _subscriptions;
+
+    private List<SubscriptionInfo> _subscriptions;
 
     public StreamsDbEventBus(StreamsDbEventBusContext eventBusContext, Func<Type, IIntegrationEventHandler> eventHandlerResolver)
     {
       _eventBusContext = eventBusContext;
       _eventHandlerResolver = eventHandlerResolver;
-      _subscriptions = new List<SubscriptionInfo>();
     }
 
-    public void Start()
+    public void Start(IEnumerable<SubscriptionInfo> subscriptions)
     {
-      var subscription = _eventBusContext.Client.DB().SubscribeStream(_eventBusContext.Stream, 0);
+      _subscriptions = new List<SubscriptionInfo>(subscriptions);
+
+      var streamSubscription = _eventBusContext.Client.DB().SubscribeStream(_eventBusContext.Stream, 0);
 
       Task.Run(async () =>
       {
         do
         {
-          await subscription.MoveNext(CancellationToken.None);
-          await ProcessEvent(subscription.Current);
+          await streamSubscription.MoveNext(CancellationToken.None);
+          await ProcessEvent(streamSubscription.Current);
         }
         while (true);
       });
@@ -54,19 +56,19 @@ namespace Totem.EventBus.StreamsDb
       await _eventBusContext.Client.DB().AppendStream(_eventBusContext.Stream, messageInput);
     }
 
-    public void Subscribe<T, TH>(string eventName)
-      where T : IntegrationEvent
-      where TH : IIntegrationEventHandler<T>
-    {
-      _subscriptions.Add(new SubscriptionInfo(eventName, typeof(T), typeof(TH)));
-    }
+    //public void Subscribe<T, TH>(string eventName)
+    //  where T : IntegrationEvent
+    //  where TH : IIntegrationEventHandler<T>
+    //{
+    //  _subscriptions.Add(new SubscriptionInfo(eventName, typeof(T), typeof(TH)));
+    //}
 
-    public void Unsubscribe<T, TH>(string eventName)
-      where T : IntegrationEvent
-      where TH : IIntegrationEventHandler<T>
-    {
-      _subscriptions.RemoveAll(x => x.EventName == eventName && x.EventType == typeof(T) && x.HandlerType == typeof(TH));
-    }
+    //public void Unsubscribe<T, TH>(string eventName)
+    //  where T : IntegrationEvent
+    //  where TH : IIntegrationEventHandler<T>
+    //{
+    //  _subscriptions.RemoveAll(x => x.EventName == eventName && x.EventType == typeof(T) && x.HandlerType == typeof(TH));
+    //}
 
     public void Dispose()
     {
