@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Totem.Timeline;
+using Totem.Timeline.Json;
 
 namespace Totem.EventBus.StreamsDb
 {
@@ -13,20 +15,36 @@ namespace Totem.EventBus.StreamsDb
   {
     private readonly StreamsDbEventBusContext _eventBusContext;
     private readonly Func<Type, IIntegrationEventHandler> _eventHandlerResolver;
-
+    private readonly List<JsonConverter> _converters;
     private List<SubscriptionInfo> _subscriptions;
 
     public StreamsDbEventBus(StreamsDbEventBusContext eventBusContext, Func<Type, IIntegrationEventHandler> eventHandlerResolver)
     {
       _eventBusContext = eventBusContext;
       _eventHandlerResolver = eventHandlerResolver;
+      _converters = new List<JsonConverter> { new TimelinePositionConverter() };
     }
 
-    public void Start(IEnumerable<SubscriptionInfo> subscriptions)
+    public async Task Start(IEnumerable<SubscriptionInfo> subscriptions)
     {
       _subscriptions = new List<SubscriptionInfo>(subscriptions);
+      
+      var (message, found) = await _eventBusContext.Client.DB().ReadLastMessageFromStream($"{_eventBusContext.Stream}-{_eventBusContext.Area}-checkpoint");
 
-      var streamSubscription = _eventBusContext.Client.DB().SubscribeStream(_eventBusContext.Stream, 0);
+      var position = TimelinePosition.None;
+
+      if (found)
+      {
+        var metadata = JsonConvert.DeserializeObject<CheckpointMetadata>(Encoding.UTF8.GetString(message.Header), _converters.ToArray());
+        position = metadata.Position;
+      }
+
+      Subscribe(position);
+    }
+
+    private void Subscribe(TimelinePosition position)
+    {
+      var streamSubscription = _eventBusContext.Client.DB().SubscribeStream(_eventBusContext.Stream, position.IsSome ? position.ToInt64() + 1 : 0);
 
       Task.Run(async () =>
       {
@@ -34,9 +52,27 @@ namespace Totem.EventBus.StreamsDb
         {
           await streamSubscription.MoveNext(CancellationToken.None);
           await ProcessEvent(streamSubscription.Current);
+          await UpdateCheckpoint(streamSubscription.Current.Position);
         }
         while (true);
       });
+    }
+
+    private async Task UpdateCheckpoint(long position)
+    {
+      var checkpointMetadata = new CheckpointMetadata
+      {
+        Position = new TimelinePosition(position)
+      };
+
+      var messageInput = new MessageInput
+      {
+        ID = Guid.NewGuid().ToString(),
+        Type = "checkpoint",
+        Header = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(checkpointMetadata, _converters.ToArray()))
+    };
+
+      await _eventBusContext.Client.DB().AppendStream($"{_eventBusContext.Stream}-{_eventBusContext.Area}-checkpoint", messageInput);
     }
 
     public async Task Publish(IntegrationEvent @event)

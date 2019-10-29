@@ -4,11 +4,11 @@ namespace Totem.EventBus.StreamsDb
 {
   public static class ServiceExtensions
   {
-    public static void AddStreamsDb(this IEventBusBuilder builder, string connectionString, string stream)
+    public static void AddStreamsDb(this IEventBusBuilder builder, string connectionString, string stream, string area)
     {
       builder.ConfigureServices(services =>
       {
-        var context = new StreamsDbEventBusContext(connectionString, stream);
+        var context = new StreamsDbEventBusContext(connectionString, stream, area);
 
         services.AddSingleton<IEventBusContext>(context);
 

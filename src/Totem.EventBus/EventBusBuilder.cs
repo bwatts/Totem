@@ -29,12 +29,5 @@ namespace Totem.EventBus
       _services.AddSingleton(typeof(TH));
       Subscriptions.Add(new SubscriptionInfo(eventName, typeof(T), typeof(TH)));
     }
-
-    public void Unsubscribe<T, TH>(string eventName)
-      where T : IntegrationEvent
-      where TH : IIntegrationEventHandler<T>
-    {
-      Subscriptions.RemoveAll(x => x.EventName == eventName && x.EventType == typeof(T) && x.HandlerType == typeof(TH));
-    }
   }
 }

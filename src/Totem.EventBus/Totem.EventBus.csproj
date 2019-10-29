@@ -8,4 +8,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.2.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Totem.Timeline\Totem.Timeline.csproj" />
+  </ItemGroup>
 </Project>

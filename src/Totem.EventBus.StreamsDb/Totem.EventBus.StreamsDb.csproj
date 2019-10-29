@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Totem.EventBus\Totem.EventBus.csproj" />
+    <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj" />
+    <ProjectReference Include="..\Totem.Timeline\Totem.Timeline.csproj" />
   </ItemGroup>
 
 </Project>

@@ -21,7 +21,7 @@ namespace Totem.EventBus
     public async Task StartAsync(CancellationToken cancellationToken)
     {
       await _eventBusContext.Connect();
-      _eventBus.Start(_subscriptions);
+      await _eventBus.Start(_subscriptions);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
