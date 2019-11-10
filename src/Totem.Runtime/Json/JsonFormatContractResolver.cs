@@ -44,9 +44,9 @@ namespace Totem.Runtime.Json
     {
       var contract = base.CreateObjectContract(objectType);
 
-      if(_durableTypes.TryGetOrAdd(objectType, out var create))
+      if(_durableTypes.TryGetOrAdd(objectType, out var durableType))
       {
-        contract.DefaultCreator = create;
+        contract.DefaultCreator = durableType.Create;
       }
 
       return contract;
@@ -54,7 +54,7 @@ namespace Totem.Runtime.Json
 
     protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
     {
-      if(!_durableTypes.Contains(type))
+      if(!_durableTypes.TryGetOrAdd(type, out _))
       {
         return base.CreateProperties(type, memberSerialization);
       }
