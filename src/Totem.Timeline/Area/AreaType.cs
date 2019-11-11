@@ -1,5 +1,6 @@
 using System;
 using System.Linq.Expressions;
+using Totem.Reflection;
 
 namespace Totem.Timeline.Area
 {
@@ -19,7 +20,7 @@ namespace Totem.Timeline.Area
     }
 
     public readonly Type DeclaredType;
-    public readonly AreaTypeName Name;
+    public readonly TypeName Name;
     public readonly bool IsEvent;
     public readonly bool IsTopic;
     public readonly bool IsQuery;

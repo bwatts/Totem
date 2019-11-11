@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using Newtonsoft.Json.Linq;
+using Totem.Reflection;
 using Totem.Runtime.Json;
-using Totem.Timeline.Area;
 using Totem.Timeline.Runtime;
 
 namespace Totem.Timeline.EventStore.DbOperations
@@ -73,7 +73,7 @@ namespace Totem.Timeline.EventStore.DbOperations
       {
         if(typeItem is JArray multiInstance)
         {
-          var type = _context.Area.GetFlow(AreaTypeName.From(multiInstance[0].Value<string>()));
+          var type = _context.Area.GetFlow(TypeName.From(multiInstance[0].Value<string>()));
 
           foreach(var idItem in multiInstance.Skip(1))
           {
