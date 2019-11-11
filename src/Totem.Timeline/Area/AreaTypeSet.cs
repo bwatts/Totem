@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Totem.Reflection;
 
 namespace Totem.Timeline.Area
 {
@@ -10,7 +11,7 @@ namespace Totem.Timeline.Area
   /// <typeparam name="T">The type of area types in the set</typeparam>
   public class AreaTypeSet<T> : IEnumerable<T> where T : AreaType
   {
-    readonly Dictionary<AreaTypeName, T> _byName = new Dictionary<AreaTypeName, T>();
+    readonly Dictionary<TypeName, T> _byName = new Dictionary<TypeName, T>();
     readonly Dictionary<Type, T> _byDeclaredType = new Dictionary<Type, T>();
 
     internal AreaTypeSet(IEnumerable<T> types)
@@ -23,21 +24,21 @@ namespace Totem.Timeline.Area
     }
 
     public int Count => _byName.Count;
-    public T this[AreaTypeName name] => Get(name);
-    public IEnumerable<AreaTypeName> Names => _byName.Keys;
+    public T this[TypeName name] => Get(name);
+    public IEnumerable<TypeName> Names => _byName.Keys;
     public IEnumerable<T> Types => _byName.Values;
-    public IEnumerable<KeyValuePair<AreaTypeName, T>> TypesByName => _byName;
+    public IEnumerable<KeyValuePair<TypeName, T>> TypesByName => _byName;
 
     public IEnumerator<T> GetEnumerator() => Types.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public bool Contains(AreaTypeName name) =>
+    public bool Contains(TypeName name) =>
       _byName.ContainsKey(name);
 
-    public bool TryGet(AreaTypeName name, out T type) =>
+    public bool TryGet(TypeName name, out T type) =>
       _byName.TryGetValue(name, out type);
 
-    public T Get(AreaTypeName name)
+    public T Get(TypeName name)
     {
       if(!TryGet(name, out var type))
       {

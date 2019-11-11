@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Totem.Reflection;
 using Totem.Runtime;
 using Totem.Timeline.Area;
 
@@ -19,7 +20,7 @@ namespace Totem.Timeline.EventStore
     public Id CommandId;
     public Id UserId;
     public FlowKey Topic;
-    public List<AreaTypeName> RouteTypes;
+    public List<TypeName> RouteTypes;
     public List<RouteTypeIds> RouteIds;
 
     public class RouteTypeIds
@@ -40,7 +41,7 @@ namespace Totem.Timeline.EventStore
           Ids = type.IsSingleInstance ? null : idsByType.ToList()
         };
 
-      RouteTypes = new List<AreaTypeName>();
+      RouteTypes = new List<TypeName>();
       RouteIds = new List<RouteTypeIds>();
 
       var typeIndex = 0;
