@@ -1,4 +1,5 @@
 using System;
+using Totem.Reflection;
 using Totem.Timeline.Area;
 
 namespace Totem.Timeline
@@ -52,7 +53,7 @@ namespace Totem.Timeline
       var typePart = idIndex == -1 ? value : value.Substring(0, idIndex);
       var idPart = idIndex == -1 ? "" : value.Substring(idIndex + 1);
 
-      key = AreaTypeName.TryFrom(typePart, out var typeKey) && area.TryGetFlow(typeKey, out var type)
+      key = TypeName.TryFrom(typePart, out var typeKey) && area.TryGetFlow(typeKey, out var type)
         ? new FlowKey(type, Id.From(idPart))
         : null;
 

@@ -1,11 +1,14 @@
 using System;
+using System.ComponentModel;
 using System.Linq;
+using Totem.IO;
 
 namespace Totem.Reflection
 {
   /// <summary>
   /// The single name of a type or multiple names of a nested type
   /// </summary>
+  [TypeConverter(typeof(Converter))]
   public sealed class TypeName : IEquatable<TypeName>, IComparable<TypeName>
   {
     readonly string _value;
@@ -75,6 +78,12 @@ namespace Totem.Reflection
       }
 
       return new TypeName(currentName);
+    }
+
+    public sealed class Converter : TextConverter
+    {
+      protected override object ConvertFrom(TextValue value) =>
+        From(value);
     }
   }
 }

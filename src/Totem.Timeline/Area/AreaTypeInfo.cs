@@ -1,4 +1,5 @@
 using System;
+using Totem.Reflection;
 
 namespace Totem.Timeline.Area
 {
@@ -9,7 +10,7 @@ namespace Totem.Timeline.Area
   {
     AreaTypeInfo(
       Type declaredType,
-      AreaTypeName name,
+      TypeName name,
       bool isEvent,
       bool isTopic,
       bool isQuery)
@@ -22,7 +23,7 @@ namespace Totem.Timeline.Area
     }
 
     public readonly Type DeclaredType;
-    public readonly AreaTypeName Name;
+    public readonly TypeName Name;
     public readonly bool IsEvent;
     public readonly bool IsTopic;
     public readonly bool IsQuery;
@@ -59,23 +60,9 @@ namespace Totem.Timeline.Area
       return info != null;
     }
 
-    static AreaTypeInfo TryFrom<TAssignable>(Type type, bool isEvent = false, bool isTopic = false, bool isQuery = false)
-    {
-      if(!typeof(TAssignable).IsAssignableFrom(type))
-      {
-        return null;
-      }
-
-      var currentType = type;
-      var currentName = type.Name;
-
-      while(currentType.IsNested)
-      {
-        currentType = currentType.DeclaringType;
-        currentName = $"{currentType.Name}.{currentName}";
-      }
-
-      return new AreaTypeInfo(type, AreaTypeName.From(currentName), isEvent, isTopic, isQuery);
-    }
+    static AreaTypeInfo TryFrom<TAssignable>(Type type, bool isEvent = false, bool isTopic = false, bool isQuery = false) =>
+      typeof(TAssignable).IsAssignableFrom(type)
+        ? new AreaTypeInfo(type, TypeName.From(type), isEvent, isTopic, isQuery)
+        : null;
   }
 }

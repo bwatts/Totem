@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
+using Totem.Reflection;
 using Totem.Runtime.Json;
 using Totem.Timeline.Area;
 
@@ -154,7 +154,7 @@ namespace Totem.Timeline.EventStore
       context.Json.FromJsonUtf8<CheckpointMetadata>(e.Event.Metadata);
 
     internal static EventType ReadEventType(this EventStoreContext context, ResolvedEvent e) =>
-      context.Area.Events.Get(AreaTypeName.From(e.Event.EventType));
+      context.Area.Events.Get(TypeName.From(e.Event.EventType));
 
     static Event ReadEvent(this EventStoreContext context, ResolvedEvent e, EventType type) =>
       (Event) context.Json.FromJsonUtf8(e.Event.Data, type.DeclaredType);
