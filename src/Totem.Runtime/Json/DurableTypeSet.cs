@@ -8,42 +8,59 @@ namespace Totem.Runtime.Json
   /// </summary>
   public sealed class DurableTypeSet : IDurableTypeSet
   {
-    readonly Dictionary<string, IDurableType> _byKey = new Dictionary<string, IDurableType>();
-    readonly Dictionary<Type, IDurableType> _byDeclaredType = new Dictionary<Type, IDurableType>();
+    readonly Dictionary<DurableTypeKey, DurableType> _byKey = new Dictionary<DurableTypeKey, DurableType>();
+    readonly Dictionary<Type, DurableType> _byDeclaredType = new Dictionary<Type, DurableType>();
 
-    public DurableTypeSet(IEnumerable<IDurableType> types)
+    public DurableTypeSet(IEnumerable<DurableType> knownTypes)
     {
-      foreach(var type in types)
+      foreach(var knownType in knownTypes)
       {
-        _byKey[type.Key] = type;
-        _byDeclaredType[type.DeclaredType] = type;
+        Add(knownType);
       }
     }
 
-    public bool Contains(Type type) =>
-      _byDeclaredType.ContainsKey(type);
-
-    public bool TryGetByKey(string key, out Type type)
+    public bool TryGetOrAdd(Type declaredType, out DurableType type)
     {
-      type = _byKey.TryGetValue(key, out var durable) ? durable.DeclaredType : null;
+      lock(_byKey)
+      {
+        if(!_byDeclaredType.TryGetValue(declaredType, out type))
+        {
+          TryAdd(declaredType, out type);
+        }
+      }
 
       return type != null;
     }
 
-    public bool TryGetKey(Type type, out string key)
+    public bool TryGetKey(Type type, out DurableTypeKey key)
     {
-      key = _byDeclaredType.TryGetValue(type, out var durable) ? durable.Key : null;
+      key = TryGetOrAdd(type, out var durableType) ? durableType.Key : null;
 
       return key != null;
     }
 
-    public bool TryGetOrAdd(Type type, out Func<object> create)
+    public bool TryGetByKey(DurableTypeKey key, out Type type)
     {
-      create = _byDeclaredType.TryGetValue(type, out var durable)
-        ? durable.Create
-        : null as Func<object>;
+      lock(_byKey)
+      {
+        type = _byKey.TryGetValue(key, out var durableType) ? durableType.DeclaredType : null;
 
-      return create != null;
+        return type != null;
+      }
+    }
+
+    void Add(DurableType type)
+    {
+      _byKey[type.Key] = type;
+      _byDeclaredType[type.DeclaredType] = type;
+    }
+
+    void TryAdd(Type declaredType, out DurableType type)
+    {
+      if(DurableType.TryFrom(declaredType, out type))
+      {
+        Add(type);
+      }
     }
   }
 }

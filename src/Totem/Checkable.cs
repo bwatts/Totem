@@ -219,5 +219,81 @@ namespace Totem
 
     public static Check<Many<T>> Has4OrMore<T>(this Check<Many<T>> check) =>
       check.HasAtLeast(4);
+
+    //
+    // Sequences (List)
+    //
+
+    public static Check<List<T>> Has<T>(this Check<List<T>> check, int count) =>
+      check.IsTrue(t => t.Count == count);
+
+    public static Check<List<T>> HasAtLeast<T>(this Check<List<T>> check, int count) =>
+      check.IsTrue(t => t.Count >= count);
+
+    public static Check<List<T>> HasAtMost<T>(this Check<List<T>> check, int count) =>
+      check.IsTrue(t => t.Count <= count);
+
+    public static Check<List<T>> Has0<T>(this Check<List<T>> check) =>
+      check.Has(0);
+
+    public static Check<List<T>> Has1<T>(this Check<List<T>> check, Func<T, bool> checkItem = null)
+    {
+      check = check.Has(1);
+
+      if(checkItem != null)
+      {
+        check = check.IsTrue(t => checkItem(t[0]));
+      }
+
+      return check;
+    }
+
+    public static Check<List<T>> Has2<T>(this Check<List<T>> check, Func<T, T, bool> checkItems = null)
+    {
+      check = check.Has(2);
+
+      if(checkItems != null)
+      {
+        check = check.IsTrue(t => checkItems(t[0], t[1]));
+      }
+
+      return check;
+    }
+
+    public static Check<List<T>> Has3<T>(this Check<List<T>> check, Func<T, T, T, bool> checkItems = null)
+    {
+      check = check.Has(3);
+
+      if(checkItems != null)
+      {
+        check = check.IsTrue(t => checkItems(t[0], t[1], t[2]));
+      }
+
+      return check;
+    }
+
+    public static Check<List<T>> Has4<T>(this Check<List<T>> check, Func<T, T, T, T, bool> checkItems = null)
+    {
+      check = check.Has(2);
+
+      if(checkItems != null)
+      {
+        check = check.IsTrue(t => checkItems(t[0], t[1], t[2], t[3]));
+      }
+
+      return check;
+    }
+
+    public static Check<List<T>> Has1OrMore<T>(this Check<List<T>> check) =>
+      check.HasAtLeast(1);
+
+    public static Check<List<T>> Has2OrMore<T>(this Check<List<T>> check) =>
+      check.HasAtLeast(2);
+
+    public static Check<List<T>> Has3OrMore<T>(this Check<List<T>> check) =>
+      check.HasAtLeast(3);
+
+    public static Check<List<T>> Has4OrMore<T>(this Check<List<T>> check) =>
+      check.HasAtLeast(4);
   }
 }

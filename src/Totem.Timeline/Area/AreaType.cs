@@ -1,6 +1,5 @@
 using System;
 using System.Linq.Expressions;
-using System.Runtime.Serialization;
 
 namespace Totem.Timeline.Area
 {
@@ -49,8 +48,5 @@ namespace Totem.Timeline.Area
 
     public Expression ConvertToDeclaredType(Expression instance) =>
       Expression.Convert(instance, DeclaredType);
-
-    public object CreateToDeserialize() =>
-      FormatterServices.GetUninitializedObject(DeclaredType);
   }
 }
