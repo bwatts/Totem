@@ -369,5 +369,105 @@ namespace Totem
     [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
     public static Expect<Many<T>> Has4OrMore<T>(this Expect<Many<T>> expect, Text issue = null) =>
       expect.IsTrue(t => Check.That(t).Has4OrMore(), issue ?? "Too few items", expected: "4 or more items");
+
+    //
+    // Sequences (List)
+    //
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has<T>(this Expect<List<T>> expect, int count, Text issue = null) =>
+      expect.IsTrue(
+        t => Check.That(t).Has(count),
+        issue ?? "Wrong number of items",
+        expected: Text.Count(count, "item"),
+        received: t => Text.Count(t.Count, "item"));
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> HasAtLeast<T>(this Expect<List<T>> expect, int count, Text issue = null) =>
+      expect.IsTrue(
+        t => Check.That(t).HasAtLeast(count),
+        issue ?? "Too few items",
+        expected: Text.Count(count, "item"),
+        received: t => Text.Count(t.Count, "item"));
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> HasAtMost<T>(this Expect<List<T>> expect, int count, Text issue = null) =>
+      expect.IsTrue(
+        t => Check.That(t).HasAtMost(count),
+        issue ?? "Too many items",
+        expected: Text.Count(count, "item"),
+        received: t => Text.Count(t.Count, "item"));
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has0<T>(this Expect<List<T>> expect, Text issue = null) =>
+      expect.Has(0, issue ?? "No items");
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has1<T>(this Expect<List<T>> expect, Action<T> expectItem = null, Text issue = null)
+    {
+      expect = expect.Has(1, issue);
+
+      if(expectItem != null)
+      {
+        expectItem(expect.Target[0]);
+      }
+
+      return expect;
+    }
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has2<T>(this Expect<List<T>> expect, Action<T, T> expectItems = null, Text issue = null)
+    {
+      expect = expect.Has(2, issue);
+
+      if(expectItems != null)
+      {
+        expectItems(expect.Target[0], expect.Target[1]);
+      }
+
+      return expect;
+    }
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has3<T>(this Expect<List<T>> expect, Action<T, T, T> expectItems = null, Text issue = null)
+    {
+      expect = expect.Has(3, issue);
+
+      if(expectItems != null)
+      {
+        expectItems(expect.Target[0], expect.Target[1], expect.Target[2]);
+      }
+
+      return expect;
+    }
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has4<T>(this Expect<List<T>> expect, Action<T, T, T, T> expectItems = null, Text issue = null)
+    {
+      expect = expect.Has(4, issue);
+
+      if(expectItems != null)
+      {
+        expectItems(expect.Target[0], expect.Target[1], expect.Target[2], expect.Target[3]);
+      }
+
+      return expect;
+    }
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has1OrMore<T>(this Expect<List<T>> expect, Text issue = null) =>
+      expect.IsTrue(t => Check.That(t).Has1OrMore(), issue ?? "Too few items", expected: "1 or more items");
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has2OrMore<T>(this Expect<List<T>> expect, Text issue = null) =>
+      expect.IsTrue(t => Check.That(t).Has2OrMore(), issue ?? "Too few items", expected: "2 or more items");
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has3OrMore<T>(this Expect<List<T>> expect, Text issue = null) =>
+      expect.IsTrue(t => Check.That(t).Has3OrMore(), issue ?? "Too few items", expected: "3 or more items");
+
+    [DebuggerHidden, DebuggerStepThrough, DebuggerNonUserCode]
+    public static Expect<List<T>> Has4OrMore<T>(this Expect<List<T>> expect, Text issue = null) =>
+      expect.IsTrue(t => Check.That(t).Has4OrMore(), issue ?? "Too few items", expected: "4 or more items");
   }
 }

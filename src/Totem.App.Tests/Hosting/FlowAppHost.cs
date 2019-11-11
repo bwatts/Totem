@@ -30,17 +30,9 @@ namespace Totem.App.Tests.Hosting
 
     protected abstract void ConfigureServices(IServiceCollection services);
 
-    protected IEnumerable<Type> GetAreaTypes()
-    {
-      yield return FlowType;
-
-      foreach(var eventType in GetEventTypes())
-      {
-        yield return eventType;
-      }
-    }
-
-    IEnumerable<Type> GetEventTypes() =>
-      FlowType.Assembly.GetTypes().Where(typeof(Event).IsAssignableFrom);
+    protected IEnumerable<Type> GetAreaTypes() =>
+      from type in FlowType.Assembly.GetTypes()
+      where type == FlowType || !typeof(Flow).IsAssignableFrom(type)
+      select type;
   }
 }

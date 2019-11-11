@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
+using Totem.IO;
 using Totem.Timeline.Client;
 
 namespace Totem.Timeline.Mvc
@@ -21,6 +22,7 @@ namespace Totem.Timeline.Mvc
     {
       context.HttpContext.Response.StatusCode = 200;
       context.HttpContext.Response.Headers[HeaderNames.ETag] = State.ETag.ToString();
+      context.HttpContext.Response.ContentType = MediaType.Json.ToString();
 
       await State
         .ReadContent()
