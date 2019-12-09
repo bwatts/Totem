@@ -26,7 +26,8 @@ namespace Totem.Timeline.EventStore.Hosting
           p.BuildConnection(),
           p.GetRequiredService<IJsonFormat>(),
           p.GetRequiredService<AreaMap>()))
-        .AddSingleton<IClientDb, ClientDb>());
+        .AddSingleton<IClientDb, ClientDb>()
+        .AddSingleton<IQueryDb, QueryDb>());
 
       return new EventStoreTimelineClientBuilder(client);
     }
