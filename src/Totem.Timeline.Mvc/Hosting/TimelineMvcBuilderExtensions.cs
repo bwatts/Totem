@@ -3,6 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Totem.Runtime.Hosting;
 
 namespace Totem.Timeline.Mvc.Hosting
 {
@@ -24,5 +25,12 @@ namespace Totem.Timeline.Mvc.Hosting
 
     public static IMvcBuilder AddEntryAssemblyPart(this IMvcBuilder mvc) =>
       mvc.AddApplicationPart(Assembly.GetEntryAssembly());
+
+    public static IMvcBuilder AddTotemWebRuntime(this IMvcBuilder mvc)
+    {
+      mvc.Services.AddOptionsSetup<WebRuntimeOptionsSetup>();
+
+      return mvc;
+    }
   }
 }

@@ -277,7 +277,11 @@ namespace Totem.App.Web
               timeline.AddEventStore().BindOptionsToConfiguration()));
 
           _mvc.Apply(context, services, () =>
-            services.AddMvc().AddCommandsAndQueries().AddEntryAssemblyPart());
+            services
+            .AddMvc()
+            .AddTotemWebRuntime()
+            .AddCommandsAndQueries()
+            .AddEntryAssemblyPart());
 
           _signalR.Apply(context, services, () =>
             services.AddSignalR().AddQueryNotifications());
