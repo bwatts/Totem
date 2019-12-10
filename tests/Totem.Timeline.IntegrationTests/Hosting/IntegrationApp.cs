@@ -88,7 +88,7 @@ namespace Totem.Timeline.IntegrationTests.Hosting
 
       await GetQueryInstance(key).WaitForLatest(timeout);
 
-      return (TQuery) await _clientDb.ReadQueryContent(key);
+      return (TQuery) await _clientDb.ReadQuery(key);
     }
 
     QueryInstance GetQueryInstance(FlowKey key) =>
