@@ -35,7 +35,7 @@ namespace Totem.Runtime.Json
 
       do
       {
-        if(currentType.IsDefined(typeof(DurableAttribute)))
+        if(currentType.IsDefined(typeof(DurableAttribute), inherit: true))
         {
           return true;
         }
