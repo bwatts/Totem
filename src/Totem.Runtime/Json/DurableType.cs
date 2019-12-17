@@ -29,8 +29,23 @@ namespace Totem.Runtime.Json
     // Factory
     //
 
-    public static bool IsDurable(Type declaredType) =>
-      declaredType.IsDefined(typeof(DurableAttribute));
+    public static bool IsDurable(Type declaredType)
+    {
+      var currentType = declaredType;
+
+      do
+      {
+        if(currentType.IsDefined(typeof(DurableAttribute)))
+        {
+          return true;
+        }
+
+        currentType = currentType.BaseType;
+      }
+      while(currentType != null);
+
+      return false;
+    }
 
     public static bool TryFrom(Type declaredType, out DurableType type)
     {
