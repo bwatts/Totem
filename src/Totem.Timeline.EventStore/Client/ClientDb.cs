@@ -69,8 +69,14 @@ namespace Totem.Timeline.EventStore.Client
       return new TimelinePosition(result.NextExpectedVersion);
     }
 
-    public Task<Query> ReadQuery(FlowKey key) =>
-      ReadQueryCheckpoint(key, () => GetDefaultContent(key), e => GetCheckpointContent(key, e));
+    public async Task<Query> ReadQuery(FlowKey key)
+    {
+      var query = await ReadQueryCheckpoint(key, () => GetDefaultContent(key), e => GetCheckpointContent(key, e));
+
+      FlowContext.Bind(query, key);
+
+      return query;
+    }
 
     public Task<QueryContent> ReadQueryContent(QueryETag etag) =>
       ReadQueryCheckpoint(etag.Key, () => GetDefaultContent(etag), e => GetCheckpointContent(etag, e));
