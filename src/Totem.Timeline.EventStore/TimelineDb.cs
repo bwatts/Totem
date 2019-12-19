@@ -59,7 +59,16 @@ namespace Totem.Timeline.EventStore
 
     public async Task WriteCheckpoint(Flow flow, TimelinePoint point)
     {
-      var result = await _context.AppendToCheckpoint(flow);
+      WriteResult result;
+
+      try
+      {
+        result = await _context.AppendToCheckpoint(flow);
+      }
+      finally
+      {
+        await TryWriteToClient(flow, point);
+      }
 
       if(flow.Context.IsNew)
       {
@@ -70,8 +79,6 @@ namespace Totem.Timeline.EventStore
       {
         await TryWriteDoneMetadata(flow, result.NextExpectedVersion);
       }
-
-      await TryWriteToClient(flow, point);
     }
 
     async Task TryWriteInitialMetadata(Flow flow)

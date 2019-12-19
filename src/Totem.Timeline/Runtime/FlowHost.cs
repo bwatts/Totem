@@ -12,7 +12,6 @@ namespace Totem.Timeline.Runtime
   {
     readonly Dictionary<FlowKey, IFlowScope> _flowsByKey = new Dictionary<FlowKey, IFlowScope>();
     readonly HashSet<FlowKey> _ignored = new HashSet<FlowKey>();
-    readonly HashSet<FlowKey> _stopped = new HashSet<FlowKey>();
     readonly ITimelineDb _db;
     readonly IServiceProvider _services;
 
@@ -71,8 +70,6 @@ namespace Totem.Timeline.Runtime
       catch(Exception error)
       {
         Log.Error(error, "Failed to connect flow {Flow}; treating as stopped", flow.Key);
-
-        _stopped.Add(flow.Key);
       }
     }
 
@@ -84,8 +81,6 @@ namespace Totem.Timeline.Runtime
         if(task.Status == TaskStatus.Faulted)
         {
           Log.Error(task.Exception, "[timeline] Flow lifetime ended with an error");
-
-          _stopped.Add(flow.Key);
         }
         else
         {
@@ -120,11 +115,6 @@ namespace Totem.Timeline.Runtime
 
     async Task Enqueue(TimelinePoint point, FlowKey route)
     {
-      if(_stopped.Contains(route))
-      {
-        return;
-      }
-
       if(!_flowsByKey.TryGetValue(route, out var flow))
       {
         flow = AddFlow(route);
