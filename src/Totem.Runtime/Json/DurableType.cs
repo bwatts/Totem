@@ -40,7 +40,7 @@ namespace Totem.Runtime.Json
           return true;
         }
 
-        currentType = currentType.BaseType;
+        currentType = currentType.DeclaringType;
       }
       while(currentType != null);
 
