@@ -163,9 +163,7 @@ namespace Totem.Timeline.Runtime
     {
       if(Observation.CanBeFirst)
       {
-        Flow = (T) Key.Type.New();
-
-        FlowContext.Bind(Flow, Key);
+        CreateFlow();
       }
       else
       {
@@ -176,12 +174,24 @@ namespace Totem.Timeline.Runtime
       }
     }
 
+    void CreateFlow()
+    {
+      Flow = (T) Key.Type.New();
+
+      FlowContext.Bind(Flow, Key);
+    }
+
     protected abstract Task ObservePoint();
 
     async Task Stop(Exception error)
     {
       try
       {
+        if(Flow == null)
+        {
+          CreateFlow();
+        }
+
         Flow.Context.SetError(Point.Position, error.ToString());
 
         await WriteCheckpoint();

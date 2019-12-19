@@ -19,6 +19,18 @@ namespace Totem.Timeline.Mvc
     public static CommandWhen ThenOk =>
       Then(e => new OkResult());
 
+    public static CommandWhen ThenCreated(Func<TEvent, string> getLocation, Func<TEvent, object> getValue) =>
+      Then(e => new CreatedResult(getLocation(e), getValue(e)));
+
+    public static CommandWhen ThenCreated(Func<TEvent, string> getLocation) =>
+      Then(e => new CreatedResult(getLocation(e), null));
+
+    public static CommandWhen ThenCreated(Func<TEvent, Uri> getLocation, Func<TEvent, object> getValue) =>
+      Then(e => new CreatedResult(getLocation(e), getValue(e)));
+
+    public static CommandWhen ThenCreated(Func<TEvent, Uri> getLocation) =>
+      Then(e => new CreatedResult(getLocation(e), null));
+
     public static CommandWhen ThenBadRequest =>
       Then(e => new BadRequestResult());
 
