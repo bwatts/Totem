@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>7.1</LangVersion>
     <RootNamespace>Totem.App.Web</RootNamespace>
     <Company>Totem</Company>
     <Authors>Totem Contributors</Authors>
