@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Totem.Runtime.Json;
 
@@ -9,6 +10,6 @@ namespace Totem.Runtime.Hosting
   public class JsonFormatOptions
   {
     public JsonSerializerSettings SerializerSettings { get; } = new JsonSerializerSettings();
-    public Many<IDurableType> DurableTypes { get; } = new Many<IDurableType>();
+    public List<DurableType> DurableTypes { get; } = new List<DurableType>();
   }
 }

@@ -7,12 +7,10 @@ namespace Totem.Runtime.Json
   /// </summary>
   public interface IDurableTypeSet
   {
-    bool Contains(Type type);
+    bool TryGetOrAdd(Type declaredType, out DurableType type);
 
-    bool TryGetOrAdd(Type type, out Func<object> create);
+    bool TryGetKey(Type declaredType, out DurableTypeKey key);
 
-    bool TryGetKey(Type type, out string key);
-
-    bool TryGetByKey(string key, out Type type);
+    bool TryGetByKey(DurableTypeKey key, out Type declaredType);
   }
 }

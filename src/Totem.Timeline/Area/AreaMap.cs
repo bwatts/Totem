@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Totem.Reflection;
 using Totem.Timeline.Area.Builder;
 
 namespace Totem.Timeline.Area
@@ -24,7 +25,7 @@ namespace Totem.Timeline.Area
     public IEnumerable<FlowType> FlowTypes => Topics.Cast<FlowType>().Concat(Queries);
     public IEnumerable<AreaType> Types => Events.Cast<AreaType>().Concat(FlowTypes);
 
-    public bool TryGet(AreaTypeName name, out AreaType type)
+    public bool TryGet(TypeName name, out AreaType type)
     {
       if(Events.TryGet(name, out var e))
       {
@@ -46,7 +47,7 @@ namespace Totem.Timeline.Area
       return type != null;
     }
 
-    public bool TryGetFlow(AreaTypeName name, out FlowType type)
+    public bool TryGetFlow(TypeName name, out FlowType type)
     {
       if(Topics.TryGet(name, out var topic))
       {
@@ -64,7 +65,7 @@ namespace Totem.Timeline.Area
       return type != null;
     }
 
-    public AreaType Get(AreaTypeName name)
+    public AreaType Get(TypeName name)
     {
       if(!TryGet(name, out var type))
       {
@@ -74,7 +75,7 @@ namespace Totem.Timeline.Area
       return type;
     }
 
-    public FlowType GetFlow(AreaTypeName name)
+    public FlowType GetFlow(TypeName name)
     {
       if(!TryGetFlow(name, out var type))
       {

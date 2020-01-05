@@ -20,13 +20,27 @@ namespace Totem.Timeline.Hosting
 
     public void Configure(JsonFormatOptions options)
     {
+      AddConverters(options);
+      AddDurableTypes(options);
+    }
+
+    void AddConverters(JsonFormatOptions options) =>
       options.SerializerSettings.Converters.AddRange(
         new FlowKeyConverter(_area),
         new TimelinePositionConverter());
 
-      options.DurableTypes.Write.AddRange(
-        from type in _area.Types
-        select new DurableAreaType(type));
+    void AddDurableTypes(JsonFormatOptions options)
+    {
+      var potentialTypes =
+        _area.Types
+        .Select(type => type.DeclaredType.Assembly)
+        .Distinct()
+        .SelectMany(assembly => assembly.GetTypes());
+
+      foreach(var type in potentialTypes)
+      {
+        options.TryAddDurableType(type);
+      }
     }
   }
 }

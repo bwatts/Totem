@@ -9,6 +9,8 @@ namespace Totem.Runtime.Json
   /// </summary>
   public class JsonFormatSerializationBinder : DefaultSerializationBinder
   {
+    const string _prefix = "durable:";
+
     readonly IDurableTypeSet _durableTypes;
 
     public JsonFormatSerializationBinder(IDurableTypeSet durableTypes)
@@ -21,7 +23,7 @@ namespace Totem.Runtime.Json
       if(_durableTypes.TryGetKey(serializedType, out var key))
       {
         assemblyName = null;
-        typeName = key;
+        typeName = $"{_prefix}{key}";
       }
       else
       {
@@ -29,9 +31,19 @@ namespace Totem.Runtime.Json
       }
     }
 
-    public override Type BindToType(string assemblyName, string typeName) =>
-      _durableTypes.TryGetByKey(typeName, out var type)
-        ? type
-        : TypeResolver.Resolve(typeName, assemblyName);
+    public override Type BindToType(string assemblyName, string typeName)
+    {
+      if(typeName.StartsWith(_prefix))
+      {
+        var key = typeName.Substring(_prefix.Length);
+
+        if(DurableTypeKey.TryFrom(key, out var parsedKey) && _durableTypes.TryGetByKey(parsedKey, out var type))
+        {
+          return type;
+        }
+      }
+
+      return TypeResolver.Resolve(typeName, assemblyName);
+    }
   }
 }

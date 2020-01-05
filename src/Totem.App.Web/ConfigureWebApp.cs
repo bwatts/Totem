@@ -1,13 +1,19 @@
 using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Events;
+using Totem.Runtime.Hosting;
 using Totem.Timeline.EventStore.Hosting;
 using Totem.Timeline.Hosting;
+using Totem.Timeline.Mvc.Hosting;
+using Totem.Timeline.SignalR.Hosting;
 
 namespace Totem.App.Web
 {
@@ -16,147 +22,300 @@ namespace Totem.App.Web
   /// </summary>
   public class ConfigureWebApp
   {
-    Action<IWebHostBuilder> _host;
-    Action<IApplicationBuilder> _app;
-    Action<WebHostBuilderContext, IConfigurationBuilder> _appConfiguration;
-    Action<WebHostBuilderContext, IServiceCollection> _services;
-    Action<WebHostBuilderContext, ITimelineClientBuilder> _timeline;
-    Action<WebHostBuilderContext, IEventStoreTimelineClientBuilder> _eventStore;
-    Action<WebHostBuilderContext, LoggerConfiguration> _serilog;
-    Action<WebHostBuilderContext, IMvcBuilder> _mvc;
-    Action<WebHostBuilderContext, ISignalRServerBuilder> _signalR;
-    Action<IRouteBuilder> _mvcRoutes;
-    Action<HubRouteBuilder> _signalRRoutes;
+    class WebStep<TArg> : ConfigureStep<WebHostBuilderContext, TArg> {}
 
-    internal void ConfigureHost(IWebHostBuilder host) =>
-      _host?.Invoke(host);
+    readonly ConfigureStep<IWebHostBuilder> _host = new ConfigureStep<IWebHostBuilder>();
+    readonly ConfigureStep<IApplicationBuilder> _app = new ConfigureStep<IApplicationBuilder>();
+    readonly WebStep<IConfigurationBuilder> _appConfiguration = new WebStep<IConfigurationBuilder>();
+    readonly WebStep<IServiceCollection> _services = new WebStep<IServiceCollection>();
+    readonly WebStep<ITimelineClientBuilder> _timeline = new WebStep<ITimelineClientBuilder>();
+    readonly WebStep<LoggerConfiguration> _serilog = new WebStep<LoggerConfiguration>();
+    readonly WebStep<IServiceCollection> _mvc = new WebStep<IServiceCollection>();
+    readonly WebStep<IServiceCollection> _signalR = new WebStep<IServiceCollection>();
+    readonly ConfigureStep<IRouteBuilder> _mvcRoutes = new ConfigureStep<IRouteBuilder>();
+    readonly ConfigureStep<HubRouteBuilder> _signalRRoutes = new ConfigureStep<HubRouteBuilder>();
+    readonly ConfigureStep<IApplicationBuilder> _mvcApp = new ConfigureStep<IApplicationBuilder>();
+    readonly ConfigureStep<IApplicationBuilder> _signalRApp = new ConfigureStep<IApplicationBuilder>();
+    string _webRoot;
+    bool _disableSerilog;
 
-    internal void ConfigureApp(IApplicationBuilder app) =>
-      _app?.Invoke(app);
-
-    internal void ConfigureAppConfiguration(WebHostBuilderContext context, IConfigurationBuilder appConfiguration) =>
-      _appConfiguration?.Invoke(context, appConfiguration);
-
-    internal void ConfigureServices(WebHostBuilderContext context, IServiceCollection services) =>
-      _services?.Invoke(context, services);
-
-    internal void ConfigureTimeline(WebHostBuilderContext context, ITimelineClientBuilder timeline) =>
-      _timeline?.Invoke(context, timeline);
-
-    internal void ConfigureEventStore(WebHostBuilderContext context, IEventStoreTimelineClientBuilder eventStore) =>
-      _eventStore?.Invoke(context, eventStore);
-
-    internal void ConfigureSerilog(WebHostBuilderContext context, LoggerConfiguration serilog) =>
-      _serilog?.Invoke(context, serilog);
-
-    internal void ConfigureMvc(WebHostBuilderContext context, IMvcBuilder mvc) =>
-      _mvc?.Invoke(context, mvc);
-
-    internal void ConfigureSignalR(WebHostBuilderContext context, ISignalRServerBuilder signalR) =>
-      _signalR?.Invoke(context, signalR);
-
-    internal void ConfigureMvcRoutes(IRouteBuilder mvcRoutes) =>
-      _mvcRoutes?.Invoke(mvcRoutes);
-
-    internal void ConfigureSignalRRoutes(HubRouteBuilder signalRRoutes) =>
-      _signalRRoutes?.Invoke(signalRRoutes);
-
-    public ConfigureWebApp Host(Action<IWebHostBuilder> configure)
+    public ConfigureWebApp UseWebRoot(string webRoot)
     {
-      _host = configure;
+      _webRoot = webRoot;
 
       return this;
     }
 
-    public ConfigureWebApp App(Action<IApplicationBuilder> configure)
+    public ConfigureWebApp DisableSerilog()
     {
-      _app = configure;
+      _disableSerilog = true;
 
       return this;
     }
 
-    public ConfigureWebApp AppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configure)
+    //
+    // Before/After/Replace
+    //
+
+    public ConfigureWebApp BeforeHost(Action<IWebHostBuilder> configure) =>
+      _host.Before(this, configure);
+
+    public ConfigureWebApp BeforeApp(Action<IApplicationBuilder> configure) =>
+      _app.Before(this, configure);
+
+    public ConfigureWebApp BeforeAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configure) =>
+      _appConfiguration.Before(this, configure);
+
+    public ConfigureWebApp BeforeServices(Action<WebHostBuilderContext, IServiceCollection> configure) =>
+      _services.Before(this, configure);
+
+    public ConfigureWebApp BeforeTimeline(Action<WebHostBuilderContext, ITimelineClientBuilder> configure) =>
+      _timeline.Before(this, configure);
+
+    public ConfigureWebApp BeforeSerilog(Action<WebHostBuilderContext, LoggerConfiguration> configure) =>
+      _serilog.Before(this, configure);
+
+    public ConfigureWebApp BeforeMvc(Action<WebHostBuilderContext, IServiceCollection> configure) =>
+      _mvc.Before(this, configure);
+
+    public ConfigureWebApp BeforeSignalR(Action<WebHostBuilderContext, IServiceCollection> configure) =>
+      _signalR.Before(this, configure);
+
+    public ConfigureWebApp BeforeMvcRoutes(Action<IRouteBuilder> configure) =>
+      _mvcRoutes.Before(this, configure);
+
+    public ConfigureWebApp BeforeSignalRRoutes(Action<HubRouteBuilder> configure) =>
+      _signalRRoutes.Before(this, configure);
+
+    public ConfigureWebApp BeforeMvcApp(Action<IApplicationBuilder> configure) =>
+      _mvcApp.Before(this, configure);
+
+    public ConfigureWebApp BeforeSignalRApp(Action<IApplicationBuilder> configure) =>
+      _signalRApp.Before(this, configure);
+
+    public ConfigureWebApp AfterHost(Action<IWebHostBuilder> configure) =>
+      _host.After(this, configure);
+
+    public ConfigureWebApp AfterApp(Action<IApplicationBuilder> configure) =>
+      _app.After(this, configure);
+
+    public ConfigureWebApp AfterAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configure) =>
+      _appConfiguration.After(this, configure);
+
+    public ConfigureWebApp AfterServices(Action<WebHostBuilderContext, IServiceCollection> configure) =>
+      _services.After(this, configure);
+
+    public ConfigureWebApp AfterTimeline(Action<WebHostBuilderContext, ITimelineClientBuilder> configure) =>
+      _timeline.After(this, configure);
+
+    public ConfigureWebApp AfterSerilog(Action<WebHostBuilderContext, LoggerConfiguration> configure) =>
+      _serilog.After(this, configure);
+
+    public ConfigureWebApp AfterMvc(Action<WebHostBuilderContext, IServiceCollection> configure) =>
+      _mvc.After(this, configure);
+
+    public ConfigureWebApp AfterSignalR(Action<WebHostBuilderContext, IServiceCollection> configure) =>
+      _signalR.After(this, configure);
+
+    public ConfigureWebApp AfterMvcRoutes(Action<IRouteBuilder> configure) =>
+      _mvcRoutes.After(this, configure);
+
+    public ConfigureWebApp AfterSignalRRoutes(Action<HubRouteBuilder> configure) =>
+      _signalRRoutes.After(this, configure);
+
+    public ConfigureWebApp AfterMvcApp(Action<IApplicationBuilder> configure) =>
+      _mvcApp.After(this, configure);
+
+    public ConfigureWebApp AfterSignalRApp(Action<IApplicationBuilder> configure) =>
+      _signalRApp.After(this, configure);
+
+    public ConfigureWebApp ReplaceHost(Action<IWebHostBuilder> configure) =>
+      _host.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceApp(Action<IApplicationBuilder> configure) =>
+      _app.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configure) =>
+      _appConfiguration.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceServices(Action<WebHostBuilderContext, IServiceCollection> configure) =>
+      _services.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceTimeline(Action<WebHostBuilderContext, ITimelineClientBuilder> configure) =>
+      _timeline.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceSerilog(Action<WebHostBuilderContext, LoggerConfiguration> configure) =>
+      _serilog.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceMvc(Action<WebHostBuilderContext, IServiceCollection> configure) =>
+      _mvc.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceSignalR(Action<WebHostBuilderContext, IServiceCollection> configure) =>
+      _signalR.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceMvcRoutes(Action<IRouteBuilder> configure) =>
+      _mvcRoutes.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceSignalRRoutes(Action<HubRouteBuilder> configure) =>
+      _signalRRoutes.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceMvcApp(Action<IApplicationBuilder> configure) =>
+      _mvcApp.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceSignalRApp(Action<IApplicationBuilder> configure) =>
+      _signalRApp.Replace(this, configure);
+
+    //
+    // Before/After/Replace (without context)
+    //
+
+    public ConfigureWebApp BeforeAppConfiguration(Action<IConfigurationBuilder> configure) =>
+      _appConfiguration.Before(this, configure);
+
+    public ConfigureWebApp BeforeServices(Action<IServiceCollection> configure) =>
+      _services.Before(this, configure);
+
+    public ConfigureWebApp BeforeTimeline(Action<ITimelineClientBuilder> configure) =>
+      _timeline.Before(this, configure);
+
+    public ConfigureWebApp BeforeSerilog(Action<LoggerConfiguration> configure) =>
+      _serilog.Before(this, configure);
+
+    public ConfigureWebApp BeforeMvc(Action<IServiceCollection> configure) =>
+      _mvc.Before(this, configure);
+
+    public ConfigureWebApp BeforeSignalR(Action<IServiceCollection> configure) =>
+      _signalR.Before(this, configure);
+
+    public ConfigureWebApp AfterAppConfiguration(Action<IConfigurationBuilder> configure) =>
+      _appConfiguration.After(this, configure);
+
+    public ConfigureWebApp AfterServices(Action<IServiceCollection> configure) =>
+      _services.After(this, configure);
+
+    public ConfigureWebApp AfterTimeline(Action<ITimelineClientBuilder> configure) =>
+      _timeline.After(this, configure);
+
+    public ConfigureWebApp AfterSerilog(Action<LoggerConfiguration> configure) =>
+      _serilog.After(this, configure);
+
+    public ConfigureWebApp AfterMvc(Action<IServiceCollection> configure) =>
+      _mvc.After(this, configure);
+
+    public ConfigureWebApp AfterSignalR(Action<IServiceCollection> configure) =>
+      _signalR.After(this, configure);
+
+    public ConfigureWebApp ReplaceAppConfiguration(Action<IConfigurationBuilder> configure) =>
+      _appConfiguration.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceServices(Action<IServiceCollection> configure) =>
+      _services.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceTimeline(Action<ITimelineClientBuilder> configure) =>
+      _timeline.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceSerilog(Action<LoggerConfiguration> configure) =>
+      _serilog.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceMvc(Action<IServiceCollection> configure) =>
+      _mvc.Replace(this, configure);
+
+    public ConfigureWebApp ReplaceSignalR(Action<IServiceCollection> configure) =>
+      _signalR.Replace(this, configure);
+
+    //
+    // Apply
+    //
+
+    public void ApplyHost(IWebHostBuilder host) =>
+      _host.Apply(host, () =>
+      {
+        host.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, Assembly.GetEntryAssembly().FullName);
+        host.UseWebRoot(_webRoot ?? "wwwroot/dist");
+      });
+
+    public void ApplyApp(IWebHostBuilder host) =>
+      host.Configure(app =>
+        _app.Apply(app, () =>
+        {
+          var environment = app.ApplicationServices.GetRequiredService<Microsoft.Extensions.Hosting.IHostingEnvironment>();
+
+          if(environment.IsDevelopment())
+          {
+            app.UseDeveloperExceptionPage();
+          }
+
+          app.UseStaticFiles();
+
+          _mvcApp.Apply(app, () =>
+            app.UseMvc(routes =>
+              _mvcRoutes.Apply(routes)));
+
+          _signalRApp.Apply(app, () =>
+            app.UseSignalR(routes =>
+              _signalRRoutes.Apply(routes, () => routes.MapQueryHub())));
+        }));
+
+    public void ApplyAppConfiguration(IWebHostBuilder host) =>
+      host.ConfigureAppConfiguration((context, appConfiguration) =>
+        _appConfiguration.Apply(context, appConfiguration, () =>
+        {
+          if(context.HostingEnvironment.IsDevelopment())
+          {
+            appConfiguration.AddUserSecrets(Assembly.GetEntryAssembly(), optional: true);
+          }
+        }));
+
+    public void ApplyServices<TArea>(IWebHostBuilder host) where TArea : TimelineArea, new() =>
+      host.ConfigureServices((context, services) =>
+        _services.Apply(context, services, () =>
+        {
+          services.AddTotemRuntime();
+
+          services.AddTimelineClient<TArea>(timeline =>
+            _timeline.Apply(context, timeline, () =>
+              timeline.AddEventStore().BindOptionsToConfiguration()));
+
+          _mvc.Apply(context, services, () =>
+            services
+            .AddMvc()
+            .AddTotemWebRuntime()
+            .AddCommandsAndQueries()
+            .AddEntryAssemblyPart());
+
+          _signalR.Apply(context, services, () =>
+            services.AddSignalR().AddQueryNotifications());
+        }));
+
+    public void ApplySerilog(IWebHostBuilder host)
     {
-      _appConfiguration = configure;
+      if(_disableSerilog)
+      {
+        return;
+      }
 
-      return this;
+      host.UseSerilog((context, serilog) =>
+        _serilog.Apply(context, serilog, () =>
+        {
+          if(Environment.UserInteractive)
+          {
+            serilog.WriteTo.Console();
+          }
+
+          if(context.HostingEnvironment.IsDevelopment())
+          {
+            serilog
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("System", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
+          }
+          else
+          {
+            serilog.MinimumLevel.Warning();
+          }
+
+          serilog.ReadFrom.Configuration(context.Configuration);
+        }));
     }
-
-    public ConfigureWebApp Services(Action<WebHostBuilderContext, IServiceCollection> configure)
-    {
-      _services = configure;
-
-      return this;
-    }
-
-    public ConfigureWebApp Timeline(Action<WebHostBuilderContext, ITimelineClientBuilder> configure)
-    {
-      _timeline = configure;
-
-      return this;
-    }
-
-    public ConfigureWebApp EventStore(Action<WebHostBuilderContext, IEventStoreTimelineClientBuilder> configure)
-    {
-      _eventStore = configure;
-
-      return this;
-    }
-
-    public ConfigureWebApp Serilog(Action<WebHostBuilderContext, LoggerConfiguration> configure)
-    {
-      _serilog = configure;
-
-      return this;
-    }
-
-    public ConfigureWebApp Mvc(Action<WebHostBuilderContext, IMvcBuilder> configure)
-    {
-      _mvc = configure;
-
-      return this;
-    }
-
-    public ConfigureWebApp SignalR(Action<WebHostBuilderContext, ISignalRServerBuilder> configure)
-    {
-      _signalR = configure;
-
-      return this;
-    }
-
-    public ConfigureWebApp MvcRoutes(Action<IRouteBuilder> configure)
-    {
-      _mvcRoutes = configure;
-
-      return this;
-    }
-
-    public ConfigureWebApp SignalRRoutes(Action<HubRouteBuilder> configure)
-    {
-      _signalRRoutes = configure;
-
-      return this;
-    }
-
-    public ConfigureWebApp AppConfiguration(Action<IConfigurationBuilder> configure) =>
-      AppConfiguration((host, appConfiguration) => configure(appConfiguration));
-
-    public ConfigureWebApp Services(Action<IServiceCollection> configure) =>
-      Services((host, services) => configure(services));
-
-    public ConfigureWebApp Timeline(Action<ITimelineClientBuilder> configure) =>
-      Timeline((host, timeline) => configure(timeline));
-
-    public ConfigureWebApp EventStore(Action<IEventStoreTimelineClientBuilder> configure) =>
-      EventStore((host, eventStore) => configure(eventStore));
-
-    public ConfigureWebApp Serilog(Action<LoggerConfiguration> configure) =>
-      Serilog((host, serilog) => configure(serilog));
-
-    public ConfigureWebApp Mvc(Action<IMvcBuilder> configure) =>
-      Mvc((host, mvc) => configure(mvc));
-
-    public ConfigureWebApp SignalR(Action<ISignalRServerBuilder> configure) =>
-      SignalR((host, signalR) => configure(signalR));
   }
 }

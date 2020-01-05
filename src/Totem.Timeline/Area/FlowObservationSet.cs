@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Totem.Reflection;
 
 namespace Totem.Timeline.Area
 {
@@ -9,7 +10,7 @@ namespace Totem.Timeline.Area
   /// </summary>
   public class FlowObservationSet : IReadOnlyCollection<FlowObservation>
   {
-    readonly Dictionary<AreaTypeName, FlowObservation> _byName = new Dictionary<AreaTypeName, FlowObservation>();
+    readonly Dictionary<TypeName, FlowObservation> _byName = new Dictionary<TypeName, FlowObservation>();
     readonly Dictionary<Type, FlowObservation> _byDeclaredType = new Dictionary<Type, FlowObservation>();
 
     internal FlowObservationSet()
@@ -24,7 +25,7 @@ namespace Totem.Timeline.Area
     }
 
     public int Count => _byName.Count;
-    public FlowObservation this[AreaTypeName name] => _byName[name];
+    public FlowObservation this[TypeName name] => _byName[name];
     public FlowObservation this[EventType type] => _byName[type.Name];
     public FlowObservation this[Type declaredType] => _byDeclaredType[declaredType];
     public FlowObservation this[Event e] => _byDeclaredType[e.GetType()];
@@ -32,7 +33,7 @@ namespace Totem.Timeline.Area
     public IEnumerator<FlowObservation> GetEnumerator() => _byName.Values.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public bool Contains(AreaTypeName name) =>
+    public bool Contains(TypeName name) =>
       _byName.ContainsKey(name);
 
     public bool Contains(EventType e) =>
@@ -44,7 +45,7 @@ namespace Totem.Timeline.Area
     public bool Contains(Event e) =>
       Contains(e.GetType());
 
-    public bool TryGet(AreaTypeName name, out FlowObservation observation) =>
+    public bool TryGet(TypeName name, out FlowObservation observation) =>
       _byName.TryGetValue(name, out observation);
 
     public bool TryGet(EventType type, out FlowObservation observation) =>
@@ -56,7 +57,7 @@ namespace Totem.Timeline.Area
     public bool TryGet(Event e, out FlowObservation observation) =>
       TryGet(e.GetType(), out observation);
 
-    public FlowObservation Get(AreaTypeName name)
+    public FlowObservation Get(TypeName name)
     {
       if(!TryGet(name, out var observation))
       {

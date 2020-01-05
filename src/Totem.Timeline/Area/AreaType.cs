@@ -1,6 +1,6 @@
 using System;
 using System.Linq.Expressions;
-using System.Runtime.Serialization;
+using Totem.Reflection;
 
 namespace Totem.Timeline.Area
 {
@@ -20,7 +20,7 @@ namespace Totem.Timeline.Area
     }
 
     public readonly Type DeclaredType;
-    public readonly AreaTypeName Name;
+    public readonly TypeName Name;
     public readonly bool IsEvent;
     public readonly bool IsTopic;
     public readonly bool IsQuery;
@@ -49,8 +49,5 @@ namespace Totem.Timeline.Area
 
     public Expression ConvertToDeclaredType(Expression instance) =>
       Expression.Convert(instance, DeclaredType);
-
-    public object CreateToDeserialize() =>
-      FormatterServices.GetUninitializedObject(DeclaredType);
   }
 }
