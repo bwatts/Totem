@@ -14,21 +14,21 @@ namespace Totem.Timeline.Hosting
 
     public TConfigureApp Before<TConfigureApp>(TConfigureApp app, Action<TArg> configure)
     {
-      _before = configure;
+      _before += configure;
 
       return app;
     }
 
     public TConfigureApp After<TConfigureApp>(TConfigureApp app, Action<TArg> configure)
     {
-      _after = configure;
+      _after += configure;
 
       return app;
     }
 
     public TConfigureApp Replace<TConfigureApp>(TConfigureApp app, Action<TArg> configure)
     {
-      _replace = configure;
+      _replace += configure;
 
       return app;
     }
@@ -63,42 +63,42 @@ namespace Totem.Timeline.Hosting
 
     public TConfigureApp Before<TConfigureApp>(TConfigureApp app, Action<TArg0, TArg1> configure)
     {
-      _before = configure;
+      _before += configure;
 
       return app;
     }
 
     public TConfigureApp Before<TConfigureApp>(TConfigureApp app, Action<TArg1> configure)
     {
-      _before = (arg0, arg1) => configure(arg1);
+      _before += (arg0, arg1) => configure(arg1);
 
       return app;
     }
 
     public TConfigureApp After<TConfigureApp>(TConfigureApp app, Action<TArg0, TArg1> configure)
     {
-      _after = configure;
+      _after += configure;
 
       return app;
     }
 
     public TConfigureApp After<TConfigureApp>(TConfigureApp app, Action<TArg1> configure)
     {
-      _after = (arg0, arg1) => configure(arg1);
+      _after += (arg0, arg1) => configure(arg1);
 
       return app;
     }
 
     public TConfigureApp Replace<TConfigureApp>(TConfigureApp app, Action<TArg0, TArg1> configure)
     {
-      _replace = configure;
+      _replace += configure;
 
       return app;
     }
 
     public TConfigureApp Replace<TConfigureApp>(TConfigureApp app, Action<TArg1> configure)
     {
-      _replace = (arg0, arg1) => configure(arg1);
+      _replace += (arg0, arg1) => configure(arg1);
 
       return app;
     }
