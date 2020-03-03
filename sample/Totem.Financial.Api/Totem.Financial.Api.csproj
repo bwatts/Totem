@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App">
+      <PrivateAssets Condition="'%(PackageReference.Version)' == ''">all</PrivateAssets>
+      <Publish Condition="'%(PackageReference.Version)' == ''">true</Publish>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Totem.Timeline.Mvc\Totem.Timeline.Mvc.csproj" />
+    <ProjectReference Include="..\..\src\Totem.Timeline.StreamsDb\Totem.Timeline.StreamsDb.csproj" />
+    <ProjectReference Include="..\..\src\Totem.Timeline\Totem.Timeline.csproj" />
+    <ProjectReference Include="..\Totem.Financial\Totem.Financial.csproj" />
+  </ItemGroup>
+
+</Project>

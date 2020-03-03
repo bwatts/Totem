@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <ApplicationIcon />
+    <StartupObject />
+    <LangVersion>7.2</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Totem.EventBus.StreamsDb\Totem.EventBus.StreamsDb.csproj" />
+    <ProjectReference Include="..\..\src\Totem.EventBus\Totem.EventBus.csproj" />
+    <ProjectReference Include="..\..\src\Totem.Timeline.Mvc\Totem.Timeline.Mvc.csproj" />
+    <ProjectReference Include="..\..\src\Totem.Timeline.StreamsDb\Totem.Timeline.StreamsDb.csproj" />
+    <ProjectReference Include="..\..\src\Totem.Timeline\Totem.Timeline.csproj" />
+    <ProjectReference Include="..\Totem.Financial\Totem.Financial.csproj" />
+  </ItemGroup>
+
+</Project>
