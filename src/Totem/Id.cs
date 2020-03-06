@@ -84,10 +84,12 @@ namespace Totem
       _nameRegex.IsMatch(value ?? "");
 
     static readonly Regex _nameRegex = new Regex(
-      "^"               // Start
-      + "[A-Za-z_]"     // Match the first character (no digits)
-      + "[A-Za-z_0-9]*" // Match the remaining characters
-      + "$",            // End
+      "^"                 // Start
+      + "[\\\\\"]*"       // Optionally match etag quotes
+      + "[A-Za-z_]"       // Match the first character (no digits)
+      + "[A-Za-z_0-9]*"   // Match the remaining characters
+      + "[\\\\\"]*"       // Optionally match etag quotes
+      + "$",              // End
       RegexOptions.Compiled);
 
     public sealed class Converter : TextConverter
