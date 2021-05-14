@@ -17,7 +17,10 @@ namespace Dream.Hosting
               .ReadFrom.Configuration(context.Configuration)
               .Enrich.FromLogContext()
               .Enrich.WithMachineName()
-              .Destructure.ByTransforming<Id>(id => id.ToCompactString())
+              .Destructure.ByTransforming<Id>(id =>
+              {
+                  return id.ToCompactString();
+              })
               .Destructure.ByTransforming<Type>(type => UseUnqualifiedName(type) ? type.Name : type.ToString())
               .UseEnvironment(context);
 

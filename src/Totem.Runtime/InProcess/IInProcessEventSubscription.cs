@@ -1,4 +1,4 @@
-using Totem.Events;
+using Totem.Core;
 
 namespace Totem.InProcess
 {

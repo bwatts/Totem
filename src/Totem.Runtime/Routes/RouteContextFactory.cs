@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Linq.Expressions;
-using Totem.Events;
+using Totem.Core;
 
 namespace Totem.Routes
 {

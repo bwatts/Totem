@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Totem.Events;
+using Totem.Core;
 using Totem.Routes;
 
 namespace Totem.Workflows

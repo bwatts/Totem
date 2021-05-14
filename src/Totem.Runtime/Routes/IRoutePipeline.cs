@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Totem.Events;
+using Totem.Core;
 
 namespace Totem.Routes
 {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
-using Totem.Events;
+using Totem.Core;
 
 namespace Totem
 {
