@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>Dream</RootNamespace>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Serilog" Version="2.10.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="2.1.3" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+        <PackageReference Include="Spectre.Console" Version="0.39.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\Totem.Client\Totem.Client.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Totem.Runtime\Totem.Runtime.csproj" />
+        <ProjectReference Include="..\Dream.Messages\Dream.Messages.csproj" />
+        <ProjectReference Include="..\Dream.Runtime\Dream.Runtime.csproj" />
+    </ItemGroup>
+
+</Project>
