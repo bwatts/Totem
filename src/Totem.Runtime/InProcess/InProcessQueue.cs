@@ -34,7 +34,7 @@ namespace Totem.InProcess
             if(point == null)
                 throw new ArgumentNullException(nameof(point));
 
-            _logger.LogTrace("[queue {QueueName}] Enqueue {CommandType}", _name, point.MessageType);
+            _logger.LogTrace("[queue {QueueName}] Enqueue {@CommandType}", _name, point.MessageType);
 
             await _channel.Writer.WriteAsync(point, cancellationToken);
         }
@@ -88,7 +88,7 @@ namespace Totem.InProcess
 
             if(context.HasErrors)
             {
-                _logger.LogError("[queue {QueueName}] Command {CommandType}.{CommandId} has errors: {Errors}", _name, envelope.MessageType, envelope.MessageId, context.Errors);
+                _logger.LogError("[queue {QueueName}] Command {@CommandType}.{@CommandId} has errors: {Errors}", _name, envelope.MessageType, envelope.MessageId, context.Errors);
             }
         }
     }

@@ -44,7 +44,7 @@ namespace Totem.Queues
 
             if(handler != null)
             {
-                _logger.LogDebug("[queue {QueueName}] Handle {CommandType}.{CommandId}", context.QueueName, context.CommandType, context.CommandId);
+                _logger.LogTrace("[queue {QueueName}] Handle {@CommandType}.{@CommandId}", context.QueueName, context.CommandType, context.CommandId);
 
                 await handler.HandleAsync(context, cancellationToken);
             }

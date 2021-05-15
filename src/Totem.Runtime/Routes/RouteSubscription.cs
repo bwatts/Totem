@@ -41,7 +41,7 @@ namespace Totem.Routes
 
         public void Dispose()
         {
-            _logger.LogTrace("[route] Close subscription {RouteType}.{RouteId}", _address.RouteType, _address.RouteId);
+            _logger.LogTrace("[route] Close subscription {@RouteType}.{@RouteId}", _address.RouteType, _address.RouteId);
 
             _channel.Writer.Complete();
             _cancellation.Cancel();
@@ -58,7 +58,7 @@ namespace Totem.Routes
                         await RunPipelineAsync(envelope);
                     }
 
-                    _logger.LogTrace("[route] Wait for next event to {RouteType}.{RouteId}...", _address.RouteType, _address.RouteId);
+                    _logger.LogTrace("[route] Wait for next event to {@RouteType}.{@RouteId}...", _address.RouteType, _address.RouteId);
                 }
             }
             catch(OperationCanceledException)
@@ -67,7 +67,7 @@ namespace Totem.Routes
             { }
             catch(Exception exception)
             {
-                _logger.LogError(exception, "[route] Unhandled exception; subscription closed for {RouteType}.{RouteId}", _address.RouteType, _address.RouteId);
+                _logger.LogError(exception, "[route] Unhandled exception; subscription closed for {@RouteType}.{@RouteId}", _address.RouteType, _address.RouteId);
             }
         }
 
@@ -77,7 +77,7 @@ namespace Totem.Routes
 
             if(context.HasErrors)
             {
-                _logger.LogError("[route] Pipeline {PipelineId} failed for {RouteType}.{RouteId} and event {EventType}.{EventId} from {TimelineType}.{TimelineId}@{TimelineVersion}", _pipeline.Id, _address.RouteType, _address.RouteId, envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
+                _logger.LogError("[route] Pipeline {@PipelineId} failed for {@RouteType}.{@RouteId} and event {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", _pipeline.Id, _address.RouteType, _address.RouteId, envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
             }
         }
     }

@@ -35,7 +35,7 @@ namespace Totem
 
             if(timeline.Version != null)
             {
-                _logger.LogDebug("[timeline] Loaded {TimelineType}.{TimelineId}@{TimelineVersion}", timeline.GetType(), timelineId, timeline.Version);
+                _logger.LogTrace("[timeline] Loaded {@TimelineType}.{@TimelineId}@{TimelineVersion}", timeline.GetType(), timelineId, timeline.Version);
             }
 
             return timeline;
@@ -47,7 +47,7 @@ namespace Totem
                 throw new ArgumentNullException(nameof(timeline));
 
             if(timeline.HasErrors)
-                throw new ArgumentException($"Timeline is in an error state: {timeline.GetType().Name}.{timeline.Id.ToCompactString()}", nameof(timeline));
+                throw new ArgumentException($"Timeline is in an error state: {timeline.GetType().Name}.{timeline.Id.ToShortString()}", nameof(timeline));
 
             if(!timeline.HasNewEvents)
             {
@@ -56,7 +56,7 @@ namespace Totem
             
             await foreach(var envelope in _store.SaveAsync(timeline, correlationId, principal, cancellationToken))
             {
-                _logger.LogDebug("[timeline] Append {EventType}.{EventId} to {TimelineType}.{TimelineId}@{TimelineVersion}", envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
+                _logger.LogTrace("[timeline] Append {@EventType}.{@EventId} to {@TimelineType}.{@TimelineId}@{TimelineVersion}", envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
             }
         }
 

@@ -45,23 +45,23 @@ namespace Totem.Routes.Dispatch
             {
                 if(!TryGetEventType(method, out var eventType))
                 {
-                    _logger.LogWarning("{Route} method does not accept a lone event parameter: {RouteType}.{Method}", Route, _routeType, method);
+                    _logger.LogWarning("{Route} method does not accept a lone event parameter: {@RouteType}.{Method}", Route, _routeType, method);
                 }
                 else if(!CheckRouteReturn(method))
                 {
-                    _logger.LogWarning("{Route} method does not return {IdType}, {IdsType}, or a type assignable to {EnumerableType}: {RouteType}.{Method}", Route, typeof(Id), typeof(Ids), typeof(IEnumerable<Id>), _routeType, method);
+                    _logger.LogWarning("{Route} method does not return {IdType}, {IdsType}, or a type assignable to {EnumerableType}: {@RouteType}.{Method}", Route, typeof(Id), typeof(Ids), typeof(IEnumerable<Id>), _routeType, method);
                 }
                 else if(!method.IsPublic)
                 {
-                    _logger.LogWarning("{Route} method is not public: {RouteType}.{Method}", Route, _routeType, method);
+                    _logger.LogWarning("{Route} method is not public: {@RouteType}.{Method}", Route, _routeType, method);
                 }
                 else if(!method.IsStatic)
                 {
-                    _logger.LogWarning("{Route} method is not static: {RouteType}.{Method}", Route, _routeType, method);
+                    _logger.LogWarning("{Route} method is not static: {@RouteType}.{Method}", Route, _routeType, method);
                 }
                 else if(RoutesByEventType.ContainsKey(eventType))
                 {
-                    _logger.LogWarning("{Route} method duplicates another signature for event {Eventtype}: {RouteType}.{Method}", Route, eventType, _routeType, method);
+                    _logger.LogWarning("{Route} method duplicates another signature for event {Eventtype}: {@RouteType}.{Method}", Route, eventType, _routeType, method);
                 }
                 else
                 {
@@ -95,27 +95,27 @@ namespace Totem.Routes.Dispatch
             {
                 if(!TryGetWhenEvent(method, out var eventType, out var isContext))
                 {
-                    _logger.LogWarning("{MethodName} method does not accept an event parameter first: {RouteType}.{Method}", method.Name, _routeType, method);
+                    _logger.LogWarning("{MethodName} method does not accept an event parameter first: {@RouteType}.{Method}", method.Name, _routeType, method);
                 }
                 else if(!TryGetIsAsync(method, out var isAsync))
                 {
-                    _logger.LogWarning("{MethodName} method does not return {TaskType} or {VoidType}: {RouteType}.{Method}", method.Name, typeof(Task), typeof(void), _routeType, method);
+                    _logger.LogWarning("{MethodName} method does not return {TaskType} or {VoidType}: {@RouteType}.{Method}", method.Name, typeof(Task), typeof(void), _routeType, method);
                 }
                 else if(!TryGetHasCancellationToken(method, out var hasCancellationToken))
                 {
-                    _logger.LogWarning("{MethodName} methods only accept a single optional parameter of type {CancellationTokenType} after the event: {RouteType}.{Method}", method.Name, typeof(CancellationToken), _routeType, method);
+                    _logger.LogWarning("{MethodName} methods only accept a single optional parameter of type {CancellationTokenType} after the event: {@RouteType}.{Method}", method.Name, typeof(CancellationToken), _routeType, method);
                 }
                 else if(!method.IsPublic)
                 {
-                    _logger.LogWarning("{MethodName} method is not public: {RouteType}.{Method}", method.Name, _routeType, method);
+                    _logger.LogWarning("{MethodName} method is not public: {@RouteType}.{Method}", method.Name, _routeType, method);
                 }
                 else if(method.IsStatic)
                 {
-                    _logger.LogWarning("{MethodName} method is static: {RouteType}.{Method}", method.Name, _routeType, method);
+                    _logger.LogWarning("{MethodName} method is static: {@RouteType}.{Method}", method.Name, _routeType, method);
                 }
                 else if(WhensByEventType.ContainsKey(eventType))
                 {
-                    _logger.LogWarning("{MethodName} method duplicates another signature for event {EventType}: {RouteType}.{Method}", method.Name, eventType, _routeType, method);
+                    _logger.LogWarning("{MethodName} method duplicates another signature for event {EventType}: {@RouteType}.{Method}", method.Name, eventType, _routeType, method);
                 }
                 else
                 {
@@ -207,7 +207,7 @@ namespace Totem.Routes.Dispatch
 
                 if(hasRoute)
                 {
-                    _logger.LogWarning("{RouteType}.{Route} for event {EventType} has no corresponding {Given}, {When}, or {WhenAsync} method", _routeType, Route, eventType, Given, When, WhenAsync);
+                    _logger.LogWarning("{@RouteType}.{Route} for event {EventType} has no corresponding {Given}, {When}, or {WhenAsync} method", _routeType, Route, eventType, Given, When, WhenAsync);
 
                     RoutesByEventType.Remove(eventType);
                 }
@@ -215,13 +215,13 @@ namespace Totem.Routes.Dispatch
                 {
                     var whenMethod = WhensByEventType[eventType].Info;
 
-                    _logger.LogWarning("{RouteType}.{Method} for event {EventType} has no corresponding {Route} method", _routeType, whenMethod, eventType, Route);
+                    _logger.LogWarning("{@RouteType}.{Method} for event {EventType} has no corresponding {Route} method", _routeType, whenMethod, eventType, Route);
 
                     WhensByEventType.Remove(eventType);
                 }
                 else
                 {
-                    _logger.LogWarning("{RouteType}.{Given} for event {EventType} has no corresponding {Route} method", _routeType, Given, eventType, Route);
+                    _logger.LogWarning("{@RouteType}.{Given} for event {EventType} has no corresponding {Route} method", _routeType, Given, eventType, Route);
                 }
             }
         }

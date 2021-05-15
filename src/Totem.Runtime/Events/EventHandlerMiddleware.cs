@@ -44,7 +44,7 @@ namespace Totem.Events
 
             if(handler != null)
             {
-                _logger.LogTrace("[event] Handle {EventType}.{EventId} from {TimelineType}.{TimelineId}@{TimelineVersion}", context.EventType, context.EventId, context.TimelineType, context.TimelineId, context.TimelineVersion);
+                _logger.LogTrace("[event] Handle {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", context.EventType, context.EventId, context.TimelineType, context.TimelineId, context.TimelineVersion);
 
                 await handler.HandleAsync(context, cancellationToken);
             }

@@ -36,7 +36,7 @@ namespace Totem.Workflows
             if(address == null)
                 throw new ArgumentNullException(nameof(address));
 
-            _logger.LogTrace("[workflow] Run pipeline {PipelineId} for {RouteType}.{RouteId} and event {EventType}.{EventId} from {TimelineType}.{TimelineId}@{TimelineVersion}", Id, address.RouteType, address.RouteId, envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
+            _logger.LogTrace("[workflow] Run pipeline {@PipelineId} for {@RouteType}.{@RouteId} and event {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", Id, address.RouteType, address.RouteId, envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
 
             var context = _contextFactory.Create(Id, envelope, address);
 
@@ -48,13 +48,13 @@ namespace Totem.Workflows
             {
                 if(cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogTrace("[workflow] Pipeline {PipelineId} cancelled", Id);
+                    _logger.LogTrace("[workflow] Pipeline {@PipelineId} cancelled", Id);
                     return;
                 }
 
                 if(index >= _steps.Count)
                 {
-                    _logger.LogTrace("[workflow] Pipeline {PipelineId} complete", Id);
+                    _logger.LogTrace("[workflow] Pipeline {@PipelineId} complete", Id);
                     return;
                 }
 

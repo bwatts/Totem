@@ -32,7 +32,7 @@ namespace Totem.Commands
             if(envelope == null)
                 throw new ArgumentNullException(nameof(envelope));
 
-            _logger.LogTrace("[command] Run client pipeline {PipelineId} for {CommandType}.{CommandId}", Id, envelope.MessageType, envelope.MessageId);
+            _logger.LogTrace("[command] Run client pipeline {@PipelineId} for {@CommandType}.{@CommandId}", Id, envelope.MessageType, envelope.MessageId);
 
             var context = _contextFactory.Create(Id, envelope);
 
@@ -44,13 +44,13 @@ namespace Totem.Commands
             {
                 if(cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogTrace("[command] Client pipeline {PipelineId} cancelled", Id);
+                    _logger.LogTrace("[command] Client pipeline {@PipelineId} cancelled", Id);
                     return;
                 }
 
                 if(index >= _steps.Count)
                 {
-                    _logger.LogTrace("[command] Client pipeline {PipelineId} complete", Id);
+                    _logger.LogTrace("[command] Client pipeline {@PipelineId} complete", Id);
                     return;
                 }
 

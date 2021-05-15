@@ -32,7 +32,7 @@ namespace Totem.Events
             if(point == null)
                 throw new ArgumentNullException(nameof(point));
 
-            _logger.LogTrace("[event] Run pipeline {PipelineId} for {EventType}.{EventId} from {TimelineType}.{TimelineId}@{TimelineVersion}", Id, point.MessageType, point.MessageId, point.TimelineType, point.TimelineId, point.TimelineVersion);
+            _logger.LogTrace("[event] Run pipeline {@PipelineId} for {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", Id, point.MessageType, point.MessageId, point.TimelineType, point.TimelineId, point.TimelineVersion);
 
             var context = _contextFactory.Create(Id, point);
 
@@ -44,13 +44,13 @@ namespace Totem.Events
             {
                 if(cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogTrace("[event] Pipeline {PipelineId} cancelled", Id);
+                    _logger.LogTrace("[event] Pipeline {@PipelineId} cancelled", Id);
                     return;
                 }
 
                 if(index >= _steps.Count)
                 {
-                    _logger.LogTrace("[event] Pipeline {PipelineId} complete", Id);
+                    _logger.LogTrace("[event] Pipeline {@PipelineId} complete", Id);
                     return;
                 }
 

@@ -44,7 +44,7 @@ namespace Totem.Queries
 
             if(handler != null)
             {
-                _logger.LogDebug("[query] Handle {QueryType}.{QueryId}", context.QueryType, context.QueryId);
+                _logger.LogTrace("[query] Handle {@QueryType}.{@QueryId}", context.QueryType, context.QueryId);
 
                 await handler.HandleAsync(context, cancellationToken);
             }

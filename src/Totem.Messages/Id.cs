@@ -23,7 +23,6 @@ namespace Totem
 
         public override string ToString() => _value.ToString();
         public string ToShortString() => _value.ToString().Substring(0, 8);
-        public string ToCompactString() => $"{ToShortString()}-";
         public Guid ToGuid() => _value;
 
         public override int GetHashCode() => _value.GetHashCode();

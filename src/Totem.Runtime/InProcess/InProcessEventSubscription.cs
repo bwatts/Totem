@@ -31,14 +31,14 @@ namespace Totem.InProcess
             if(envelope == null)
                 throw new ArgumentNullException(nameof(envelope));
 
-            _logger.LogDebug("[event] Publish {EventType} from {TimelineType}.{TimelineId}@{TimelineVersion}", envelope.MessageType, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
+            _logger.LogTrace("[event] Publish {EventType} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", envelope.MessageType, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
 
             _channel.Writer.TryWrite(envelope);
         }
 
         public void Dispose()
         {
-            _logger.LogDebug("[events] Close subscription");
+            _logger.LogTrace("[events] Close subscription");
 
             _channel.Writer.Complete();
             _cancellation.Cancel();
@@ -74,7 +74,7 @@ namespace Totem.InProcess
 
             if(context.HasErrors)
             {
-                _logger.LogError("[event] Pipeline {PipelineId} failed for {EventType}.{EventId} from {TimelineType}.{TimelineId}@{TimelineVersion}", _pipeline.Id, envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
+                _logger.LogError("[event] Pipeline {@PipelineId} failed for {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", _pipeline.Id, envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
             }
         }
     }

@@ -30,6 +30,6 @@ namespace Totem.Core
         public DateTimeOffset WhenOccurred { get; }
 
         public override string ToString() =>
-            $"{TimelineType.Name}.{TimelineId.ToCompactString()}@{TimelineVersion} => {MessageType.Name}.{MessageId.ToCompactString()}";
+            $"{TimelineType.Name}.{TimelineId.ToShortString()}@{TimelineVersion} => {MessageType.Name}.{MessageId.ToShortString()}";
     }
 }

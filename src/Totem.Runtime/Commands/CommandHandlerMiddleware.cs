@@ -44,7 +44,7 @@ namespace Totem.Commands
 
             if(handler != null)
             {
-                _logger.LogTrace("[command] Handle {CommandType}.{CommandId}", context.CommandType, context.CommandId);
+                _logger.LogTrace("[command] Handle {@CommandType}.{@CommandId}", context.CommandType, context.CommandId);
 
                 await handler.HandleAsync(context, cancellationToken);
             }

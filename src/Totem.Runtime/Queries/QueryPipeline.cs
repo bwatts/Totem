@@ -32,7 +32,7 @@ namespace Totem.Queries
             if(envelope == null)
                 throw new ArgumentNullException(nameof(envelope));
 
-            _logger.LogTrace("[query] Run pipeline {PipelineId} for {QueryType}.{QueryId}", Id, envelope.MessageType, envelope.MessageId);
+            _logger.LogTrace("[query] Run pipeline {@PipelineId} for {@QueryType}.{@QueryId}", Id, envelope.MessageType, envelope.MessageId);
 
             var context = _contextFactory.Create(Id, envelope);
 
@@ -44,13 +44,13 @@ namespace Totem.Queries
             {
                 if(cancellationToken.IsCancellationRequested)
                 {
-                    _logger.LogTrace("[query] Pipeline {PipelineId} cancelled", Id);
+                    _logger.LogTrace("[query] Pipeline {@PipelineId} cancelled", Id);
                     return;
                 }
 
                 if(index >= _steps.Count)
                 {
-                    _logger.LogTrace("[query] Pipeline {PipelineId} complete", Id);
+                    _logger.LogTrace("[query] Pipeline {@PipelineId} complete", Id);
                     return;
                 }
 

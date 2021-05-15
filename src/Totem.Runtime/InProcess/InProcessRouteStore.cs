@@ -82,7 +82,7 @@ namespace Totem.InProcess
             internal RouteHistory(IRouteStoreTransaction transaction)
             {
                 _routeType = transaction.Context.RouteType.Name;
-                _routeId = transaction.Context.RouteId.ToCompactString();
+                _routeId = transaction.Context.RouteId.ToShortString();
 
                 var version = transaction.Route.Version ?? 0;
 

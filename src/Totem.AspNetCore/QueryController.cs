@@ -29,13 +29,13 @@ namespace Totem
             var correlationId = _correlationIdAccessor.CorrelationId ?? Id.NewId();
             var envelope = new QueryEnvelope(query, queryId, correlationId, User);
 
-            _logger.LogTrace("[query] {RequestMethod} {QueryType}.{QueryId}", Request.Method, envelope.MessageType, envelope.MessageId);
+            _logger.LogTrace("[query] {RequestMethod} {@QueryType}.{@QueryId}", Request.Method, envelope.MessageType, envelope.MessageId);
 
             var context = await _pipeline.RunAsync(envelope, cancellationToken);
 
             if(context.HasErrors)
             {
-                _logger.LogError("[query] {RequestMethod} {QueryType}.{QueryId} failed: {Errors}", Request.Method, envelope.MessageType, envelope.MessageId, context.Errors);
+                _logger.LogError("[query] {RequestMethod} {@QueryType}.{@QueryId} failed: {Errors}", Request.Method, envelope.MessageType, envelope.MessageId, context.Errors);
 
                 return new ErrorInfoResult(context.Errors);
             }

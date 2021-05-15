@@ -17,6 +17,6 @@ namespace Totem.Queues
         public Text QueueName { get; }
 
         public override string ToString() =>
-            $"{MessageType.Name}.{MessageId.ToCompactString()} => {QueueName}";
+            $"{MessageType.Name}.{MessageId.ToShortString()} => {QueueName}";
     }
 }

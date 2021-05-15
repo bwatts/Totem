@@ -21,6 +21,6 @@ namespace Totem.Core
         public ClaimsPrincipal Principal { get; }
 
         public override string ToString() =>
-            $"{MessageType.Name}.{MessageId.ToCompactString()}";
+            $"{MessageType.Name}.{MessageId.ToShortString()}";
     }
 }

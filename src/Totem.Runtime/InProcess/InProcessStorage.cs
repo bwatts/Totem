@@ -22,7 +22,7 @@ namespace Totem.InProcess
             if(row == null)
                 throw new ArgumentNullException(nameof(row));
 
-            _logger.LogDebug("Create key {RowKey}", row.Key);
+            _logger.LogTrace("Create key {RowKey}", row.Key);
 
             var partition = GetOrAddPartition(row.Key.Partition);
 
@@ -91,7 +91,7 @@ namespace Totem.InProcess
             if(row == null)
                 throw new ArgumentNullException(nameof(row));
 
-            _logger.LogDebug("Put storage key {RowKey}", row.Key);
+            _logger.LogTrace("Put storage key {RowKey}", row.Key);
 
             var partition = GetOrAddPartition(row.Key.Partition);
 
@@ -105,7 +105,7 @@ namespace Totem.InProcess
             if(row == null)
                 throw new ArgumentNullException(nameof(row));
 
-            _logger.LogDebug("Put storage key {RowKey}", row.Key);
+            _logger.LogTrace("Put storage key {RowKey}", row.Key);
 
             var partition = GetOrAddPartition(row.Key.Partition);
 
@@ -127,7 +127,7 @@ namespace Totem.InProcess
 
                 foreach(var partitionRow in partitionRows)
                 {
-                    _logger.LogDebug("Put storage key {RowKey}", partitionRow.Key);
+                    _logger.LogTrace("Put storage key {RowKey}", partitionRow.Key);
 
                     partition[partitionRow.Key.Row] = partitionRow;
 
@@ -149,7 +149,7 @@ namespace Totem.InProcess
 
                 foreach(var partitionRow in partitionRows)
                 {
-                    _logger.LogDebug("Put storage key {RowKey}", partitionRow.Key);
+                    _logger.LogTrace("Put storage key {RowKey}", partitionRow.Key);
 
                     partition[partitionRow.Key.Row] = partitionRow;
 
@@ -163,7 +163,7 @@ namespace Totem.InProcess
             if(key is null)
                 throw new ArgumentNullException(nameof(key));
 
-            _logger.LogDebug("Remove key {RowKey}", key);
+            _logger.LogTrace("Remove key {RowKey}", key);
 
             if(_partitionsByKey.TryGetValue(key.Partition, out var partition))
             {
@@ -180,7 +180,7 @@ namespace Totem.InProcess
 
             foreach(var key in keys)
             {
-                _logger.LogDebug("Remove key {RowKey}", key);
+                _logger.LogTrace("Remove key {RowKey}", key);
 
                 if(_partitionsByKey.TryGetValue(key.Partition, out var partition))
                 {

@@ -13,6 +13,6 @@ namespace Totem.Routes
         public Type RouteType { get; }
         public Id RouteId { get; }
 
-        public override string ToString() => $"{RouteType.Name}.{RouteId.ToCompactString()}";
+        public override string ToString() => $"{RouteType.Name}.{RouteId.ToShortString()}";
     }
 }
