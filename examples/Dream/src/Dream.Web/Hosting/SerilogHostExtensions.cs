@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Totem;
 using Totem.Events;
+using Serilog.Sinks.SpectreConsole;
 
 namespace Dream.Hosting
 {
@@ -17,16 +18,13 @@ namespace Dream.Hosting
               .ReadFrom.Configuration(context.Configuration)
               .Enrich.FromLogContext()
               .Enrich.WithMachineName()
-              .Destructure.ByTransforming<Id>(id =>
-              {
-                  return id.ToCompactString();
-              })
+              .Destructure.ByTransforming<Id>(id => id.ToShortString())
               .Destructure.ByTransforming<Type>(type => UseUnqualifiedName(type) ? type.Name : type.ToString())
               .UseEnvironment(context);
 
               if(Environment.UserInteractive)
               {
-                  logger.WriteTo.Console().WriteTo.Debug();
+                  logger.WriteTo.SpectreConsole("{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}{Exception}", minLevel: Serilog.Events.LogEventLevel.Verbose).WriteTo.Debug();
               }
           });
 
