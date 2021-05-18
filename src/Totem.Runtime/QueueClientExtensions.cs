@@ -66,6 +66,14 @@ namespace Totem
             return client.EnqueueAsync(command.InEnvelope(queueName), cancellationToken);
         }
 
+        public static Task EnqueueAsync(this IQueueClient client, IQueueCommand command, CancellationToken cancellationToken)
+        {
+            if(client == null)
+                throw new ArgumentNullException(nameof(client));
+
+            return client.EnqueueAsync(command.InEnvelope(), cancellationToken);
+        }
+
         public static Task EnqueueAsync(this IQueueClient client, IEnumerable<IQueueCommand> commands, Id correlationId, ClaimsPrincipal principal, Text queueName, CancellationToken cancellationToken)
         {
             if(client == null)
@@ -141,6 +149,17 @@ namespace Totem
                 throw new ArgumentNullException(nameof(commands));
 
             return client.EnqueueAsync(commands.Select(x => x.InEnvelope(queueName)), cancellationToken);
+        }
+
+        public static Task EnqueueAsync(this IQueueClient client, IEnumerable<IQueueCommand> commands, CancellationToken cancellationToken)
+        {
+            if(client == null)
+                throw new ArgumentNullException(nameof(client));
+
+            if(commands == null)
+                throw new ArgumentNullException(nameof(commands));
+
+            return client.EnqueueAsync(commands.Select(x => x.InEnvelope()), cancellationToken);
         }
 
         public static Task EnqueueAsync(this IQueueClient client, Id correlationId, ClaimsPrincipal principal, Text queueName, CancellationToken cancellationToken, params IQueueCommand[] commands) =>
