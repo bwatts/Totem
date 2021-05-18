@@ -10,13 +10,16 @@ namespace Dream
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddJsonStringEnumConverter();
-            services.AddRouting();
+            services.AddMvc();
+            services.AddSignalR();
+            services.AddDream();
 
             services
+            .AddRouting()
             .AddControllers()
             .AddCommandControllers()
-            .AddQueryControllers();
+            .AddQueryControllers()
+            .AddJsonStringEnumConverter();
 
             services
             .AddTotemRuntime()
@@ -40,20 +43,30 @@ namespace Dream
             .AddInProcessQueueClient()
             .AddInProcessStorage()
             .AddLocalFileStorage();
-
-            services.AddDream();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)
         {
-            app.UseStaticFiles();
-            app.UseRouting();
-            app.UseEndpoints(route => route.MapControllers());
-
             if(environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseWebAssemblyDebugging();
             }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+            }
+
+            app.UseCors();
+            app.UseRouting();
+            app.UseStaticFiles();
+            app.UseBlazorFrameworkFiles();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapFallbackToFile("index.html");
+            });
         }
     }
 }

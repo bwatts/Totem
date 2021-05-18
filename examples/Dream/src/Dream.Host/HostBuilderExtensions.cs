@@ -3,13 +3,13 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using Totem;
-using Totem.Events;
+using Serilog.Events;
 using Serilog.Sinks.SpectreConsole;
+using Totem.Hosting;
 
-namespace Dream.Hosting
+namespace Dream
 {
-    internal static class SerilogHostExtensions
+    internal static class HostBuilderExtensions
     {
         internal static IHostBuilder ConfigureSerilog(this IHostBuilder builder) =>
           builder.UseSerilog((context, logger) =>
@@ -18,18 +18,15 @@ namespace Dream.Hosting
               .ReadFrom.Configuration(context.Configuration)
               .Enrich.FromLogContext()
               .Enrich.WithMachineName()
-              .Destructure.ByTransforming<Id>(id => id.ToShortString())
-              .Destructure.ByTransforming<Type>(type => UseUnqualifiedName(type) ? type.Name : type.ToString())
+              .Enrich.WithShortTotemTypes()
+              .Destructure.ShortIds()
               .UseEnvironment(context);
 
               if(Environment.UserInteractive)
               {
-                  logger.WriteTo.SpectreConsole("{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}{Exception}", minLevel: Serilog.Events.LogEventLevel.Verbose).WriteTo.Debug();
+                  logger.WriteTo.SpectreConsole("{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}{Exception}", minLevel: LogEventLevel.Verbose).WriteTo.Debug();
               }
           });
-
-        static bool UseUnqualifiedName(Type type) =>
-            typeof(IMessage).IsAssignableFrom(type) || typeof(IEventSourced).IsAssignableFrom(type);
 
         static void UseEnvironment(this LoggerConfiguration logger, HostBuilderContext context)
         {
@@ -39,7 +36,7 @@ namespace Dream.Hosting
                 return;
             }
 
-            var path = context.Configuration["DREAM_LOG_PATH"] ?? @"C:\GitHub\Totem.Ideas.Data\Dream\Logs\Web";
+            var path = context.Configuration["DREAM_LOG_PATH"] ?? @"C:\Totem\Dream\Logs";
             var file = $"{context.HostingEnvironment.ApplicationName}-{context.HostingEnvironment.EnvironmentName}.log";
 
             logger.WriteTo.File(Path.Combine(path, file));

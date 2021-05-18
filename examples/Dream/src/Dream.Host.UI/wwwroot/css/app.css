@@ -1,0 +1,28 @@
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    height: 100%;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+    
+}
+
+main {
+    height: 100%;
+    background-color: #b3e5fc;
+}
+
+#surface {
+    height: 100%;
+    display: grid;
+    background: linear-gradient(to right, #b3e5fc 1px, transparent 1px), linear-gradient(to bottom, #b3e5fc 1px, transparent 1px);
+    background-color: white;
+
+    width: 840px;
+    height: 420px;
+    grid-template-rows: repeat(21, 20px);
+    grid-template-columns: repeat(42, 20px);
+    background-size: 20px 20px;
+}
