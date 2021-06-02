@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Totem.Commands;
-using Totem.Core;
+using Totem.Http;
 using Totem.Queries;
 
 namespace Totem
@@ -18,10 +18,10 @@ namespace Totem
             _queryPipeline = queryPipeline ?? throw new ArgumentNullException(nameof(queryPipeline));
         }
 
-        public Task<IClientCommandContext<ICommand>> SendAsync(ICommandEnvelope envelope, CancellationToken cancellationToken) =>
+        public Task<IClientCommandContext<IHttpCommand>> SendAsync(IHttpCommandEnvelope envelope, CancellationToken cancellationToken) =>
             _commandPipeline.RunAsync(envelope, cancellationToken);
 
-        public Task<IClientQueryContext<IQuery>> SendAsync(IQueryEnvelope envelope, CancellationToken cancellationToken) =>
+        public Task<IClientQueryContext<IHttpQuery>> SendAsync(IHttpQueryEnvelope envelope, CancellationToken cancellationToken) =>
             _queryPipeline.RunAsync(envelope, cancellationToken);
     }
 }

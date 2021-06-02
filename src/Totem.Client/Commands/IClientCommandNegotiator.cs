@@ -4,6 +4,6 @@ namespace Totem.Commands
 {
     public interface IClientCommandNegotiator
     {
-        HttpRequestMessage Negotiate(ICommand command, string mediaType);
+        HttpRequestMessage Negotiate(IHttpCommand command, string contentType);
     }
 }

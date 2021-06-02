@@ -7,12 +7,12 @@ namespace Totem.Commands
 {
     public class ClientCommandMiddleware : IClientCommandMiddleware
     {
-        readonly Func<IClientCommandContext<ICommand>, Func<Task>, CancellationToken, Task> _middleware;
+        readonly Func<IClientCommandContext<IHttpCommand>, Func<Task>, CancellationToken, Task> _middleware;
 
-        public ClientCommandMiddleware(Func<IClientCommandContext<ICommand>, Func<Task>, CancellationToken, Task> middleware) =>
+        public ClientCommandMiddleware(Func<IClientCommandContext<IHttpCommand>, Func<Task>, CancellationToken, Task> middleware) =>
             _middleware = middleware ?? throw new ArgumentNullException(nameof(middleware));
 
-        public Task InvokeAsync(IClientCommandContext<ICommand> context, Func<Task> next, CancellationToken cancellationToken) =>
+        public Task InvokeAsync(IClientCommandContext<IHttpCommand> context, Func<Task> next, CancellationToken cancellationToken) =>
             _middleware(context, next, cancellationToken);
     }
 
@@ -24,7 +24,7 @@ namespace Totem.Commands
         public ClientCommandMiddleware(IServiceProvider services) =>
             _services = services ?? throw new ArgumentNullException(nameof(services));
 
-        public Task InvokeAsync(IClientCommandContext<ICommand> context, Func<Task> next, CancellationToken cancellationToken) =>
+        public Task InvokeAsync(IClientCommandContext<IHttpCommand> context, Func<Task> next, CancellationToken cancellationToken) =>
             _services.GetRequiredService<TService>().InvokeAsync(context, next, cancellationToken);
     }
 }

@@ -7,23 +7,23 @@ using Totem.Http;
 namespace Totem.Queries
 {
     public class ClientQueryContext<TQuery> : MessageContext, IClientQueryContext<TQuery>
-        where TQuery : IQuery
+        where TQuery : IHttpQuery
     {
-        public ClientQueryContext(Id pipelineId, IQueryEnvelope envelope) : base(pipelineId, envelope)
+        public ClientQueryContext(Id pipelineId, IHttpQueryEnvelope envelope) : base(pipelineId, envelope)
         {
             Envelope = envelope;
 
             if(envelope.Message is not TQuery query)
-                throw new ArgumentException($"Expected query type {typeof(TQuery)} but received {envelope.MessageType}", nameof(envelope));
+                throw new ArgumentException($"Expected query type {typeof(TQuery)} but received {envelope.Info.MessageType}", nameof(envelope));
 
             Query = query;
         }
 
-        public new IQueryEnvelope Envelope { get; }
+        public new IHttpQueryEnvelope Envelope { get; }
         public TQuery Query { get; }
-        public Type QueryType => Envelope.MessageType;
+        public Type QueryType => Envelope.Info.MessageType;
         public Id QueryId => Envelope.MessageId;
-        public Type ResultType => Envelope.ResultType;
+        public Type ResultType => Envelope.Info.ResultType;
         public object? Result { get; set; }
         public string Accept { get; set; } = ContentTypes.Json;
         public HttpRequestHeaders Headers { get; } = new HttpRequestMessage().Headers;

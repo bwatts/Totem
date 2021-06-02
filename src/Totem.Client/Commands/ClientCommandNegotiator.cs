@@ -12,7 +12,7 @@ namespace Totem.Commands
         public ClientCommandNegotiator(JsonSerializerOptions jsonOptions) =>
             _jsonOptions = jsonOptions ?? throw new ArgumentNullException(nameof(jsonOptions));
 
-        public HttpRequestMessage Negotiate(ICommand command, string contentType)
+        public HttpRequestMessage Negotiate(IHttpCommand command, string contentType)
         {
             if(command == null)
                 throw new ArgumentNullException(nameof(command));
@@ -23,9 +23,9 @@ namespace Totem.Commands
             if(!ContentTypes.IsJson(contentType))
                 throw new InvalidOperationException($"Unsupported command content type: {contentType}");
 
-            var info = CommandInfo.From(command.GetType());
-            var method = new HttpMethod(info.Method);
-            var route = RouteFormatter.Format(info.Route, command);
+            var info = HttpCommandInfo.From(command);
+            var method = new HttpMethod(info.Request.Method);
+            var route = RouteFormatter.Format(info.Request.Route, command);
             var json = JsonSerializer.Serialize(command, info.MessageType, _jsonOptions);
 
             return new HttpRequestMessage(method, route)

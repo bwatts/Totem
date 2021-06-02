@@ -15,34 +15,45 @@ namespace Totem.Queries
         public ClientQueryNegotiator(JsonSerializerOptions jsonOptions) =>
             _jsonOptions = jsonOptions ?? throw new ArgumentNullException(nameof(jsonOptions));
 
-        public HttpRequestMessage Negotiate(IQuery query)
+        public HttpRequestMessage Negotiate(IHttpQuery query)
         {
             if(query == null)
                 throw new ArgumentNullException(nameof(query));
 
-            var info = QueryInfo.From(query.GetType());
-            var method = new HttpMethod(info.Method);
-            var route = EncodeRoute(info.Route, query);
+            var info = HttpQueryInfo.From(query.GetType());
+
+            var method = new HttpMethod(info.Request.Method);
+            var route = EncodeRoute(info.Request.Route, query);
 
             return new HttpRequestMessage(method, route);
         }
 
-        public object? NegotiateResult(Type resultType, string contentType, string content)
+        public void NegotiateResult(IClientQueryContext<IHttpQuery> context)
         {
+            if(context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            if(context.Response == null)
+                throw new InvalidOperationException("Expected context to have a resposne");
+
+            var contentType = context.Response.ContentType;
+            var content = context.Response.Content;
+
             if(ContentTypes.IsPlainText(contentType))
             {
-                return content;
+                context.Result = content;
             }
-
-            if(ContentTypes.IsJson(contentType))
+            else if(ContentTypes.IsJson(contentType))
             {
-                return JsonSerializer.Deserialize(content, resultType, _jsonOptions);
+                context.Result = JsonSerializer.Deserialize(content, context.ResultType, _jsonOptions);
             }
-
-            throw new InvalidOperationException($"Unsupported query content type: {contentType}");
+            else
+            {
+                throw new InvalidOperationException($"Unsupported query content type: {contentType}");
+            }
         }
 
-        Uri EncodeRoute(string template, IQuery query)
+        Uri EncodeRoute(string template, IHttpQuery query)
         {
             var formatter = new RouteFormatter(template, query);
             var encoder = _encodersByQueryType.GetOrAdd(query.GetType(), type => new QueryEncoder(type, formatter.Tokens));

@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 
 namespace Totem.Http
 {
-    public class TotemHttpClient : ITotemHttpClient
+    public class MessageClient : IMessageClient
     {
         readonly HttpClient _httpClient;
 
-        public TotemHttpClient(HttpClient httpClient) =>
+        public MessageClient(HttpClient httpClient) =>
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
 
-        public async Task SendAsync(ITotemHttpMessage message, CancellationToken cancellationToken)
+        public async Task SendAsync(IMessageRequest message, CancellationToken cancellationToken)
         {
             if(message == null)
                 throw new ArgumentNullException(nameof(message));

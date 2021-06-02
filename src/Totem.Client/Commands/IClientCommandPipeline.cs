@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Totem.Core;
+using Totem.Http;
 
 namespace Totem.Commands
 {
@@ -8,6 +8,6 @@ namespace Totem.Commands
     {
         Id Id { get; }
 
-        Task<IClientCommandContext<ICommand>> RunAsync(ICommandEnvelope envelope, CancellationToken token);
+        Task<IClientCommandContext<IHttpCommand>> RunAsync(IHttpCommandEnvelope envelope, CancellationToken token);
     }
 }

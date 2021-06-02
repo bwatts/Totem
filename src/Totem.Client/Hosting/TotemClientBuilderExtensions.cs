@@ -1,6 +1,4 @@
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Totem.Commands;
 using Totem.Queries;
@@ -9,10 +7,7 @@ namespace Totem.Hosting
 {
     public static class TotemClientBuilderExtensions
     {
-        public static ITotemClientBuilder AddCommands(
-            this ITotemClientBuilder builder,
-            Action<IClientCommandPipelineBuilder> declarePipeline,
-            Action<JsonSerializerOptions>? configureJson = null)
+        public static ITotemClientBuilder AddCommands(this ITotemClientBuilder builder, Action<IClientCommandPipelineBuilder> declarePipeline)
         {
             if(builder == null)
                 throw new ArgumentNullException(nameof(builder));
@@ -21,7 +16,7 @@ namespace Totem.Hosting
                 throw new ArgumentNullException(nameof(declarePipeline));
 
             builder.Services
-                .AddSingleton<ClientCommandHttpMiddleware>()
+                .AddSingleton<ClientCommandRequestMiddleware>()
                 .AddSingleton<IClientCommandNegotiator, ClientCommandNegotiator>()
                 .AddSingleton<IClientCommandContextFactory, ClientCommandContextFactory>()
                 .AddTransient<IClientCommandPipelineBuilder, ClientCommandPipelineBuilder>()
@@ -33,16 +28,6 @@ namespace Totem.Hosting
 
                      return pipelineBuilder.Build();
                  });
-
-            var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-            {
-                WriteIndented = true,
-                Converters = { new JsonStringEnumConverter() }
-            };
-
-            configureJson?.Invoke(jsonOptions);
-
-            builder.Services.AddSingleton(jsonOptions);
 
             return builder;
         }
@@ -56,7 +41,7 @@ namespace Totem.Hosting
                 throw new ArgumentNullException(nameof(declarePipeline));
 
             builder.Services
-                .AddSingleton<ClientQueryHttpMiddleware>()
+                .AddSingleton<ClientQueryRequestMiddleware>()
                 .AddSingleton<IClientQueryNegotiator, ClientQueryNegotiator>()
                 .AddSingleton<IClientQueryContextFactory, ClientQueryContextFactory>()
                 .AddTransient<IClientQueryPipelineBuilder, ClientQueryPipelineBuilder>()

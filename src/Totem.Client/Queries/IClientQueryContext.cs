@@ -6,7 +6,7 @@ using Totem.Core;
 namespace Totem.Queries
 {
     public interface IClientQueryContext<out TQuery> : IMessageContext
-        where TQuery : IQuery
+        where TQuery : IHttpQuery
     {
         TQuery Query { get; }
         Type QueryType { get; }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Totem.Core;
+using Totem.Http;
 
 namespace Totem.Commands
 {
@@ -27,12 +27,12 @@ namespace Totem.Commands
 
         public Id Id { get; }
 
-        public async Task<IClientCommandContext<ICommand>> RunAsync(ICommandEnvelope envelope, CancellationToken cancellationToken)
+        public async Task<IClientCommandContext<IHttpCommand>> RunAsync(IHttpCommandEnvelope envelope, CancellationToken cancellationToken)
         {
             if(envelope == null)
                 throw new ArgumentNullException(nameof(envelope));
 
-            _logger.LogTrace("[command] Run client pipeline {@PipelineId} for {@CommandType}.{@CommandId}", Id, envelope.MessageType, envelope.MessageId);
+            _logger.LogTrace("[command] Run client pipeline {@PipelineId} for {@CommandType}.{@CommandId}", Id, envelope.Info.MessageType, envelope.MessageId);
 
             var context = _contextFactory.Create(Id, envelope);
 

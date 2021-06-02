@@ -5,18 +5,18 @@ using Totem.Http;
 
 namespace Totem.Commands
 {
-    public class ClientCommandHttpMiddleware : IClientCommandMiddleware
+    public class ClientCommandRequestMiddleware : IClientCommandMiddleware
     {
-        readonly ITotemHttpClient _client;
+        readonly IMessageClient _client;
         readonly IClientCommandNegotiator _negotiator;
 
-        public ClientCommandHttpMiddleware(ITotemHttpClient client, IClientCommandNegotiator negotiator)
+        public ClientCommandRequestMiddleware(IMessageClient client, IClientCommandNegotiator negotiator)
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _negotiator = negotiator ?? throw new ArgumentNullException(nameof(negotiator));
         }
 
-        public async Task InvokeAsync(IClientCommandContext<ICommand> context, Func<Task> next, CancellationToken cancellationToken)
+        public async Task InvokeAsync(IClientCommandContext<IHttpCommand> context, Func<Task> next, CancellationToken cancellationToken)
         {
             if(context == null)
                 throw new ArgumentNullException(nameof(context));
@@ -24,7 +24,7 @@ namespace Totem.Commands
             if(next == null)
                 throw new ArgumentNullException(nameof(next));
 
-            await _client.SendAsync(new ClientCommandHttpMessage(context, _negotiator), cancellationToken);
+            await _client.SendAsync(new ClientCommandRequest(context, _negotiator), cancellationToken);
 
             await next();
         }

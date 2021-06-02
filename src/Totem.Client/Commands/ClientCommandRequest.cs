@@ -1,18 +1,17 @@
 using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Totem.Http;
 
-namespace Totem.Queries
+namespace Totem.Commands
 {
-    public class ClientQueryHttpMessage : ITotemHttpMessage
+    public class ClientCommandRequest : IMessageRequest
     {
-        readonly IClientQueryContext<IQuery> _context;
-        readonly IClientQueryNegotiator _negotiator;
+        readonly IClientCommandContext<IHttpCommand> _context;
+        readonly IClientCommandNegotiator _negotiator;
 
-        public ClientQueryHttpMessage(IClientQueryContext<IQuery> context, IClientQueryNegotiator negotiator)
+        public ClientCommandRequest(IClientCommandContext<IHttpCommand> context, IClientCommandNegotiator negotiator)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _negotiator = negotiator ?? throw new ArgumentNullException(nameof(negotiator));
@@ -26,14 +25,11 @@ namespace Totem.Queries
             var response = await client.SendAsync(BuildRequest(), cancellationToken);
 
             _context.Response = await ClientResponse.CreateAsync(response, cancellationToken);
-            _context.Result = _negotiator.NegotiateResult(_context.ResultType, _context.Response.ContentType, _context.Response.Content);
         }
 
         HttpRequestMessage BuildRequest()
         {
-            var request = _negotiator.Negotiate(_context.Query);
-
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(_context.Accept));
+            var request = _negotiator.Negotiate(_context.Command, _context.ContentType);
 
             foreach(var (name, values) in _context.Headers)
             {

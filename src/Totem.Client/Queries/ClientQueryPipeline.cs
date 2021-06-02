@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Totem.Core;
+using Totem.Http;
 
 namespace Totem.Queries
 {
@@ -27,12 +27,12 @@ namespace Totem.Queries
 
         public Id Id { get; }
 
-        public async Task<IClientQueryContext<IQuery>> RunAsync(IQueryEnvelope envelope, CancellationToken cancellationToken)
+        public async Task<IClientQueryContext<IHttpQuery>> RunAsync(IHttpQueryEnvelope envelope, CancellationToken cancellationToken)
         {
             if(envelope == null)
                 throw new ArgumentNullException(nameof(envelope));
 
-            _logger.LogTrace("[query] Run client pipeline {@PipelineId} for {@QueryType}.{@QueryId}", Id, envelope.MessageType, envelope.MessageId);
+            _logger.LogTrace("[query] Run client pipeline {@PipelineId} for {@QueryType}.{@QueryId}", Id, envelope.Info.MessageType, envelope.MessageId);
 
             var context = _contextFactory.Create(Id, envelope);
 

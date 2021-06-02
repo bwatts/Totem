@@ -6,6 +6,6 @@ namespace Totem.Queries
 {
     public interface IClientQueryMiddleware
     {
-        Task InvokeAsync(IClientQueryContext<IQuery> context, Func<Task> next, CancellationToken cancellationToken);
+        Task InvokeAsync(IClientQueryContext<IHttpQuery> context, Func<Task> next, CancellationToken cancellationToken);
     }
 }

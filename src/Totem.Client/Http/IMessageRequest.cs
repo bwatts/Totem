@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Totem.Http
 {
-    public interface ITotemHttpMessage
+    public interface IMessageRequest
     {
         Task SendAsync(HttpClient client, CancellationToken cancellationToken);
     }

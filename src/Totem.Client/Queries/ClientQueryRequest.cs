@@ -1,17 +1,18 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Totem.Http;
 
-namespace Totem.Commands
+namespace Totem.Queries
 {
-    public class ClientCommandHttpMessage : ITotemHttpMessage
+    public class ClientQueryRequest : IMessageRequest
     {
-        readonly IClientCommandContext<ICommand> _context;
-        readonly IClientCommandNegotiator _negotiator;
+        readonly IClientQueryContext<IHttpQuery> _context;
+        readonly IClientQueryNegotiator _negotiator;
 
-        public ClientCommandHttpMessage(IClientCommandContext<ICommand> context, IClientCommandNegotiator negotiator)
+        public ClientQueryRequest(IClientQueryContext<IHttpQuery> context, IClientQueryNegotiator negotiator)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _negotiator = negotiator ?? throw new ArgumentNullException(nameof(negotiator));
@@ -25,11 +26,15 @@ namespace Totem.Commands
             var response = await client.SendAsync(BuildRequest(), cancellationToken);
 
             _context.Response = await ClientResponse.CreateAsync(response, cancellationToken);
+
+            _negotiator.NegotiateResult(_context);
         }
 
         HttpRequestMessage BuildRequest()
         {
-            var request = _negotiator.Negotiate(_context.Command, _context.ContentType);
+            var request = _negotiator.Negotiate(_context.Query);
+
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(_context.Accept));
 
             foreach(var (name, values) in _context.Headers)
             {

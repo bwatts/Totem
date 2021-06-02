@@ -19,7 +19,7 @@ namespace Totem.Queries.Encoding
                 select new QueryEncoderProperty(property, queryType)).ToArray();
         }
 
-        internal string Encode(IQuery query)
+        internal string Encode(IHttpQuery query)
         {
             var writer = new QueryWriter();
 

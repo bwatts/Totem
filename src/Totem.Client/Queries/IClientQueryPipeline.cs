@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Totem.Core;
+using Totem.Http;
 
 namespace Totem.Queries
 {
@@ -8,6 +8,6 @@ namespace Totem.Queries
     {
         Id Id { get; }
 
-        Task<IClientQueryContext<IQuery>> RunAsync(IQueryEnvelope envelope, CancellationToken token);
+        Task<IClientQueryContext<IHttpQuery>> RunAsync(IHttpQueryEnvelope envelope, CancellationToken token);
     }
 }

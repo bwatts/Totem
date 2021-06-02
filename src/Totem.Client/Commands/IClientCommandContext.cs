@@ -1,12 +1,12 @@
 using System;
 using System.Net.Http.Headers;
-using Totem.Http;
 using Totem.Core;
+using Totem.Http;
 
 namespace Totem.Commands
 {
     public interface IClientCommandContext<out TCommand> : IMessageContext
-        where TCommand : ICommand
+        where TCommand : IHttpCommand
     {
         TCommand Command { get; }
         Type CommandType { get; }

@@ -1,9 +1,9 @@
-using Totem.Core;
+using Totem.Http;
 
 namespace Totem.Commands
 {
     public interface IClientCommandContextFactory
     {
-        IClientCommandContext<ICommand> Create(Id pipelineId, ICommandEnvelope envelope);
+        IClientCommandContext<IHttpCommand> Create(Id pipelineId, IHttpCommandEnvelope envelope);
     }
 }
