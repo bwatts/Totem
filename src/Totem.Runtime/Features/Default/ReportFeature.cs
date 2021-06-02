@@ -5,6 +5,6 @@ namespace Totem.Features.Default
 {
     public class ReportFeature
     {
-        public IList<TypeInfo> Reports { get; } = new List<TypeInfo>();
+        public List<TypeInfo> Reports { get; } = new List<TypeInfo>();
     }
 }

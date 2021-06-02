@@ -77,7 +77,7 @@ namespace Totem.Routes
 
             if(context.HasErrors)
             {
-                _logger.LogError("[route] Pipeline {@PipelineId} failed for {@RouteType}.{@RouteId} and event {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", _pipeline.Id, _address.RouteType, _address.RouteId, envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
+                _logger.LogError("[route] Pipeline {@PipelineId} failed for {@RouteType}.{@RouteId} and event {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", _pipeline.Id, _address.RouteType, _address.RouteId, envelope.Info.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
             }
         }
     }

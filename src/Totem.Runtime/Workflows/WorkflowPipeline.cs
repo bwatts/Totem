@@ -36,7 +36,7 @@ namespace Totem.Workflows
             if(address == null)
                 throw new ArgumentNullException(nameof(address));
 
-            _logger.LogTrace("[workflow] Run pipeline {@PipelineId} for {@RouteType}.{@RouteId} and event {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", Id, address.RouteType, address.RouteId, envelope.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
+            _logger.LogTrace("[workflow] Run pipeline {@PipelineId} for {@RouteType}.{@RouteId} and event {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", Id, address.RouteType, address.RouteId, envelope.Info.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
 
             var context = _contextFactory.Create(Id, envelope, address);
 

@@ -32,7 +32,7 @@ namespace Totem.Events
             if(point == null)
                 throw new ArgumentNullException(nameof(point));
 
-            _logger.LogTrace("[event] Run pipeline {@PipelineId} for {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", Id, point.MessageType, point.MessageId, point.TimelineType, point.TimelineId, point.TimelineVersion);
+            _logger.LogTrace("[event] Run pipeline {@PipelineId} for {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", Id, point.Info.MessageType, point.MessageId, point.TimelineType, point.TimelineId, point.TimelineVersion);
 
             var context = _contextFactory.Create(Id, point);
 

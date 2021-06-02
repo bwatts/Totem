@@ -5,6 +5,6 @@ namespace Totem.Features.Default
 {
     public class EventHandlerFeature
     {
-        public IList<TypeInfo> EventHandlers { get; } = new List<TypeInfo>();
+        public List<TypeInfo> Handlers { get; } = new List<TypeInfo>();
     }
 }

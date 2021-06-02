@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,14 +10,17 @@ namespace Totem.Features.Default
     {
         public void PopulateFeature(IEnumerable<FeaturePart> parts, EventHandlerFeature feature)
         {
-            foreach(var handler in
+            if(parts == null)
+                throw new ArgumentNullException(nameof(parts));
+
+            if(feature == null)
+                throw new ArgumentNullException(nameof(feature));
+
+            feature.Handlers.AddRange(
                 from part in parts.OfType<IFeatureTypeProvider>()
                 from type in part.Types
                 where type.ImplementsGenericInterface(typeof(IEventHandler<>))
-                select type.GetTypeInfo())
-            {
-                feature.EventHandlers.Add(handler);
-            }
+                select type.GetTypeInfo());
         }
     }
 }

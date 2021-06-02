@@ -17,7 +17,7 @@ namespace Totem.Events
             if(envelope == null)
                 throw new ArgumentNullException(nameof(envelope));
 
-            var factory = _factoriesByEventType.GetOrAdd(envelope.MessageType, CompileFactory);
+            var factory = _factoriesByEventType.GetOrAdd(envelope.Info.MessageType, CompileFactory);
 
             return factory(pipelineId, envelope);
         }

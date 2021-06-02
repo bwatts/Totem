@@ -1,5 +1,4 @@
 using System;
-using Totem.Events;
 using Totem.Core;
 
 namespace Totem

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Totem.Core;
 using Totem.Features;
 using Totem.Features.Default;
+using Totem.Timelines;
 
 namespace Totem.Hosting
 {
@@ -59,14 +60,16 @@ namespace Totem.Hosting
 
         static void AddDefaultProviders(FeatureRegistry features)
         {
-            Add<CommandFeatureProvider>();
-            Add<CommandHandlerFeatureProvider>();
             Add<EventHandlerFeatureProvider>();
-            Add<QueryFeatureProvider>();
-            Add<QueryHandlerFeatureProvider>();
-            Add<QueueHandlerFeatureProvider>();
-            Add<ReportFeatureProvider>();
-            Add<WorkflowFeatureProvider>();
+            Add<HttpCommandProvider>();
+            Add<HttpCommandHandlerProvider>();
+            Add<HttpQueryProvider>();
+            Add<HttpQueryHandlerProvider>();
+            Add<LocalCommandHandlerProvider>();
+            Add<LocalQueryHandlerProvider>();
+            Add<QueueCommandHandlerProvider>();
+            Add<ReportProvider>();
+            Add<WorkflowProvider>();
 
             void Add<TProvider>() where TProvider : IFeatureProvider, new()
             {

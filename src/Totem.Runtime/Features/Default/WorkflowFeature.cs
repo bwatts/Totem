@@ -5,6 +5,6 @@ namespace Totem.Features.Default
 {
     public class WorkflowFeature
     {
-        public IList<TypeInfo> Workflows { get; } = new List<TypeInfo>();
+        public List<TypeInfo> Workflows { get; } = new List<TypeInfo>();
     }
 }
