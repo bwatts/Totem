@@ -2,47 +2,39 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Totem.Core;
 
-namespace Totem
+namespace Totem.Queues
 {
-    public class QueueCommandInfo
+    public class QueueCommandInfo : MessageInfo
     {
         public const string DefaultQueueName = "default";
-        static readonly ConcurrentDictionary<Type, QueueCommandInfo> _infosByType = new();
+        static readonly ConcurrentDictionary<Type, QueueCommandInfo> _infoByType = new();
 
-        QueueCommandInfo(Type commandType, Text queueName)
-        {
-            CommandType = commandType;
-            QueueName = queueName;
-        }
+        QueueCommandInfo(Type messageType, Text queueName) : base(messageType) =>
+            QueueName = queueName ?? throw new ArgumentNullException(nameof(queueName));
 
-        public Type CommandType { get; }
         public Text QueueName { get; }
-
-        public static bool IsQueueCommand(Type type) =>
-            TryFrom(type, out var _);
 
         public static bool TryFrom(Type type, [MaybeNullWhen(false)] out QueueCommandInfo info)
         {
-            if(_infosByType.TryGetValue(type, out info))
+            if(_infoByType.TryGetValue(type, out info))
             {
                 return true;
             }
 
-            info = null;
-
-            if(type == null || !type.IsPublic || !type.IsClass || type.IsAbstract || type.ContainsGenericParameters)
+            if(type != null && type.IsConcreteClass() && typeof(IQueueCommand).IsAssignableFrom(type))
             {
-                return false;
-            }
+                var queueName = type.GetCustomAttribute<QueueNameAttribute>()?.Name;
 
-            if(typeof(IQueueCommand).IsAssignableFrom(type))
-            {
-                var queueName = type.GetCustomAttribute<QueueNameAttribute>()?.Name ?? DefaultQueueName;
+                if(string.IsNullOrWhiteSpace(queueName))
+                {
+                    queueName = DefaultQueueName;
+                }
 
                 info = new QueueCommandInfo(type, queueName.ToText());
 
-                _infosByType[type] = info;
+                _infoByType[type] = info;
 
                 return true;
             }
@@ -62,7 +54,7 @@ namespace Totem
         public static QueueCommandInfo From(Type type)
         {
             if(!TryFrom(type, out var info))
-                throw new ArgumentException($"Expected queue command type to be a public, non-abstract, non-or-closed-generic class implementing {typeof(IQueueCommand)}: {type}", nameof(type));
+                throw new ArgumentException($"Expected queue command {type} to be a public, non-abstract, non-or-closed-generic class implementing {typeof(IQueueCommand)}", nameof(type));
 
             return info;
         }

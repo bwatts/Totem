@@ -7,8 +7,9 @@ namespace Totem.Core
     {
         Id PipelineId { get; }
         IMessageEnvelope Envelope { get; }
-        Id CorrelationId { get; set; }
-        ClaimsPrincipal Principal { get; set; }
+        MessageInfo Info { get; }
+        Id CorrelationId { get; }
+        ClaimsPrincipal Principal { get; }
         ErrorBag Errors { get; }
         bool HasErrors { get; }
 

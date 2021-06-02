@@ -6,6 +6,14 @@ namespace Totem.Core
 {
     public static class TypeExtensions
     {
+        public static bool IsConcreteClass(this Type type)
+        {
+            if(type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            return type.IsPublic && type.IsClass && !type.IsAbstract && !type.ContainsGenericParameters;
+        }
+
         public static bool IsGenericTypeDefinition(this Type type, Type definition)
         {
             if(type == null)

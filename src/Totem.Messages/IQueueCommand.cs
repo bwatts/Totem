@@ -1,6 +1,8 @@
+using Totem.Core;
+
 namespace Totem
 {
-    public interface IQueueCommand : IMessage
+    public interface IQueueCommand : ICommandMessage
     {
 
     }

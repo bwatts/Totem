@@ -11,14 +11,13 @@ namespace Totem.Core
         {
             PipelineId = pipelineId ?? throw new ArgumentNullException(nameof(pipelineId));
             Envelope = envelope ?? throw new ArgumentNullException(nameof(envelope));
-            CorrelationId = envelope.CorrelationId;
-            Principal = envelope.Principal;
         }
 
         public Id PipelineId { get; }
         public IMessageEnvelope Envelope { get; }
-        public Id CorrelationId { get; set; }
-        public ClaimsPrincipal Principal { get; set; }
+        public MessageInfo Info => Envelope.Info;
+        public Id CorrelationId => Envelope.CorrelationId;
+        public ClaimsPrincipal Principal => Envelope.Principal;
         public ErrorBag Errors { get; } = new();
         public bool HasErrors => Errors.Any;
 

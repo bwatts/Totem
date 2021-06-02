@@ -1,11 +1,11 @@
 using System;
 
-namespace Totem
+namespace Totem.Http
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public abstract class QueryAttribute : Attribute
+    public abstract class HttpRequestAttribute : Attribute
     {
-        internal QueryAttribute(string method, string route)
+        internal HttpRequestAttribute(string method, string route)
         {
             Method = !string.IsNullOrWhiteSpace(method) ? method : throw new ArgumentOutOfRangeException(nameof(method));
             Route = !string.IsNullOrWhiteSpace(route) ? route : throw new ArgumentOutOfRangeException(nameof(route));
