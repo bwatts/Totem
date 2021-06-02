@@ -1,6 +1,7 @@
 using System;
 using Serilog;
 using Serilog.Configuration;
+using Totem.Core;
 using Totem.Events;
 
 namespace Totem.Hosting
