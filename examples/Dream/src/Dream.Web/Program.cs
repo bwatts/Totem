@@ -1,9 +1,10 @@
 using Dream;
+using Dream.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
 await Host.CreateDefaultBuilder(args)
+    .ConfigureWebHostDefaults(host => host.UseStartup<Startup>())
     .ConfigureSerilog()
-    .ConfigureWebHostDefaults(webHost => webHost.UseStartup<Startup>())
     .Build()
     .RunAsync();

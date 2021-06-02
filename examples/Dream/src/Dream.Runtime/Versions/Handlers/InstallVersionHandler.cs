@@ -7,14 +7,14 @@ using Totem;
 
 namespace Dream.Versions.Handlers
 {
-    public class InstallVersionHandler : ICommandHandler<InstallVersion>
+    public class InstallVersionHandler : IHttpCommandHandler<InstallVersion>
     {
         readonly ITimelineRepository<VersionsTimeline> _repository;
 
         public InstallVersionHandler(ITimelineRepository<VersionsTimeline> repository) =>
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
 
-        public async Task HandleAsync(ICommandContext<InstallVersion> context, CancellationToken cancellationToken)
+        public async Task HandleAsync(IHttpCommandContext<InstallVersion> context, CancellationToken cancellationToken)
         {
             var timeline = await _repository.LoadAsync(VersionsTimeline.TimelineId, cancellationToken);
 

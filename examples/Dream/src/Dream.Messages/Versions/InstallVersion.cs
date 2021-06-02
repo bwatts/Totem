@@ -5,7 +5,7 @@ using Totem;
 namespace Dream.Versions
 {
     [PostRequest("/versions")]
-    public class InstallVersion : ICommand
+    public class InstallVersion : IHttpCommand
     {
         [Required] public Uri ZipUrl { get; set; } = null!;
     }

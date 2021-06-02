@@ -1,0 +1,15 @@
+html, body {
+    font-family: Verdana, Arial, sans-serif;
+    height: 100%;
+}
+
+:root {
+    --surface-color: #121212;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+    color: white;
+    background-color: var(--surface-color);
+}

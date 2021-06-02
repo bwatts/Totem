@@ -1,0 +1,23 @@
+#welcome {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+h1 {
+    font-size: 2em;
+}
+
+.subtitle {
+    font-size: .75em;
+    margin: 1em 0 3em 0;
+}
+
+.no-versions {
+    color: #ef6c00;
+    margin-bottom: 3em;
+}
+
+.install {
+    margin-bottom: 3em;
+}

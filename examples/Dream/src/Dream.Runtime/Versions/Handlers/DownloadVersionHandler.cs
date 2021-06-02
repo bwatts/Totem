@@ -6,7 +6,7 @@ using Totem;
 
 namespace Dream.Versions.Handlers
 {
-    public class DownloadVersionHandler : IQueueHandler<DownloadVersion>
+    public class DownloadVersionHandler : IQueueCommandHandler<DownloadVersion>
     {
         readonly ITimelineRepository<DownloadTimeline> _repository;
         readonly IVersionService _service;
@@ -17,7 +17,7 @@ namespace Dream.Versions.Handlers
             _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
-        public async Task HandleAsync(IQueueContext<DownloadVersion> context, CancellationToken cancellationToken)
+        public async Task HandleAsync(IQueueCommandContext<DownloadVersion> context, CancellationToken cancellationToken)
         {
             var timelineId = DownloadTimeline.DeriveId(context.Command.VersionId);
             var timeline = await _repository.LoadAsync(timelineId, cancellationToken);

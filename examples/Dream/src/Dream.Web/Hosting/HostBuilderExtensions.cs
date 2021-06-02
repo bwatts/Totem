@@ -7,26 +7,26 @@ using Serilog.Events;
 using Serilog.Sinks.SpectreConsole;
 using Totem.Hosting;
 
-namespace Dream
+namespace Dream.Hosting
 {
     internal static class HostBuilderExtensions
     {
         internal static IHostBuilder ConfigureSerilog(this IHostBuilder builder) =>
-          builder.UseSerilog((context, logger) =>
-          {
-              logger
-              .ReadFrom.Configuration(context.Configuration)
-              .Enrich.FromLogContext()
-              .Enrich.WithMachineName()
-              .Enrich.WithShortTotemTypes()
-              .Destructure.ShortIds()
-              .UseEnvironment(context);
+            builder.UseSerilog((context, logger) =>
+            {
+                logger
+                .ReadFrom.Configuration(context.Configuration)
+                .Enrich.FromLogContext()
+                .Enrich.WithMachineName()
+                .Enrich.WithShortTotemTypes()
+                .Destructure.ShortIds()
+                .UseEnvironment(context);
 
-              if(Environment.UserInteractive)
-              {
-                  logger.WriteTo.SpectreConsole("{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}{Exception}", minLevel: LogEventLevel.Verbose).WriteTo.Debug();
-              }
-          });
+                if(Environment.UserInteractive)
+                {
+                    logger.WriteTo.SpectreConsole("{Timestamp:HH:mm:ss} [{Level:u4}] {Message:lj}{NewLine}{Exception}", minLevel: LogEventLevel.Verbose).WriteTo.Debug();
+                }
+            });
 
         static void UseEnvironment(this LoggerConfiguration logger, HostBuilderContext context)
         {
