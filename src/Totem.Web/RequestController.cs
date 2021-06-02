@@ -2,6 +2,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+using Totem.Http;
 
 namespace Totem
 {
@@ -21,8 +22,8 @@ namespace Totem
 
             return content switch
             {
-                StreamContent streamContent => File(streamContent.Stream, streamContent.ContentType, streamContent.ContentName),
-                Stream stream => File(stream, StreamContent.DefaultContentType, StreamContent.DefaultContentName),
+                HttpStreamContent streamContent => File(streamContent.Stream, streamContent.ContentType, streamContent.ContentName),
+                Stream stream => File(stream, HttpStreamContent.DefaultContentType, HttpStreamContent.DefaultContentName),
                 object value => Ok(value),
                 _ => Ok(),
             };

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Totem.Http;
 
 namespace Totem
 {
@@ -28,19 +29,19 @@ namespace Totem
 
                 if(definition == typeof(CommandController<>))
                 {
-                    var info = CommandInfo.From(controllerType.GetGenericArguments().First());
+                    var info = HttpCommandInfo.From(controllerType.GetGenericArguments().First());
 
-                    method = info.Method;
-                    route = info.Route;
+                    method = info.Request.Method;
+                    route = info.Request.Route;
                     return true;
                 }
 
                 if(definition == typeof(QueryController<>))
                 {
-                    var info = QueryInfo.From(controllerType.GetGenericArguments().First());
+                    var info = HttpQueryInfo.From(controllerType.GetGenericArguments().First());
 
-                    method = info.Method;
-                    route = info.Route;
+                    method = info.Request.Method;
+                    route = info.Request.Route;
                     return true;
                 }
             }

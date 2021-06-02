@@ -9,20 +9,23 @@ using Totem.Features.Default;
 
 namespace Totem.Hosting
 {
-    public class CommandControllerFeatureProvider : IApplicationFeatureProvider<ControllerFeature>
+    public class CommandControllerProvider : IApplicationFeatureProvider<ControllerFeature>
     {
         readonly FeatureRegistry _features;
 
-        public CommandControllerFeatureProvider(FeatureRegistry features) =>
+        public CommandControllerProvider(FeatureRegistry features) =>
             _features = features ?? throw new ArgumentNullException(nameof(features));
 
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
         {
+            if(parts == null)
+                throw new ArgumentNullException(nameof(parts));
+
             if(feature == null)
                 throw new ArgumentNullException(nameof(feature));
 
             foreach(var controllerType in
-                from command in _features.Populate<CommandFeature>().Commands
+                from command in _features.Populate<HttpCommandFeature>().Commands
                 select typeof(CommandController<>).MakeGenericType(command))
             {
                 feature.Controllers.Add(controllerType.GetTypeInfo());

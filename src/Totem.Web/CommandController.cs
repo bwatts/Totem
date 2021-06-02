@@ -3,39 +3,36 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Totem.Commands;
-using Totem.Core;
+using Totem.Http;
 
 namespace Totem
 {
     public class CommandController<TCommand> : RequestController
-        where TCommand : ICommand
+        where TCommand : IHttpCommand
     {
         readonly ILogger _logger;
-        readonly ICommandPipeline _pipeline;
-        readonly ICorrelationIdAccessor _correlationIdAccessor;
+        readonly IHttpCommandPipeline _pipeline;
 
-        public CommandController(ILogger<CommandController<TCommand>> logger, ICommandPipeline pipeline, ICorrelationIdAccessor correlationIdAccessor)
+        public CommandController(ILogger<CommandController<TCommand>> logger, IHttpCommandPipeline pipeline)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
-            _correlationIdAccessor = correlationIdAccessor ?? throw new ArgumentNullException(nameof(correlationIdAccessor));
         }
 
         [ErrorInfoActionFilter]
         public async Task<IActionResult> Handle([FromTotem] TCommand command, CancellationToken cancellationToken)
         {
             var commandId = Id.NewId();
-            var correlationId = _correlationIdAccessor.CorrelationId ?? Id.NewId();
-            var envelope = new CommandEnvelope(command, commandId, correlationId, User);
+            var correlationId = Id.NewId();
+            var envelope = new HttpCommandEnvelope(commandId, command, HttpCommandInfo.From(command), correlationId, User);
 
-            _logger.LogTrace("[command] {RequestMethod} {@CommandType}.{@CommandId}", Request.Method, envelope.MessageType, envelope.MessageId);
+            _logger.LogTrace("[command] {RequestMethod} {@CommandType}.{@CommandId}", Request.Method, envelope.Info.MessageType, envelope.MessageId);
 
             var context = await _pipeline.RunAsync(envelope, cancellationToken);
 
             if(context.HasErrors)
             {
-                _logger.LogError("[command] {RequestMethod} {@CommandType}.{@CommandId} failed: {Errors}", Request.Method, envelope.MessageType, envelope.MessageId, context.Errors);
+                _logger.LogError("[command] {RequestMethod} {@CommandType}.{@CommandId} failed: {Errors}", Request.Method, envelope.Info.MessageType, envelope.MessageId, context.Errors);
 
                 return new ErrorInfoResult(context.Errors);
             }

@@ -11,15 +11,14 @@ namespace Totem.Hosting
 {
     public static class TotemBuilderExtensions
     {
-        public static ITotemBuilder AddTotemAspNetCore(this ITotemBuilder builder)
+        public static ITotemBuilder AddTotemWeb(this ITotemBuilder builder)
         {
             if(builder == null)
                 throw new ArgumentNullException(nameof(builder));
 
-            builder.Services.AddHttpContextAccessor();
-            builder.Services.AddSingleton<ICorrelationIdAccessor, CorrelationIdAccessor>();
-            builder.Services.Configure<MvcOptions>(mvc =>
-                mvc.AddTotemRequestConventions().AddTotemModelBinderProvider());
+            builder.Services
+                .AddHttpContextAccessor()
+                .Configure<MvcOptions>(mvc => mvc.AddTotemRequestConventions().AddTotemModelBinderProvider());
 
             return builder;
         }
@@ -59,13 +58,11 @@ namespace Totem.Hosting
             if(builder == null)
                 throw new ArgumentNullException(nameof(builder));
 
-            builder.Services.AddSingleton<CommandUserMiddleware>();
-
             builder.ConfigureApplicationPartManager(applicationPartManager =>
             {
                 var features = builder.Services.GetFeatures();
 
-                applicationPartManager.FeatureProviders.Add(new CommandControllerFeatureProvider(features));
+                applicationPartManager.FeatureProviders.Add(new CommandControllerProvider(features));
             });
 
             return builder;
@@ -76,13 +73,11 @@ namespace Totem.Hosting
             if(builder == null)
                 throw new ArgumentNullException(nameof(builder));
 
-            builder.Services.AddSingleton<QueryUserMiddleware>();
-
             builder.ConfigureApplicationPartManager(applicationPartManager =>
             {
                 var features = builder.Services.GetFeatures();
 
-                applicationPartManager.FeatureProviders.Add(new QueryControllerFeatureProvider(features));
+                applicationPartManager.FeatureProviders.Add(new QueryControllerProvider(features));
             });
 
             return builder;
