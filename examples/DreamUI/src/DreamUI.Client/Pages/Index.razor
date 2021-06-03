@@ -1,38 +1,14 @@
+@inject ILocalClient _client 
 @page "/"
 
 <div id="welcome">
     <h1>Dream</h1>
-    <form @onsubmit="InstallAsync" @onsubmit:preventDefault>
+    <form @onsubmit="SendInstallVersionAsync" @onsubmit:preventDefault>
         <button type="submit">Install version 20.10.2</button>
     </form>
 </div>
 
 @code {
-    bool _requested;
-    bool _responded;
-    Timer? _timer;
-
-    async Task InstallAsync()
-    {
-
-
-
-        // _webAssemblyTotemClient.SendAsync(new StartInstall { ZipUrl = ZipUrl }, cancellationToken)
-        //
-        // StartInstallHandler -> InstallationTimeline -> InstallationReport
-        
-
-
-
-        // Keep checking query just to see it work
-
-
-
-        _timer = new(async _ =>
-        {
-
-
-            await InvokeAsync(StateHasChanged);
-        });
-    }
+    Task SendInstallVersionAsync() =>
+        _client.SendAsync(new StartInstallation(), CancellationToken.None);
 }

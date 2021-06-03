@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Serilog;
+using Serilog.Events;
 using Totem.Hosting;
 
 namespace DreamUI.Hosting
@@ -10,15 +11,16 @@ namespace DreamUI.Hosting
             builder.UseSerilog(logger =>
             {
                 logger
+                .MinimumLevel.Verbose()
                 .ReadFrom.Configuration(builder.Configuration)
                 .Enrich.FromLogContext()
                 .Enrich.WithShortTotemTypes()
                 .Destructure.ShortIds()
-                .WriteTo.BrowserConsole();
+                .WriteTo.BrowserConsole(LogEventLevel.Verbose);
 
                 if(!builder.HostEnvironment.IsDevelopment())
                 {
-                    logger.MinimumLevel.Warning();
+                    //logger.MinimumLevel.Warning();
                 }
             });
 
@@ -49,6 +51,8 @@ namespace DreamUI.Hosting
             .AddTotemClient()
             .AddCommands(pipeline => pipeline.UseRequest())
             .AddQueries(pipeline => pipeline.UseRequest());
+
+            builder.Services.AddDreamUI().AddDreamWebAssembly();
 
             return builder;
         }

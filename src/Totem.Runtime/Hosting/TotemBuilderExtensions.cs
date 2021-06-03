@@ -67,7 +67,7 @@ namespace Totem.Hosting
             if(builder == null)
                 throw new ArgumentNullException(nameof(builder));
 
-            builder.Services.AddSingleton<IQueueCommandClient, InMemoryQueueCommandClient>();
+            builder.Services.AddSingleton<IQueueClient, InMemoryQueueClient>();
 
             return builder;
         }
@@ -82,21 +82,20 @@ namespace Totem.Hosting
             return builder;
         }
 
-        public static ITotemBuilder AddLocalFileStorage(this ITotemBuilder builder)
+        public static ITotemBuilder AddDiskFileStorage(this ITotemBuilder builder)
         {
             if(builder == null)
                 throw new ArgumentNullException(nameof(builder));
 
-            builder.Services.AddSingleton<IFileStorage, LocalFileStorage>();
-            builder.Services.AddSingleton<ILocalFileStorageSettings>(provider =>
+            builder.Services.AddSingleton<IFileStorage, DiskStorage>();
+            builder.Services.AddSingleton<IDiskStorageSettings>(provider =>
             {
                 var configuration = provider.GetRequiredService<IConfiguration>();
-
-                var configValue = configuration["Totem:Files:LocalFileStorage:BaseDirectory"];
+                var configValue = configuration["Totem:Files:DiskStorage:BaseDirectory"];
 
                 return !string.IsNullOrWhiteSpace(configValue)
-                    ? new LocalFileStorageSettings(configValue)
-                    : new LocalFileStorageSettings(AppContext.BaseDirectory);
+                    ? new DiskStorageSettings(configValue)
+                    : new DiskStorageSettings(AppContext.BaseDirectory);
             });
 
             return builder;

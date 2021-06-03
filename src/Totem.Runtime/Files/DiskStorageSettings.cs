@@ -2,9 +2,9 @@ using System;
 
 namespace Totem.Files
 {
-    public class LocalFileStorageSettings : ILocalFileStorageSettings
+    public class DiskStorageSettings : IDiskStorageSettings
     {
-        public LocalFileStorageSettings(string baseDirectory)
+        public DiskStorageSettings(string baseDirectory)
         {
             if(string.IsNullOrWhiteSpace(baseDirectory))
                 throw new ArgumentOutOfRangeException(nameof(baseDirectory));

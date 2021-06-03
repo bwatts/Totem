@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Totem.Core;
 using Totem.Features.Default;
 using Totem.Local;
@@ -30,6 +31,8 @@ namespace Totem.Hosting
                      return pipelineBuilder.Build();
                  });
 
+            builder.Services.TryAddSingleton<ILocalClient, LocalClient>();
+
             return builder;
         }
 
@@ -53,6 +56,8 @@ namespace Totem.Hosting
 
                     return pipelineBuilder.Build();
                 });
+
+            builder.Services.TryAddSingleton<ILocalClient, LocalClient>();
 
             return builder;
         }

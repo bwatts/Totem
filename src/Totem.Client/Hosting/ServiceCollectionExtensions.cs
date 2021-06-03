@@ -19,6 +19,7 @@ namespace Totem.Hosting
                 throw new ArgumentNullException(nameof(services));
 
             services.TryAddSingleton<IClock, SystemClock>();
+            services.AddSingleton<ITotemClient, TotemClient>();
             services.AddHttpClient<IMessageClient, MessageClient>((provider, client) =>
             {
                 if(baseAddress != null)

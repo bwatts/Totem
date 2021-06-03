@@ -42,7 +42,7 @@ namespace Dream
             .AddInMemoryRouteStore()
             .AddInMemoryQueueClient()
             .AddInMemoryStorage()
-            .AddLocalFileStorage();
+            .AddDiskFileStorage();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)

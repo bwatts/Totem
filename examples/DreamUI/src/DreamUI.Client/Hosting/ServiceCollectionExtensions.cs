@@ -5,7 +5,7 @@ namespace DreamUI.Hosting
 {
     internal static class ServiceCollectionExtensions
     {
-        internal static IServiceCollection AddDreamUI(this IServiceCollection services) =>
+        internal static IServiceCollection AddDreamWebAssembly(this IServiceCollection services) =>
             services.AddJsInteropExtensions();
     }
 }

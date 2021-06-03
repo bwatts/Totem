@@ -1,6 +1,6 @@
 namespace Totem.Files
 {
-    public interface ILocalFileStorageSettings
+    public interface IDiskStorageSettings
     {
         string BaseDirectory { get; }
     }

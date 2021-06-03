@@ -16,9 +16,9 @@ namespace Totem.InMemory
     {
         readonly ConcurrentDictionary<Id, RouteHistory> _historiesById = new();
         readonly IServiceProvider _services;
-        readonly IQueueCommandClient _queueClient;
+        readonly IQueueClient _queueClient;
 
-        public InMemoryRouteStore(IServiceProvider services, IQueueCommandClient queueClient)
+        public InMemoryRouteStore(IServiceProvider services, IQueueClient queueClient)
         {
             _services = services ?? throw new ArgumentNullException(nameof(services));
             _queueClient = queueClient ?? throw new ArgumentNullException(nameof(queueClient));

@@ -8,13 +8,13 @@ using Totem.Queues;
 
 namespace Totem.InMemory
 {
-    public sealed class InMemoryQueueCommandClient : IQueueCommandClient, IDisposable
+    public sealed class InMemoryQueueClient : IQueueClient, IDisposable
     {
         readonly ConcurrentDictionary<string, InMemoryQueue> _queuesByName = new();
         readonly ILoggerFactory _loggerFactory;
         readonly IQueueCommandPipeline _pipeline;
 
-        public InMemoryQueueCommandClient(ILoggerFactory loggerFactory, IQueueCommandPipeline pipeline)
+        public InMemoryQueueClient(ILoggerFactory loggerFactory, IQueueCommandPipeline pipeline)
         {
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));

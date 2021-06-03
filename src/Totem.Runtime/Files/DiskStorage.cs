@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Totem.Files
 {
-    public class LocalFileStorage : IFileStorage
+    public class DiskStorage : IFileStorage
     {
-        readonly ILocalFileStorageSettings _settings;
+        readonly IDiskStorageSettings _settings;
 
-        public LocalFileStorage(ILocalFileStorageSettings settings) =>
+        public DiskStorage(IDiskStorageSettings settings) =>
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
         public Task<bool> ExistsAsync(FilePath path, CancellationToken cancellationToken)
@@ -20,7 +20,7 @@ namespace Totem.Files
             if(path is null)
                 throw new ArgumentNullException(nameof(path));
 
-            return Task.FromResult(File.Exists(GetLocalPath(path)));
+            return Task.FromResult(File.Exists(GetDiskPath(path)));
         }
 
         public Task<Stream> GetAsync(FilePath path, CancellationToken cancellationToken)
@@ -28,9 +28,9 @@ namespace Totem.Files
             if(path is null)
                 throw new ArgumentNullException(nameof(path));
 
-            var localPath = GetLocalPath(path);
+            var diskPath = GetDiskPath(path);
 
-            return Task.FromResult<Stream>(File.OpenRead(localPath));
+            return Task.FromResult<Stream>(File.OpenRead(diskPath));
         }
 
         public async IAsyncEnumerable<FileItem> ListAsync(IFileQuery query, [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -62,17 +62,17 @@ namespace Totem.Files
             if(data == null)
                 throw new ArgumentNullException(nameof(data));
 
-            var localPath = GetLocalPath(path);
-            var directoryPath = Path.GetDirectoryName(localPath)!;
+            var diskPath = GetDiskPath(path);
+            var directoryPath = Path.GetDirectoryName(diskPath)!;
 
             Directory.CreateDirectory(directoryPath);
 
-            using var localFileStream = File.Open(localPath, FileMode.Create);
+            using var file = File.Open(diskPath, FileMode.Create);
 
-            await data.CopyToAsync(localFileStream, cancellationToken);
-            await localFileStream.FlushAsync(cancellationToken);
+            await data.CopyToAsync(file, cancellationToken);
+            await file.FlushAsync(cancellationToken);
 
-            return new FileItem(path, new FileInfo(localPath).Length);
+            return new FileItem(path, new FileInfo(diskPath).Length);
         }
 
         public Task RemoveAsync(FilePath path, CancellationToken cancellationToken)
@@ -80,12 +80,12 @@ namespace Totem.Files
             if(path is null)
                 throw new ArgumentNullException(nameof(path));
 
-            File.Delete(GetLocalPath(path));
+            File.Delete(GetDiskPath(path));
 
             return Task.CompletedTask;
         }
 
-        string GetLocalPath(FilePath path) =>
+        string GetDiskPath(FilePath path) =>
             Path.Combine(_settings.BaseDirectory, path.Root, NormalizeSeparators(path.Key));
 
         string GetKey(string root, string fileName) =>
