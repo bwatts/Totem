@@ -20,11 +20,6 @@ namespace DreamUI.Hosting
                 .Enrich.WithShortTotemTypes()
                 .Destructure.ShortIds()
                 .WriteTo.BrowserConsole(LogEventLevel.Verbose);
-
-                if(!builder.HostEnvironment.IsDevelopment())
-                {
-                    //logger.MinimumLevel.Warning();
-                }
             });
 
         internal static WebAssemblyHostBuilder ConfigureTotem(this WebAssemblyHostBuilder builder)
