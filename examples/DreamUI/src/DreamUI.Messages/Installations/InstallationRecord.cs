@@ -6,5 +6,6 @@ namespace DreamUI.Installations
     {
         public Id Id { get; set; } = null!;
         public bool InstallVersionSent { get; set; }
+        public string? InstallVersionError { get; set; }
     }
 }

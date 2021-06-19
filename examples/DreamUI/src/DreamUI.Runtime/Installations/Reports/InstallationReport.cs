@@ -9,6 +9,7 @@ namespace DreamUI.Installations.Reports
     {
         public static Id Route(InstallationStarted e) => e.InstallationId;
         public static Id Route(InstallVersionSent e) => e.InstallationId;
+        public static Id Route(InstallVersionFailed e) => e.InstallationId;
 
         readonly IInstallationRepository _repository;
 
@@ -29,6 +30,21 @@ namespace DreamUI.Installations.Reports
             }
 
             record.InstallVersionSent = true;
+
+            await _repository.SaveAsync(record, cancellationToken);
+        }
+
+        public async Task WhenAsync(InstallVersionFailed e, CancellationToken cancellationToken)
+        {
+            var record = await _repository.GetAsync(e.InstallationId, cancellationToken);
+
+            if(record == null)
+            {
+                ThenError(RuntimeErrors.InstallationNotFound);
+                return;
+            }
+
+            record.InstallVersionError = e.Message;
 
             await _repository.SaveAsync(record, cancellationToken);
         }
