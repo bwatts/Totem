@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using Totem.Core;
 using Totem.Map;

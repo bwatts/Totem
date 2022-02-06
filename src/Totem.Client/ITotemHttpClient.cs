@@ -1,5 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Totem.Commands;
 using Totem.Http;
 using Totem.Queries;

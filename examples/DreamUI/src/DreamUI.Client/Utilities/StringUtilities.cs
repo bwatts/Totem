@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-
 namespace DreamUI.Utilities;
 
 public static class StringUtilities

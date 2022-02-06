@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem.Map;
 
 public abstract class MapType : ITypeKeyed

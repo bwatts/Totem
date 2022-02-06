@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem.Http;
 
 public static class ContentTypes

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Totem.Core;
 
 namespace Totem.Topics;

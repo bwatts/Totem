@@ -1,5 +1,4 @@
 using Majorsoft.Blazor.Components.Common.JsInterop;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DreamUI.Hosting;
 

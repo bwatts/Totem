@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -67,8 +65,8 @@ public class FilePath : IEquatable<FilePath>
 
             if(separatorIndex != -1 && separatorIndex != value.Length - 1)
             {
-                var root = value.Substring(0, separatorIndex);
-                var path = value.Substring(separatorIndex + 1);
+                var root = value[..separatorIndex];
+                var path = value[(separatorIndex + 1)..];
 
                 key = new FilePath(root, path);
                 return true;
@@ -98,18 +96,18 @@ public class FilePath : IEquatable<FilePath>
 
     class FilePathTypeConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) =>
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
             sourceType == typeof(string) || sourceType == typeof(Guid);
 
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) =>
+        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) =>
             destinationType == typeof(string) || destinationType == typeof(Guid);
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) =>
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value) =>
             value is string key ? From(key) : base.ConvertFrom(context, culture, value);
 
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) =>
-            destinationType == typeof(string)
-                ? ((FilePath) value).ToString()
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType) =>
+            destinationType == typeof(string) && value is FilePath filePath
+                ? filePath.ToString()
                 : base.ConvertTo(context, culture, value, destinationType);
     }
 }

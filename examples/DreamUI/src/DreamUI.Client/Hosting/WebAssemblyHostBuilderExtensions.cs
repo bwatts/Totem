@@ -1,7 +1,6 @@
 using BlazorPro.BlazorSize;
 using MatBlazor;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using Totem.Hosting;

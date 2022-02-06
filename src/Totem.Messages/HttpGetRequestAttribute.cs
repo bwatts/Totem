@@ -1,4 +1,3 @@
-using System.Net.Http;
 using Totem.Http;
 
 namespace Totem;

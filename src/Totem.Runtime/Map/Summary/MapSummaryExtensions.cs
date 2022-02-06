@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem.Map.Summary;
 
 public static partial class MapSummaryExtensions

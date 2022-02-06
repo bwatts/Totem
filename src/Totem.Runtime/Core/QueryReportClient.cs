@@ -1,7 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Totem.Core;
 
 public class QueryReportClient : IQueryReportClient

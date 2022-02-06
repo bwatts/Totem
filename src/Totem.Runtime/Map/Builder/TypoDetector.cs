@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem.Map.Builder;
 
 internal static class TypoDetector

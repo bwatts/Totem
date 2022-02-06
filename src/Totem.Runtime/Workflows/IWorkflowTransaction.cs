@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Totem.Workflows;
 
 public interface IWorkflowTransaction

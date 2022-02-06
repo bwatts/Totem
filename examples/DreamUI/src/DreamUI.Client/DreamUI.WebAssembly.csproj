@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>10</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>DreamUI</RootNamespace>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -17,7 +18,7 @@
         <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
         <PackageReference Include="Serilog.Sinks.BrowserConsole" Version="1.0.0" />
         <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
-</ItemGroup>
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\src\Totem.Runtime\Totem.Runtime.csproj" />

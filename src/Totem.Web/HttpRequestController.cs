@@ -1,5 +1,4 @@
 using System.Collections.Specialized;
-using System.IO;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Totem.Http;

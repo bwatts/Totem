@@ -1,5 +1,3 @@
-using Totem;
-
 namespace Dream;
 
 public static class RuntimeErrors

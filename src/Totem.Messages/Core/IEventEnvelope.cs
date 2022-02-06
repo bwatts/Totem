@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem.Core;
 
 public interface IEventEnvelope : IMessageEnvelope

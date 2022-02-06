@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Totem.Core;
 using Totem.Map.Builder;
 

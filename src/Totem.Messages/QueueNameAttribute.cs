@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]

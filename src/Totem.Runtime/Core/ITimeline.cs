@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Totem.Core;
 
 public interface ITimeline

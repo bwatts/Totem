@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -22,7 +20,7 @@ public sealed class Id : IEquatable<Id>, IComparable<Id>
     Id(Guid value) => _value = value;
 
     public override string ToString() => _value.ToString();
-    public string ToShortString() => _value.ToString().Substring(0, 8);
+    public string ToShortString() => _value.ToString()[..8];
     public Guid ToGuid() => _value;
 
     public override int GetHashCode() => _value.GetHashCode();
@@ -152,13 +150,13 @@ public sealed class Id : IEquatable<Id>, IComparable<Id>
 
     class IdTypeConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) =>
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
             sourceType == typeof(string) || sourceType == typeof(Guid);
 
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) =>
+        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) =>
             destinationType == typeof(string) || destinationType == typeof(Guid);
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) =>
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value) =>
             value switch
             {
                 string s => From(s),
@@ -166,22 +164,13 @@ public sealed class Id : IEquatable<Id>, IComparable<Id>
                 _ => base.ConvertFrom(context, culture, value)
             };
 
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
-            var id = (Id) value;
+            var id = value as Id;
 
-            if(destinationType == typeof(string))
-            {
-                return id.ToString();
-            }
-            else if(destinationType == typeof(Guid))
-            {
-                return id.ToGuid();
-            }
-            else
-            {
-                return base.ConvertTo(context, culture, value, destinationType);
-            }
+            return id is not null && (destinationType == typeof(string) || destinationType == typeof(Guid))
+                ? id.ToString()
+                : base.ConvertTo(context, culture, value, destinationType);
         }
     }
 }

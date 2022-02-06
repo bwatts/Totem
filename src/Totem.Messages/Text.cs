@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -94,16 +92,16 @@ public sealed class Text : IEquatable<Text>, IComparable<Text>, IEquatable<strin
 
     class TextTypeConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) =>
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
             sourceType == typeof(string);
 
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) =>
+        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) =>
             destinationType == typeof(string);
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) =>
-            From(value?.ToString());
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value) =>
+            value is null ? null : From(value.ToString());
 
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) =>
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType) =>
             destinationType == typeof(string) ? value?.ToString()! : base.ConvertTo(context, culture, value, destinationType);
     }
 }

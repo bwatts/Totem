@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 namespace Totem.Reports;
 
 public interface IReportTransaction

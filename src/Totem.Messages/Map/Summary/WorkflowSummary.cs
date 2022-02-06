@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Totem.Map.Summary;
 
 public class WorkflowSummary

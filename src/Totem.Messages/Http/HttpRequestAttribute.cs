@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem.Http;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]

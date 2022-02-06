@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Totem.Core;
 using Totem.Queues;
 

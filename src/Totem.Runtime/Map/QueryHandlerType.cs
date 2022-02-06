@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Totem.Map;
 
 public class QueryHandlerType : MapType

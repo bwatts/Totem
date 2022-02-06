@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem;
 
 public class ErrorInfo

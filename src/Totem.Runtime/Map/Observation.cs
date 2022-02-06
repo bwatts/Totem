@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem.Map;
 
 public class Observation : IMapTypeKeyed

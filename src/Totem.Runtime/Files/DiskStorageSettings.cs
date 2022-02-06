@@ -1,5 +1,3 @@
-using System;
-
 namespace Totem.Files;
 
 public class DiskStorageSettings : IDiskStorageSettings

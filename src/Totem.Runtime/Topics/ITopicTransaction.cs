@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Totem.Core;
 
 namespace Totem.Topics;

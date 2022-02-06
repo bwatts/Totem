@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using DreamUI.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

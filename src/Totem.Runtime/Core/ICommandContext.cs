@@ -1,4 +1,3 @@
-using System;
 using Totem.Map;
 
 namespace Totem.Core;

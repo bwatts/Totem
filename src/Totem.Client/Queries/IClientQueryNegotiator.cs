@@ -1,5 +1,3 @@
-using System.Net.Http;
-
 namespace Totem.Queries;
 
 public interface IClientQueryNegotiator

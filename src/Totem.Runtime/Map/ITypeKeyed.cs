@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Totem.Map;
+﻿namespace Totem.Map;
 
 public interface ITypeKeyed
 {
