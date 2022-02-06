@@ -2,48 +2,47 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Totem.Queries.Encoding
+namespace Totem.Queries.Encoding;
+
+internal class QueryEncoderProperty
 {
-    internal class QueryEncoderProperty
+    delegate object? GetValue(object target);
+
+    readonly PropertyInfo _info;
+    readonly GetValue _getValue;
+    readonly QueryEncoderValue _value;
+
+    internal QueryEncoderProperty(PropertyInfo info, Type targetType)
     {
-        delegate object? GetValue(object target);
+        _info = info;
+        _getValue = CompileGetValue(targetType);
+        _value = new QueryEncoderValue(info.PropertyType);
+    }
 
-        readonly PropertyInfo _info;
-        readonly GetValue _getValue;
-        readonly QueryEncoderValue _value;
+    internal void Write(string targetKey, object target, QueryWriter writer)
+    {
+        var value = _getValue(target);
 
-        internal QueryEncoderProperty(PropertyInfo info, Type targetType)
+        if(value is null)
         {
-            _info = info;
-            _getValue = CompileGetValue(targetType);
-            _value = new QueryEncoderValue(info.PropertyType);
+            return;
         }
 
-        internal void Write(string targetKey, object target, QueryWriter writer)
-        {
-            var value = _getValue(target);
+        var propertyKey = targetKey == "" ? _info.Name : $"{targetKey}.{_info.Name}";
 
-            if(value == null)
-            {
-                return;
-            }
+        _value.Write(propertyKey, value, writer);
+    }
 
-            var propertyKey = targetKey == "" ? _info.Name : $"{targetKey}.{_info.Name}";
+    GetValue CompileGetValue(Type targetType)
+    {
+        // target => ((TTarget) target).info
 
-            _value.Write(propertyKey, value, writer);
-        }
+        var targetParameter = Expression.Parameter(typeof(object), "target");
 
-        GetValue CompileGetValue(Type targetType)
-        {
-            // target => ((TTarget) target).info
+        var lambda = Expression.Lambda<GetValue>(
+            Expression.Property(Expression.Convert(targetParameter, targetType), _info),
+            targetParameter);
 
-            var targetParameter = Expression.Parameter(typeof(object), "target");
-
-            var lambda = Expression.Lambda<GetValue>(
-                Expression.Property(Expression.Convert(targetParameter, targetType), _info),
-                targetParameter);
-
-            return lambda.Compile();
-        }
+        return lambda.Compile();
     }
 }

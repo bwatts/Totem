@@ -1,7 +1,6 @@
-namespace Totem
+namespace Totem;
+
+public static class TextExtensions
 {
-    public static class TextExtensions
-    {
-        public static Text ToText(this string value) => Text.From(value);
-    }
+    public static Text ToText(this string value) => Text.From(value);
 }

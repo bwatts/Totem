@@ -1,9 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Totem.Hosting
+namespace Totem.Hosting;
+
+public interface ITotemClientBuilder
 {
-    public interface ITotemClientBuilder
-    {
-        IServiceCollection Services { get; }
-    }
+    IServiceCollection Services { get; }
 }

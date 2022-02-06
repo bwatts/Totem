@@ -2,10 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Totem.Local
+namespace Totem.Local;
+
+public interface ILocalCommandMiddleware
 {
-    public interface ILocalCommandMiddleware
-    {
-        Task InvokeAsync(ILocalCommandContext<ILocalCommand> context, Func<Task> next, CancellationToken cancellationToken);
-    }
+    Task InvokeAsync(ILocalCommandContext<ILocalCommand> context, Func<Task> next, CancellationToken cancellationToken);
 }

@@ -1,13 +1,10 @@
-using Totem.Routes;
+namespace Totem.Workflows;
 
-namespace Totem.Workflows
+public interface IWorkflowPipelineBuilder
 {
-    public interface IWorkflowPipelineBuilder
-    {
-        Id PipelineId { get; set; }
+    Id PipelineId { get; set; }
 
-        IWorkflowPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default) where TMiddleware : IRouteMiddleware;
+    IWorkflowPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default) where TMiddleware : IWorkflowMiddleware;
 
-        IWorkflowPipeline Build();
-    }
+    IWorkflowPipeline Build();
 }

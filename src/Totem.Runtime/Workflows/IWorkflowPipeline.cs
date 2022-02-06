@@ -1,9 +1,12 @@
-using Totem.Routes;
+using System.Threading;
+using System.Threading.Tasks;
+using Totem.Core;
 
-namespace Totem.Workflows
+namespace Totem.Workflows;
+
+public interface IWorkflowPipeline
 {
-    public interface IWorkflowPipeline : IRoutePipeline
-    {
-        
-    }
+    Id Id { get; }
+
+    Task<IWorkflowContext<IEvent>> RunAsync(IEventContext<IEvent> eventContext, ItemKey workflowKey, CancellationToken cancellationToken);
 }

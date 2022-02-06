@@ -4,63 +4,71 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Totem.Core;
-using Totem.Events;
-using Totem.Routes;
 
-namespace Totem.Reports
+namespace Totem.Reports;
+
+public class ReportPipeline : IReportPipeline
 {
-    public class ReportPipeline : IReportPipeline
+    readonly ILogger _logger;
+    readonly IReadOnlyList<IReportMiddleware> _steps;
+    readonly IReportContextFactory _contextFactory;
+
+    public ReportPipeline(
+        Id id,
+        ILogger<ReportPipeline> logger,
+        IReadOnlyList<IReportMiddleware> steps,
+        IReportContextFactory contextFactory)
     {
-        readonly ILogger _logger;
-        readonly IReadOnlyList<IRouteMiddleware> _steps;
-        readonly IRouteContextFactory _contextFactory;
-        
-        public ReportPipeline(
-            Id id,
-            ILogger<ReportPipeline> logger,
-            IReadOnlyList<IRouteMiddleware> steps,
-            IRouteContextFactory contextFactory)
+        Id = id ?? throw new ArgumentNullException(nameof(id));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _steps = steps ?? throw new ArgumentNullException(nameof(steps));
+        _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
+    }
+
+    public Id Id { get; }
+
+    public async Task<IReportContext<IEvent>> RunAsync(IEventContext<IEvent> eventContext, ItemKey reportKey, CancellationToken cancellationToken)
+    {
+        if(eventContext is null)
+            throw new ArgumentNullException(nameof(eventContext));
+
+        if(reportKey is null)
+            throw new ArgumentNullException(nameof(reportKey));
+
+        var envelope = eventContext.Envelope;
+
+        _logger.LogTrace(
+            "[report] Run pipeline {@PipelineId} for report {@ReportType}.{@ReportId} and event {@EventType}.{@EventId} from {@TopicType}.{@TopicId}@{TopicPosition}",
+            Id,
+            reportKey.DeclaredType,
+            reportKey.Id,
+            envelope.MessageKey.DeclaredType,
+            envelope.MessageKey.Id,
+            envelope.TopicPosition.Key.DeclaredType,
+            envelope.TopicPosition.Key.Id,
+            envelope.TopicPosition.Index);
+
+        var context = _contextFactory.Create(Id, eventContext, reportKey);
+
+        await RunStepAsync(0);
+
+        return context;
+
+        async Task RunStepAsync(int index)
         {
-            Id = id ?? throw new ArgumentNullException(nameof(id));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _steps = steps ?? throw new ArgumentNullException(nameof(steps));
-            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
-        }
-
-        public Id Id { get; }
-
-        public async Task<IRouteContext<IEvent>> RunAsync(IEventEnvelope envelope, IRouteAddress address, CancellationToken cancellationToken)
-        {
-            if(envelope == null)
-                throw new ArgumentNullException(nameof(envelope));
-
-            if(address == null)
-                throw new ArgumentNullException(nameof(address));
-
-            _logger.LogTrace("[report] Run pipeline {@PipelineId} for {@RouteType}.{@RouteId} and event {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", Id, address.RouteType, address.RouteId, envelope.Info.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
-
-            var context = _contextFactory.Create(Id, envelope, address);
-
-            await RunStepAsync(0);
-
-            return context;
-
-            async Task RunStepAsync(int index)
+            if(cancellationToken.IsCancellationRequested)
             {
-                if(cancellationToken.IsCancellationRequested)
-                {
-                    _logger.LogTrace("[report] Pipeline {@PipelineId} cancelled", Id);
-                    return;
-                }
-
-                if(index >= _steps.Count)
-                {
-                    _logger.LogTrace("[report] Pipeline {@PipelineId} complete", Id);
-                    return;
-                }
-
-                await _steps[index].InvokeAsync(context!, () => RunStepAsync(index + 1), cancellationToken);
+                _logger.LogTrace("[report] Pipeline {@PipelineId} for report {@ReportType}.{@ReportId} cancelled", Id, reportKey.DeclaredType, reportKey.Id);
+                return;
             }
+
+            if(index >= _steps.Count)
+            {
+                _logger.LogTrace("[report] Pipeline {@PipelineId} for report {@ReportType}.{@ReportId} complete", Id, reportKey.DeclaredType, reportKey.Id);
+                return;
+            }
+
+            await _steps[index].InvokeAsync(context!, () => RunStepAsync(index + 1), cancellationToken);
         }
     }
 }

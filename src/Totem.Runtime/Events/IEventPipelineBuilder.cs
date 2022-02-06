@@ -1,11 +1,10 @@
-namespace Totem.Events
+namespace Totem.Events;
+
+public interface IEventPipelineBuilder
 {
-    public interface IEventPipelineBuilder
-    {
-        Id PipelineId { get; set; }
+    Id PipelineId { get; set; }
 
-        IEventPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default) where TMiddleware : IEventMiddleware;
+    IEventPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default) where TMiddleware : IEventMiddleware;
 
-        IEventPipeline Build();
-    }
+    IEventPipeline Build();
 }

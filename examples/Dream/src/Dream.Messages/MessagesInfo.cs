@@ -1,9 +1,8 @@
 using System.Reflection;
 
-namespace Dream
+namespace Dream;
+
+public static class MessagesInfo
 {
-    public static class MessagesInfo
-    {
-        public static Assembly Assembly => typeof(MessagesInfo).Assembly;
-    }
+    public static Assembly Assembly => typeof(MessagesInfo).Assembly;
 }

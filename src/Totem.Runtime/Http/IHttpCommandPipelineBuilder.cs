@@ -1,12 +1,11 @@
-namespace Totem.Http
+namespace Totem.Http;
+
+public interface IHttpCommandPipelineBuilder
 {
-    public interface IHttpCommandPipelineBuilder
-    {
-        Id PipelineId { get; set; }
+    Id PipelineId { get; set; }
 
-        IHttpCommandPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default)
-            where TMiddleware : IHttpCommandMiddleware;
+    IHttpCommandPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default)
+        where TMiddleware : IHttpCommandMiddleware;
 
-        IHttpCommandPipeline Build();
-    }
+    IHttpCommandPipeline Build();
 }

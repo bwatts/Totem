@@ -2,10 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Totem.Local
+namespace Totem.Local;
+
+public interface ILocalQueryMiddleware
 {
-    public interface ILocalQueryMiddleware
-    {
-        Task InvokeAsync(ILocalQueryContext<ILocalQuery> context, Func<Task> next, CancellationToken cancellationToken);
-    }
+    Task InvokeAsync(ILocalQueryContext<ILocalQuery> context, Func<Task> next, CancellationToken cancellationToken);
 }

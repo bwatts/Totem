@@ -1,10 +1,9 @@
 using Totem.Core;
 
-namespace Totem.Queues
+namespace Totem.Queues;
+
+public interface IQueueCommandEnvelope : ICommandEnvelope
 {
-    public interface IQueueCommandEnvelope : IMessageEnvelope
-    {
-        new IQueueCommand Message { get; }
-        new QueueCommandInfo Info { get; }
-    }
+    new IQueueCommand Message { get; }
+    new QueueCommandInfo Info { get; }
 }

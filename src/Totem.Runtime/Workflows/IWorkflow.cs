@@ -1,12 +1,11 @@
 using System.Collections.Generic;
+using Totem.Core;
 using Totem.Queues;
-using Totem.Routes;
 
-namespace Totem.Workflows
+namespace Totem.Workflows;
+
+public interface IWorkflow : IObserverTimeline
 {
-    public interface IWorkflow : IRoute
-    {
-        bool HasNewCommands { get; }
-        IEnumerable<IQueueCommandEnvelope> NewCommands { get; }
-    }
+    IEnumerable<IQueueCommandEnvelope> NewCommands { get; }
+    bool HasNewCommands { get; }
 }

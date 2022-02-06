@@ -1,9 +1,8 @@
 using System.Reflection;
 
-namespace Dream
+namespace Dream;
+
+public static class RuntimeInfo
 {
-    public static class RuntimeInfo
-    {
-        public static Assembly Assembly => typeof(RuntimeInfo).Assembly;
-    }
+    public static Assembly Assembly => typeof(RuntimeInfo).Assembly;
 }

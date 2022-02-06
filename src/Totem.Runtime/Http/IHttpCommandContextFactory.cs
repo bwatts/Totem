@@ -1,7 +1,6 @@
-namespace Totem.Http
+namespace Totem.Http;
+
+public interface IHttpCommandContextFactory
 {
-    public interface IHttpCommandContextFactory
-    {
-        IHttpCommandContext<IHttpCommand> Create(Id pipelineId, IHttpCommandEnvelope envelope);
-    }
+    IHttpCommandContext<IHttpCommand> Create(Id pipelineId, IHttpCommandEnvelope envelope);
 }

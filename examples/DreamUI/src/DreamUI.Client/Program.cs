@@ -2,16 +2,15 @@ using System.Threading.Tasks;
 using DreamUI.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-namespace DreamUI
+namespace DreamUI;
+
+public static class Program
 {
-    public static class Program
-    {
-        public static Task Main(string[] args) =>
-            WebAssemblyHostBuilder.CreateDefault(args)
-                .ConfigureSerilog()
-                .ConfigureTotem()
-                .ConfigureDreamUI()
-                .Build()
-                .RunAsync();
-    }
+    public static Task Main(string[] args) =>
+        WebAssemblyHostBuilder.CreateDefault(args)
+            .ConfigureSerilog()
+            .ConfigureTotem()
+            .ConfigureDreamUI()
+            .Build()
+            .RunAsync();
 }

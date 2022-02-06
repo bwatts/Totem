@@ -1,7 +1,6 @@
-namespace Totem.Core
-{
-    public interface IMessage
-    {
+namespace Totem.Core;
 
-    }
+public interface IMessage
+{
+
 }

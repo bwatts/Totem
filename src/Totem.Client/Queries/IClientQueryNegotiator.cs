@@ -1,10 +1,9 @@
 using System.Net.Http;
 
-namespace Totem.Queries
+namespace Totem.Queries;
+
+public interface IClientQueryNegotiator
 {
-    public interface IClientQueryNegotiator
-    {
-        HttpRequestMessage Negotiate(IHttpQuery query);
-        void NegotiateResult(IClientQueryContext<IHttpQuery> context);
-    }
+    HttpRequestMessage Negotiate(IHttpQuery query);
+    void NegotiateResult(IClientQueryContext<IHttpQuery> context);
 }

@@ -3,30 +3,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using Totem.Http;
 
-namespace Totem.Commands
+namespace Totem.Commands;
+
+public class ClientCommandRequestMiddleware : IClientCommandMiddleware
 {
-    public class ClientCommandRequestMiddleware : IClientCommandMiddleware
+    readonly IMessageClient _client;
+    readonly IClientCommandNegotiator _negotiator;
+
+    public ClientCommandRequestMiddleware(IMessageClient client, IClientCommandNegotiator negotiator)
     {
-        readonly IMessageClient _client;
-        readonly IClientCommandNegotiator _negotiator;
+        _client = client ?? throw new ArgumentNullException(nameof(client));
+        _negotiator = negotiator ?? throw new ArgumentNullException(nameof(negotiator));
+    }
 
-        public ClientCommandRequestMiddleware(IMessageClient client, IClientCommandNegotiator negotiator)
-        {
-            _client = client ?? throw new ArgumentNullException(nameof(client));
-            _negotiator = negotiator ?? throw new ArgumentNullException(nameof(negotiator));
-        }
+    public async Task InvokeAsync(IClientCommandContext<IHttpCommand> context, Func<Task> next, CancellationToken cancellationToken)
+    {
+        if(context is null)
+            throw new ArgumentNullException(nameof(context));
 
-        public async Task InvokeAsync(IClientCommandContext<IHttpCommand> context, Func<Task> next, CancellationToken cancellationToken)
-        {
-            if(context == null)
-                throw new ArgumentNullException(nameof(context));
+        if(next is null)
+            throw new ArgumentNullException(nameof(next));
 
-            if(next == null)
-                throw new ArgumentNullException(nameof(next));
+        await _client.SendAsync(new ClientCommandRequest(context, _negotiator), cancellationToken);
 
-            await _client.SendAsync(new ClientCommandRequest(context, _negotiator), cancellationToken);
-
-            await next();
-        }
+        await next();
     }
 }

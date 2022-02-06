@@ -1,14 +1,32 @@
-@inject ILocalClient _client 
+@inject IResizeListener _resizeListener
+@implements IDisposable
 @page "/"
 
-<div id="welcome">
-    <h1>Dream</h1>
-    <form @onsubmit="SendInstallVersionAsync" @onsubmit:preventDefault>
-        <button type="submit">Install version 20.10.2</button>
-    </form>
-</div>
+<Surface
+    ViewportSize="_viewportSize"
+    GridSize="new(200, 200)"
+    CellSize="new(20, 20)"
+    MapMaxSize="new(300, 300)"
+/>
 
 @code {
-    Task SendInstallVersionAsync() =>
-        _client.SendAsync(new StartInstallation(), CancellationToken.None);
+    Size _viewportSize;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if(firstRender)
+        {
+            _resizeListener.OnResized += OnViewportResized;
+        }
+    }
+
+    void IDisposable.Dispose() =>
+        _resizeListener.OnResized -= OnViewportResized;
+
+    void OnViewportResized(object? _, BrowserWindowSize size)
+    {
+        _viewportSize = new(size.Width, size.Height);
+
+        StateHasChanged();
+    }
 }

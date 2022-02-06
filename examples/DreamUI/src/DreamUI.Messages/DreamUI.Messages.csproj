@@ -1,13 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+      <LangVersion>10</LangVersion>
     <RootNamespace>DreamUI</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Installations\**" />
+    <Compile Remove="_OLD\**" />
+    <EmbeddedResource Remove="Installations\**" />
+    <EmbeddedResource Remove="_OLD\**" />
+    <None Remove="Installations\**" />
+    <None Remove="_OLD\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Totem.Messages\Totem.Messages.csproj" />
+    <ProjectReference Include="..\..\..\Dream\src\Dream.Messages\Dream.Messages.csproj" />
   </ItemGroup>
 
 </Project>

@@ -3,35 +3,34 @@ using System.Threading;
 using System.Threading.Tasks;
 using Totem.Queues;
 
-namespace Totem.Hosting
+namespace Totem.Hosting;
+
+public static class QueuePipelineExtensions
 {
-    public static class QueuePipelineExtensions
+    public static IQueueCommandPipelineBuilder Use(this IQueueCommandPipelineBuilder builder, Func<IQueueCommandContext<IQueueCommand>, Func<Task>, CancellationToken, Task> middleware)
     {
-        public static IQueueCommandPipelineBuilder Use(this IQueueCommandPipelineBuilder builder, Func<IQueueCommandContext<IQueueCommand>, Func<Task>, CancellationToken, Task> middleware)
-        {
-            if(builder == null)
-                throw new ArgumentNullException(nameof(builder));
+        if(builder is null)
+            throw new ArgumentNullException(nameof(builder));
 
-            return builder.Use(new QueueCommandMiddleware(middleware));
-        }
+        return builder.Use(new QueueCommandMiddleware(middleware));
+    }
 
-        public static IQueueCommandPipelineBuilder Use(this IQueueCommandPipelineBuilder builder, Func<IQueueCommandContext<IQueueCommand>, Func<Task>, Task> middleware)
-        {
-            if(builder == null)
-                throw new ArgumentNullException(nameof(builder));
+    public static IQueueCommandPipelineBuilder Use(this IQueueCommandPipelineBuilder builder, Func<IQueueCommandContext<IQueueCommand>, Func<Task>, Task> middleware)
+    {
+        if(builder is null)
+            throw new ArgumentNullException(nameof(builder));
 
-            if(middleware == null)
-                throw new ArgumentNullException(nameof(middleware));
+        if(middleware is null)
+            throw new ArgumentNullException(nameof(middleware));
 
-            return builder.Use((context, next, _) => middleware(context, next));
-        }
+        return builder.Use((context, next, _) => middleware(context, next));
+    }
 
-        public static IQueueCommandPipelineBuilder UseQueueHandler(this IQueueCommandPipelineBuilder builder)
-        {
-            if(builder == null)
-                throw new ArgumentNullException(nameof(builder));
+    public static IQueueCommandPipelineBuilder UseTopic(this IQueueCommandPipelineBuilder builder)
+    {
+        if(builder is null)
+            throw new ArgumentNullException(nameof(builder));
 
-            return builder.Use<QueueCommandHandlerMiddleware>();
-        }
+        return builder.Use<QueueCommandTopicMiddleware>();
     }
 }

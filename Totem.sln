@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30413.136
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Messages", "src\Totem.Messages\Totem.Messages.csproj", "{EA1E9F16-0F32-4DD2-86A5-2EF86E562A72}"
 EndProject
@@ -30,6 +30,15 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.WebAssembly", "src\Totem.WebAssembly\Totem.WebAssembly.csproj", "{7F530CB4-55BF-4C48-8048-2741685374C0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Client", "src\Totem.Client\Totem.Client.csproj", "{D310C159-BDD4-4F6B-A241-D39AFB947D28}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "items", "items", "{F2FBA2A8-4E47-4709-828E-0114B25F28AE}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		license.txt = license.txt
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

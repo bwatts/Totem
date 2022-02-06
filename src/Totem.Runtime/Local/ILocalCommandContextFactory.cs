@@ -1,7 +1,6 @@
-namespace Totem.Local
+namespace Totem.Local;
+
+public interface ILocalCommandContextFactory
 {
-    public interface ILocalCommandContextFactory
-    {
-        ILocalCommandContext<ILocalCommand> Create(Id pipelineId, ILocalCommandEnvelope envelope);
-    }
+    ILocalCommandContext<ILocalCommand> Create(Id pipelineId, ILocalCommandEnvelope envelope);
 }

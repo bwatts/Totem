@@ -1,7 +1,6 @@
-namespace Totem.Queues
+namespace Totem.Queues;
+
+public interface IQueueCommandContextFactory
 {
-    public interface IQueueCommandContextFactory
-    {
-        IQueueCommandContext<IQueueCommand> Create(Id pipelineId, IQueueCommandEnvelope envelope);
-    }
+    IQueueCommandContext<IQueueCommand> Create(Id pipelineId, IQueueCommandEnvelope envelope);
 }

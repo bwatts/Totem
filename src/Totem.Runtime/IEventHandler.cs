@@ -1,11 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Totem
+namespace Totem;
+
+public interface IEventHandler<in TEvent> where TEvent : IEvent
 {
-    public interface IEventHandler<in TEvent>
-        where TEvent : IEvent
-    {
-        Task HandleAsync(IEventContext<TEvent> context, CancellationToken cancellationToken);
-    }
+    Task HandleAsync(IEventContext<TEvent> context, CancellationToken cancellationToken);
 }

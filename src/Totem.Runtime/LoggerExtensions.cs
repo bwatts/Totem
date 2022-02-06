@@ -3,46 +3,45 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
-namespace Totem
+namespace Totem;
+
+public static class LoggerExtensions
 {
-    public static class LoggerExtensions
+    public static void LogErrorInfo(this ILogger logger, ErrorInfo error)
     {
-        public static void LogErrorInfo(this ILogger logger, ErrorInfo error)
-        {
-            if(logger == null)
-                throw new ArgumentNullException(nameof(logger));
+        if(logger is null)
+            throw new ArgumentNullException(nameof(logger));
 
-            if(error == null)
-                throw new ArgumentNullException(nameof(error));
+        if(error is null)
+            throw new ArgumentNullException(nameof(error));
 
-            logger.LogError("{Code} - {Name} - {Level}", error.Code, error.Name, error.Level);
-        }
-
-        public static void LogErrorInfo(this ILogger logger, IEnumerable<ErrorInfo> errors)
-        {
-            if(logger == null)
-                throw new ArgumentNullException(nameof(logger));
-
-            if(errors == null)
-                throw new ArgumentNullException(nameof(errors));
-
-            var list = errors.ToList();
-
-            if(list.Count == 0)
-            {
-                return;
-            }
-            else if(list.Count == 1)
-            {
-                logger.LogErrorInfo(list[0]);
-            }
-            else
-            {
-                logger.LogError("{Errors}", errors.Select(error => $"{error.Code} - {error.Name} - {error.Level}"));
-            }
-        }
-
-        public static void LogErrorInfo(this ILogger logger, params ErrorInfo[] errors) =>
-            logger.LogErrorInfo(errors.AsEnumerable());
+        logger.LogError("{Code} - {Name} - {Level}", error.Code, error.Name, error.Level);
     }
+
+    public static void LogErrorInfo(this ILogger logger, IEnumerable<ErrorInfo> errors)
+    {
+        if(logger is null)
+            throw new ArgumentNullException(nameof(logger));
+
+        if(errors is null)
+            throw new ArgumentNullException(nameof(errors));
+
+        var list = errors.ToList();
+
+        if(list.Count == 0)
+        {
+            return;
+        }
+        else if(list.Count == 1)
+        {
+            logger.LogErrorInfo(list[0]);
+        }
+        else
+        {
+            logger.LogError("{Errors}", errors.Select(error => $"{error.Code} - {error.Name} - {error.Level}"));
+        }
+    }
+
+    public static void LogErrorInfo(this ILogger logger, params ErrorInfo[] errors) =>
+        logger.LogErrorInfo(errors.AsEnumerable());
 }

@@ -1,9 +1,8 @@
 using Totem.Http;
 
-namespace Totem.Queries
+namespace Totem.Queries;
+
+public interface IClientQueryContextFactory
 {
-    public interface IClientQueryContextFactory
-    {
-        IClientQueryContext<IHttpQuery> Create(Id pipelineId, IHttpQueryEnvelope envelope);
-    }
+    IClientQueryContext<IHttpQuery> Create(Id pipelineId, IHttpQueryEnvelope envelope);
 }

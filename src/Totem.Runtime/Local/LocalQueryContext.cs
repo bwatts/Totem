@@ -1,25 +1,16 @@
 using System;
 using Totem.Core;
+using Totem.Map;
 
-namespace Totem.Local
+namespace Totem.Local;
+
+public class LocalQueryContext<TQuery> : QueryContext<TQuery>, ILocalQueryContext<TQuery>
+    where TQuery : ILocalQuery
 {
-    public class LocalQueryContext<TQuery> : MessageContext, ILocalQueryContext<TQuery>
-        where TQuery : ILocalQuery
-    {
-        public LocalQueryContext(Id pipelineId, ILocalQueryEnvelope envelope) : base(pipelineId, envelope)
-        {
-            if(envelope.Message is not TQuery query)
-                throw new ArgumentException($"Expected query type {typeof(TQuery)} but received {envelope.Info.MessageType}", nameof(envelope));
+    internal LocalQueryContext(Id pipelineId, ILocalQueryEnvelope envelope, QueryType queryType) : base(pipelineId, envelope, queryType)
+    { }
 
-            Query = query;
-        }
-
-        public new ILocalQueryEnvelope Envelope => (ILocalQueryEnvelope) base.Envelope;
-        public new LocalQueryInfo Info => (LocalQueryInfo) base.Info;
-        public TQuery Query { get; }
-        public Type QueryType => Envelope.Info.MessageType;
-        public Id QueryId => Envelope.MessageId;
-        public Type ResultType => Info.ResultType;
-        public object? Result { get; set; }
-    }
+    public new ILocalQueryEnvelope Envelope => (ILocalQueryEnvelope) base.Envelope;
+    public new LocalQueryInfo Info => (LocalQueryInfo) base.Info;
+    public override Type InterfaceType => typeof(ILocalQueryContext<TQuery>);
 }

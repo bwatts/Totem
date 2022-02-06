@@ -2,10 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Totem.Queues
+namespace Totem.Queues;
+
+public interface IQueueCommandMiddleware
 {
-    public interface IQueueCommandMiddleware
-    {
-        Task InvokeAsync(IQueueCommandContext<IQueueCommand> context, Func<Task> next, CancellationToken cancellationToken);
-    }
+    Task InvokeAsync(IQueueCommandContext<IQueueCommand> context, Func<Task> next, CancellationToken cancellationToken);
 }

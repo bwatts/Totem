@@ -1,18 +1,18 @@
 using System;
 using Totem.Core;
+using Totem.Map;
 
-namespace Totem
+namespace Totem;
+
+public interface IEventContext<out TEvent> : IMessageContext
+    where TEvent : IEvent
 {
-    public interface IEventContext<out TEvent> : IMessageContext
-        where TEvent : IEvent
-    {
-        new IEventEnvelope Envelope { get; }
-        TEvent Event { get; }
-        Type EventType { get; }
-        Id EventId { get; }
-        Type TimelineType { get; }
-        Id TimelineId { get; }
-        long TimelineVersion { get; }
-        DateTimeOffset WhenOccurred { get; }
-    }
+    new IEventEnvelope Envelope { get; }
+    new EventInfo Info { get; }
+    TEvent Event { get; }
+    ItemKey EventKey { get; }
+    EventType EventType { get; }
+    Id EventId { get; }
+    DateTimeOffset WhenOccurred { get; }
+    TimelinePosition TopicPosition { get; }
 }

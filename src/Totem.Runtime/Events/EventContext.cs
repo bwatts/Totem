@@ -1,28 +1,21 @@
 using System;
 using Totem.Core;
+using Totem.Map;
 
-namespace Totem.Events
+namespace Totem.Events;
+
+public class EventContext<TEvent> : MessageContext, IEventContext<TEvent>
+    where TEvent : class, IEvent
 {
-    public class EventContext<TEvent> : MessageContext, IEventContext<TEvent>
-        where TEvent : class, IEvent
-    {
-        public EventContext(Id pipelineId, IEventEnvelope envelope) : base(pipelineId, envelope)
-        {
-            Envelope = envelope;
+    internal EventContext(Id pipelineId, IEventEnvelope envelope, EventType eventType) : base(pipelineId, envelope) =>
+        EventType = eventType;
 
-            if(envelope.Message is not TEvent e)
-                throw new ArgumentException($"Expected event type {typeof(TEvent)} but received {envelope.Info.MessageType}", nameof(envelope));
-
-            Event = e;
-        }
-
-        public new IEventEnvelope Envelope { get; }
-        public TEvent Event { get; }
-        public Type EventType => Envelope.Info.MessageType;
-        public Id EventId => Envelope.MessageId;
-        public Type TimelineType => Envelope.TimelineType;
-        public Id TimelineId => Envelope.TimelineId;
-        public DateTimeOffset WhenOccurred => Envelope.WhenOccurred;
-        public long TimelineVersion => Envelope.TimelineVersion;
-    }
+    public new IEventEnvelope Envelope => (IEventEnvelope) base.Envelope;
+    public new EventInfo Info => Envelope.Info;
+    public TEvent Event => (TEvent) Envelope.Message;
+    public ItemKey EventKey => Envelope.MessageKey;
+    public EventType EventType { get; }
+    public Id EventId => Envelope.MessageKey.Id;
+    public DateTimeOffset WhenOccurred => Envelope.WhenOccurred;
+    public TimelinePosition TopicPosition => Envelope.TopicPosition;
 }

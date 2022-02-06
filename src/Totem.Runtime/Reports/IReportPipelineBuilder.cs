@@ -1,13 +1,10 @@
-using Totem.Routes;
+namespace Totem.Reports;
 
-namespace Totem.Reports
+public interface IReportPipelineBuilder
 {
-    public interface IReportPipelineBuilder
-    {
-        Id PipelineId { get; set; }
+    Id PipelineId { get; set; }
 
-        IReportPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default) where TMiddleware : IRouteMiddleware;
+    IReportPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default) where TMiddleware : IReportMiddleware;
 
-        IReportPipeline Build();
-    }
+    IReportPipeline Build();
 }

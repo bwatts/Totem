@@ -2,10 +2,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Totem.Http
+namespace Totem.Http;
+
+public interface IMessageRequest
 {
-    public interface IMessageRequest
-    {
-        Task SendAsync(HttpClient client, CancellationToken cancellationToken);
-    }
+    Task SendAsync(HttpClient client, CancellationToken cancellationToken);
 }

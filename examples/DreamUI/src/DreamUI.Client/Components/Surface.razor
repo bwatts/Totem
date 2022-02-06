@@ -1,0 +1,216 @@
+@inject IJSRuntime _jsRuntime
+
+<div
+    id="@_surfaceId"
+    class="@Class"
+    style="@Style"
+    tabindex="0"
+    oncontextmenu="return false"
+    @onkeydown="OnKeyDown"
+    @onpointerdown="OnPointerDown"
+    @onpointermove="OnPointerMove"
+    @onpointerup="OnPointerUp"
+>
+    <SurfaceMap
+        ViewportSize="ViewportSize"
+        GridSize="GridSize"
+        CellSize="CellSize"
+        Scale="_mapScale"
+        DragOffsetX="_dragOffsetX"
+        DragOffsetY="_dragOffsetY"
+        OnDrag="OnMapDrag"
+        Adding="_addStarted"
+        AddTopRow="_addTopRow"
+        AddBottomRow="_addBottomRow"
+        AddLeftColumn="_addLeftColumn"
+        AddRightColumn="_addRightColumn"
+    />
+
+    <div id="surface--add" style="@AddStyle"></div>
+</div>
+
+@code {
+    const string _surfaceId = "surface";
+
+    [Parameter] public Size ViewportSize { get; set; }
+    [Parameter] public Size GridSize { get; set; }
+    [Parameter] public Size CellSize { get; set; }
+    [Parameter] public Size MapMaxSize { get; set; }
+
+    double _width;
+    double _height;
+    double _mapScale;
+    bool _dragInitialized;
+    bool _dragging;
+    double _dragOriginX;
+    double _dragOriginY;
+    double _dragOffsetX;
+    double _dragOffsetY;
+    bool _addStarted;
+    bool _adding;
+    int _addOriginRow;
+    int _addOriginColumn;
+    int _addTopRow;
+    int _addBottomRow;
+    int _addLeftColumn;
+    int _addRightColumn;
+
+    string Class => _dragging ? "dragging" : "";
+    string Style => Styles(
+        $"margin: {-_dragOffsetY}px 0 0 {-_dragOffsetX}px",
+        $"width: {_width}px",
+        $"height: {_height}px",
+        $"display: grid",
+        $"grid-template-rows: repeat({GridSize.Height}, {CellSize.Height}px)",
+        $"grid-template-columns: repeat({GridSize.Width}, {CellSize.Width}px)",
+        $"background: linear-gradient(to right, var(--surface-line-color) 1px, transparent 1px), linear-gradient(to bottom, var(--surface-line-color) 1px, transparent 1px)",
+        $"background-size: {CellSize.Width}px {CellSize.Height}px");
+
+    string AddStyle => _adding
+        ? $"grid-area: {_addTopRow} / {_addLeftColumn} / {_addBottomRow + 1} / {_addRightColumn + 1}"
+        : "display: none";
+
+    protected override void OnParametersSet()
+    {
+        _width = GridSize.Width * CellSize.Width;
+        _height = GridSize.Height * CellSize.Height;
+        _mapScale = Math.Max(MapMaxSize.Width / _width, MapMaxSize.Height / _height);
+
+        if(!_dragInitialized && !ViewportSize.IsEmpty)
+        {
+            _dragInitialized = true;
+            _dragOffsetX = _width / 2 - ViewportSize.Width / 2;
+            _dragOffsetY = _height / 2 - ViewportSize.Height / 2;
+        }
+    }
+
+    void OnKeyDown(KeyboardEventArgs args)
+    {
+        if(args.Key == "Escape")
+        {
+            _dragging = false;
+            _addStarted = false;
+            _adding = false;
+        }
+    }
+
+    async Task OnPointerDown(PointerEventArgs args)
+    {
+        if (args.ButtonIsPrimary())
+        {
+            _addStarted = true;
+            _adding = false;
+            _addOriginRow = ToRow(args.ClientY + _dragOffsetY);
+            _addOriginColumn = ToColumn(args.ClientX + _dragOffsetX);
+
+            await _jsRuntime.CapturePointer(_surfaceId, args.PointerId);
+        }
+        else
+        {
+            if (args.ButtonIsSecondary())
+            {
+                _dragging = true;
+                _dragOriginX = args.ClientX + _dragOffsetX;
+                _dragOriginY = args.ClientY + _dragOffsetY;
+
+                await _jsRuntime.CapturePointer(_surfaceId, args.PointerId);
+            }
+        }
+    }
+
+    void OnPointerMove(PointerEventArgs args)
+    {
+        if (_dragging)
+        {
+            _dragOffsetX = _dragOriginX - args.ClientX;
+            _dragOffsetY = _dragOriginY - args.ClientY;
+
+            ConstrainDragOffset();
+            return;
+        }
+
+        if (_addStarted)
+        {
+            _adding = true;
+
+            var moveX = args.ClientX + _dragOffsetX;
+            var moveY = args.ClientY + _dragOffsetY;
+            var moveRow = ToRow(moveY);
+            var moveColumn = ToColumn(moveX);
+
+            _addTopRow = Math.Min(moveRow, _addOriginRow);
+            _addBottomRow = Math.Max(moveRow, _addOriginRow);
+            _addLeftColumn = Math.Min(moveColumn, _addOriginColumn);
+            _addRightColumn = Math.Max(moveColumn, _addOriginColumn);
+
+            var expanded = false;
+
+            if (moveX - _dragOffsetX < CellSize.Width)
+            {
+                _dragOffsetX -= CellSize.Width;
+                expanded = true;
+            }
+            else
+            {
+                if (moveX + CellSize.Width > _dragOffsetX + ViewportSize.Width)
+                {
+                    _dragOffsetX += CellSize.Width;
+                    expanded = true;
+                }
+            }
+
+            if (moveY - _dragOffsetY < CellSize.Height)
+            {
+                _dragOffsetY -= CellSize.Height;
+                expanded = true;
+            }
+            else
+            {
+                if (moveY + CellSize.Height > _dragOffsetY + ViewportSize.Height)
+                {
+                    _dragOffsetY += CellSize.Height;
+                    expanded = true;
+                }
+            }
+
+            if (expanded)
+            {
+                ConstrainDragOffset();
+            }
+        }
+    }
+
+    async Task OnPointerUp(PointerEventArgs args)
+    {
+        await _jsRuntime.ReleasePointer(_surfaceId, args.PointerId);
+
+        if (_adding)
+        {
+            // Commit card
+        }
+
+        _adding = false;
+        _addStarted = false;
+        _dragging = false;
+    }
+
+    void OnMapDrag((double X, double Y) offset)
+    {
+        _dragOffsetX = offset.X;
+        _dragOffsetY = offset.Y;
+
+        ConstrainDragOffset();
+    }
+
+    void ConstrainDragOffset()
+    {
+        _dragOffsetX = Math.Max(0, Math.Min(_dragOffsetX, _width - ViewportSize.Width));
+        _dragOffsetY = Math.Max(0, Math.Min(_dragOffsetY, _height - ViewportSize.Height));
+    }
+
+    int ToRow(double y) =>
+        Math.Max(1, Math.Min((int)Math.Ceiling(y / CellSize.Height), GridSize.Height));
+
+    int ToColumn(double x) =>
+        Math.Max(1, Math.Min((int)Math.Ceiling(x / CellSize.Width), GridSize.Width));
+}

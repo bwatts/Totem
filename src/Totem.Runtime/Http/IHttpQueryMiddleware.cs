@@ -2,10 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Totem.Http
+namespace Totem.Http;
+
+public interface IHttpQueryMiddleware
 {
-    public interface IHttpQueryMiddleware
-    {
-        Task InvokeAsync(IHttpQueryContext<IHttpQuery> context, Func<Task> next, CancellationToken cancellationToken);
-    }
+    Task InvokeAsync(IHttpQueryContext<IHttpQuery> context, Func<Task> next, CancellationToken cancellationToken);
 }

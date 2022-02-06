@@ -4,38 +4,37 @@ using System.Linq;
 using System.Linq.Expressions;
 using Totem.Http;
 
-namespace Totem.Commands
+namespace Totem.Commands;
+
+public class ClientCommandContextFactory : IClientCommandContextFactory
 {
-    public class ClientCommandContextFactory : IClientCommandContextFactory
+    delegate IClientCommandContext<IHttpCommand> TypeFactory(Id pipelineId, IHttpCommandEnvelope envelope);
+
+    readonly ConcurrentDictionary<Type, TypeFactory> _factoriesByCommandType = new();
+
+    public IClientCommandContext<IHttpCommand> Create(Id pipelineId, IHttpCommandEnvelope envelope)
     {
-        delegate IClientCommandContext<IHttpCommand> TypeFactory(Id pipelineId, IHttpCommandEnvelope envelope);
+        if(envelope is null)
+            throw new ArgumentNullException(nameof(envelope));
 
-        readonly ConcurrentDictionary<Type, TypeFactory> _factoriesByCommandType = new();
+        var factory = _factoriesByCommandType.GetOrAdd(envelope.MessageKey.DeclaredType, CompileFactory);
 
-        public IClientCommandContext<IHttpCommand> Create(Id pipelineId, IHttpCommandEnvelope envelope)
-        {
-            if(envelope == null)
-                throw new ArgumentNullException(nameof(envelope));
+        return factory(pipelineId, envelope);
+    }
 
-            var factory = _factoriesByCommandType.GetOrAdd(envelope.Info.MessageType, CompileFactory);
+    TypeFactory CompileFactory(Type commandType)
+    {
+        // (pipelineId, envelope) => new ClientCommandContext<TCommand>(pipelineId, envelope)
 
-            return factory(pipelineId, envelope);
-        }
+        var pipelineIdParameter = Expression.Parameter(typeof(Id), "pipelineId");
+        var envelopeParameter = Expression.Parameter(typeof(IHttpCommandEnvelope), "envelope");
+        var constructor = typeof(ClientCommandContext<>).MakeGenericType(commandType).GetConstructors().Single();
 
-        TypeFactory CompileFactory(Type commandType)
-        {
-            // (pipelineId, envelope) => new ClientCommandContext<TCommand>(pipelineId, envelope)
+        var lambda = Expression.Lambda<TypeFactory>(
+            Expression.New(constructor, pipelineIdParameter, envelopeParameter),
+            pipelineIdParameter,
+            envelopeParameter);
 
-            var pipelineIdParameter = Expression.Parameter(typeof(Id), "pipelineId");
-            var envelopeParameter = Expression.Parameter(typeof(IHttpCommandEnvelope), "envelope");
-            var constructor = typeof(ClientCommandContext<>).MakeGenericType(commandType).GetConstructors().Single();
-
-            var lambda = Expression.Lambda<TypeFactory>(
-                Expression.New(constructor, pipelineIdParameter, envelopeParameter),
-                pipelineIdParameter,
-                envelopeParameter);
-
-            return lambda.Compile();
-        }
+        return lambda.Compile();
     }
 }

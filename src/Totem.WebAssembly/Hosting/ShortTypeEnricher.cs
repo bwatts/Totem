@@ -3,58 +3,52 @@ using System.Collections.Generic;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Totem.Hosting
+namespace Totem.Hosting;
+
+public class ShortTypeEnricher : ILogEventEnricher
 {
-    public class ShortTypeEnricher : ILogEventEnricher
+    readonly Func<Type, bool> _useShortType;
+
+    public ShortTypeEnricher(Func<Type, bool> useShortType) =>
+        _useShortType = useShortType ?? throw new ArgumentNullException(nameof(useShortType));
+
+    public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
     {
-        readonly Func<Type, bool> _useShortType;
+        if(logEvent is null)
+            throw new ArgumentNullException(nameof(logEvent));
 
-        public ShortTypeEnricher(Func<Type, bool> useShortType) =>
-            _useShortType = useShortType ?? throw new ArgumentNullException(nameof(useShortType));
+        if(propertyFactory is null)
+            throw new ArgumentNullException(nameof(propertyFactory));
 
-        public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        List<LogEventProperty>? updates = null;
+
+        foreach(var property in logEvent.Properties)
         {
-            if(logEvent == null)
-                throw new ArgumentNullException(nameof(logEvent));
-
-            if(propertyFactory == null)
-                throw new ArgumentNullException(nameof(propertyFactory));
-
-            List<LogEventProperty>? updates = null;
-
-            foreach(var property in logEvent.Properties)
+            if(TryGetShortType(property, out var shortTypeProperty))
             {
-                if(TryGetShortType(property, out var shortTypeProperty))
-                {
-                    updates ??= new List<LogEventProperty>();
-                    updates.Add(shortTypeProperty);
-                }
-            }
-
-            if(updates != null)
-            {
-                foreach(var update in updates)
-                {
-                    logEvent.AddOrUpdateProperty(update);
-                }
+                updates ??= new List<LogEventProperty>();
+                updates.Add(shortTypeProperty);
             }
         }
 
-        bool TryGetShortType(KeyValuePair<string, LogEventPropertyValue> property, out LogEventProperty shortTypeProperty)
+        if(updates is not null)
         {
-            if(property.Value is ScalarValue { Value: Type type2 })
+            foreach(var update in updates)
             {
-                System.Diagnostics.Debugger.Break();
+                logEvent.AddOrUpdateProperty(update);
             }
-
-            if(property.Value is ScalarValue { Value: Type type } && _useShortType(type))
-            {
-                shortTypeProperty = new LogEventProperty(property.Key, new ScalarValue(type.Name));
-                return true;
-            }
-
-            shortTypeProperty = null!;
-            return false;
         }
+    }
+
+    bool TryGetShortType(KeyValuePair<string, LogEventPropertyValue> property, out LogEventProperty shortTypeProperty)
+    {
+        if(property.Value is ScalarValue { Value: Type type } && _useShortType(type))
+        {
+            shortTypeProperty = new LogEventProperty(property.Key, new ScalarValue(type.Name));
+            return true;
+        }
+
+        shortTypeProperty = null!;
+        return false;
     }
 }

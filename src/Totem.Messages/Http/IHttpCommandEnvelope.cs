@@ -1,8 +1,9 @@
-namespace Totem.Http
+using Totem.Core;
+
+namespace Totem.Http;
+
+public interface IHttpCommandEnvelope : IHttpMessageEnvelope, ICommandEnvelope
 {
-    public interface IHttpCommandEnvelope : IHttpMessageEnvelope
-    {
-        new IHttpCommand Message { get; }
-        new HttpCommandInfo Info { get; }
-    }
+    new IHttpCommand Message { get; }
+    new HttpCommandInfo Info { get; }
 }

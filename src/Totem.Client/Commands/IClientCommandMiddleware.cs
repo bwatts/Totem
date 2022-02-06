@@ -2,10 +2,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Totem.Commands
+namespace Totem.Commands;
+
+public interface IClientCommandMiddleware
 {
-    public interface IClientCommandMiddleware
-    {
-        Task InvokeAsync(IClientCommandContext<IHttpCommand> context, Func<Task> next, CancellationToken cancellationToken);
-    }
+    Task InvokeAsync(IClientCommandContext<IHttpCommand> context, Func<Task> next, CancellationToken cancellationToken);
 }

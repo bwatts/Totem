@@ -1,8 +1,9 @@
-namespace Totem.Http
+using Totem.Core;
+
+namespace Totem.Http;
+
+public interface IHttpQueryEnvelope : IHttpMessageEnvelope, IQueryEnvelope
 {
-    public interface IHttpQueryEnvelope : IHttpMessageEnvelope
-    {
-        new IHttpQuery Message { get; }
-        new HttpQueryInfo Info { get; }
-    }
+    new IHttpQuery Message { get; }
+    new HttpQueryInfo Info { get; }
 }

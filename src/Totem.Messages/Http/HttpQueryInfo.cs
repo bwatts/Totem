@@ -1,75 +1,73 @@
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Totem.Core;
 
-namespace Totem.Http
+namespace Totem.Http;
+
+public class HttpQueryInfo : QueryInfo, IHttpMessageInfo
 {
-    public class HttpQueryInfo : HttpMessageInfo
+    static readonly MessageInfoCache<HttpQueryInfo> _cache = new();
+
+    HttpQueryInfo(Type declaredType, QueryResult result, HttpRequestInfo request) : base(declaredType, result) =>
+        Request = request;
+
+    public HttpRequestInfo Request { get; }
+
+    public override string ToString() =>
+        $"{DeclaredType} => {Result}";
+
+    public static bool TryFrom(Type type, [NotNullWhen(true)] out HttpQueryInfo? info)
     {
-        static readonly ConcurrentDictionary<Type, HttpQueryInfo> _infoByType = new();
-
-        HttpQueryInfo(Type messageType, HttpRequestInfo request, Type resultType) : base(messageType, request) =>
-            ResultType = resultType;
-
-        public Type ResultType { get; }
-
-        public override string ToString() => $"{base.ToString()} = {ResultType}";
-
-        public static bool IsHttpQuery(Type type) =>
-            TryFrom(type, out var _);
-
-        public static bool TryFrom(Type type, [MaybeNullWhen(false)] out HttpQueryInfo info)
+        if(_cache.TryGetValue(type, out info))
         {
-            if(_infoByType.TryGetValue(type, out info))
-            {
-                return true;
-            }
+            return true;
+        }
 
-            info = null;
+        info = null;
 
-            if(type == null || !type.IsConcreteClass())
-            {
-                return false;
-            }
-
-            var resultType = type.GetImplementedInterfaceGenericArguments(typeof(IHttpQuery<>)).SingleOrDefault();
-
-            if(resultType != null && HttpRequestInfo.TryFrom(type, out var request))
-            {
-                info = new HttpQueryInfo(type, request, resultType);
-
-                _infoByType[type] = info;
-
-                return true;
-            }
-
+        if(type is null || !type.IsConcreteClass())
+        {
             return false;
         }
 
-        public static bool TryFrom(IHttpQuery query, [MaybeNullWhen(false)] out HttpQueryInfo info)
-        {
-            if(query == null)
-                throw new ArgumentNullException(nameof(query));
+        var resultType = type.GetImplementedInterfaceGenericArguments(typeof(IHttpQuery<>)).SingleOrDefault();
 
-            return TryFrom(query.GetType(), out info);
+        if(resultType is not null
+            && QueryResult.TryFrom(resultType, out var result)
+            && HttpRequestInfo.TryFrom(type, out var request))
+        {
+            info = new HttpQueryInfo(type, result, request);
+
+            _cache.Add(info);
+
+            return true;
         }
 
-        public static HttpQueryInfo From(Type type)
-        {
-            if(!TryFrom(type, out var info))
-                throw new ArgumentException($"Expected query {type} to be a public, non-abstract, non-or-closed-generic class implementing {typeof(IHttpQuery<>)} and decorated with {nameof(GetRequestAttribute)} or {nameof(HeadRequestAttribute)}", nameof(type));
+        return false;
+    }
 
-            return info;
-        }
+    public static bool TryFrom(IHttpQuery query, [NotNullWhen(true)] out HttpQueryInfo? info)
+    {
+        if(query is null)
+            throw new ArgumentNullException(nameof(query));
 
-        public static HttpQueryInfo From(IHttpQuery query)
-        {
-            if(query == null)
-                throw new ArgumentNullException(nameof(query));
+        return TryFrom(query.GetType(), out info);
+    }
 
-            return From(query.GetType());
-        }
+    public static HttpQueryInfo From(Type type)
+    {
+        if(!TryFrom(type, out var info))
+            throw new ArgumentException($"Expected type to be a public, non-abstract, non-or-closed-generic class implementing {typeof(IHttpQuery<>)} and decorated with {nameof(HttpGetRequestAttribute)} or {nameof(HttpHeadRequestAttribute)}: {type}", nameof(type));
+
+        return info;
+    }
+
+    public static HttpQueryInfo From(IHttpQuery query)
+    {
+        if(query is null)
+            throw new ArgumentNullException(nameof(query));
+
+        return From(query.GetType());
     }
 }

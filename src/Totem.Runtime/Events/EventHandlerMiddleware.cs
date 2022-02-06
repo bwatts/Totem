@@ -1,82 +1,64 @@
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Totem.Map;
 
-namespace Totem.Events
+namespace Totem.Events;
+
+public class EventHandlerMiddleware : IEventMiddleware
 {
-    public class EventHandlerMiddleware : IEventMiddleware
+    delegate Task TypeHandler(IEventContext<IEvent> context, CancellationToken cancellationToken);
+
+    readonly ConcurrentDictionary<EventType, TypeHandler> _handlersByEventType = new();
+    readonly IServiceProvider _services;
+
+    public EventHandlerMiddleware(IServiceProvider services) =>
+        _services = services ?? throw new ArgumentNullException(nameof(services));
+
+    public async Task InvokeAsync(IEventContext<IEvent> context, Func<Task> next, CancellationToken cancellationToken)
     {
-        delegate IEventHandler<IEvent> TypeFactory(IServiceProvider services);
+        if(context is null)
+            throw new ArgumentNullException(nameof(context));
 
-        readonly ConcurrentDictionary<Type, TypeFactory> _factoriesByEventType = new();
-        readonly ILogger _logger;
-        readonly IServiceProvider _services;
+        if(next is null)
+            throw new ArgumentNullException(nameof(next));
 
-        public EventHandlerMiddleware(ILogger<EventHandlerMiddleware> logger, IServiceProvider services)
+        var handler = _handlersByEventType.GetOrAdd(context.EventType, _ => CompileHandler(context));
+
+        await handler(context, cancellationToken);
+
+        await next();
+    }
+
+    TypeHandler CompileHandler(IEventContext<IEvent> context)
+    {
+        // (context, cancellationToken) => HandleAsync<TEvent>(context, cancellationToken)
+
+        var contextParameter = Expression.Parameter(typeof(IEventContext<IEvent>), "context");
+        var cancellationTokenParameter = Expression.Parameter(typeof(CancellationToken), "cancellationToken");
+        var call = Expression.Call(
+            Expression.Constant(this),
+            nameof(HandleAsync),
+            new[] { context.EventType.DeclaredType },
+            contextParameter,
+            cancellationTokenParameter);
+
+        var lambda = Expression.Lambda<TypeHandler>(call, contextParameter, cancellationTokenParameter);
+
+        return lambda.Compile();
+    }
+
+    async Task HandleAsync<TEvent>(IEventContext<IEvent> context, CancellationToken cancellationToken)
+        where TEvent : IEvent
+    {
+        using var scope = _services.CreateScope();
+
+        foreach(var handler in scope.ServiceProvider.GetServices<IEventHandler<TEvent>>())
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _services = services ?? throw new ArgumentNullException(nameof(services));
-        }
-
-        public async Task InvokeAsync(IEventContext<IEvent> context, Func<Task> next, CancellationToken cancellationToken)
-        {
-            if(context == null)
-                throw new ArgumentNullException(nameof(context));
-
-            if(next == null)
-                throw new ArgumentNullException(nameof(next));
-
-            await TryInvokeHandlerAsync(context, cancellationToken);
-
-            await next();
-        }
-
-        async Task TryInvokeHandlerAsync(IEventContext<IEvent> context, CancellationToken cancellationToken)
-        {
-            var factory = _factoriesByEventType.GetOrAdd(context.EventType, CompileFactory);
-
-            var handler = factory?.Invoke(_services);
-
-            if(handler != null)
-            {
-                _logger.LogTrace("[event] Handle {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", context.EventType, context.EventId, context.TimelineType, context.TimelineId, context.TimelineVersion);
-
-                await handler.HandleAsync(context, cancellationToken);
-            }
-        }
-
-        TypeFactory CompileFactory(Type eventType)
-        {
-            // services => new TypedHandler<TEvent>(services)
-
-            var parameter = Expression.Parameter(typeof(IServiceProvider), "services");
-            var constructor = typeof(TypedHandler<>).MakeGenericType(eventType).GetConstructors().Single();
-            var construct = Expression.New(constructor, parameter);
-
-            return Expression.Lambda<TypeFactory>(construct, parameter).Compile();
-        }
-
-        class TypedHandler<TEvent> : IEventHandler<IEvent> where TEvent : IEvent
-        {
-            readonly IServiceProvider _services;
-
-            public TypedHandler(IServiceProvider services) =>
-                _services = services;
-
-            public async Task HandleAsync(IEventContext<IEvent> context, CancellationToken cancellationToken)
-            {
-                var handler = _services.GetService<IEventHandler<TEvent>>();
-
-                if(handler != null)
-                {
-                    await handler.HandleAsync((IEventContext<TEvent>) context, cancellationToken);
-                }
-            }
+            await handler.HandleAsync((IEventContext<TEvent>) context, cancellationToken);
         }
     }
 }

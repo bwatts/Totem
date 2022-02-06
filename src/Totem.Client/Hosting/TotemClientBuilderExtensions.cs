@@ -3,58 +3,57 @@ using Microsoft.Extensions.DependencyInjection;
 using Totem.Commands;
 using Totem.Queries;
 
-namespace Totem.Hosting
+namespace Totem.Hosting;
+
+public static class TotemClientBuilderExtensions
 {
-    public static class TotemClientBuilderExtensions
+    public static ITotemClientBuilder AddCommands(this ITotemClientBuilder builder, Action<IClientCommandPipelineBuilder> declarePipeline)
     {
-        public static ITotemClientBuilder AddCommands(this ITotemClientBuilder builder, Action<IClientCommandPipelineBuilder> declarePipeline)
-        {
-            if(builder == null)
-                throw new ArgumentNullException(nameof(builder));
+        if(builder is null)
+            throw new ArgumentNullException(nameof(builder));
 
-            if(declarePipeline == null)
-                throw new ArgumentNullException(nameof(declarePipeline));
+        if(declarePipeline is null)
+            throw new ArgumentNullException(nameof(declarePipeline));
 
-            builder.Services
-                .AddSingleton<ClientCommandRequestMiddleware>()
-                .AddSingleton<IClientCommandNegotiator, ClientCommandNegotiator>()
-                .AddSingleton<IClientCommandContextFactory, ClientCommandContextFactory>()
-                .AddTransient<IClientCommandPipelineBuilder, ClientCommandPipelineBuilder>()
-                .AddSingleton(provider =>
-                 {
-                     var pipelineBuilder = provider.GetRequiredService<IClientCommandPipelineBuilder>();
+        builder.Services
+            .AddSingleton<ClientCommandRequestMiddleware>()
+            .AddSingleton<IClientCommandNegotiator, ClientCommandNegotiator>()
+            .AddSingleton<IClientCommandContextFactory, ClientCommandContextFactory>()
+            .AddTransient<IClientCommandPipelineBuilder, ClientCommandPipelineBuilder>()
+            .AddSingleton(provider =>
+             {
+                 var pipelineBuilder = provider.GetRequiredService<IClientCommandPipelineBuilder>();
 
-                     declarePipeline(pipelineBuilder);
+                 declarePipeline(pipelineBuilder);
 
-                     return pipelineBuilder.Build();
-                 });
+                 return pipelineBuilder.Build();
+             });
 
-            return builder;
-        }
+        return builder;
+    }
 
-        public static ITotemClientBuilder AddQueries(this ITotemClientBuilder builder, Action<IClientQueryPipelineBuilder> declarePipeline)
-        {
-            if(builder == null)
-                throw new ArgumentNullException(nameof(builder));
+    public static ITotemClientBuilder AddQueries(this ITotemClientBuilder builder, Action<IClientQueryPipelineBuilder> declarePipeline)
+    {
+        if(builder is null)
+            throw new ArgumentNullException(nameof(builder));
 
-            if(declarePipeline == null)
-                throw new ArgumentNullException(nameof(declarePipeline));
+        if(declarePipeline is null)
+            throw new ArgumentNullException(nameof(declarePipeline));
 
-            builder.Services
-                .AddSingleton<ClientQueryRequestMiddleware>()
-                .AddSingleton<IClientQueryNegotiator, ClientQueryNegotiator>()
-                .AddSingleton<IClientQueryContextFactory, ClientQueryContextFactory>()
-                .AddTransient<IClientQueryPipelineBuilder, ClientQueryPipelineBuilder>()
-                .AddSingleton(provider =>
-                {
-                    var pipelineBuilder = provider.GetRequiredService<IClientQueryPipelineBuilder>();
+        builder.Services
+            .AddSingleton<ClientQueryRequestMiddleware>()
+            .AddSingleton<IClientQueryNegotiator, ClientQueryNegotiator>()
+            .AddSingleton<IClientQueryContextFactory, ClientQueryContextFactory>()
+            .AddTransient<IClientQueryPipelineBuilder, ClientQueryPipelineBuilder>()
+            .AddSingleton(provider =>
+            {
+                var pipelineBuilder = provider.GetRequiredService<IClientQueryPipelineBuilder>();
 
-                    declarePipeline(pipelineBuilder);
+                declarePipeline(pipelineBuilder);
 
-                    return pipelineBuilder.Build();
-                });
+                return pipelineBuilder.Build();
+            });
 
-            return builder;
-        }
+        return builder;
     }
 }

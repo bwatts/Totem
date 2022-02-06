@@ -1,12 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Totem.Http
-{
-    public interface IHttpCommandPipeline
-    {
-        Id Id { get; }
+namespace Totem.Http;
 
-        Task<IHttpCommandContext<IHttpCommand>> RunAsync(IHttpCommandEnvelope envelope, CancellationToken token);
-    }
+public interface IHttpCommandPipeline
+{
+    Id Id { get; }
+
+    Task<IHttpCommandContext<IHttpCommand>> RunAsync(IHttpCommandEnvelope envelope, CancellationToken token);
 }

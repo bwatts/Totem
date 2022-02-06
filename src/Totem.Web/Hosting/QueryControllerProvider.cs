@@ -4,32 +4,33 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Totem.Features;
-using Totem.Features.Default;
+using Totem.Http;
+using Totem.Map;
 
-namespace Totem.Hosting
+namespace Totem.Hosting;
+
+public class QueryControllerProvider : IApplicationFeatureProvider<ControllerFeature>
 {
-    public class QueryControllerProvider : IApplicationFeatureProvider<ControllerFeature>
+    readonly RuntimeMap _map;
+
+    public QueryControllerProvider(RuntimeMap map) =>
+        _map = map ?? throw new ArgumentNullException(nameof(map));
+
+    public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
     {
-        readonly FeatureRegistry _features;
+        if(parts is null)
+            throw new ArgumentNullException(nameof(parts));
 
-        public QueryControllerProvider(FeatureRegistry features) =>
-            _features = features ?? throw new ArgumentNullException(nameof(features));
+        if(feature is null)
+            throw new ArgumentNullException(nameof(feature));
 
-        public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
+        foreach(var controllerType in
+            from query in _map.Queries
+            from context in query.Contexts
+            where context.Info is HttpQueryInfo
+            select typeof(HttpQueryController<>).MakeGenericType(query.DeclaredType))
         {
-            if(parts == null)
-                throw new ArgumentNullException(nameof(parts));
-
-            if(feature == null)
-                throw new ArgumentNullException(nameof(feature));
-
-            foreach(var controllerType in
-                from query in _features.Populate<HttpQueryFeature>().Queries
-                select typeof(QueryController<>).MakeGenericType(query))
-            {
-                feature.Controllers.Add(controllerType.GetTypeInfo());
-            }
+            feature.Controllers.Add(controllerType.GetTypeInfo());
         }
     }
 }

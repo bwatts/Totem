@@ -2,28 +2,21 @@ using System;
 using System.Collections.Specialized;
 using System.Net;
 using Totem.Core;
+using Totem.Map;
 
-namespace Totem.Http
+namespace Totem.Http;
+
+public class HttpCommandContext<TCommand> : CommandContext<TCommand>, IHttpCommandContext<TCommand>
+    where TCommand : IHttpCommand
 {
-    public class HttpCommandContext<TCommand> : MessageContext, IHttpCommandContext<TCommand>
-        where TCommand : IHttpCommand
-    {
-        public HttpCommandContext(Id pipelineId, IHttpCommandEnvelope envelope) : base(pipelineId, envelope)
-        {
-            if(envelope.Message is not TCommand command)
-                throw new ArgumentException($"Expected command type {typeof(TCommand)} but received {envelope.Info.MessageType}", nameof(envelope));
+    internal HttpCommandContext(Id pipelineId, IHttpCommandEnvelope envelope, CommandType commandType) : base(pipelineId, envelope, commandType)
+    { }
 
-            Command = command;
-        }
-
-        public new IHttpCommandEnvelope Envelope => (IHttpCommandEnvelope) base.Envelope;
-        public new HttpCommandInfo Info => (HttpCommandInfo) base.Info;
-        public TCommand Command { get; }
-        public Type CommandType => Envelope.Info.MessageType;
-        public Id CommandId => Envelope.MessageId;
-        public HttpStatusCode ResponseCode { get; set; } = HttpStatusCode.OK;
-        public NameValueCollection ResponseHeaders { get; } = new(StringComparer.OrdinalIgnoreCase);
-        public string? ResponseContentType { get; set; }
-        public object? ResponseContent { get; set; }
-    }
+    public new IHttpCommandEnvelope Envelope => (IHttpCommandEnvelope) base.Envelope;
+    public new HttpCommandInfo Info => (HttpCommandInfo) base.Info;
+    public override Type InterfaceType => typeof(IHttpCommandContext<TCommand>);
+    public HttpStatusCode ResponseCode { get; set; } = HttpStatusCode.OK;
+    public NameValueCollection ResponseHeaders { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public string? ResponseContentType { get; set; }
+    public object? ResponseContent { get; set; }
 }

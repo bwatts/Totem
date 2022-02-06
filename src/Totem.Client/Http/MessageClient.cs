@@ -3,21 +3,20 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Totem.Http
+namespace Totem.Http;
+
+public class MessageClient : IMessageClient
 {
-    public class MessageClient : IMessageClient
+    readonly HttpClient _httpClient;
+
+    public MessageClient(HttpClient httpClient) =>
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+
+    public async Task SendAsync(IMessageRequest message, CancellationToken cancellationToken)
     {
-        readonly HttpClient _httpClient;
+        if(message is null)
+            throw new ArgumentNullException(nameof(message));
 
-        public MessageClient(HttpClient httpClient) =>
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-
-        public async Task SendAsync(IMessageRequest message, CancellationToken cancellationToken)
-        {
-            if(message == null)
-                throw new ArgumentNullException(nameof(message));
-
-            await message.SendAsync(_httpClient, cancellationToken);
-        }
+        await message.SendAsync(_httpClient, cancellationToken);
     }
 }

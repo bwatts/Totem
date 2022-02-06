@@ -1,11 +1,10 @@
 using Majorsoft.Blazor.Components.Common.JsInterop;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DreamUI.Hosting
+namespace DreamUI.Hosting;
+
+internal static class ServiceCollectionExtensions
 {
-    internal static class ServiceCollectionExtensions
-    {
-        internal static IServiceCollection AddDreamWebAssembly(this IServiceCollection services) =>
-            services.AddJsInteropExtensions();
-    }
+    internal static IServiceCollection AddDreamWebAssembly(this IServiceCollection services) =>
+        services.AddJsInteropExtensions();
 }

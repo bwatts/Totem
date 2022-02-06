@@ -1,0 +1,114 @@
+@inject IJSRuntime _jsRuntime
+
+<div
+    id="surface-map"
+    class="@Class"
+    style="@Style"
+    oncontextmenu="return false"
+    @onpointerdown:stopPropagation
+    @onpointermove:stopPropagation
+    @onpointerup:stopPropagation
+    @onpointerdown="OnPointerDown"
+>
+    <div
+        id="surface-map--viewport"
+        style="@ViewportStyle"
+        @onpointerdown:stopPropagation
+        @onpointermove:stopPropagation
+        @onpointerup:stopPropagation
+        @onpointerdown="OnViewportPointerDown"
+        @onpointermove="OnViewportPointerMove"
+        @onpointerup="OnViewportPointerUp"
+    />
+
+    <div id="surface-map--add" style="@AddStyle"></div>
+</div>
+
+@code {
+    [Parameter] public Size ViewportSize { get; set; }
+    [Parameter] public Size GridSize { get; set; }
+    [Parameter] public Size CellSize { get; set; }
+    [Parameter] public double Scale { get; set; }
+    [Parameter] public double DragOffsetX { get; set; }
+    [Parameter] public double DragOffsetY { get; set; }
+    [Parameter] public EventCallback<(double X, double Y)> OnDrag { get; set; }
+    [Parameter] public bool Adding { get; set; }
+    [Parameter] public int AddTopRow { get; set; }
+    [Parameter] public int AddBottomRow { get; set; }
+    [Parameter] public int AddLeftColumn { get; set; }
+    [Parameter] public int AddRightColumn { get; set; }
+
+    double _width;
+    double _height;
+    double _viewportWidth;
+    double _viewportHeight;
+    bool _dragging;
+    double _dragOriginX;
+    double _dragOriginY;
+
+    string Class => _dragging ? "dragging" : "";
+    string Style => Styles(
+        $"width: {_width}px", $"height: {_height}px",
+        $"display: grid",
+        $"grid-template-rows: repeat({GridSize.Height}, {CellSize.Height * Scale}px)",
+        $"grid-template-columns: repeat({GridSize.Width}, {CellSize.Width * Scale}px)");
+
+    string ViewportStyle => Styles(
+        $"margin: {DragOffsetY * Scale}px 0 0 {DragOffsetX * Scale}px",
+        $"width: {_viewportWidth}px",
+        $"height: {_viewportHeight}px");
+
+    string AddStyle => Adding
+        ? $"grid-area: {AddTopRow} / {AddLeftColumn} / {AddBottomRow + 1} / {AddRightColumn + 1}"
+        : "display: none";
+
+    protected override void OnParametersSet()
+    {
+        _width = GridSize.Width * CellSize.Width * Scale;
+        _height = GridSize.Height * CellSize.Height * Scale;
+        _viewportWidth = ViewportSize.Width * Scale;
+        _viewportHeight = ViewportSize.Height * Scale;
+    }
+
+    async Task OnPointerDown(PointerEventArgs args)
+    {
+        if(args.ButtonIsPrimary())
+        {
+            await InvokeOnDragAsync(
+                args.OffsetX - _viewportWidth / 2,
+                args.OffsetY - _viewportHeight / 2);
+        }
+    }
+
+    async Task OnViewportPointerDown(PointerEventArgs args)
+    {
+        if(args.ButtonIsPrimary())
+        {
+            await _jsRuntime.CapturePointer("surface-map--viewport", args.PointerId);
+
+            _dragging = true;
+            _dragOriginX = args.ClientX - DragOffsetX * Scale;
+            _dragOriginY = args.ClientY - DragOffsetY * Scale;
+        }
+    }
+
+    async Task OnViewportPointerMove(PointerEventArgs args)
+    {
+        if(_dragging)
+        {
+            await InvokeOnDragAsync(
+                args.ClientX - _dragOriginX,
+                args.ClientY - _dragOriginY);
+        }
+    }
+
+    async Task OnViewportPointerUp(PointerEventArgs args)
+    {
+        _dragging = false;
+
+        await _jsRuntime.ReleasePointer("surface-map--viewport", args.PointerId);
+    }
+
+    Task InvokeOnDragAsync(double mapX, double mapY) =>
+        OnDrag.InvokeAsync((mapX / Scale, mapY / Scale));
+}

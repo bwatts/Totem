@@ -1,9 +1,8 @@
 using System.Net.Http;
 
-namespace Totem.Commands
+namespace Totem.Commands;
+
+public interface IClientCommandNegotiator
 {
-    public interface IClientCommandNegotiator
-    {
-        HttpRequestMessage Negotiate(IHttpCommand command, string contentType);
-    }
+    HttpRequestMessage Negotiate(IHttpCommand command, string contentType);
 }

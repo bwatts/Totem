@@ -1,12 +1,11 @@
-namespace Totem.Commands
+namespace Totem.Commands;
+
+public interface IClientCommandPipelineBuilder
 {
-    public interface IClientCommandPipelineBuilder
-    {
-        Id PipelineId { get; set; }
+    Id PipelineId { get; set; }
 
-        IClientCommandPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default)
-            where TMiddleware : IClientCommandMiddleware;
+    IClientCommandPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default)
+        where TMiddleware : IClientCommandMiddleware;
 
-        IClientCommandPipeline Build();
-    }
+    IClientCommandPipeline Build();
 }

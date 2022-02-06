@@ -1,26 +1,17 @@
 using System;
 using Totem.Core;
+using Totem.Map;
 
-namespace Totem.Queues
+namespace Totem.Queues;
+
+public class QueueCommandContext<TCommand> : CommandContext<TCommand>, IQueueCommandContext<TCommand>
+    where TCommand : IQueueCommand
 {
-    public class QueueCommandContext<TCommand> : MessageContext, IQueueCommandContext<TCommand>
-        where TCommand : IQueueCommand
-    {
-        public QueueCommandContext(Id pipelineId, IQueueCommandEnvelope envelope) : base(pipelineId, envelope)
-        {
-            if(envelope.Message is not TCommand command)
-                throw new ArgumentException($"Expected command type {typeof(TCommand)} but received {envelope.Info.MessageType}", nameof(envelope));
+    internal QueueCommandContext(Id pipelineId, IQueueCommandEnvelope envelope, CommandType commandType) : base(pipelineId, envelope, commandType)
+    { }
 
-            Command = command;
-        }
-
-        public new IQueueCommandEnvelope Envelope => (IQueueCommandEnvelope) base.Envelope;
-        public new QueueCommandInfo Info => (QueueCommandInfo) base.Info;
-        public TCommand Command { get; }
-        public Type CommandType => Info.MessageType;
-        public Id CommandId => Envelope.MessageId;
-        public Text QueueName => Info.QueueName;
-
-        MessageInfo IMessageContext.Info => Info;
-    }
+    public new IQueueCommandEnvelope Envelope => (IQueueCommandEnvelope) base.Envelope;
+    public new QueueCommandInfo Info => (QueueCommandInfo) base.Info;
+    public override Type InterfaceType => typeof(IQueueCommandContext<TCommand>);
+    public Text QueueName => Info.QueueName;
 }

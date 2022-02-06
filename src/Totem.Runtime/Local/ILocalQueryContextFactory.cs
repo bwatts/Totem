@@ -1,7 +1,6 @@
-namespace Totem.Local
+namespace Totem.Local;
+
+public interface ILocalQueryContextFactory
 {
-    public interface ILocalQueryContextFactory
-    {
-        ILocalQueryContext<ILocalQuery> Create(Id pipelineId, ILocalQueryEnvelope envelope);
-    }
+    ILocalQueryContext<ILocalQuery> Create(Id pipelineId, ILocalQueryEnvelope envelope);
 }

@@ -1,70 +1,53 @@
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Totem.Core;
 
-namespace Totem.Queues
+namespace Totem.Queues;
+
+public class QueueCommandInfo : CommandInfo
 {
-    public class QueueCommandInfo : MessageInfo
+    public const string DefaultQueueName = "default";
+
+    static readonly MessageInfoCache<QueueCommandInfo> _cache = new();
+
+    QueueCommandInfo(Type declaredType, Text queueName) : base(declaredType) =>
+        QueueName = queueName;
+
+    public Text QueueName { get; }
+
+    public static bool TryFrom(Type type, [NotNullWhen(true)] out QueueCommandInfo? info)
     {
-        public const string DefaultQueueName = "default";
-        static readonly ConcurrentDictionary<Type, QueueCommandInfo> _infoByType = new();
-
-        QueueCommandInfo(Type messageType, Text queueName) : base(messageType) =>
-            QueueName = queueName ?? throw new ArgumentNullException(nameof(queueName));
-
-        public Text QueueName { get; }
-
-        public static bool TryFrom(Type type, [MaybeNullWhen(false)] out QueueCommandInfo info)
+        if(_cache.TryGetValue(type, out info))
         {
-            if(_infoByType.TryGetValue(type, out info))
+            return true;
+        }
+
+        if(type is not null && type.IsConcreteClass() && typeof(IQueueCommand).IsAssignableFrom(type))
+        {
+            var queueName = type.GetCustomAttribute<QueueNameAttribute>()?.Name;
+
+            if(string.IsNullOrWhiteSpace(queueName))
             {
-                return true;
+                queueName = DefaultQueueName;
             }
 
-            if(type != null && type.IsConcreteClass() && typeof(IQueueCommand).IsAssignableFrom(type))
-            {
-                var queueName = type.GetCustomAttribute<QueueNameAttribute>()?.Name;
+            info = new QueueCommandInfo(type, queueName.ToText());
 
-                if(string.IsNullOrWhiteSpace(queueName))
-                {
-                    queueName = DefaultQueueName;
-                }
+            _cache.Add(info);
 
-                info = new QueueCommandInfo(type, queueName.ToText());
-
-                _infoByType[type] = info;
-
-                return true;
-            }
-
-            info = null;
-            return false;
+            return true;
         }
 
-        public static bool TryFrom(IQueueCommand command, [MaybeNullWhen(false)] out QueueCommandInfo info)
-        {
-            if(command == null)
-                throw new ArgumentNullException(nameof(command));
+        info = null;
+        return false;
+    }
 
-            return TryFrom(command.GetType(), out info);
-        }
+    public static QueueCommandInfo From(Type type)
+    {
+        if(!TryFrom(type, out var info))
+            throw new ArgumentException($"Expected queue command {type} to be a public, non-abstract, non-or-closed-generic class implementing {typeof(IQueueCommand)}", nameof(type));
 
-        public static QueueCommandInfo From(Type type)
-        {
-            if(!TryFrom(type, out var info))
-                throw new ArgumentException($"Expected queue command {type} to be a public, non-abstract, non-or-closed-generic class implementing {typeof(IQueueCommand)}", nameof(type));
-
-            return info;
-        }
-
-        public static QueueCommandInfo From(IQueueCommand command)
-        {
-            if(command == null)
-                throw new ArgumentNullException(nameof(command));
-
-            return From(command.GetType());
-        }
+        return info;
     }
 }

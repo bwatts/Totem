@@ -1,9 +1,8 @@
 using Totem.Core;
 
-namespace Totem.Events
+namespace Totem.Events;
+
+public interface IEventContextFactory
 {
-    public interface IEventContextFactory
-    {
-        IEventContext<IEvent> Create(Id pipelineId, IEventEnvelope envelope);
-    }
+    IEventContext<IEvent> Create(Id pipelineId, IEventEnvelope envelope);
 }

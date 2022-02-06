@@ -2,39 +2,50 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using Totem.Map;
 
-namespace Totem.Local
+namespace Totem.Local;
+
+public class LocalQueryContextFactory : ILocalQueryContextFactory
 {
-    public class LocalQueryContextFactory : ILocalQueryContextFactory
+    delegate ILocalQueryContext<ILocalQuery> TypeFactory(Id pipelineId, ILocalQueryEnvelope envelope);
+
+    readonly ConcurrentDictionary<QueryType, TypeFactory> _factoriesByQueryType = new();
+    readonly RuntimeMap _map;
+
+    public LocalQueryContextFactory(RuntimeMap map) =>
+        _map = map ?? throw new ArgumentNullException(nameof(map));
+
+    public ILocalQueryContext<ILocalQuery> Create(Id pipelineId, ILocalQueryEnvelope envelope)
     {
-        delegate ILocalQueryContext<ILocalQuery> TypeFactory(Id pipelineId, ILocalQueryEnvelope envelope);
+        if(envelope is null)
+            throw new ArgumentNullException(nameof(envelope));
 
-        readonly ConcurrentDictionary<Type, TypeFactory> _factoriesByQueryType = new();
+        if(!_map.Queries.TryGet(envelope.MessageKey.DeclaredType, out var queryType))
+            throw new ArgumentException($"Expected known query of type {envelope.MessageKey.DeclaredType}", nameof(envelope));
 
-        public ILocalQueryContext<ILocalQuery> Create(Id pipelineId, ILocalQueryEnvelope envelope)
-        {
-            if(envelope == null)
-                throw new ArgumentNullException(nameof(envelope));
+        var factory = _factoriesByQueryType.GetOrAdd(queryType, CompileFactory);
 
-            var factory = _factoriesByQueryType.GetOrAdd(envelope.Info.MessageType, CompileFactory);
+        return factory(pipelineId, envelope);
+    }
 
-            return factory(pipelineId, envelope);
-        }
+    TypeFactory CompileFactory(QueryType queryType)
+    {
+        // (pipelineId, query) => new QueryContext<TQuery>(pipelineId, envelope, queryType)
 
-        TypeFactory CompileFactory(Type queryType)
-        {
-            // (pipelineId, query) => new QueryContext<TQuery>(pipelineId, _apmContext, (TQuery) query)
+        var pipelineIdParameter = Expression.Parameter(typeof(Id), "pipelineId");
+        var envelopeParameter = Expression.Parameter(typeof(ILocalQueryEnvelope), "envelope");
+        var constructor = typeof(LocalQueryContext<>)
+            .MakeGenericType(queryType.DeclaredType)
+            .GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+            .Single();
 
-            var pipelineIdParameter = Expression.Parameter(typeof(Id), "pipelineId");
-            var envelopeParameter = Expression.Parameter(typeof(ILocalQueryEnvelope), "envelope");
-            var constructor = typeof(LocalQueryContext<>).MakeGenericType(queryType).GetConstructors().Single();
+        var lambda = Expression.Lambda<TypeFactory>(
+            Expression.New(constructor, pipelineIdParameter, envelopeParameter),
+            pipelineIdParameter,
+            envelopeParameter);
 
-            var lambda = Expression.Lambda<TypeFactory>(
-                Expression.New(constructor, pipelineIdParameter, envelopeParameter),
-                pipelineIdParameter,
-                envelopeParameter);
-
-            return lambda.Compile();
-        }
+        return lambda.Compile();
     }
 }

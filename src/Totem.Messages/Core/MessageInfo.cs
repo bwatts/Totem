@@ -1,14 +1,14 @@
 using System;
 
-namespace Totem.Core
+namespace Totem.Core;
+
+public abstract class MessageInfo
 {
-    public abstract class MessageInfo
-    {
-        protected MessageInfo(Type messageType) =>
-            MessageType = messageType ?? throw new ArgumentNullException(nameof(messageType));
+    internal MessageInfo(Type declaredType) =>
+        DeclaredType = declaredType;
 
-        public Type MessageType { get; }
+    public Type DeclaredType { get; }
 
-        public override string ToString() => MessageType.ToString();
-    }
+    public override string ToString() =>
+        DeclaredType.ToString();
 }

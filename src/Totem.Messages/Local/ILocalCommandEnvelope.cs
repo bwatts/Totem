@@ -1,8 +1,9 @@
-namespace Totem.Local
+using Totem.Core;
+
+namespace Totem.Local;
+
+public interface ILocalCommandEnvelope : ILocalMessageEnvelope, ICommandEnvelope
 {
-    public interface ILocalCommandEnvelope : ILocalMessageEnvelope
-    {
-        new ILocalCommand Message { get; }
-        new LocalCommandInfo Info { get; }
-    }
+    new ILocalCommand Message { get; }
+    new LocalCommandInfo Info { get; }
 }

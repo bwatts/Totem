@@ -3,11 +3,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Totem.Queues;
 
-namespace Totem
+namespace Totem;
+
+public interface IQueueClient
 {
-    public interface IQueueClient
-    {
-        Task EnqueueAsync(IQueueCommandEnvelope envelope, CancellationToken cancellationToken);
-        Task EnqueueAsync(IEnumerable<IQueueCommandEnvelope> envelopes, CancellationToken cancellationToken);
-    }
+    Task EnqueueAsync(IQueueCommandEnvelope envelope, CancellationToken cancellationToken);
+    Task EnqueueAsync(IEnumerable<IQueueCommandEnvelope> envelopes, CancellationToken cancellationToken);
 }

@@ -1,7 +1,6 @@
-namespace Totem.Files
+namespace Totem.Files;
+
+public interface IDiskStorageSettings
 {
-    public interface IDiskStorageSettings
-    {
-        string BaseDirectory { get; }
-    }
+    string BaseDirectory { get; }
 }

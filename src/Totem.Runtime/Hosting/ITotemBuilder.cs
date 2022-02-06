@@ -1,11 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
-using Totem.Features;
+using Totem.Map;
 
-namespace Totem.Hosting
+namespace Totem.Hosting;
+
+public interface ITotemBuilder
 {
-    public interface ITotemBuilder
-    {
-        IServiceCollection Services { get; }
-        FeatureRegistry Features { get; }
-    }
+    IServiceCollection Services { get; }
+    RuntimeMap Map { get; }
 }

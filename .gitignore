@@ -30,3 +30,4 @@ nuget.exe
 *.metaproj*
 dist/
 node_modules/
+/examples/Dream/FileStorage/

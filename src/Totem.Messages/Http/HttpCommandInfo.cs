@@ -1,68 +1,55 @@
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Totem.Core;
 
-namespace Totem.Http
+namespace Totem.Http;
+
+public class HttpCommandInfo : CommandInfo, IHttpMessageInfo
 {
-    public class HttpCommandInfo : HttpMessageInfo
+    static readonly MessageInfoCache<HttpCommandInfo> _cache = new();
+
+    HttpCommandInfo(Type declaredType, HttpRequestInfo request) : base(declaredType) =>
+        Request = request;
+
+    public HttpRequestInfo Request { get; }
+
+    public override string ToString() =>
+        $"{Request} => {DeclaredType}";
+
+    public static bool TryFrom(Type type, [NotNullWhen(true)] out HttpCommandInfo? info)
     {
-        static readonly ConcurrentDictionary<Type, HttpCommandInfo> _infoByType = new();
+        if(type is null)
+            throw new ArgumentNullException(nameof(type));
 
-        HttpCommandInfo(Type messageType, HttpRequestInfo request) : base(messageType, request)
-        { }
-
-        public static bool IsHttpCommand(Type type) =>
-            TryFrom(type, out var _);
-
-        public static bool TryFrom(Type type, [MaybeNullWhen(false)] out HttpCommandInfo info)
+        if(_cache.TryGetValue(type, out info))
         {
-            if(_infoByType.TryGetValue(type, out info))
-            {
-                return true;
-            }
+            return true;
+        }
 
-            info = null;
+        info = null;
 
-            if(type == null || !type.IsConcreteClass())
-            {
-                return false;
-            }
-
-            if(typeof(IHttpCommand).IsAssignableFrom(type) && HttpRequestInfo.TryFrom(type, out var request))
-            {
-                info = new HttpCommandInfo(type, request);
-
-                _infoByType[type] = info;
-
-                return true;
-            }
-
+        if(type is null || !type.IsConcreteClass())
+        {
             return false;
         }
 
-        public static bool TryFrom(IHttpCommand command, [MaybeNullWhen(false)] out HttpCommandInfo info)
+        if(typeof(IHttpCommand).IsAssignableFrom(type) && HttpRequestInfo.TryFrom(type, out var request))
         {
-            if(command == null)
-                throw new ArgumentNullException(nameof(command));
+            info = new HttpCommandInfo(type, request);
 
-            return TryFrom(command.GetType(), out info);
+            _cache.Add(info);
+
+            return true;
         }
 
-        public static HttpCommandInfo From(Type type)
-        {
-            if(!TryFrom(type, out var info))
-                throw new ArgumentException($"Expected command {type} to be a public, non-abstract, non-or-closed-generic class implementing {typeof(IHttpCommand)} and decorated with {nameof(PostRequestAttribute)}, {nameof(PutRequestAttribute)}, or {nameof(DeleteRequestAttribute)}", nameof(type));
+        return false;
+    }
 
-            return info;
-        }
+    public static HttpCommandInfo From(Type type)
+    {
+        if(!TryFrom(type, out var info))
+            throw new ArgumentException($"Expected command {type} to be a public, non-abstract, non-or-closed-generic class implementing {typeof(IHttpCommand)} and decorated with {nameof(HttpPostRequestAttribute)}, {nameof(HttpPutRequestAttribute)}, or {nameof(HttpDeleteRequestAttribute)}", nameof(type));
 
-        public static HttpCommandInfo From(IHttpCommand command)
-        {
-            if(command == null)
-                throw new ArgumentNullException(nameof(command));
-
-            return From(command.GetType());
-        }
+        return info;
     }
 }

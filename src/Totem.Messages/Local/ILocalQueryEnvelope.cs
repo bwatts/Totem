@@ -1,8 +1,9 @@
-namespace Totem.Local
+using Totem.Core;
+
+namespace Totem.Local;
+
+public interface ILocalQueryEnvelope : ILocalMessageEnvelope, IQueryEnvelope
 {
-    public interface ILocalQueryEnvelope : ILocalMessageEnvelope
-    {
-        new ILocalQuery Message { get; }
-        new LocalQueryInfo Info { get; }
-    }
+    new ILocalQuery Message { get; }
+    new LocalQueryInfo Info { get; }
 }

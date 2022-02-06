@@ -4,62 +4,71 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Totem.Core;
-using Totem.Routes;
 
-namespace Totem.Workflows
+namespace Totem.Workflows;
+
+public class WorkflowPipeline : IWorkflowPipeline
 {
-    public class WorkflowPipeline : IWorkflowPipeline
+    readonly ILogger _logger;
+    readonly IReadOnlyList<IWorkflowMiddleware> _steps;
+    readonly IWorkflowContextFactory _contextFactory;
+
+    public WorkflowPipeline(
+        Id id,
+        ILogger<WorkflowPipeline> logger,
+        IReadOnlyList<IWorkflowMiddleware> steps,
+        IWorkflowContextFactory contextFactory)
     {
-        readonly ILogger _logger;
-        readonly IReadOnlyList<IRouteMiddleware> _steps;
-        readonly IRouteContextFactory _contextFactory;
-        
-        public WorkflowPipeline(
-            Id id,
-            ILogger<WorkflowPipeline> logger,
-            IReadOnlyList<IRouteMiddleware> steps,
-            IRouteContextFactory contextFactory)
+        Id = id ?? throw new ArgumentNullException(nameof(id));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _steps = steps ?? throw new ArgumentNullException(nameof(steps));
+        _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
+    }
+
+    public Id Id { get; }
+
+    public async Task<IWorkflowContext<IEvent>> RunAsync(IEventContext<IEvent> eventContext, ItemKey workflowKey, CancellationToken cancellationToken)
+    {
+        if(eventContext is null)
+            throw new ArgumentNullException(nameof(eventContext));
+
+        if(workflowKey is null)
+            throw new ArgumentNullException(nameof(workflowKey));
+
+        var envelope = eventContext.Envelope;
+
+        _logger.LogTrace(
+            "[workflow] Run pipeline {@PipelineId} for workflow {@WorkflowType}.{@WorkflowId} and event {@EventType}.{@EventId} from {@TopicType}.{@TopicId}@{TopicPosition}",
+            Id,
+            workflowKey.DeclaredType,
+            workflowKey.Id,
+            envelope.MessageKey.Id,
+            envelope.MessageKey.DeclaredType,
+            envelope.TopicPosition.Key.DeclaredType,
+            envelope.TopicPosition.Key.Id,
+            envelope.TopicPosition.Index);
+
+        var context = _contextFactory.Create(Id, eventContext, workflowKey);
+
+        await RunStepAsync(0);
+
+        return context;
+
+        async Task RunStepAsync(int index)
         {
-            Id = id ?? throw new ArgumentNullException(nameof(id));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _steps = steps ?? throw new ArgumentNullException(nameof(steps));
-            _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
-        }
-
-        public Id Id { get; }
-
-        public async Task<IRouteContext<IEvent>> RunAsync(IEventEnvelope envelope, IRouteAddress address, CancellationToken cancellationToken)
-        {
-            if(envelope == null)
-                throw new ArgumentNullException(nameof(envelope));
-
-            if(address == null)
-                throw new ArgumentNullException(nameof(address));
-
-            _logger.LogTrace("[workflow] Run pipeline {@PipelineId} for {@RouteType}.{@RouteId} and event {@EventType}.{@EventId} from {@TimelineType}.{@TimelineId}@{TimelineVersion}", Id, address.RouteType, address.RouteId, envelope.Info.MessageType, envelope.MessageId, envelope.TimelineType, envelope.TimelineId, envelope.TimelineVersion);
-
-            var context = _contextFactory.Create(Id, envelope, address);
-
-            await RunStepAsync(0);
-
-            return context;
-
-            async Task RunStepAsync(int index)
+            if(cancellationToken.IsCancellationRequested)
             {
-                if(cancellationToken.IsCancellationRequested)
-                {
-                    _logger.LogTrace("[workflow] Pipeline {@PipelineId} cancelled", Id);
-                    return;
-                }
-
-                if(index >= _steps.Count)
-                {
-                    _logger.LogTrace("[workflow] Pipeline {@PipelineId} complete", Id);
-                    return;
-                }
-
-                await _steps[index].InvokeAsync(context!, () => RunStepAsync(index + 1), cancellationToken);
+                _logger.LogTrace("[workflow] Pipeline {@PipelineId} for workflow {@WorkflowType}.{@WorkflowId} cancelled", Id, workflowKey.DeclaredType, workflowKey.Id);
+                return;
             }
+
+            if(index >= _steps.Count)
+            {
+                _logger.LogTrace("[workflow] Pipeline {@PipelineId} for workflow {@WorkflowType}.{@WorkflowId} complete", Id, workflowKey.DeclaredType, workflowKey.Id);
+                return;
+            }
+
+            await _steps[index].InvokeAsync(context!, () => RunStepAsync(index + 1), cancellationToken);
         }
     }
 }

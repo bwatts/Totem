@@ -1,10 +1,9 @@
-namespace Totem.Files
-{
-    public interface IFileQuery
-    {
-        string Root { get; }
-        string? Prefix { get; }
+namespace Totem.Files;
 
-        bool IncludeKey(string key);
-    }
+public interface IFileQuery
+{
+    string Root { get; }
+    string? Prefix { get; }
+
+    bool IncludeKey(string key);
 }

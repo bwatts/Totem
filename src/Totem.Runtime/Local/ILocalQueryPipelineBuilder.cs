@@ -1,12 +1,11 @@
-namespace Totem.Local
+namespace Totem.Local;
+
+public interface ILocalQueryPipelineBuilder
 {
-    public interface ILocalQueryPipelineBuilder
-    {
-        Id PipelineId { get; set; }
+    Id PipelineId { get; set; }
 
-        ILocalQueryPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default)
-            where TMiddleware : ILocalQueryMiddleware;
+    ILocalQueryPipelineBuilder Use<TMiddleware>(TMiddleware? middleware = default)
+        where TMiddleware : ILocalQueryMiddleware;
 
-        ILocalQueryPipeline Build();
-    }
+    ILocalQueryPipeline Build();
 }

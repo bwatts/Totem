@@ -1,19 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+      <LangVersion>10</LangVersion>
     <RootNamespace>Dream</RootNamespace>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
-    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+    <Compile Remove="_OLD\**" />
+    <EmbeddedResource Remove="_OLD\**" />
+    <None Remove="_OLD\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+    <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
+    <PackageReference Include="System.Linq.Async" Version="5.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Totem.Client\Totem.Client.csproj" />
     <ProjectReference Include="..\..\..\..\src\Totem.Runtime\Totem.Runtime.csproj" />
     <ProjectReference Include="..\Dream.Messages\Dream.Messages.csproj" />
   </ItemGroup>

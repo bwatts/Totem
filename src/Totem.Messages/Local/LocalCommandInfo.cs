@@ -1,59 +1,44 @@
 using System;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Totem.Core;
 
-namespace Totem.Local
+namespace Totem.Local;
+
+public class LocalCommandInfo : CommandInfo, ILocalMessageInfo
 {
-    public class LocalCommandInfo : LocalMessageInfo
+    static readonly MessageInfoCache<LocalCommandInfo> _cache = new();
+
+    LocalCommandInfo(Type declaredType) : base(declaredType)
+    { }
+
+    public static bool TryFrom(Type type, [NotNullWhen(true)] out LocalCommandInfo? info)
     {
-        static readonly ConcurrentDictionary<Type, LocalCommandInfo> _infoByType = new();
+        if(type is null)
+            throw new ArgumentNullException(nameof(type));
 
-        LocalCommandInfo(Type messageType) : base(messageType)
-        { }
-
-        public static bool TryFrom(Type type, [MaybeNullWhen(false)] out LocalCommandInfo info)
+        if(_cache.TryGetValue(type, out info))
         {
-            if(_infoByType.TryGetValue(type, out info))
-            {
-                return true;
-            }
-
-            if(type != null && type.IsConcreteClass() && typeof(ILocalCommand).IsAssignableFrom(type))
-            {
-                info = new LocalCommandInfo(type);
-
-                _infoByType[type] = info;
-
-                return true;
-            }
-
-            info = null;
-            return false;
+            return true;
         }
 
-        public static bool TryFrom(ILocalCommand command, [MaybeNullWhen(false)] out LocalCommandInfo info)
+        if(type is not null && type.IsConcreteClass() && typeof(ILocalCommand).IsAssignableFrom(type))
         {
-            if(command == null)
-                throw new ArgumentNullException(nameof(command));
+            info = new LocalCommandInfo(type);
 
-            return TryFrom(command.GetType(), out info);
+            _cache.Add(info);
+
+            return true;
         }
 
-        public static LocalCommandInfo From(Type type)
-        {
-            if(!TryFrom(type, out var info))
-                throw new ArgumentException($"Expected command {type} to be a public, non-abstract, non-or-closed-generic class implementing {typeof(ILocalCommand)}", nameof(type));
+        info = null;
+        return false;
+    }
 
-            return info;
-        }
+    public static LocalCommandInfo From(Type type)
+    {
+        if(!TryFrom(type, out var info))
+            throw new ArgumentException($"Expected command {type} to be a public, non-abstract, non-or-closed-generic class implementing {typeof(ILocalCommand)}", nameof(type));
 
-        public static LocalCommandInfo From(ILocalCommand command)
-        {
-            if(command == null)
-                throw new ArgumentNullException(nameof(command));
-
-            return From(command.GetType());
-        }
+        return info;
     }
 }

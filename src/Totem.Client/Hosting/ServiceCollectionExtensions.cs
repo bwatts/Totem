@@ -7,47 +7,46 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Totem.Core;
 using Totem.Http;
 
-namespace Totem.Hosting
+namespace Totem.Hosting;
+
+public static class ServiceCollectionExtensions
 {
-    public static class ServiceCollectionExtensions
+    public const string BaseAddressConfigurationKey = "Totem:Client:BaseAddress";
+
+    public static ITotemClientBuilder AddTotemHttpClient(this IServiceCollection services, Uri? baseAddress = null, Action<JsonSerializerOptions>? configureJson = null)
     {
-        public const string BaseAddressConfigurationKey = "Totem:Client:BaseAddress";
+        if(services is null)
+            throw new ArgumentNullException(nameof(services));
 
-        public static ITotemClientBuilder AddTotemClient(this IServiceCollection services, Uri? baseAddress = null, Action<JsonSerializerOptions>? configureJson = null)
+        services.TryAddSingleton<IClock, UtcClock>();
+        services.AddSingleton<ITotemHttpClient, TotemHttpClient>();
+        services.AddHttpClient<IMessageClient, MessageClient>((provider, client) =>
         {
-            if(services == null)
-                throw new ArgumentNullException(nameof(services));
-
-            services.TryAddSingleton<IClock, SystemClock>();
-            services.AddSingleton<ITotemClient, TotemClient>();
-            services.AddHttpClient<IMessageClient, MessageClient>((provider, client) =>
+            if(baseAddress is not null)
             {
-                if(baseAddress != null)
-                {
-                    client.BaseAddress = baseAddress;
-                    return;
-                }
+                client.BaseAddress = baseAddress;
+                return;
+            }
 
-                var configuration = provider.GetRequiredService<IConfiguration>();
-                var configuredBaseAddress = configuration[BaseAddressConfigurationKey];
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            var configuredBaseAddress = configuration[BaseAddressConfigurationKey];
 
-                if(string.IsNullOrWhiteSpace(configuredBaseAddress) || !Uri.TryCreate(configuredBaseAddress, UriKind.Absolute, out var uri))
-                    throw new InvalidOperationException($"Expected an absolute URI for configuration key \"{BaseAddressConfigurationKey}\"");
+            if(string.IsNullOrWhiteSpace(configuredBaseAddress) || !Uri.TryCreate(configuredBaseAddress, UriKind.Absolute, out var uri))
+                throw new InvalidOperationException($"Expected an absolute URI for configuration key \"{BaseAddressConfigurationKey}\"");
 
-                client.BaseAddress = uri;
-            });
+            client.BaseAddress = uri;
+        });
 
-            var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-            {
-                WriteIndented = true,
-                Converters = { new JsonStringEnumConverter() }
-            };
+        var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            WriteIndented = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
 
-            configureJson?.Invoke(jsonOptions);
+        configureJson?.Invoke(jsonOptions);
 
-            services.AddSingleton(jsonOptions);
+        services.AddSingleton(jsonOptions);
 
-            return new TotemClientBuilder(services);
-        }
+        return new TotemClientBuilder(services);
     }
 }
