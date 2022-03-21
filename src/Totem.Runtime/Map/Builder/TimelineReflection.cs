@@ -4,11 +4,11 @@ namespace Totem.Map.Builder;
 
 internal static class TimelineReflection
 {
-    internal static MapCheck<GivenMethod> CheckGiven(this RuntimeMap map, MethodInfo method)
+    internal static MapCheck<GivenMethod> CheckTimelineGiven(this RuntimeMap map, MethodInfo method)
     {
-        if(!method.IsPublic)
+        if(!method.IsFamily)
         {
-            return new(method, "public accessibility");
+            return new(method, "protected accessibility");
         }
 
         if(method.IsStatic)
@@ -53,12 +53,9 @@ internal static class TimelineReflection
 
         if(typeof(IEvent).IsAssignableFrom(parameterType))
         {
-            if(map.Events.TryGet(parameterType, out var knownType) && knownType is EventType e)
-            {
-                return new(parameter, new GivenMethodParameter(parameter, e));
-            }
+            var e = map.GetOrAddEvent(parameterType);
 
-            return new(parameter, $"a known event of type {parameterType}");
+            return new(parameter, new GivenMethodParameter(parameter, e));
         }
 
         return new(parameter, $"a parameter assignable to {typeof(IEvent)}");

@@ -34,15 +34,12 @@ public class ReportPipeline : IReportPipeline
         var envelope = eventContext.Envelope;
 
         _logger.LogTrace(
-            "[report] Run pipeline {@PipelineId} for report {@ReportType}.{@ReportId} and event {@EventType}.{@EventId} from {@TopicType}.{@TopicId}@{TopicPosition}",
+            "[report] Run pipeline {@PipelineId} for report {@ReportType}.{@ReportId} and event {@EventType}.{@EventId}",
             Id,
             reportKey.DeclaredType,
             reportKey.Id,
             envelope.MessageKey.DeclaredType,
-            envelope.MessageKey.Id,
-            envelope.TopicPosition.Key.DeclaredType,
-            envelope.TopicPosition.Key.Id,
-            envelope.TopicPosition.Index);
+            envelope.MessageKey.Id);
 
         var context = _contextFactory.Create(Id, eventContext, reportKey);
 

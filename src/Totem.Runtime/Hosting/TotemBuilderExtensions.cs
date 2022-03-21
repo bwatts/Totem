@@ -67,11 +67,6 @@ public static class TotemBuilderExtensions
                 return pipelineBuilder.Build();
             });
 
-        foreach(var workflow in builder.Services.GetRuntimeMap().Workflows)
-        {
-            builder.Services.AddTransient(workflow.DeclaredType);
-        }
-
         return builder;
     }
 
@@ -96,11 +91,6 @@ public static class TotemBuilderExtensions
 
                 return pipelineBuilder.Build();
             });
-
-        foreach(var report in builder.Services.GetRuntimeMap().Reports)
-        {
-            builder.Services.AddTransient(report.DeclaredType);
-        }
 
         return builder;
     }

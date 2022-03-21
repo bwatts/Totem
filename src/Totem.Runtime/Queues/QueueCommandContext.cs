@@ -12,5 +12,5 @@ public class QueueCommandContext<TCommand> : CommandContext<TCommand>, IQueueCom
     public new IQueueCommandEnvelope Envelope => (IQueueCommandEnvelope) base.Envelope;
     public new QueueCommandInfo Info => (QueueCommandInfo) base.Info;
     public override Type InterfaceType => typeof(IQueueCommandContext<TCommand>);
-    public Text QueueName => Info.QueueName;
+    public string QueueName => Info.QueueName;
 }

@@ -33,61 +33,54 @@ internal class MapSummaryBuilder
         {
             var commandTypeId = GetTypeId(command);
             var commandHref = $"/commands/{commandTypeId}";
-
             var httpContext = null as HttpCommandContextSummary;
             var localContext = null as LocalCommandContextSummary;
             var queueContext = null as QueueCommandContextSummary;
 
-            foreach(var context in command.Contexts)
+            if(command.HttpContext is not null)
             {
-                if(context.Info is HttpCommandInfo httpInfo)
-                {
-                    var contextHref = $"{commandHref}/contexts/http";
+                var contextHref = $"{commandHref}/contexts/http";
+                var httpInfo = (HttpCommandInfo) command.HttpContext.Info;
 
-                    httpContext = new HttpCommandContextSummary(
-                        contextHref,
-                        GetTypeId(context.ContextType),
-                        BuildHttpRequest(contextHref, httpInfo.Request),
-                        BuildRoute(contextHref, context.Route),
-                        BuildWhen(contextHref, context.When));
-                }
-                else if(context.Info is LocalCommandInfo localInfo)
-                {
-                    var contextHref = $"{commandHref}/contexts/local";
-
-                    localContext = new LocalCommandContextSummary(
-                        contextHref,
-                        GetTypeId(context.ContextType),
-                        BuildRoute(contextHref, context.Route),
-                        BuildWhen(contextHref, context.When));
-                }
-                else if(context.Info is QueueCommandInfo queueInfo)
-                {
-                    var contextHref = $"{commandHref}/contexts/queue";
-
-                    queueContext = new QueueCommandContextSummary(
-                        contextHref,
-                        GetTypeId(context.ContextType),
-                        queueInfo.QueueName,
-                        BuildRoute(contextHref, context.Route),
-                        BuildWhen(contextHref, context.When));
-                }
-                else
-                {
-                    throw new NotSupportedException($"Command info type {context.Info.DeclaredType} is not supported");
-                }
+                httpContext = new HttpCommandContextSummary(
+                    contextHref,
+                    GetTypeId(command.HttpContext.InterfaceType),
+                    BuildHttpRequest(contextHref, httpInfo.Request),
+                    BuildWhen(contextHref, command.HttpContext.When));
             }
+            else if(command.LocalContext is not null)
+            {
+                var contextHref = $"{commandHref}/contexts/local";
 
-            var anyContextHref = $"{commandHref}/any";
+                localContext = new LocalCommandContextSummary(
+                    contextHref,
+                    GetTypeId(command.LocalContext.InterfaceType),
+                    BuildWhen(contextHref, command.LocalContext.When));
+            }
+            else if(command.QueueContext is not null)
+            {
+                var contextHref = $"{commandHref}/contexts/queue";
+                var queueInfo = (QueueCommandInfo) command.QueueContext.Info;
+
+                queueContext = new QueueCommandContextSummary(
+                    contextHref,
+                    GetTypeId(command.QueueContext.InterfaceType),
+                    queueInfo.QueueName,
+                    BuildWhen(contextHref, command.QueueContext.When));
+            }
+            else
+            {
+                throw new InvalidOperationException($"Expected command {command} to have at least one context (HTTP/local/queue)");
+            }
 
             yield return new CommandSummary(
                 commandHref,
                 commandTypeId,
+                BuildRoute(commandHref, command.Route),
+                BuildWhen($"{commandHref}/when-without-context", command.WhenWithoutContext),
                 httpContext,
                 localContext,
-                queueContext,
-                BuildRoute(anyContextHref, command.AnyContextRoute),
-                BuildWhen(anyContextHref, command.AnyContextWhen));
+                queueContext);
         }
     }
 
@@ -213,11 +206,11 @@ internal class MapSummaryBuilder
             GetTypeId(parameter.Message));
     }
 
-    TopicRouteSummary? BuildRoute(string contextHref, TopicRouteMethod? route)
+    TopicRouteSummary BuildRoute(string baseHref, TopicRouteMethod route)
     {
-        var href = $"{contextHref}/route";
+        var href = $"{baseHref}/route";
 
-        return route is null ? null : new(href, route.Info.Name, BuildParameter(href, route.Parameter));
+        return new(href, route.Info.Name, BuildParameter(href, route.Parameter));
     }
 
     ObserverRouteSummary BuildRoute(string contextHref, ObserverRouteMethod route)
@@ -228,7 +221,6 @@ internal class MapSummaryBuilder
             href,
             route.Info.Name,
             BuildParameter(href, route.Parameter),
-            route.Parameter.HasContext,
             route.ReturnsMany);
     }
 

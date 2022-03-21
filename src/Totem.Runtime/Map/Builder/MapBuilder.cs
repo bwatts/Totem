@@ -1,31 +1,21 @@
 using Totem.Core;
-using Totem.Http;
-using Totem.Local;
-using Totem.Queues;
 
 namespace Totem.Map.Builder;
 
 internal class MapBuilder
 {
+    readonly RuntimeMap _map;
     readonly IEnumerable<Type> _types;
-    readonly RuntimeMap _map = new();
 
-    internal MapBuilder(IEnumerable<Type> types) =>
-        _types = types;
-
-    internal RuntimeMap Build()
+    internal MapBuilder(RuntimeMap map, IEnumerable<Type> types)
     {
-        var nonMessages = new List<Type>();
+        _map = map;
+        _types = types;
+    }
 
+    internal void Build()
+    {
         foreach(var type in _types)
-        {
-            if(!TryAdd(type, TryAddCommandContexts, TryAddQueryContexts, TryAddEvent))
-            {
-                nonMessages.Add(type);
-            }
-        }
-
-        foreach(var type in nonMessages)
         {
             TryAdd(
                 type,
@@ -36,8 +26,6 @@ internal class MapBuilder
                 type => _map.TryAddTopic(type),
                 type => _map.TryAddWorkflow(type));
         }
-
-        return _map;
     }
 
     static bool TryAdd(Type type, params Func<Type, bool>[] tryAdds)
@@ -53,101 +41,23 @@ internal class MapBuilder
         return false;
     }
 
-    bool TryAddCommandContexts(Type declaredType)
-    {
-        var added = false;
-
-        if(HttpCommandInfo.TryFrom(declaredType, out var httpInfo))
-        {
-            AddCommand(declaredType, httpInfo, typeof(IHttpCommandContext<>));
-            added = true;
-        }
-
-        if(LocalCommandInfo.TryFrom(declaredType, out var localInfo))
-        {
-            AddCommand(declaredType, localInfo, typeof(ILocalCommandContext<>));
-            added = true;
-        }
-
-        if(QueueCommandInfo.TryFrom(declaredType, out var queueInfo))
-        {
-            AddCommand(declaredType, queueInfo, typeof(IQueueCommandContext<>));
-            added = true;
-        }
-
-        return added;
-    }
-
-    bool TryAddQueryContexts(Type declaredType)
-    {
-        var added = false;
-
-        if(HttpQueryInfo.TryFrom(declaredType, out var httpInfo))
-        {
-            AddQuery(declaredType, httpInfo, typeof(IHttpQueryContext<>));
-            added = true;
-        }
-
-        if(LocalQueryInfo.TryFrom(declaredType, out var localInfo))
-        {
-            AddQuery(declaredType, localInfo, typeof(ILocalQueryContext<>));
-            added = true;
-        }
-
-        return added;
-    }
-
-    bool TryAddEvent(Type declaredType)
-    {
-        if(EventInfo.TryFrom(declaredType, out var info))
-        {
-            _map.Events.Add(new EventType(info));
-            return true;
-        }
-
-        return false;
-    }
-
-    void AddCommand(Type declaredType, CommandInfo info, Type contextType)
-    {
-        if(!_map.Commands.TryGet(declaredType, out var command))
-        {
-            command = new(declaredType);
-
-            _map.Commands.Add(command);
-        }
-
-        command.Contexts.Add(new TopicCommandContext(contextType.MakeGenericType(declaredType), info));
-    }
-
-    void AddQuery(Type declaredType, QueryInfo info, Type contextType)
-    {
-        if(!_map.Queries.TryGet(declaredType, out var query))
-        {
-            query = new(declaredType);
-
-            _map.Queries.Add(query);
-        }
-
-        query.Contexts.Add(new QueryContext(contextType.MakeGenericType(declaredType), info));
-    }
-
     bool TryAddEventHandler(Type type)
     {
         var eventType = type.GetImplementedInterfaceGenericArguments(typeof(IEventHandler<>)).FirstOrDefault();
 
-        if(eventType is not null && _map.Events.TryGet(eventType, out var e))
+        if(eventType is null)
         {
-            var handler = new EventHandlerType(type, e, typeof(IEventHandler<>).MakeGenericType(type));
-
-            _map.EventHandlers.Add(handler);
-
-            e.Handlers.Add(handler);
-
-            return true;
+            return false;
         }
 
-        return false;
+        var e = _map.GetOrAddEvent(eventType);
+        var handlerType = typeof(IEventHandler<>).MakeGenericType(type);
+        var handler = new EventHandlerType(type, e, handlerType);
+
+        _map.EventHandlers.Add(handler);
+        e.Handlers.Add(handler);
+
+        return true;
     }
 
     bool TryAddHttpQueryHandler(Type type) =>
@@ -160,11 +70,12 @@ internal class MapBuilder
     {
         var queryType = type.GetImplementedInterfaceGenericArguments(handlerInterface).FirstOrDefault();
 
-        if(queryType is null || !_map.Queries.TryGet(queryType, out var query))
+        if(queryType is null)
         {
             return false;
         }
 
+        var query = _map.GetOrAddQuery(queryType);
         var contextType = contextInterface.MakeGenericType(queryType);
 
         if(query.Contexts.TryGet(contextType, out var context))

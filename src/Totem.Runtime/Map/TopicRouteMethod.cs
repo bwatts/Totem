@@ -4,21 +4,23 @@ using Totem.Core;
 
 namespace Totem.Map;
 
-public class TopicRouteMethod : TopicMethod
+public class TopicRouteMethod : TimelineMethod
 {
-    readonly Func<ICommandContext<ICommandMessage>, Id> _call;
+    readonly Func<ICommandMessage, Id> _call;
 
-    internal TopicRouteMethod(MethodInfo info, TopicMethodParameter parameter) : base(info, parameter)
+    internal TopicRouteMethod(MethodInfo info, TopicRouteParameter parameter) : base(info, parameter)
     {
-        // context => info(<parameter>)
+        // command => info(<parameter>)
 
-        var contextParameter = Expression.Parameter(typeof(ICommandContext<ICommandMessage>), "context");
-        var call = Expression.Call(info, parameter.ToArgument(contextParameter));
-        var lambda = Expression.Lambda<Func<ICommandContext<ICommandMessage>, Id>>(call, contextParameter);
+        var commandParameter = Expression.Parameter(typeof(ICommandMessage), "command");
+        var call = Expression.Call(info, parameter.ToExpression(commandParameter));
+        var lambda = Expression.Lambda<Func<ICommandMessage, Id>>(call, commandParameter);
 
         _call = lambda.Compile();
     }
 
-    internal ItemKey Call(ICommandContext<ICommandMessage> context) =>
-        new(Info.DeclaringType!, _call(context));
+    public new TopicRouteParameter Parameter => (TopicRouteParameter) base.Parameter;
+
+    internal ItemKey Call(ICommandMessage command) =>
+        new(Info.DeclaringType!, _call(command));
 }

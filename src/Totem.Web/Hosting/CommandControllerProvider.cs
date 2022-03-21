@@ -1,7 +1,6 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Totem.Http;
 using Totem.Map;
 
 namespace Totem.Hosting;
@@ -23,8 +22,7 @@ public class CommandControllerProvider : IApplicationFeatureProvider<ControllerF
 
         foreach(var controllerType in
             from command in _map.Commands
-            from context in command.Contexts
-            where context.Info is HttpCommandInfo
+            where command.HttpContext is not null
             select typeof(HttpCommandController<>).MakeGenericType(command.DeclaredType))
         {
             feature.Controllers.Add(controllerType.GetTypeInfo());

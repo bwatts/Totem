@@ -10,10 +10,10 @@ public class QueueCommandInfo : CommandInfo
 
     static readonly MessageInfoCache<QueueCommandInfo> _cache = new();
 
-    QueueCommandInfo(Type declaredType, Text queueName) : base(declaredType) =>
+    QueueCommandInfo(Type declaredType, string queueName) : base(declaredType) =>
         QueueName = queueName;
 
-    public Text QueueName { get; }
+    public string QueueName { get; }
 
     public static bool TryFrom(Type type, [NotNullWhen(true)] out QueueCommandInfo? info)
     {
@@ -31,7 +31,7 @@ public class QueueCommandInfo : CommandInfo
                 queueName = DefaultQueueName;
             }
 
-            info = new QueueCommandInfo(type, queueName.ToText());
+            info = new QueueCommandInfo(type, queueName);
 
             _cache.Add(info);
 

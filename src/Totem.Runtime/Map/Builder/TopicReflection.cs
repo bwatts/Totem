@@ -1,5 +1,8 @@
 using System.Reflection;
 using Totem.Core;
+using Totem.Http;
+using Totem.Local;
+using Totem.Queues;
 using Totem.Topics;
 
 namespace Totem.Map.Builder;
@@ -27,14 +30,14 @@ internal static class TopicReflection
 
     static MapCheck<TopicType> CheckTopic(this RuntimeMap map, Type declaredType)
     {
+        var topic = new TopicType(declaredType);
         var routes = new List<TopicRouteMethod>();
-        var givens = new List<GivenMethod>();
         var whens = new List<TopicWhenMethod>();
         var details = new List<IMapCheck>();
 
         foreach(var method in declaredType.GetRuntimeMethods())
         {
-            if(method.IsConstructor)
+            if(method.DeclaringType?.Assembly == Assembly.GetExecutingAssembly())
             {
                 continue;
             }
@@ -49,13 +52,14 @@ internal static class TopicReflection
                 continue;
             }
 
-            var givenResult = map.CheckGiven(method);
+            var givenResult = map.CheckTimelineGiven(method);
 
             details.Add(givenResult);
 
             if(givenResult)
             {
-                givens.Add(givenResult);
+                topic.Givens.Add(givenResult);
+                continue;
             }
 
             var whenResult = map.CheckTopicWhen(method);
@@ -72,93 +76,70 @@ internal static class TopicReflection
             from command in routes.Select(x => x.Parameter.Message).Union(whens.Select(x => x.Parameter.Message))
             join route in routes on command equals route.Parameter.Message into commandRoutes
             join when in whens on command equals when.Parameter.Message into commandWhens
-            select (command, commandRoutes.ToList(), commandWhens.ToList()))
+            select (command, commandRoutes.FirstOrDefault(), commandWhens.ToList()))
             .ToList();
 
         if(commandTypes.Count == 0)
         {
-            return new(declaredType, $"Expected {TimelineMethod.Route}/{TimelineMethod.When} methods for at least one command", details);
+            return new(declaredType, $"{TimelineMethod.Route}/{TimelineMethod.When} methods for at least one command", details);
         }
 
-        var topic = new TopicType(declaredType);
-
-        foreach(var (commandType, commandRoutes, commandWhens) in commandTypes)
+        foreach(var (commandType, commandRoute, commandWhens) in commandTypes)
         {
-            var anyContextRoute = null as TopicRouteMethod;
-            var anyContextWhen = null as TopicWhenMethod;
-            var routesByContextType = new Dictionary<Type, TopicRouteMethod>();
-            var whensByContextType = new Dictionary<Type, TopicWhenMethod>();
-
-            foreach(var route in commandRoutes)
+            if(commandRoute is null)
             {
-                if(route.Parameter.ContextType is null)
-                {
-                    anyContextRoute = route;
-                }
-                else
-                {
-                    routesByContextType[route.Parameter.ContextType] = route;
-                }
+                return new(declaredType, $"a {TimelineMethod.Route} method for command {commandType}", details);
             }
+
+            commandType.Route = commandRoute;
 
             foreach(var when in commandWhens)
             {
                 if(when.Parameter.ContextType is null)
                 {
-                    anyContextWhen = when;
+                    commandType.WhenWithoutContext = when;
+                    continue;
                 }
-                else
+
+                var httpContextResult = map.CheckHttpContext(when);
+
+                details.Add(httpContextResult);
+
+                if(httpContextResult)
                 {
-                    whensByContextType[when.Parameter.ContextType] = when;
+                    commandType.HttpContext = httpContextResult;
+                    continue;
                 }
-            }
 
-            if(anyContextRoute is null && routesByContextType.Count == 0)
-            {
-                return new(declaredType, $"Expected at least one {TimelineMethod.Route} method", details);
-            }
+                var localContextResult = map.CheckLocalContext(when);
 
-            if(anyContextWhen is null && whensByContextType.Count == 0)
-            {
-                return new(declaredType, $"Expected at least one {TimelineMethod.When} method", details);
-            }
+                details.Add(localContextResult);
 
-            if(anyContextRoute is null
-                && anyContextWhen is null
-                && (routesByContextType.Count != whensByContextType.Count || routesByContextType.Keys.Except(whensByContextType.Keys).Any()))
-            {
-                return new(declaredType, $"Expected the same set of context types between {TimelineMethod.Route} and {TimelineMethod.When} methods (or overloads without a context type)", details);
-            }
-
-            commandType.AnyContextRoute = anyContextRoute;
-            commandType.AnyContextWhen = anyContextWhen;
-
-            foreach(var contextType in routesByContextType.Keys)
-            {
-                if(!commandType.Contexts.TryGet(contextType, out var context))
+                if(localContextResult)
                 {
-                    return new(declaredType, $"Expected command {commandType} to have context {contextType}", details);
+                    commandType.LocalContext = localContextResult;
+                    continue;
                 }
 
-                context.Route = routesByContextType[contextType];
+                var queueContextResult = map.CheckQueueContext(when);
+
+                details.Add(queueContextResult);
+
+                if(queueContextResult)
+                {
+                    commandType.QueueContext = queueContextResult;
+                }
             }
 
-            foreach(var contextType in whensByContextType.Keys)
+            if(commandType.WhenWithoutContext is null
+                && commandType.HttpContext is null
+                && commandType.LocalContext is null
+                && commandType.QueueContext is null)
             {
-                if(!commandType.Contexts.TryGet(contextType, out var context))
-                {
-                    return new(declaredType, $"Expected command {commandType} to have context {contextType}", details);
-                }
-
-                context.When = whensByContextType[contextType];
+                return new(declaredType, $"at least one {TimelineMethod.When} method", details);
             }
 
             topic.Commands.Add(commandType);
-        }
-
-        foreach(var given in givens)
-        {
-            topic.Givens.Add(given);
         }
 
         return new(declaredType, topic, details);
@@ -188,7 +169,7 @@ internal static class TopicReflection
             return new(method, "a single parameter");
         }
 
-        var parameterResult = map.CheckTopicParameter(parameters[0]);
+        var parameterResult = map.CheckTopicRouteParameter(parameters[0]);
 
         if(!parameterResult)
         {
@@ -209,9 +190,9 @@ internal static class TopicReflection
 
     static MapCheck<TopicWhenMethod> CheckTopicWhen(this RuntimeMap map, MethodInfo method)
     {
-        if(!method.IsPublic)
+        if(!method.IsFamily)
         {
-            return new(method, "public accessibility");
+            return new(method, "protected accessibility");
         }
 
         if(method.IsStatic)
@@ -257,7 +238,7 @@ internal static class TopicReflection
             return new(method, $"Expected a return type of {typeof(void)} or {typeof(Task)}");
         }
 
-        var parameterResult = map.CheckTopicParameter(parameters[0]);
+        var parameterResult = map.CheckTopicWhenParameter(parameters[0]);
 
         if(!parameterResult)
         {
@@ -276,26 +257,94 @@ internal static class TopicReflection
         return new(method, new TopicWhenMethod(method, parameterResult, isAsync, hasCancellationToken), parameterResult);
     }
 
-    static MapCheck<TopicMethodParameter> CheckTopicParameter(this RuntimeMap map, ParameterInfo parameter)
+    static MapCheck<TopicRouteParameter> CheckTopicRouteParameter(this RuntimeMap map, ParameterInfo parameter)
     {
         var parameterType = parameter.ParameterType;
 
         if(typeof(ICommandMessage).IsAssignableFrom(parameterType))
         {
-            return map.Commands.TryGet(parameterType, out var command)
-                ? new(parameter, new TopicMethodParameter(parameter, command, contextType: null))
-                : new(parameter, $"a known command of type {parameterType}");
+            var command = map.GetOrAddCommand(parameterType);
+
+            return new(parameter, new TopicRouteParameter(parameter, command));
+        }
+
+        return new(parameter, $"a parameter assignable to {typeof(ICommandMessage)}");
+    }
+
+    static MapCheck<TopicWhenParameter> CheckTopicWhenParameter(this RuntimeMap map, ParameterInfo parameter)
+    {
+        var parameterType = parameter.ParameterType;
+
+        if(typeof(ICommandMessage).IsAssignableFrom(parameterType))
+        {
+            var command = map.GetOrAddCommand(parameterType);
+
+            return new(parameter, new TopicWhenParameter(parameter, command, contextType: null));
         }
 
         var commandType = parameterType.GetImplementedInterfaceGenericArguments(typeof(ICommandContext<>)).SingleOrDefault();
 
         if(commandType is not null)
         {
-            return map.Commands.TryGet(commandType, out var command)
-                ? new(parameter, new TopicMethodParameter(parameter, command, contextType: parameterType))
-                : new(parameter, $"a known command of type {commandType}");
+            var command = map.GetOrAddCommand(commandType);
+
+            return new(parameter, new TopicWhenParameter(parameter, command, contextType: parameterType));
         }
 
         return new(parameter, $"a parameter assignable to {typeof(ICommandMessage)} or {typeof(ICommandContext<>)}");
+    }
+
+    static MapCheck<TopicWhenContext> CheckHttpContext(this RuntimeMap map, TopicWhenMethod when)
+    {
+        var commandType = when.Parameter.Message.DeclaredType;
+        var interfaceType = typeof(IHttpCommandContext<>).MakeGenericType(commandType);
+
+        if(when.Parameter.ContextType != interfaceType)
+        {
+            return new(when, $"parameter of type {interfaceType}");
+        }
+
+        if(!HttpCommandInfo.TryFrom(commandType, out var httpInfo))
+        {
+            return new(when, $"command type to implement {typeof(IHttpCommand)}");
+        }
+
+        return new(when, new TopicWhenContext(interfaceType, httpInfo, when));
+    }
+
+    static MapCheck<TopicWhenContext> CheckLocalContext(this RuntimeMap map, TopicWhenMethod when)
+    {
+        var commandType = when.Parameter.Message.DeclaredType;
+        var interfaceType = typeof(ILocalCommandContext<>).MakeGenericType(commandType);
+
+        if(when.Parameter.ContextType != interfaceType)
+        {
+            return new(when, $"parameter of type {interfaceType}");
+        }
+
+        if(!LocalCommandInfo.TryFrom(commandType, out var localInfo))
+        {
+            return new(when, $"command type to implement {typeof(ILocalCommand)}");
+        }
+
+        return new(when, new TopicWhenContext(interfaceType, localInfo, when));
+    }
+
+    static MapCheck<TopicWhenContext> CheckQueueContext(this RuntimeMap map, TopicWhenMethod when)
+    {
+        var commandType = when.Parameter.Message.DeclaredType;
+        var interfaceType = typeof(IQueueCommandContext<>).MakeGenericType(commandType);
+
+        if(when.Parameter.ContextType != interfaceType)
+        {
+            return new(when, $"parameter of type {interfaceType}");
+        }
+
+        if(!QueueCommandInfo.TryFrom(commandType, out var queueInfo))
+        {
+            return new(when, $"command type to implement {typeof(IQueueCommand)}");
+        }
+
+        return new(when, new TopicWhenContext(interfaceType, queueInfo, when));
     }
 }

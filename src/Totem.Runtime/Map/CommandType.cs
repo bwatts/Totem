@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Totem.Core;
 using Totem.Topics;
 
@@ -9,39 +8,47 @@ public class CommandType : MessageType
     internal CommandType(Type declaredType) : base(declaredType)
     { }
 
-    public TypeKeyedCollection<TopicCommandContext> Contexts { get; } = new();
-    public TopicRouteMethod? AnyContextRoute { get; internal set; }
-    public TopicWhenMethod? AnyContextWhen { get; internal set; }
+    public TopicRouteMethod Route { get; internal set; } = null!;
+    public TopicWhenMethod? WhenWithoutContext { get; internal set; }
+    public TopicWhenContext? HttpContext { get; internal set; }
+    public TopicWhenContext? LocalContext { get; internal set; }
+    public TopicWhenContext? QueueContext { get; internal set; }
 
-    internal bool TryCallRoute(ICommandContext<ICommandMessage> context, [NotNullWhen(true)] out ItemKey? topicKey)
+    internal ItemKey CallRoute(ICommandContext<ICommandMessage> context) =>
+        Route.Call(context.Command);
+
+    internal bool TryGetWhen(ICommandContext<ICommandMessage> context, [NotNullWhen(true)] out TopicWhenMethod? when)
     {
-        if(Contexts.TryGet(context.InterfaceType, out var mapContext) && mapContext.Route is not null)
+        if(HttpContext is not null && HttpContext.TryGetWhen(context, out when))
         {
-            topicKey = mapContext.Route.Call(context);
             return true;
         }
 
-        if(AnyContextRoute is not null)
+        if(LocalContext is not null && LocalContext.TryGetWhen(context, out when))
         {
-            topicKey = AnyContextRoute.Call(context);
             return true;
         }
 
-        topicKey = null;
+        if(QueueContext is not null && QueueContext.TryGetWhen(context, out when))
+        {
+            return true;
+        }
+
+        if(WhenWithoutContext is not null)
+        {
+            when = WhenWithoutContext;
+            return true;
+        }
+
+        when = null;
         return false;
     }
 
     internal async Task<bool> TryCallWhenAsync(ICommandContext<ICommandMessage> context, ITopic topic, CancellationToken cancellationToken)
     {
-        if(Contexts.TryGet(context.InterfaceType, out var mapContext) && mapContext.When is not null)
+        if(TryGetWhen(context, out var when))
         {
-            await mapContext.When.CallAsync(context, topic, cancellationToken);
-            return true;
-        }
-
-        if(AnyContextWhen is not null)
-        {
-            await AnyContextWhen.CallAsync(context, topic, cancellationToken);
+            await when.CallAsync(context, topic, cancellationToken);
             return true;
         }
 

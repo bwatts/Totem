@@ -17,9 +17,14 @@ public sealed class ItemKey : IEquatable<ItemKey>, IComparable<ItemKey>
     public bool TypeIsAssignableTo<T>() =>
         typeof(T).IsAssignableFrom(DeclaredType);
 
-    public override string ToString() => $"{DeclaredType.Name}.{Id.ToShortString()}";
-    public override int GetHashCode() => HashCode.Combine(DeclaredType, Id);
-    public override bool Equals(object? obj) => Equals(obj as ItemKey);
+    public override string ToString() =>
+        $"{DeclaredType.Name}.{Id.ToShortString()}";
+
+    public override int GetHashCode() =>
+        HashCode.Combine(DeclaredType, Id);
+
+    public override bool Equals(object? obj) =>
+        Equals(obj as ItemKey);
 
     public bool Equals(ItemKey? other) =>
         other is not null && TypeName == other.TypeName && Id == other.Id;

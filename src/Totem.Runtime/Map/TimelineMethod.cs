@@ -4,9 +4,9 @@ namespace Totem.Map;
 
 public abstract class TimelineMethod : IMapTypeKeyed
 {
-    internal const string Route = nameof(Route);
-    internal const string Given = nameof(Given);
-    internal const string When = nameof(When);
+    public const string Route = nameof(Route);
+    public const string Given = nameof(Given);
+    public const string When = nameof(When);
 
     internal TimelineMethod(MethodInfo info, TimelineMethodParameter parameter)
     {

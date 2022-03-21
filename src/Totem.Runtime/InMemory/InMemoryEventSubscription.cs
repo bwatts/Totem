@@ -28,13 +28,7 @@ public sealed class InMemoryEventSubscription : IInMemoryEventSubscription, IDis
         if(envelope is null)
             throw new ArgumentNullException(nameof(envelope));
 
-        _logger.LogTrace(
-            "[event] Publish {@EventType}.{@EventId} from {@TopicType}.{@TopicId}@{TopicIndex}",
-            envelope.MessageKey.DeclaredType,
-            envelope.MessageKey.Id,
-            envelope.TopicPosition.Key.DeclaredType,
-            envelope.TopicPosition.Key.Id,
-            envelope.TopicPosition.Index);
+        _logger.LogTrace("[event] Publish {@EventType}.{@EventId}", envelope.MessageKey.DeclaredType, envelope.MessageKey.Id);
 
         _channel.Writer.TryWrite(envelope);
     }
@@ -77,14 +71,7 @@ public sealed class InMemoryEventSubscription : IInMemoryEventSubscription, IDis
 
         if(context.HasErrors)
         {
-            _logger.LogError(
-                "[event] Pipeline {@PipelineId} failed for {@EventType}.{@EventId} from {@TopicType}.{@TopicId}@{TopicIndex}",
-                _pipeline.Id,
-                envelope.MessageKey.DeclaredType,
-                envelope.MessageKey.Id,
-                envelope.TopicPosition.Key.DeclaredType,
-                envelope.TopicPosition.Key.Id,
-                envelope.TopicPosition.Index);
+            _logger.LogError("[event] Pipeline {@PipelineId} failed for {@EventType}.{@EventId}", _pipeline.Id, envelope.MessageKey.DeclaredType, envelope.MessageKey.Id);
         }
     }
 }

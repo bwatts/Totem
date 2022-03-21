@@ -5,6 +5,7 @@ namespace Totem.Workflows;
 
 public interface IWorkflow : IObserverTimeline
 {
-    IEnumerable<IQueueCommandEnvelope> NewCommands { get; }
     bool HasNewCommands { get; }
+
+    IReadOnlyList<IQueueCommandEnvelope> TakeNewCommands();
 }

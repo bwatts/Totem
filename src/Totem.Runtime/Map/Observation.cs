@@ -1,3 +1,5 @@
+using Totem.Core;
+
 namespace Totem.Map;
 
 public class Observation : IMapTypeKeyed
@@ -20,4 +22,7 @@ public class Observation : IMapTypeKeyed
 
     public override string ToString() =>
         Event.DeclaredType.ToString();
+
+    internal IEnumerable<ItemKey> CallRoute(IEventContext<IEvent> context) =>
+        Route.Call(context.Event);
 }

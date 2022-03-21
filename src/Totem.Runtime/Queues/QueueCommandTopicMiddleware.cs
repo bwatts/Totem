@@ -17,21 +17,7 @@ public class QueueCommandTopicMiddleware : IQueueCommandMiddleware
         if(next is null)
             throw new ArgumentNullException(nameof(next));
 
-
-
-
-
-
-        // This is coming through as IQueueCommandContext but the command type only has IHttpCommandContext
-
-
-
-
-        if(!context.CommandType.TryCallRoute(context, out var topicKey))
-        {
-            context.AddError(RuntimeErrors.CommandNotHandled);
-            return;
-        }
+        var topicKey = context.CommandType.CallRoute(context);
 
         await _topicPipeline.RunAsync(context, topicKey, cancellationToken);
 

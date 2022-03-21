@@ -5,12 +5,12 @@ using Totem.Topics;
 
 namespace Totem.Map;
 
-public class TopicWhenMethod : TopicMethod
+public class TopicWhenMethod : TimelineMethod
 {
     readonly Func<ICommandContext<ICommandMessage>, ITopic, CancellationToken, Task>? _callAsync;
     readonly Action<ICommandContext<ICommandMessage>, ITopic>? _call;
 
-    internal TopicWhenMethod(MethodInfo info, TopicMethodParameter parameter, bool isAsync, bool hasCancellationToken) : base(info, parameter)
+    internal TopicWhenMethod(MethodInfo info, TopicWhenParameter parameter, bool isAsync, bool hasCancellationToken) : base(info, parameter)
     {
         IsAsync = isAsync;
         HasCancellationToken = hasCancellationToken;
@@ -20,14 +20,14 @@ public class TopicWhenMethod : TopicMethod
         var contextParameter = Expression.Parameter(typeof(ICommandContext<ICommandMessage>), "context");
         var topicParameter = Expression.Parameter(typeof(ITopic), "topic");
         var topicCast = Expression.Convert(topicParameter, info.DeclaringType!);
-        var argument = parameter.ToArgument(contextParameter);
+        var contextArgument = parameter.ToExpression(contextParameter);
         var cancellationTokenParameter = Expression.Parameter(typeof(CancellationToken), "cancellationToken");
 
         if(isAsync)
         {
             var callWhen = hasCancellationToken
-                ? Expression.Call(topicCast, info, argument, cancellationTokenParameter)
-                : Expression.Call(topicCast, info, argument);
+                ? Expression.Call(topicCast, info, contextArgument, cancellationTokenParameter)
+                : Expression.Call(topicCast, info, contextArgument);
 
             var lambda = Expression.Lambda<Func<ICommandContext<ICommandMessage>, ITopic, CancellationToken, Task>>(callWhen, contextParameter, topicParameter, cancellationTokenParameter);
 
@@ -35,7 +35,7 @@ public class TopicWhenMethod : TopicMethod
         }
         else
         {
-            var callWhen = Expression.Call(topicCast, info, argument);
+            var callWhen = Expression.Call(topicCast, info, contextArgument);
 
             var lambda = Expression.Lambda<Action<ICommandContext<ICommandMessage>, ITopic>>(callWhen, contextParameter, topicParameter);
 
@@ -43,6 +43,7 @@ public class TopicWhenMethod : TopicMethod
         }
     }
 
+    public new TopicWhenParameter Parameter => (TopicWhenParameter) base.Parameter;
     public bool IsAsync { get; }
     public bool HasCancellationToken { get; }
 

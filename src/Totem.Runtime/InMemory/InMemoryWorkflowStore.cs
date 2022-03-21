@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Microsoft.Extensions.DependencyInjection;
 using Totem.Core;
 using Totem.Map;
 using Totem.Workflows;
@@ -9,13 +8,11 @@ namespace Totem.InMemory;
 public class InMemoryWorkflowStore : IWorkflowStore
 {
     readonly ConcurrentDictionary<ItemKey, WorkflowHistory> _historiesByKey = new();
-    readonly IServiceProvider _services;
     readonly IStorage _storage;
     readonly IQueueClient _queueClient;
 
-    public InMemoryWorkflowStore(IServiceProvider services, IStorage storage, IQueueClient queueClient)
+    public InMemoryWorkflowStore(IStorage storage, IQueueClient queueClient)
     {
-        _services = services ?? throw new ArgumentNullException(nameof(services));
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
         _queueClient = queueClient ?? throw new ArgumentNullException(nameof(queueClient));
     }
@@ -25,9 +22,7 @@ public class InMemoryWorkflowStore : IWorkflowStore
         if(context is null)
             throw new ArgumentNullException(nameof(context));
 
-        var workflow = (IWorkflow) _services.GetRequiredService(context.WorkflowKey.DeclaredType);
-
-        workflow.Id = context.WorkflowKey.Id;
+        var workflow = context.WorkflowType.Create(context.WorkflowKey.Id);
 
         if(_historiesByKey.TryGetValue(context.WorkflowKey, out var history))
         {
@@ -52,7 +47,7 @@ public class InMemoryWorkflowStore : IWorkflowStore
             StorageRow.From(key.DeclaredType.FullName!, key.Id.ToString(), transaction.Workflow),
             cancellationToken);
 
-        await _queueClient.EnqueueAsync(transaction.Workflow.NewCommands, cancellationToken);
+        await _queueClient.EnqueueAsync(transaction.Workflow.TakeNewCommands(), cancellationToken);
     }
 
     public Task RollbackAsync(IWorkflowTransaction transaction, CancellationToken cancellationToken)

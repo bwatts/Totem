@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>OutermindUI</RootNamespace>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BlazorPro.BlazorSize" Version="6.1.0" />
+        <PackageReference Include="Majorsoft.Blazor.Components.Common.JsInterop" Version="1.5.0" />
+        <PackageReference Include="MatBlazor" Version="2.8.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1" />
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="4.2.0" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
+        <PackageReference Include="Serilog.Sinks.BrowserConsole" Version="1.0.0" />
+        <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\Totem.Client\Totem.Client.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Totem.WebAssembly\Totem.WebAssembly.csproj" />
+        <ProjectReference Include="..\..\..\Outermind\src\Outermind.Messages\Outermind.Messages.csproj" />
+        <ProjectReference Include="..\OutermindUI.Messages\OutermindUI.Messages.csproj" />
+        <ProjectReference Include="..\OutermindUI.Runtime\OutermindUI.Runtime.csproj" />
+    </ItemGroup>
+
+</Project>

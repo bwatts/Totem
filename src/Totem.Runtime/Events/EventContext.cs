@@ -16,5 +16,4 @@ public class EventContext<TEvent> : MessageContext, IEventContext<TEvent>
     public EventType EventType { get; }
     public Id EventId => Envelope.MessageKey.Id;
     public DateTimeOffset WhenOccurred => Envelope.WhenOccurred;
-    public TimelinePosition TopicPosition => Envelope.TopicPosition;
 }

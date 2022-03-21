@@ -13,5 +13,4 @@ public interface IEventContext<out TEvent> : IMessageContext
     EventType EventType { get; }
     Id EventId { get; }
     DateTimeOffset WhenOccurred { get; }
-    TimelinePosition TopicPosition { get; }
 }

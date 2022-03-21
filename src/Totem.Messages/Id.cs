@@ -23,7 +23,9 @@ public sealed class Id : IEquatable<Id>, IComparable<Id>
     public string ToShortString() => _value.ToString()[..8];
     public Guid ToGuid() => _value;
 
-    public override int GetHashCode() => _value.GetHashCode();
+    public override int GetHashCode() =>
+        _value.GetHashCode();
+
     public override bool Equals(object? obj) =>
       obj switch
       {
@@ -32,8 +34,11 @@ public sealed class Id : IEquatable<Id>, IComparable<Id>
           _ => false
       };
 
-    public bool Equals(Id? other) => _value == other?._value;
-    public int CompareTo(Id? other) => other is null ? 1 : _value.CompareTo(other._value);
+    public bool Equals(Id? other) =>
+        _value == other?._value;
+
+    public int CompareTo(Id? other) =>
+        other is null ? 1 : _value.CompareTo(other._value);
 
     public Id DeriveId(string nameInThisNamespace) =>
       DeriveId(_value, nameInThisNamespace);
@@ -85,7 +90,11 @@ public sealed class Id : IEquatable<Id>, IComparable<Id>
       TryFrom(value, out var id) ? id : throw new ArgumentOutOfRangeException(nameof(value));
 
     public static bool operator ==(Id? x, Id? y) => EqualityComparer<Id>.Default.Equals(x, y);
-    public static bool operator !=(Id? x, Id? y) => !EqualityComparer<Id>.Default.Equals(x, y);
+    public static bool operator !=(Id? x, Id? y) => !(x == y);
+    public static bool operator <(Id? x, Id? y) => Comparer<Id>.Default.Compare(x, y) < 0;
+    public static bool operator >(Id? x, Id? y) => Comparer<Id>.Default.Compare(x, y) > 0;
+    public static bool operator <=(Id? x, Id? y) => Comparer<Id>.Default.Compare(x, y) <= 0;
+    public static bool operator >=(Id? x, Id? y) => Comparer<Id>.Default.Compare(x, y) >= 0;
 
     public static explicit operator Id(Guid value) => From(value);
     public static explicit operator Id(string value) => From(value);

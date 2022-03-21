@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Outermind</RootNamespace>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="Surface\**" />
+      <EmbeddedResource Remove="Surface\**" />
+      <None Remove="Surface\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\..\src\Totem.Runtime\Totem.Runtime.csproj" />
+      <ProjectReference Include="..\OutermindUI.Messages\OutermindUI.Messages.csproj" />
+    </ItemGroup>
+
+</Project>

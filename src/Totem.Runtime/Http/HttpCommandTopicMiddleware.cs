@@ -17,11 +17,7 @@ public class HttpCommandTopicMiddleware : IHttpCommandMiddleware
         if(next is null)
             throw new ArgumentNullException(nameof(next));
 
-        if(!context.CommandType.TryCallRoute(context, out var topicKey))
-        {
-            context.AddError(RuntimeErrors.CommandNotHandled);
-            return;
-        }
+        var topicKey = context.CommandType.CallRoute(context);
 
         await _topicPipeline.RunAsync(context, topicKey, cancellationToken);
 

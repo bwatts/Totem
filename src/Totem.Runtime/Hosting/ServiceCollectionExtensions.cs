@@ -2,7 +2,6 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Totem.Core;
 using Totem.Map;
-using Totem.Map.Builder;
 
 namespace Totem.Hosting;
 
@@ -20,17 +19,17 @@ public static partial class ServiceCollectionExtensions
         return map ?? throw new InvalidOperationException("Expected runtime map to be initialized; call AddTotemRuntime first");
     }
 
-    public static ITotemBuilder AddTotemRuntime(this IServiceCollection services, IEnumerable<Type> types)
+    public static ITotemBuilder AddTotemRuntime(this IServiceCollection services, IEnumerable<Type> mapTypes)
     {
         if(services is null)
             throw new ArgumentNullException(nameof(services));
 
-        if(types is null)
-            throw new ArgumentNullException(nameof(types));
+        if(mapTypes is null)
+            throw new ArgumentNullException(nameof(mapTypes));
 
         services.AddSingleton<IClock, UtcClock>();
 
-        var map = new MapBuilder(types).Build();
+        var map = new RuntimeMap(mapTypes);
 
         services.AddSingleton(map);
 

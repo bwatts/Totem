@@ -8,5 +8,5 @@ public interface IQueueCommandContext<out TCommand> : ICommandContext<TCommand>
 {
     new IQueueCommandEnvelope Envelope { get; }
     new QueueCommandInfo Info { get; }
-    Text QueueName { get; }
+    string QueueName { get; }
 }

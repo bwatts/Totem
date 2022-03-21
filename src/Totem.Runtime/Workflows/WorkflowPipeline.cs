@@ -34,15 +34,12 @@ public class WorkflowPipeline : IWorkflowPipeline
         var envelope = eventContext.Envelope;
 
         _logger.LogTrace(
-            "[workflow] Run pipeline {@PipelineId} for workflow {@WorkflowType}.{@WorkflowId} and event {@EventType}.{@EventId} from {@TopicType}.{@TopicId}@{TopicPosition}",
+            "[workflow] Run pipeline {@PipelineId} for workflow {@WorkflowType}.{@WorkflowId} and event {@EventType}.{@EventId}",
             Id,
             workflowKey.DeclaredType,
             workflowKey.Id,
             envelope.MessageKey.Id,
-            envelope.MessageKey.DeclaredType,
-            envelope.TopicPosition.Key.DeclaredType,
-            envelope.TopicPosition.Key.Id,
-            envelope.TopicPosition.Index);
+            envelope.MessageKey.DeclaredType);
 
         var context = _contextFactory.Create(Id, eventContext, workflowKey);
 

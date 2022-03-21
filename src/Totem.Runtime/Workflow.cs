@@ -12,8 +12,20 @@ public abstract class Workflow : Timeline, IWorkflow
 
     readonly ConcurrentQueue<IQueueCommandEnvelope> _newCommands = new();
 
-    public IEnumerable<IQueueCommandEnvelope> NewCommands => _newCommands.Select(x => x);
-    public bool HasNewCommands => !_newCommands.IsEmpty;
+    public bool HasNewCommands =>
+        !_newCommands.IsEmpty;
+
+    public IReadOnlyList<IQueueCommandEnvelope> TakeNewCommands()
+    {
+        var newCommands = new List<IQueueCommandEnvelope>();
+
+        while(_newCommands.TryDequeue(out var newCommand))
+        {
+            newCommands.Add(newCommand);
+        }
+
+        return newCommands;
+    }
 
     protected void ThenEnqueue(IQueueCommand command, Id correlationId, ClaimsPrincipal principal) =>
         TryEnqueue(command.InEnvelope(correlationId, principal));

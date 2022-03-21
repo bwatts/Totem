@@ -26,6 +26,13 @@ internal static class WorkflowReflection
 
     static MapCheck<WorkflowType> CheckWorkflow(this RuntimeMap map, Type declaredType)
     {
+        var constructorResult = declaredType.CheckObserverConstructor();
+
+        if(!constructorResult)
+        {
+            return new(declaredType, "a constructor", constructorResult);
+        }
+
         var routes = new List<ObserverRouteMethod>();
         var givens = new List<GivenMethod>();
         var whens = new List<ObserverWhenMethod>();
@@ -33,7 +40,7 @@ internal static class WorkflowReflection
 
         foreach(var method in declaredType.GetRuntimeMethods())
         {
-            if(method.IsConstructor)
+            if(method.DeclaringType?.Assembly == Assembly.GetExecutingAssembly())
             {
                 continue;
             }
@@ -48,13 +55,14 @@ internal static class WorkflowReflection
                 continue;
             }
 
-            var givenResult = map.CheckGiven(method);
+            var givenResult = map.CheckTimelineGiven(method);
 
             details.Add(givenResult);
 
             if(givenResult)
             {
                 givens.Add(givenResult);
+                continue;
             }
 
             var whenResult = map.CheckObserverWhen(method);
@@ -81,21 +89,21 @@ internal static class WorkflowReflection
 
         if(observations.Count == 0)
         {
-            return new(declaredType, $"Expected {TimelineMethod.Route}/{TimelineMethod.When} methods for at least one event", details);
+            return new(declaredType, $"{TimelineMethod.Route}/{TimelineMethod.When} methods for at least one event", details);
         }
 
-        var workflow = new WorkflowType(declaredType);
+        var workflow = new WorkflowType(declaredType, constructorResult);
 
         foreach(var (e, route, given, when) in observations)
         {
             if(route is null)
             {
-                return new(declaredType, $"Expected a {TimelineMethod.Route} method for event {e}", details);
+                return new(declaredType, $"a {TimelineMethod.Route} method for event {e}", details);
             }
 
             if(given is null && when is null)
             {
-                return new(declaredType, $"Expected {TimelineMethod.Given} and/or {TimelineMethod.When} methods for event {e}", details);
+                return new(declaredType, $"{TimelineMethod.Given} and/or {TimelineMethod.When} method for event {e}", details);
             }
 
             workflow.Observations.Add(new(e, route, given, when));

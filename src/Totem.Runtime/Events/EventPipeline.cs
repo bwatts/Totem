@@ -28,14 +28,7 @@ public class EventPipeline : IEventPipeline
         if(point is null)
             throw new ArgumentNullException(nameof(point));
 
-        _logger.LogTrace(
-            "[event] Run pipeline {@PipelineId} for {@EventType}.{@EventId} from {@TopicType}.{@TopicId}@{TopicPosition}",
-            Id,
-            point.MessageKey.Id,
-            point.MessageKey.DeclaredType,
-            point.TopicPosition.Key.DeclaredType,
-            point.TopicPosition.Key.Id,
-            point.TopicPosition.Index);
+        _logger.LogTrace("[event] Run pipeline {@PipelineId} for {@EventType}.{@EventId}", Id, point.MessageKey.DeclaredType, point.MessageKey.Id);
 
         var context = _contextFactory.Create(Id, point);
 

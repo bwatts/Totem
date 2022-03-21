@@ -123,19 +123,16 @@ public class InMemoryTopicStore : ITopicStore
 
         internal IEnumerable<IEventEnvelope> Commit(ITopicTransaction transaction, DateTimeOffset now)
         {
-            foreach(var newEvent in transaction.Topic.NewEvents)
+            foreach(var newEvent in transaction.Topic.TakeNewEvents())
             {
                 var type = newEvent.GetType();
-
-                var version = _events.Count;
                 var envelope = new EventEnvelope(
                     new ItemKey(type),
                     newEvent,
                     EventInfo.From(type),
                     transaction.Context.CommandContext.CorrelationId,
                     transaction.Context.CommandContext.Principal,
-                    now,
-                    TimelinePosition.From(transaction.Context.TopicKey, version));
+                    now);
 
                 _events.Add(envelope.Message);
 

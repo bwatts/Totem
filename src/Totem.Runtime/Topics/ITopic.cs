@@ -5,5 +5,6 @@ namespace Totem.Topics;
 public interface ITopic : ITimeline
 {
     bool HasNewEvents { get; }
-    IEnumerable<IEvent> NewEvents { get; }
+
+    IReadOnlyList<IEvent> TakeNewEvents();
 }

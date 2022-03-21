@@ -1,6 +1,6 @@
 namespace Totem;
 
-public class ErrorInfo
+public class ErrorInfo : IEquatable<ErrorInfo>
 {
     public ErrorInfo(string name, int code, ErrorLevel level = ErrorLevel.BadRequest)
     {
@@ -25,6 +25,21 @@ public class ErrorInfo
 
     public override string ToString() =>
         $"{Code} {Name} - {Level}";
+
+    public bool Equals(ErrorInfo? other) =>
+        other is not null && Name == other.Name && Code == other.Code && Level == other.Level;
+
+    public override bool Equals(object? obj) =>
+        obj is ErrorInfo other && Equals(other);
+
+    public override int GetHashCode() =>
+        HashCode.Combine(Name, Code, Level);
+
+    public static bool operator ==(ErrorInfo x, ErrorInfo y) =>
+        EqualityComparer<ErrorInfo>.Default.Equals(x, y);
+
+    public static bool operator !=(ErrorInfo x, ErrorInfo y) =>
+        !(x == y);
 
     public static readonly ErrorInfo General = new("GeneralError");
     public static ErrorInfo BadRequest(string name) => new(name, ErrorLevel.BadRequest);

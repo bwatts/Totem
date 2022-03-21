@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Microsoft.Extensions.DependencyInjection;
 using Totem.Core;
 using Totem.Map;
 using Totem.Reports;
@@ -9,23 +8,19 @@ namespace Totem.InMemory;
 public class InMemoryReportStore : IReportStore
 {
     readonly ConcurrentDictionary<ItemKey, ReportHistory> _historiesByKey = new();
-    readonly IServiceProvider _services;
     readonly IStorage _storage;
 
-    public InMemoryReportStore(IServiceProvider services, IStorage storage)
-    {
-        _services = services ?? throw new ArgumentNullException(nameof(services));
+    public InMemoryReportStore(IStorage storage) =>
         _storage = storage ?? throw new ArgumentNullException(nameof(storage));
-    }
 
     public Task<IReportTransaction> StartTransactionAsync(IReportContext<IEvent> context, CancellationToken cancellationToken)
     {
         if(context is null)
             throw new ArgumentNullException(nameof(context));
 
-        var report = (IReport) _services.GetRequiredService(context.ReportKey.DeclaredType);
+        var report = context.ReportType.Create(context.ReportKey.Id);
 
-        report.Id = context.ReportKey.Id;
+        report.Row.Id = report.Id!;
 
         if(_historiesByKey.TryGetValue(context.ReportKey, out var history))
         {

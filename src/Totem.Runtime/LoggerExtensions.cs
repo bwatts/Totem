@@ -12,7 +12,7 @@ public static class LoggerExtensions
         if(error is null)
             throw new ArgumentNullException(nameof(error));
 
-        logger.LogError("{Code} - {Name} - {Level}", error.Code, error.Name, error.Level);
+        logger.LogError("{Code} {Name} - {Level}", error.Code, error.Name, error.Level);
     }
 
     public static void LogErrorInfo(this ILogger logger, IEnumerable<ErrorInfo> errors)
@@ -35,7 +35,7 @@ public static class LoggerExtensions
         }
         else
         {
-            logger.LogError("{Errors}", errors.Select(error => $"{error.Code} - {error.Name} - {error.Level}"));
+            logger.LogError("{Errors}", errors.Select(error => $"{error.Code} {error.Name} - {error.Level}"));
         }
     }
 

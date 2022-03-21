@@ -23,10 +23,10 @@ public abstract class Timeline : ITimeline
         private set => _version = value;
     }
 
-    Id ITimeline.Id
+    Id? ITimeline.Id
     {
-        get => Id;
-        set => Id = value;
+        get => _id;
+        set => _id = value;
     }
 
     long? ITimeline.Version

@@ -1,12 +1,26 @@
 using System.Collections;
 using Totem.Core;
+using Totem.Http;
+using Totem.Local;
 using Totem.Map.Builder;
+using Totem.Queues;
 
 namespace Totem.Map;
 
 public class RuntimeMap : IReadOnlyCollection<MapType>
 {
     readonly List<IMapCheck> _checks = new();
+
+    public RuntimeMap(IEnumerable<Type> types)
+    {
+        if(types is null)
+            throw new ArgumentNullException(nameof(types));
+
+        new MapBuilder(this, types).Build();
+    }
+
+    public RuntimeMap(params Type[] types) : this(types as IEnumerable<Type>)
+    { }
 
     public TypeKeyedCollection<CommandType> Commands = new();
     public TypeKeyedCollection<EventType> Events = new();
@@ -43,6 +57,52 @@ public class RuntimeMap : IReadOnlyCollection<MapType>
 
     internal void AddCheck(IMapCheck check) =>
         _checks.Add(check);
+
+    internal CommandType GetOrAddCommand(Type declaredType)
+    {
+        if(!Commands.TryGet(declaredType, out var command))
+        {
+            command = new CommandType(declaredType);
+
+            Commands.Add(command);
+        }
+
+        return command;
+    }
+
+    internal EventType GetOrAddEvent(Type declaredType)
+    {
+        if(!Events.TryGet(declaredType, out var e))
+        {
+            e = new EventType(EventInfo.From(declaredType));
+
+            Events.Add(e);
+        }
+
+        return e;
+    }
+
+    internal QueryType GetOrAddQuery(Type declaredType)
+    {
+        if(!Queries.TryGet(declaredType, out var query))
+        {
+            query = new QueryType(declaredType);
+
+            Queries.Add(query);
+
+            if(HttpQueryInfo.TryFrom(declaredType, out var httpInfo))
+            {
+                query.Contexts.Add(new QueryContext(typeof(IHttpQueryContext<>).MakeGenericType(declaredType), httpInfo));
+            }
+
+            if(LocalQueryInfo.TryFrom(declaredType, out var localInfo))
+            {
+                query.Contexts.Add(new QueryContext(typeof(ILocalQueryContext<>).MakeGenericType(declaredType), localInfo));
+            }
+        }
+
+        return query;
+    }
 
     internal IEnumerable<ItemKey> CallReportRoutes(IEventContext<IEvent> context)
     {

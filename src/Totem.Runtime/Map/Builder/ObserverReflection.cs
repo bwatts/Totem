@@ -5,6 +5,22 @@ namespace Totem.Map.Builder;
 
 internal static class ObserverReflection
 {
+    internal static MapCheck<ObserverConstructor> CheckObserverConstructor(this Type declaredType)
+    {
+        var constructors = declaredType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic);
+
+        if(constructors.Length == 0)
+        {
+            return new(declaredType, new ObserverConstructor(declaredType));
+        }
+
+        var constructor = constructors.FirstOrDefault(x => x.GetParameters().Length == 0);
+
+        return constructor is null
+            ? new(declaredType, "a parameterless constructor")
+            : new(declaredType, new ObserverConstructor(constructor));
+    }
+
     internal static MapCheck<ObserverRouteMethod> CheckObserverRoute(this RuntimeMap map, MethodInfo method)
     {
         if(!method.IsPublic)
@@ -31,7 +47,7 @@ internal static class ObserverReflection
             return new(method, "a single parameter");
         }
 
-        var parameterResult = map.CheckObserverParameter(parameters[0]);
+        var parameterResult = map.CheckObserverRouteParameter(parameters[0]);
 
         if(!parameterResult)
         {
@@ -52,9 +68,9 @@ internal static class ObserverReflection
 
     internal static MapCheck<ObserverWhenMethod> CheckObserverWhen(this RuntimeMap map, MethodInfo method)
     {
-        if(!method.IsPublic)
+        if(!method.IsFamily)
         {
-            return new(method, "public accessibility");
+            return new(method, "protected accessibility");
         }
 
         if(method.IsStatic)
@@ -71,14 +87,14 @@ internal static class ObserverReflection
 
         if(parameters.Length != 1)
         {
-            return new(method, "Expected a single parameter");
+            return new(method, "a single parameter");
         }
 
-        var parameterResult = map.CheckObserverParameter(parameters[0]);
+        var parameterResult = map.CheckObserverWhenParameter(parameters[0]);
 
         if(!parameterResult.HasOutput)
         {
-            return new(method, "an event parameter", parameterResult);
+            return new(method, "an event or event context parameter", parameterResult);
         }
 
         if(method.Name != TimelineMethod.When)
@@ -93,32 +109,40 @@ internal static class ObserverReflection
         return new(method, new ObserverWhenMethod(method, parameterResult));
     }
 
-    static MapCheck<ObserverMethodParameter> CheckObserverParameter(this RuntimeMap map, ParameterInfo parameter)
+    static MapCheck<ObserverRouteParameter> CheckObserverRouteParameter(this RuntimeMap map, ParameterInfo parameter)
     {
         var parameterType = parameter.ParameterType;
 
         if(typeof(IEvent).IsAssignableFrom(parameterType))
         {
-            if(map.Events.TryGet(parameterType, out var knownType) && knownType is EventType e)
-            {
-                return new(parameter, new ObserverMethodParameter(parameter, e, hasContext: false));
-            }
+            var e = map.GetOrAddEvent(parameterType);
 
-            return new(parameter, $"a known event of type {parameterType}");
+            return new(parameter, new ObserverRouteParameter(parameter, e));
+        }
+
+        return new(parameter, $"a parameter assignable to {typeof(IEvent)}");
+    }
+
+    static MapCheck<ObserverWhenParameter> CheckObserverWhenParameter(this RuntimeMap map, ParameterInfo parameter)
+    {
+        var parameterType = parameter.ParameterType;
+
+        if(typeof(IEvent).IsAssignableFrom(parameterType))
+        {
+            var e = map.GetOrAddEvent(parameterType);
+
+            return new(parameter, new ObserverWhenParameter(parameter, e, hasContext: false));
         }
 
         var eventType = parameterType.GetImplementedInterfaceGenericArguments(typeof(IEventContext<>)).FirstOrDefault();
 
         if(eventType is not null)
         {
-            if(map.Events.TryGet(eventType, out var knownType) && knownType is EventType e)
-            {
-                return new(parameter, new ObserverMethodParameter(parameter, e, hasContext: true));
-            }
+            var e = map.GetOrAddEvent(eventType);
 
-            return new(parameter, $"a known event of type {eventType}");
+            return new(parameter, new ObserverWhenParameter(parameter, e, hasContext: true));
         }
 
-        return new(parameter, $"a parameter of type {typeof(IEventContext<>)} or assignable to {typeof(IEvent)}");
+        return new(parameter, $"a parameter assignable to {typeof(IEvent)} or {typeof(IEventContext<>)}");
     }
 }

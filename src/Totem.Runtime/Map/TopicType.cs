@@ -2,7 +2,7 @@ using Totem.Topics;
 
 namespace Totem.Map;
 
-public class TopicType : MapType
+public class TopicType : TimelineType
 {
     internal TopicType(Type declaredType) : base(declaredType)
     { }
