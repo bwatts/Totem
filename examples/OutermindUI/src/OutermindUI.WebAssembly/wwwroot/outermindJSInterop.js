@@ -1,4 +1,4 @@
-window.DreamJSFunctions = {
+window.OutermindJSFunctions = {
     alert: function(message) {
         alert(message);
         return true;

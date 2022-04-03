@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using Totem.Core;
 
 namespace Totem.Topics;

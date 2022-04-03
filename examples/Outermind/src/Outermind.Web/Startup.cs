@@ -32,12 +32,7 @@ public class Startup
         .AddInMemoryStorage()
         .AddDiskFileStorage();
 
-        services
-        .AddRouting()
-        .AddControllers()
-        .AddCommandControllers()
-        .AddQueryControllers()
-        .AddJsonStringEnumConverter();
+        services.AddRouting().AddControllers().AddTotemMvc();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)
@@ -60,6 +55,7 @@ public class Startup
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
+            endpoints.MapRuntimeHub();
             endpoints.MapFallbackToFile("index.html");
         });
     }

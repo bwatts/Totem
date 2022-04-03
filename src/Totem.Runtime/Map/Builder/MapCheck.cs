@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Totem.Map.Builder;
 
 internal class MapCheck<TOutput> : IMapCheck

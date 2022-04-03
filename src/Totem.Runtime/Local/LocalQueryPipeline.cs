@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace Totem.Local;
 
 public class LocalQueryPipeline : ILocalQueryPipeline

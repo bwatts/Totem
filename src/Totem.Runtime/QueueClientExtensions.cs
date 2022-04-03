@@ -1,8 +1,9 @@
 using System.Security.Claims;
+using Totem.Queues;
 
-namespace Totem.Queues;
+namespace Totem;
 
-public static class QueueCommandClientExtensions
+public static class QueueClientExtensions
 {
     public static Task EnqueueAsync(this IQueueClient client, IQueueCommand command, Id correlationId, ClaimsPrincipal principal, CancellationToken cancellationToken)
     {

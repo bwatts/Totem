@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace Totem.Queries;
 
 public class ClientQueryPipelineBuilder : IClientQueryPipelineBuilder

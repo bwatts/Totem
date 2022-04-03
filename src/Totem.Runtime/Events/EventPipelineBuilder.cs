@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace Totem.Events;
 
 public class EventPipelineBuilder : IEventPipelineBuilder

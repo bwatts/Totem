@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace Totem.Reports;
 
 public class ReportPipelineBuilder : IReportPipelineBuilder

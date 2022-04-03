@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using Totem.Http;
 
 namespace Totem.Queries;

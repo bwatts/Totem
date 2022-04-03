@@ -32,52 +32,41 @@ internal class MapSummaryBuilder
         foreach(var command in _map.Commands)
         {
             var commandTypeId = GetTypeId(command);
-            var commandHref = $"/commands/{commandTypeId}";
             var httpContext = null as HttpCommandContextSummary;
             var localContext = null as LocalCommandContextSummary;
             var queueContext = null as QueueCommandContextSummary;
 
             if(command.HttpContext is not null)
             {
-                var contextHref = $"{commandHref}/contexts/http";
                 var httpInfo = (HttpCommandInfo) command.HttpContext.Info;
 
                 httpContext = new HttpCommandContextSummary(
-                    contextHref,
                     GetTypeId(command.HttpContext.InterfaceType),
-                    BuildHttpRequest(contextHref, httpInfo.Request),
-                    BuildWhen(contextHref, command.HttpContext.When));
+                    BuildHttpRequest(httpInfo.Request),
+                    TryBuildTopicWhen(command.HttpContext.When));
             }
-            else if(command.LocalContext is not null)
-            {
-                var contextHref = $"{commandHref}/contexts/local";
 
-                localContext = new LocalCommandContextSummary(
-                    contextHref,
-                    GetTypeId(command.LocalContext.InterfaceType),
-                    BuildWhen(contextHref, command.LocalContext.When));
-            }
-            else if(command.QueueContext is not null)
+            if(command.LocalContext is not null)
             {
-                var contextHref = $"{commandHref}/contexts/queue";
+                localContext = new LocalCommandContextSummary(
+                    GetTypeId(command.LocalContext.InterfaceType),
+                    TryBuildTopicWhen(command.LocalContext.When));
+            }
+
+            if(command.QueueContext is not null)
+            {
                 var queueInfo = (QueueCommandInfo) command.QueueContext.Info;
 
                 queueContext = new QueueCommandContextSummary(
-                    contextHref,
                     GetTypeId(command.QueueContext.InterfaceType),
                     queueInfo.QueueName,
-                    BuildWhen(contextHref, command.QueueContext.When));
-            }
-            else
-            {
-                throw new InvalidOperationException($"Expected command {command} to have at least one context (HTTP/local/queue)");
+                    TryBuildTopicWhen(command.QueueContext.When));
             }
 
             yield return new CommandSummary(
-                commandHref,
                 commandTypeId,
-                BuildRoute(commandHref, command.Route),
-                BuildWhen($"{commandHref}/when-without-context", command.WhenWithoutContext),
+                BuildTopicRoute(command.Route),
+                TryBuildTopicWhen(command.WhenWithoutContext),
                 httpContext,
                 localContext,
                 queueContext);
@@ -88,7 +77,6 @@ internal class MapSummaryBuilder
         from e in _map.Events
         let typeId = GetTypeId(e)
         select new EventSummary(
-            $"/events/{typeId}",
             typeId,
             e.Reports.Select(GetTypeId).ToList(),
             e.Workflows.Select(GetTypeId).ToList(),
@@ -96,17 +84,15 @@ internal class MapSummaryBuilder
 
     IEnumerable<EventHandlerSummary> BuildEventHandlers() =>
         from eventHandler in _map.EventHandlers
-        let typeId = GetTypeId(eventHandler)
-        let eventTypeId = GetTypeId(eventHandler.Event)
-        let serviceTypeId = GetTypeId(eventHandler.ServiceType)
-        select new EventHandlerSummary($"/events/{eventTypeId}/handlers/{typeId}", typeId, serviceTypeId);
+        select new EventHandlerSummary(
+            GetTypeId(eventHandler),
+            GetTypeId(eventHandler.ServiceType));
 
     IEnumerable<QuerySummary> BuildQueries()
     {
         foreach(var query in _map.Queries)
         {
             var queryTypeId = GetTypeId(query);
-            var queryHref = $"/queries/{queryTypeId}";
 
             var httpContext = null as HttpQueryContextSummary;
             var localContext = null as LocalQueryContextSummary;
@@ -115,22 +101,16 @@ internal class MapSummaryBuilder
             {
                 if(context.Info is HttpQueryInfo httpInfo)
                 {
-                    var contextHref = $"{queryHref}/contexts/http";
-
                     httpContext = new HttpQueryContextSummary(
-                        contextHref,
                         GetTypeId(context.ContextType),
-                        BuildHttpRequest(contextHref, httpInfo.Request),
-                        BuildQueryResult(contextHref, httpInfo.Result));
+                        BuildHttpRequest(httpInfo.Request),
+                        BuildQueryResult(httpInfo.Result));
                 }
                 else if(context.Info is LocalQueryInfo localInfo)
                 {
-                    var contextHref = $"{queryHref}/contexts/local";
-
                     localContext = new LocalQueryContextSummary(
-                        contextHref,
                         GetTypeId(localInfo.Result.DeclaredType),
-                        BuildQueryResult(contextHref, localInfo.Result));
+                        BuildQueryResult(localInfo.Result));
                 }
                 else
                 {
@@ -138,7 +118,7 @@ internal class MapSummaryBuilder
                 }
             }
 
-            yield return new QuerySummary(queryHref, queryTypeId, httpContext, localContext);
+            yield return new QuerySummary(queryTypeId, httpContext, localContext);
         }
     }
 
@@ -146,120 +126,67 @@ internal class MapSummaryBuilder
         from queryHandler in _map.QueryHandlers
         let typeId = GetTypeId(queryHandler)
         let queryTypeId = GetTypeId(queryHandler.Query)
-        select new QueryHandlerSummary(
-            $"/queries/{queryTypeId}/handlers/{typeId}",
-            typeId,
-            queryHandler.ServiceTypes.Select(GetTypeId).ToList());
+        select new QueryHandlerSummary(typeId, queryHandler.ServiceTypes.Select(GetTypeId).ToList());
 
     IEnumerable<ReportSummary> BuildReports() =>
         from report in _map.Reports
         let typeId = GetTypeId(report)
-        let href = $"/reports/{typeId}"
         let observations =
             from observation in report.Observations
             let eventTypeId = GetTypeId(observation.Event)
             select new ObservationSummary(
-                $"{href}/events/{eventTypeId}",
                 eventTypeId,
-                BuildRoute(href, observation.Route),
-                BuildGiven(href, observation.Given),
-                BuildWhen(href, observation.When))
-            select new ReportSummary(
-                href,
-                typeId,
-                observations.ToList(),
-                report.Queries.Select(GetTypeId).ToList());
+                BuildObserverRoute(observation.Route),
+                TryBuildGiven(observation.Given),
+                TryBuildObserverWhen(observation.When))
+        select new ReportSummary(typeId, observations.ToList(), report.Queries.Select(GetTypeId).ToList());
 
     IEnumerable<TopicSummary> BuildTopics() =>
         from topic in _map.Topics
         let typeId = GetTypeId(topic)
-        let href = $"/topics/{typeId}"
         select new TopicSummary(
-            href,
             typeId,
             topic.Commands.Select(GetTypeId).ToList(),
-            topic.Givens.Select(x => BuildGiven(href, x)!).ToList());
+            topic.Givens.Select(x => TryBuildGiven(x)!).ToList());
 
     IEnumerable<WorkflowSummary> BuildWorkflows() =>
         from workflow in _map.Workflows
         let typeId = GetTypeId(workflow)
-        let href = $"/workflows/{typeId}"
         let observations =
             from observation in workflow.Observations
             let eventTypeId = GetTypeId(observation.Event)
             select new ObservationSummary(
-                $"{href}/events/{eventTypeId}",
                 eventTypeId,
-                BuildRoute(href, observation.Route),
-                BuildGiven(href, observation.Given),
-                BuildWhen(href, observation.When))
-        select new WorkflowSummary(href, typeId, observations.ToList());
+                BuildObserverRoute(observation.Route),
+                TryBuildGiven(observation.Given),
+                TryBuildObserverWhen(observation.When))
+        select new WorkflowSummary(typeId, observations.ToList());
 
-    ParameterSummary BuildParameter(string methodHref, TimelineMethodParameter parameter)
-    {
-        var name = parameter.Info.Name ?? "";
+    GivenSummary? TryBuildGiven(GivenMethod? given) =>
+        given is null ? null : new(BuildParameter(given.Parameter));
 
-        return new(
-            $"{methodHref}/parameter",
-            name,
+    ParameterSummary BuildParameter(TimelineMethodParameter parameter) =>
+        new(parameter.Info.Name ?? "",
             GetTypeId(parameter.Info.ParameterType),
             GetTypeId(parameter.Message));
-    }
 
-    TopicRouteSummary BuildRoute(string baseHref, TopicRouteMethod route)
-    {
-        var href = $"{baseHref}/route";
+    TopicRouteSummary BuildTopicRoute(TopicRouteMethod route) =>
+        new(BuildParameter(route.Parameter));
 
-        return new(href, route.Info.Name, BuildParameter(href, route.Parameter));
-    }
+    ObserverRouteSummary BuildObserverRoute(ObserverRouteMethod route) =>
+        new(BuildParameter(route.Parameter), route.ReturnsMany);
 
-    ObserverRouteSummary BuildRoute(string contextHref, ObserverRouteMethod route)
-    {
-        var href = $"{contextHref}/route";
+    TopicWhenSummary? TryBuildTopicWhen(TopicWhenMethod? when) =>
+        when is null ? null : new(BuildParameter(when.Parameter), when.IsAsync, when.HasCancellationToken);
 
-        return new(
-            href,
-            route.Info.Name,
-            BuildParameter(href, route.Parameter),
-            route.ReturnsMany);
-    }
+    ObserverWhenSummary? TryBuildObserverWhen(ObserverWhenMethod? when) =>
+        when is null ? null : new(BuildParameter(when.Parameter), when.Parameter.HasContext);
 
-    GivenSummary? BuildGiven(string baseHref, GivenMethod? given)
-    {
-        var href = $"{baseHref}/given";
+    static HttpRequestSummary BuildHttpRequest(HttpRequestInfo info) =>
+        new(info.Method, info.Route);
 
-        return given is null ? null : new(href, given.Info.Name, BuildParameter(href, given.Parameter));
-    }
-
-    TopicWhenSummary? BuildWhen(string contextHref, TopicWhenMethod? when)
-    {
-        var href = $"{contextHref}/when";
-
-        return when is null ? null : new(
-            href,
-            when.Info.Name,
-            BuildParameter(href, when.Parameter),
-            when.IsAsync,
-            when.HasCancellationToken);
-    }
-
-    ObserverWhenSummary? BuildWhen(string contextHref, ObserverWhenMethod? when)
-    {
-        var href = $"{contextHref}/when";
-
-        return when is null ? null : new(
-            href,
-            when.Info.Name,
-            BuildParameter(href, when.Parameter),
-            when.Parameter.HasContext);
-    }
-
-    static HttpRequestSummary BuildHttpRequest(string contextHref, HttpRequestInfo info) =>
-        new($"{contextHref}/request", info.Method, info.Route);
-
-    QueryResultSummary BuildQueryResult(string contextHref, QueryResult result) =>
-        new($"{contextHref}/result",
-            GetTypeId(result.DeclaredType),
+    QueryResultSummary BuildQueryResult(QueryResult result) =>
+        new(GetTypeId(result.DeclaredType),
             result.IsReport,
             result.IsSingleRow,
             result.IsManyRows,
@@ -274,13 +201,7 @@ internal class MapSummaryBuilder
             id = _typeIdNamespace.DeriveId(assemblyQualifiedName);
 
             _typeIdsByType[type] = id;
-            _types.Add(new(
-                $"/types/{id}",
-                id,
-                type.Namespace ?? "",
-                type.Name,
-                type.FullName ?? "",
-                assemblyQualifiedName));
+            _types.Add(new(id, type.Namespace ?? "", type.Name, type.FullName ?? "", assemblyQualifiedName));
         }
 
         return id;

@@ -3,7 +3,6 @@ using Totem.Core;
 using Totem.Http;
 using Totem.Local;
 using Totem.Map.Builder;
-using Totem.Queues;
 
 namespace Totem.Map;
 

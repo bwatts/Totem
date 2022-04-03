@@ -16,7 +16,7 @@ public static partial class ServiceCollectionExtensions
             .LastOrDefault(x => x.ServiceType == typeof(RuntimeMap))
             ?.ImplementationInstance;
 
-        return map ?? throw new InvalidOperationException("Expected runtime map to be initialized; call AddTotemRuntime first");
+        return map ?? throw new InvalidOperationException($"Expected runtime map to be initialized; call {nameof(AddTotemRuntime)} first");
     }
 
     public static ITotemBuilder AddTotemRuntime(this IServiceCollection services, IEnumerable<Type> mapTypes)

@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace Totem.Commands;
 
 public class ClientCommandPipelineBuilder : IClientCommandPipelineBuilder

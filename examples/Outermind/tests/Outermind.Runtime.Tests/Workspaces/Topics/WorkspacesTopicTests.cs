@@ -8,7 +8,7 @@ public class WorkspacesTopicTests : TopicTests<WorkspacesTopic>
 
     [Fact]
     public void CreateWorkspace_routes_to_a_single_instance() =>
-        ExpectRoutesTo(WorkspacesTopic.InstanceId, new CreateWorkspace(_name));
+        ExpectRoutesTo(WorkspacesTopic.SingleInstanceId, new CreateWorkspace(_name));
 
     [Fact]
     public void CreateWorkspace_causes_WorkspaceCreated_over_HTTP()
@@ -17,7 +17,7 @@ public class WorkspacesTopicTests : TopicTests<WorkspacesTopic>
 
         var e = ExpectEvent<WorkspaceCreated>();
 
-        e.WorkspaceId.Should().Be(WorkspacesTopic.InstanceId.DeriveId(_name));
+        e.WorkspaceId.Should().Be(WorkspacesTopic.SingleInstanceId.DeriveId(_name));
         e.Name.Should().Be(_name);
 
         context.ResponseCode.Should().Be(HttpStatusCode.Created);
@@ -31,7 +31,7 @@ public class WorkspacesTopicTests : TopicTests<WorkspacesTopic>
 
         var e = ExpectEvent<WorkspaceCreated>();
 
-        e.WorkspaceId.Should().Be(WorkspacesTopic.InstanceId.DeriveId(_name));
+        e.WorkspaceId.Should().Be(WorkspacesTopic.SingleInstanceId.DeriveId(_name));
         e.Name.Should().Be(_name);
     }
 }

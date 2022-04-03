@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
 using Totem.Queues;
 
 namespace Totem.InMemory;

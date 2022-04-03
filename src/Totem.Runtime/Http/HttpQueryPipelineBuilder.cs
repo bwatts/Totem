@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace Totem.Http;
 
 public class HttpQueryPipelineBuilder : IHttpQueryPipelineBuilder

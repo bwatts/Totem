@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-
 namespace Totem.Topics;
 
 public class TopicPipelineBuilder : ITopicPipelineBuilder

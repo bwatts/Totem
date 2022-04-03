@@ -3,7 +3,6 @@ namespace Totem.Map.Summary;
 public class CommandSummary
 {
     internal CommandSummary(
-        string href,
         Id typeId,
         TopicRouteSummary route,
         TopicWhenSummary? whenWithoutContext,
@@ -11,7 +10,6 @@ public class CommandSummary
         LocalCommandContextSummary? localContext,
         QueueCommandContextSummary? queueContext)
     {
-        Href = href;
         TypeId = typeId;
         Route = route;
         WhenWithoutContext = whenWithoutContext;
@@ -20,7 +18,6 @@ public class CommandSummary
         QueueContext = queueContext;
     }
 
-    public string Href { get; }
     public Id TypeId { get; }
     public TopicRouteSummary? Route { get; }
     public TopicWhenSummary? WhenWithoutContext { get; }

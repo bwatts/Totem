@@ -32,7 +32,7 @@ internal static class HostBuilderExtensions
             return;
         }
 
-        var path = context.Configuration["DREAM_LOG_PATH"] ?? @"C:\Totem\Dream\Logs";
+        var path = context.Configuration["OUTERMIND_LOG_PATH"] ?? @"C:\Totem\Outermind\Logs";
         var file = $"{context.HostingEnvironment.ApplicationName}-{context.HostingEnvironment.EnvironmentName}.log";
 
         logger.WriteTo.File(Path.Combine(path, file));

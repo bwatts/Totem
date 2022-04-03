@@ -1,4 +1,5 @@
 using BlazorPro.BlazorSize;
+using Majorsoft.Blazor.Components.Common.JsInterop;
 using MatBlazor;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Serilog;
@@ -10,7 +11,7 @@ namespace OutermindUI.Hosting;
 internal static class WebAssemblyHostBuilderExtensions
 {
     internal static WebAssemblyHostBuilder ConfigureSerilog(this WebAssemblyHostBuilder builder) =>
-        builder.UseSerilog(logger =>
+        builder.AddSerilog(logger =>
         {
             logger
             .MinimumLevel.Verbose()
@@ -48,16 +49,19 @@ internal static class WebAssemblyHostBuilderExtensions
         .AddCommands(pipeline => pipeline.UseRequest())
         .AddQueries(pipeline => pipeline.UseRequest());
 
-        builder.Services.AddDreamWebAssembly();
-
         return builder;
     }
 
     internal static WebAssemblyHostBuilder ConfigureOutermindUI(this WebAssemblyHostBuilder builder)
     {
-        builder.UseBaseHttpClient().UseRootComponent<App>("#app");
+        builder.AddBaseHttpClient();
+        builder.AddSubscriptionClient();
+        builder.AddRootComponent<App>("#app");
+
         builder.Services.AddMatBlazor();
         builder.Services.AddResizeListener();
+        builder.Services.AddJsInteropExtensions();
+        builder.Services.AddOutermindUI();
 
         return builder;
     }

@@ -17,7 +17,7 @@ public class BranchesTopicTests : TopicTests<BranchesTopic>
         var e = ExpectEvent<MainBranchCreated>();
 
         e.WorkspaceId.Should().Be(_workspaceId);
-        e.BranchId.Should().Be(BranchesTopic.IdNamespace.DeriveId(BranchesTopic.MainBranchName));
+        e.BranchId.Should().Be(_workspaceId.DeriveId(BranchesTopic.MainBranchName));
         e.Name.Should().Be(BranchesTopic.MainBranchName);
     }
 
