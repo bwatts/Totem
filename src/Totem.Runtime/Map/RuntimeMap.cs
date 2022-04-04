@@ -9,6 +9,7 @@ namespace Totem.Map;
 public class RuntimeMap : IReadOnlyCollection<MapType>
 {
     readonly List<IMapCheck> _checks = new();
+    readonly List<IMapCheck> _failedChecks = new();
 
     public RuntimeMap(IEnumerable<Type> types)
     {
@@ -27,9 +28,11 @@ public class RuntimeMap : IReadOnlyCollection<MapType>
     public TypeKeyedCollection<QueryType> Queries = new();
     public TypeKeyedCollection<QueryHandlerType> QueryHandlers = new();
     public TypeKeyedCollection<ReportType> Reports = new();
+    public TypeKeyedCollection<ReportRowType> ReportRows = new();
     public TypeKeyedCollection<TopicType> Topics = new();
     public TypeKeyedCollection<WorkflowType> Workflows = new();
     public IReadOnlyList<IMapCheck> Checks => _checks;
+    public IEnumerable<IMapCheck> FailedChecks => _failedChecks;
 
     public int Count =>
         Commands.Count
@@ -38,6 +41,7 @@ public class RuntimeMap : IReadOnlyCollection<MapType>
         + Queries.Count
         + QueryHandlers.Count
         + Reports.Count
+        + ReportRows.Count
         + Topics.Count
         + Workflows.Count;
 
@@ -48,14 +52,23 @@ public class RuntimeMap : IReadOnlyCollection<MapType>
         .Concat(Queries)
         .Concat(QueryHandlers)
         .Concat(Reports)
+        .Concat(ReportRows)
         .Concat(Topics)
         .Concat(Workflows)
         .GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() =>
+        GetEnumerator();
 
-    internal void AddCheck(IMapCheck check) =>
+    internal void AddCheck(IMapCheck check)
+    {
         _checks.Add(check);
+
+        if(!check.HasOutput)
+        {
+            _failedChecks.Add(check);
+        }
+    }
 
     internal CommandType GetOrAddCommand(Type declaredType)
     {

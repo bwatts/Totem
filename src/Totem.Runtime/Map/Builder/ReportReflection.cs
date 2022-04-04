@@ -1,4 +1,5 @@
 using System.Reflection;
+using Totem.Core;
 using Totem.Reports;
 
 namespace Totem.Map.Builder;
@@ -31,6 +32,13 @@ internal static class ReportReflection
         if(!constructorResult)
         {
             return new(declaredType, "a constructor", constructorResult);
+        }
+
+        var rowResult = map.CheckReportRow(declaredType);
+
+        if(!rowResult)
+        {
+            return new(declaredType, "a dedicated report row", rowResult);
         }
 
         var routes = new List<ObserverRouteMethod>();
@@ -92,7 +100,7 @@ internal static class ReportReflection
             return new(declaredType, $"{TimelineMethod.Route}/{TimelineMethod.When} methods for at least one event", details);
         }
 
-        var report = new ReportType(declaredType, constructorResult);
+        var report = new ReportType(declaredType, constructorResult, rowResult);
 
         foreach(var (e, route, given, when) in observations)
         {
@@ -112,5 +120,29 @@ internal static class ReportReflection
         }
 
         return new(declaredType, report, details);
+    }
+
+    static MapCheck<ReportRowType> CheckReportRow(this RuntimeMap map, Type declaredType)
+    {
+        var baseType = declaredType.BaseType;
+
+        if(baseType is null || !baseType.IsGenericTypeDefinition(typeof(Report<>)))
+        {
+            return new(declaredType, $"type to derive from {typeof(Report<>)}");
+        }
+
+        var rowType = baseType.GetGenericArguments().Single();
+
+        if(map.ReportRows.TryGet(rowType, out var existingRow))
+        {
+            return new(declaredType, $"row to be exclusive to this report");
+        }
+
+        var properties = declaredType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Select(x => new ReportRowProperty(x))
+            .ToList();
+
+        return new(declaredType, new ReportRowType(rowType, properties));
     }
 }

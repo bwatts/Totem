@@ -10,6 +10,7 @@ public class MapSummary
         IReadOnlyList<QuerySummary> queries,
         IReadOnlyList<QueryHandlerSummary> queryHandlers,
         IReadOnlyList<ReportSummary> reports,
+        IReadOnlyList<ReportRowSummary> reportRows,
         IReadOnlyList<TopicSummary> topics,
         IReadOnlyList<WorkflowSummary> workflows)
     {
@@ -20,6 +21,7 @@ public class MapSummary
         Queries = queries;
         QueryHandlers = queryHandlers;
         Reports = reports;
+        ReportRows = reportRows;
         Topics = topics;
         Workflows = workflows;
     }
@@ -31,6 +33,7 @@ public class MapSummary
     public IReadOnlyList<QuerySummary> Queries { get; }
     public IReadOnlyList<QueryHandlerSummary> QueryHandlers { get; }
     public IReadOnlyList<ReportSummary> Reports { get; }
+    public IReadOnlyList<ReportRowSummary> ReportRows { get; }
     public IReadOnlyList<TopicSummary> Topics { get; }
     public IReadOnlyList<WorkflowSummary> Workflows { get; }
 }

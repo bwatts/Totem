@@ -10,13 +10,11 @@ public class TimelineTestContext<TTimeline> : ITimelineTestContext<TTimeline>
     {
         RuntimeMap = new RuntimeMap(typeof(TTimeline));
 
-        var failedChecks = RuntimeMap.Checks.Where(x => !x.HasOutput).ToList();
-
-        if(failedChecks.Any())
+        if(RuntimeMap.FailedChecks.Any())
         {
             var error = new StringBuilder($@"Expected timeline {typeof(TTimeline)} to pass all checks:").AppendLine();
 
-            foreach(var failedCheck in failedChecks)
+            foreach(var failedCheck in RuntimeMap.FailedChecks)
             {
                 error.AppendLine();
                 error.Append("Input:    ").Append(failedCheck.Input).AppendLine();

@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Totem.Core;
 using Totem.Map;
+using Totem.Map.Builder;
 
 namespace Totem.Hosting;
 
@@ -32,6 +33,7 @@ public static partial class ServiceCollectionExtensions
         var map = new RuntimeMap(mapTypes);
 
         services.AddSingleton(map);
+        services.AddHostedService<FailedCheckLoggingService>();
 
         return new TotemBuilder(services, map);
     }

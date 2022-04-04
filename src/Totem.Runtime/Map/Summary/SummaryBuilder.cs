@@ -24,6 +24,7 @@ internal class MapSummaryBuilder
             BuildQueries().ToList(),
             BuildQueryHandlers().ToList(),
             BuildReports().ToList(),
+            BuildReportRows().ToList(),
             BuildTopics().ToList(),
             BuildWorkflows().ToList());
 
@@ -140,6 +141,13 @@ internal class MapSummaryBuilder
                 TryBuildGiven(observation.Given),
                 TryBuildObserverWhen(observation.When))
         select new ReportSummary(typeId, observations.ToList(), report.Queries.Select(GetTypeId).ToList());
+
+    IEnumerable<ReportRowSummary> BuildReportRows() =>
+        from reportRow in _map.ReportRows
+        let properties =
+            from property in reportRow.Properties
+            select new ReportRowPropertySummary(property.Name, GetTypeId(property.ValueType))
+        select new ReportRowSummary(GetTypeId(reportRow), properties.ToList());
 
     IEnumerable<TopicSummary> BuildTopics() =>
         from topic in _map.Topics
