@@ -41,6 +41,7 @@ internal static class ReportReflection
             return new(declaredType, "a dedicated report row", rowResult);
         }
 
+        var report = new ReportType(declaredType, constructorResult, rowResult);
         var routes = new List<ObserverRouteMethod>();
         var givens = new List<GivenMethod>();
         var whens = new List<ObserverWhenMethod>();
@@ -83,6 +84,11 @@ internal static class ReportReflection
             }
         }
 
+        if(routes.Count == 0)
+        {
+            report.SetSingleInstanceId();
+        }
+
         var eventTypes = routes
             .Select(x => x.Parameter.Message)
             .Union(whens.Select(x => x.Parameter.Message));
@@ -100,8 +106,6 @@ internal static class ReportReflection
             return new(declaredType, $"{TimelineMethod.Route}/{TimelineMethod.When} methods for at least one event", details);
         }
 
-        var report = new ReportType(declaredType, constructorResult, rowResult);
-
         foreach(var (e, route, given, when) in observations)
         {
             if(route is null)
@@ -114,7 +118,7 @@ internal static class ReportReflection
                 return new(declaredType, $"{TimelineMethod.Given} and/or {TimelineMethod.When} method for event {e}", details);
             }
 
-            report.Observations.Add(new(e, route, given, when));
+            report.Observations.Add(new(report, e, route, given, when));
 
             e.Reports.Add(report);
         }

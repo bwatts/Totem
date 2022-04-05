@@ -4,7 +4,7 @@ public class CommandSummary
 {
     internal CommandSummary(
         Id typeId,
-        TopicRouteSummary route,
+        TopicRouteSummary? route,
         TopicWhenSummary? whenWithoutContext,
         HttpCommandContextSummary? httpContext,
         LocalCommandContextSummary? localContext,

@@ -1,3 +1,5 @@
+using Totem.Core;
+
 namespace Totem.Map;
 
 public abstract class TimelineType : MapType
@@ -7,6 +9,16 @@ public abstract class TimelineType : MapType
     internal TimelineType(Type declaredType) : base(declaredType)
     { }
 
-    internal static Id GetSingleInstanceId(Type declaredType) =>
-        _singleInstanceNamespace.DeriveId(declaredType.FullName ?? "");
+    public Id? SingleInstanceId { get; private set; }
+
+    internal void SetSingleInstanceId() =>
+        SingleInstanceId = _singleInstanceNamespace.DeriveId(DeclaredType.FullName ?? "");
+
+    internal ItemKey CallSingleInstanceRoute()
+    {
+        if(SingleInstanceId is null)
+            throw new InvalidOperationException($"Timeline {this} is not single-instance");
+
+        return new(DeclaredType, SingleInstanceId);
+    }
 }

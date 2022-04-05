@@ -75,7 +75,7 @@ internal static class TopicReflection
 
         if(routes.Count == 0)
         {
-            topic.SingleInstanceId = TimelineType.GetSingleInstanceId(declaredType);
+            topic.SetSingleInstanceId();
         }
 
         var commandTypes = (
@@ -97,6 +97,7 @@ internal static class TopicReflection
                 return new(declaredType, $"a {TimelineMethod.Route} method for command {commandType}", details);
             }
 
+            commandType.Topic = topic;
             commandType.Route = commandRoute;
 
             foreach(var when in commandWhens)
@@ -107,7 +108,7 @@ internal static class TopicReflection
                     continue;
                 }
 
-                var httpContextResult = map.CheckHttpContext(when);
+                var httpContextResult = when.CheckHttpContext();
 
                 details.Add(httpContextResult);
 
@@ -117,7 +118,7 @@ internal static class TopicReflection
                     continue;
                 }
 
-                var localContextResult = map.CheckLocalContext(when);
+                var localContextResult = when.CheckLocalContext();
 
                 details.Add(localContextResult);
 
@@ -127,7 +128,7 @@ internal static class TopicReflection
                     continue;
                 }
 
-                var queueContextResult = map.CheckQueueContext(when);
+                var queueContextResult = when.CheckQueueContext();
 
                 details.Add(queueContextResult);
 
@@ -300,7 +301,7 @@ internal static class TopicReflection
         return new(parameter, $"a parameter assignable to {typeof(ICommandMessage)} or {typeof(ICommandContext<>)}");
     }
 
-    static MapCheck<TopicWhenContext> CheckHttpContext(this RuntimeMap map, TopicWhenMethod when)
+    static MapCheck<TopicWhenContext> CheckHttpContext(this TopicWhenMethod when)
     {
         var commandType = when.Parameter.Message.DeclaredType;
         var interfaceType = typeof(IHttpCommandContext<>).MakeGenericType(commandType);
@@ -318,7 +319,7 @@ internal static class TopicReflection
         return new(when, new TopicWhenContext(interfaceType, httpInfo, when));
     }
 
-    static MapCheck<TopicWhenContext> CheckLocalContext(this RuntimeMap map, TopicWhenMethod when)
+    static MapCheck<TopicWhenContext> CheckLocalContext(this TopicWhenMethod when)
     {
         var commandType = when.Parameter.Message.DeclaredType;
         var interfaceType = typeof(ILocalCommandContext<>).MakeGenericType(commandType);
@@ -336,7 +337,7 @@ internal static class TopicReflection
         return new(when, new TopicWhenContext(interfaceType, localInfo, when));
     }
 
-    static MapCheck<TopicWhenContext> CheckQueueContext(this RuntimeMap map, TopicWhenMethod when)
+    static MapCheck<TopicWhenContext> CheckQueueContext(this TopicWhenMethod when)
     {
         var commandType = when.Parameter.Message.DeclaredType;
         var interfaceType = typeof(IQueueCommandContext<>).MakeGenericType(commandType);

@@ -178,11 +178,11 @@ internal class MapSummaryBuilder
             GetTypeId(parameter.Info.ParameterType),
             GetTypeId(parameter.Message));
 
-    TopicRouteSummary BuildTopicRoute(TopicRouteMethod route) =>
-        new(BuildParameter(route.Parameter));
+    TopicRouteSummary? BuildTopicRoute(TopicRouteMethod? route) =>
+        route is null ? null : new(BuildParameter(route.Parameter));
 
-    ObserverRouteSummary BuildObserverRoute(ObserverRouteMethod route) =>
-        new(BuildParameter(route.Parameter), route.ReturnsMany);
+    ObserverRouteSummary? BuildObserverRoute(ObserverRouteMethod? route) =>
+        route is null ? null : new(BuildParameter(route.Parameter), route.ReturnsMany);
 
     TopicWhenSummary? TryBuildTopicWhen(TopicWhenMethod? when) =>
         when is null ? null : new(BuildParameter(when.Parameter), when.IsAsync, when.HasCancellationToken);

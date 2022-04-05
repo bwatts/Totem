@@ -2,7 +2,7 @@ namespace Totem.Map.Summary;
 
 public class ObservationSummary
 {
-    internal ObservationSummary(Id eventTypeId, ObserverRouteSummary route, GivenSummary? given, ObserverWhenSummary? when)
+    internal ObservationSummary(Id eventTypeId, ObserverRouteSummary? route, GivenSummary? given, ObserverWhenSummary? when)
     {
         EventTypeId = eventTypeId;
         Route = route;
@@ -11,7 +11,7 @@ public class ObservationSummary
     }
 
     public Id EventTypeId { get; }
-    public ObserverRouteSummary Route { get; }
+    public ObserverRouteSummary? Route { get; }
     public GivenSummary? Given { get; }
     public ObserverWhenSummary? When { get; }
 }

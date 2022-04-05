@@ -33,6 +33,7 @@ internal static class WorkflowReflection
             return new(declaredType, "a constructor", constructorResult);
         }
 
+        var workflow = new WorkflowType(declaredType, constructorResult);
         var routes = new List<ObserverRouteMethod>();
         var givens = new List<GivenMethod>();
         var whens = new List<ObserverWhenMethod>();
@@ -75,6 +76,11 @@ internal static class WorkflowReflection
             }
         }
 
+        if(routes.Count == 0)
+        {
+            workflow.SetSingleInstanceId();
+        }
+
         var eventTypes = routes
             .Select(x => x.Parameter.Message)
             .Union(whens.Select(x => x.Parameter.Message));
@@ -92,8 +98,6 @@ internal static class WorkflowReflection
             return new(declaredType, $"{TimelineMethod.Route}/{TimelineMethod.When} methods for at least one event", details);
         }
 
-        var workflow = new WorkflowType(declaredType, constructorResult);
-
         foreach(var (e, route, given, when) in observations)
         {
             if(route is null)
@@ -106,7 +110,7 @@ internal static class WorkflowReflection
                 return new(declaredType, $"{TimelineMethod.Given} and/or {TimelineMethod.When} method for event {e}", details);
             }
 
-            workflow.Observations.Add(new(e, route, given, when));
+            workflow.Observations.Add(new(workflow, e, route, given, when));
 
             e.Workflows.Add(workflow);
         }
