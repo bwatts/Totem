@@ -13,24 +13,23 @@ public abstract class TopicTests<TTopic> : TimelineTests<TTopic>, ITopicTests
     TopicQueueContext? _queueContext;
 
     internal override ITimelineTestContext<TTopic> TestContext { get; } = new TimelineTestContext<TTopic>();
-    TopicType TopicType => (TopicType) TestContext.TimelineType;
-    ITopic Topic => TestContext.Timeline;
+
+    public TopicType TopicType => (TopicType) TestContext.TimelineType;
+    public RuntimeMap RuntimeMap => TestContext.RuntimeMap;
+    public ITopic Topic => TestContext.Timeline;
 
     protected TopicHttpContext HttpContext => _httpContext ??= new(this);
     protected TopicLocalContext LocalContext => _localContext ??= new(this);
     protected TopicQueueContext QueueContext => _queueContext ??= new(this);
-
-    RuntimeMap ITopicTests.RuntimeMap => TestContext.RuntimeMap;
-    ITopic ITopicTests.Topic => TestContext.Timeline;
 
     void ITopicTests.OnCallingWhen() =>
         OnCallingWhen();
 
     void ITopicTests.OnWhenCalled()
     {
-        foreach(var newEvent in Topic.TakeNewEvents())
+        foreach(var newEvent in TestContext.Timeline.TakeNewEvents())
         {
-            TopicType.CallGivenIfDefined(Topic, newEvent);
+            TopicType.CallGivenIfDefined(TestContext.Timeline, newEvent);
 
             _newEvents.Enqueue(newEvent);
         }
@@ -47,7 +46,12 @@ public abstract class TopicTests<TTopic> : TimelineTests<TTopic>, ITopicTests
         if(command is null)
             throw new ArgumentNullException(nameof(command));
 
-        var routeKey = GetCommandType(command).Route.Call(command);
+        var commandType = GetCommandType(command);
+
+        if(commandType.Route is null)
+            throw new InvalidOperationException($"Topic {commandType.Topic} is a single instance and does not route commands");
+
+        var routeKey = commandType.Route.Call(command);
 
         if(routeKey.Id != expectedId)
             throw new ExpectException($"Expected {TimelineMethod.Route}({command.GetType()}) to return {expectedId} but found {routeKey.Id}");

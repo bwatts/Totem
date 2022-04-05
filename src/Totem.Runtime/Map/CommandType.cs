@@ -8,14 +8,15 @@ public class CommandType : MessageType
     internal CommandType(Type declaredType) : base(declaredType)
     { }
 
-    public TopicRouteMethod Route { get; internal set; } = null!;
+    public TopicType Topic { get; internal set; } = null!;
+    public TopicRouteMethod? Route { get; internal set; }
     public TopicWhenMethod? WhenWithoutContext { get; internal set; }
     public TopicWhenContext? HttpContext { get; internal set; }
     public TopicWhenContext? LocalContext { get; internal set; }
     public TopicWhenContext? QueueContext { get; internal set; }
 
     internal ItemKey CallRoute(ICommandContext<ICommandMessage> context) =>
-        Route.Call(context.Command);
+        Route?.Call(context.Command) ?? Topic.CallSingleInstanceRoute();
 
     internal bool TryGetWhen(ICommandContext<ICommandMessage> context, [NotNullWhen(true)] out TopicWhenMethod? when)
     {

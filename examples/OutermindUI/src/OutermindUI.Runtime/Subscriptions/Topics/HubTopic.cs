@@ -4,11 +4,6 @@ namespace OutermindUI.Subscriptions.Topics;
 
 public class HubTopic : Topic
 {
-    public static readonly Id SingleInstanceId = (Id) "1d717853-18d5-4ea8-a23f-8a43bc21d45f";
-
-    public static Id Route(ConnectHub _) => SingleInstanceId;
-    public static Id Route(StartHubClient _) => SingleInstanceId;
-
     readonly ISubscriptionClient _client;
     bool _connecting;
     bool _connected;

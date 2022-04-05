@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Reflection;
 using Totem.Core;
 using Totem.Http;
@@ -72,6 +73,11 @@ internal static class TopicReflection
             }
         }
 
+        if(routes.Count == 0)
+        {
+            topic.SingleInstanceId = TimelineType.GetSingleInstanceId(declaredType);
+        }
+
         var commandTypes = (
             from command in routes.Select(x => x.Parameter.Message).Union(whens.Select(x => x.Parameter.Message))
             join route in routes on command equals route.Parameter.Message into commandRoutes
@@ -86,7 +92,7 @@ internal static class TopicReflection
 
         foreach(var (commandType, commandRoute, commandWhens) in commandTypes)
         {
-            if(commandRoute is null)
+            if(routes.Count > 0 && commandRoute is null)
             {
                 return new(declaredType, $"a {TimelineMethod.Route} method for command {commandType}", details);
             }

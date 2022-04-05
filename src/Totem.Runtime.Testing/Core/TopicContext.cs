@@ -12,6 +12,7 @@ public abstract class TopicContext<TCommand, TContext>
         Tests = tests;
 
     internal ITopicTests Tests { get; }
+    TopicType TopicType => Tests.TopicType;
     ITopic Topic => Tests.Topic;
 
     public TContext CallWhen(TCommand command, Id? commandId = null, Id? correlationId = null, ClaimsPrincipal? principal = null)
@@ -59,21 +60,28 @@ public abstract class TopicContext<TCommand, TContext>
 
     (TContext, TopicWhenMethod) InitWhenCall(TCommand command, Id? commandId, Id? correlationId, ClaimsPrincipal? principal)
     {
-        if(!Tests.RuntimeMap.Commands.TryGet(command.GetType(), out var commandType))
-            throw new ExpectException($"Expected a command type known to the map: {command.GetType()}");
-
-        var routeKey = commandType.Route.Call(command);
-
-        if(Topic.Id is not null && Topic.Id != routeKey.Id)
-            throw new ExpectException($"Expected command to route to the same topic {Topic.Id} but received {routeKey.Id}");
-
-        Topic.Id = routeKey.Id;
-
         var context = CreateContext(
             command,
             commandId ?? Id.NewId(),
             correlationId ?? Id.NewId(),
             principal ?? new ClaimsPrincipal());
+
+        if(!Tests.RuntimeMap.Commands.TryGet(command.GetType(), out var commandType))
+            throw new ExpectException($"Expected a command type known to the map: {command.GetType()}");
+
+        if(TopicType.SingleInstanceId is not null)
+        {
+            Topic.Id = TopicType.SingleInstanceId;
+        }
+        else
+        {
+            var routeKey = commandType.CallRoute(context);
+
+            if(Topic.Id is not null && Topic.Id != routeKey.Id)
+                throw new ExpectException($"Expected command to route to the same topic {Topic.Id} but received {routeKey.Id}");
+
+            Topic.Id = routeKey.Id;
+        }
 
         if(!commandType.TryGetWhen(context, out var when))
             throw new ExpectException($"Expected a {TimelineMethod.When} method for command {command.GetType()}");

@@ -2,10 +2,6 @@ namespace Outermind.Workspaces.Topics;
 
 public class WorkspacesTopic : Topic
 {
-    public static readonly Id SingleInstanceId = (Id) "fdfe821d-c9bd-4c56-b3c3-aab9032e33ce";
-
-    public static Id Route(CreateWorkspace _) => SingleInstanceId;
-
     readonly HashSet<string> _names = new(StringComparer.OrdinalIgnoreCase);
 
     protected void Given(WorkspaceCreated e) =>
