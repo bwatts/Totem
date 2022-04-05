@@ -31,7 +31,7 @@ public class TopicPipeline : ITopicPipeline
             throw new ArgumentNullException(nameof(topicKey));
 
         _logger.LogTrace(
-            "[report] Run pipeline {@PipelineId} for topic {@TopicType}.{@TopicId} and command {@CommandType}.{@CommandId}",
+            "[topic] Run pipeline {@PipelineId} for topic {@TopicType}.{@TopicId} and command {@CommandType}.{@CommandId}",
             Id,
             topicKey.DeclaredType,
             topicKey.Id,
@@ -48,13 +48,13 @@ public class TopicPipeline : ITopicPipeline
         {
             if(cancellationToken.IsCancellationRequested)
             {
-                _logger.LogTrace("[report] Pipeline {@PipelineId} for report {@ReportType}.{@ReportId} cancelled", Id, topicKey.DeclaredType, topicKey.Id);
+                _logger.LogTrace("[topic] Pipeline {@PipelineId} for report {@ReportType}.{@ReportId} cancelled", Id, topicKey.DeclaredType, topicKey.Id);
                 return;
             }
 
             if(index >= _steps.Count)
             {
-                _logger.LogTrace("[report] Pipeline {@PipelineId} for report {@ReportType}.{@ReportId} complete", Id, topicKey.DeclaredType, topicKey.Id);
+                _logger.LogTrace("[topic] Pipeline {@PipelineId} for report {@ReportType}.{@ReportId} complete", Id, topicKey.DeclaredType, topicKey.Id);
                 return;
             }
 

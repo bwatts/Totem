@@ -8,14 +8,10 @@ namespace Totem.InMemory;
 public class InMemoryWorkflowStore : IWorkflowStore
 {
     readonly ConcurrentDictionary<ItemKey, WorkflowHistory> _historiesByKey = new();
-    readonly IStorage _storage;
     readonly IQueueClient _queueClient;
 
-    public InMemoryWorkflowStore(IStorage storage, IQueueClient queueClient)
-    {
-        _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+    public InMemoryWorkflowStore(IQueueClient queueClient) =>
         _queueClient = queueClient ?? throw new ArgumentNullException(nameof(queueClient));
-    }
 
     public Task<IWorkflowTransaction> StartTransactionAsync(IWorkflowContext<IEvent> context, CancellationToken cancellationToken)
     {
@@ -43,10 +39,6 @@ public class InMemoryWorkflowStore : IWorkflowStore
 
         _historiesByKey.AddOrUpdate(key, _ => new(transaction), (_, history) => history.Update(transaction));
 
-        await _storage.PutAsync(
-            StorageRow.From(key.DeclaredType.FullName!, key.Id.ToString(), transaction.Workflow),
-            cancellationToken);
-
         await _queueClient.EnqueueAsync(transaction.Workflow.TakeNewCommands(), cancellationToken);
     }
 
@@ -60,26 +52,12 @@ public class InMemoryWorkflowStore : IWorkflowStore
     {
         readonly List<IEvent> _events = new();
         readonly WorkflowType _workflowType;
-        readonly string _workflowId;
 
-        internal WorkflowHistory(IWorkflowTransaction transaction)
-        {
+        internal WorkflowHistory(IWorkflowTransaction transaction) =>
             _workflowType = transaction.Context.WorkflowType;
-            _workflowId = transaction.Context.WorkflowKey.Id.ToShortString();
-
-            var version = transaction.Workflow.Version ?? 0;
-
-            if(version != 0)
-                throw new UnexpectedVersionException($"Expected workflow {_workflowType}/{_workflowId} to not exist, but found @{version}");
-        }
 
         internal void Load(IWorkflow workflow)
         {
-            if(workflow.Version is not null)
-                throw new InvalidOperationException($"Expected a report with no version, found {workflow}@{workflow.Version}");
-
-            workflow.Version = _events.Count;
-
             foreach(var e in _events)
             {
                 _workflowType.CallGivenIfDefined(workflow, e);
@@ -88,13 +66,7 @@ public class InMemoryWorkflowStore : IWorkflowStore
 
         internal WorkflowHistory Update(IWorkflowTransaction transaction)
         {
-            var expectedVersion = _events.Count;
-
-            if(transaction.Workflow.Version != expectedVersion)
-                throw new UnexpectedVersionException($"Expected workflow {_workflowType}/{_workflowId}@{expectedVersion}, but received @{transaction.Workflow.Version}");
-
             _events.Add(transaction.Context.EventContext.Event);
-
             return this;
         }
     }

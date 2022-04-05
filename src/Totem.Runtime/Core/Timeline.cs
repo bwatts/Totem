@@ -6,7 +6,6 @@ public abstract class Timeline : ITimeline
 {
     readonly ConcurrentQueue<ErrorInfo> _errors = new();
     Id? _id;
-    long? _version;
 
     public bool HasErrors => !_errors.IsEmpty;
     public IEnumerable<ErrorInfo> Errors => _errors;
@@ -17,22 +16,10 @@ public abstract class Timeline : ITimeline
         private set => _id = value;
     }
 
-    public long? Version
-    {
-        get => _version;
-        private set => _version = value;
-    }
-
     Id? ITimeline.Id
     {
         get => _id;
         set => _id = value;
-    }
-
-    long? ITimeline.Version
-    {
-        get => Version;
-        set => Version = value;
     }
 
     protected void ThenError(ErrorInfo error)
