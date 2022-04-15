@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Web", "src\Totem.Web\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.WebAssembly", "src\Totem.WebAssembly\Totem.WebAssembly.csproj", "{7F530CB4-55BF-4C48-8048-2741685374C0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.Client", "src\Totem.Client\Totem.Client.csproj", "{D310C159-BDD4-4F6B-A241-D39AFB947D28}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "items", "items", "{F2FBA2A8-4E47-4709-828E-0114B25F28AE}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -46,6 +44,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutermindUI.Runtime", "exam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutermindUI.WebAssembly", "examples\OutermindUI\src\OutermindUI.WebAssembly\OutermindUI.WebAssembly.csproj", "{7F92E12F-1E63-4F66-8A46-A79997F6C75A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totem.HttpClient", "src\Totem.HttpClient\Totem.HttpClient.csproj", "{28D48053-BE68-43CD-912F-176C44BC0162}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,10 +68,6 @@ Global
 		{7F530CB4-55BF-4C48-8048-2741685374C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F530CB4-55BF-4C48-8048-2741685374C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F530CB4-55BF-4C48-8048-2741685374C0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D310C159-BDD4-4F6B-A241-D39AFB947D28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D310C159-BDD4-4F6B-A241-D39AFB947D28}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D310C159-BDD4-4F6B-A241-D39AFB947D28}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D310C159-BDD4-4F6B-A241-D39AFB947D28}.Release|Any CPU.Build.0 = Release|Any CPU
 		{56A7F0EE-D4CA-409D-AE2B-064780E60BC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{56A7F0EE-D4CA-409D-AE2B-064780E60BC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56A7F0EE-D4CA-409D-AE2B-064780E60BC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -104,6 +100,10 @@ Global
 		{7F92E12F-1E63-4F66-8A46-A79997F6C75A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F92E12F-1E63-4F66-8A46-A79997F6C75A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F92E12F-1E63-4F66-8A46-A79997F6C75A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28D48053-BE68-43CD-912F-176C44BC0162}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28D48053-BE68-43CD-912F-176C44BC0162}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28D48053-BE68-43CD-912F-176C44BC0162}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28D48053-BE68-43CD-912F-176C44BC0162}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

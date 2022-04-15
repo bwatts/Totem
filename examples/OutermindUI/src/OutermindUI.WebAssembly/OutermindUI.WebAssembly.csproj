@@ -22,7 +22,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\..\src\Totem.Client\Totem.Client.csproj" />
         <ProjectReference Include="..\..\..\..\src\Totem.WebAssembly\Totem.WebAssembly.csproj" />
         <ProjectReference Include="..\..\..\Outermind\src\Outermind.Messages\Outermind.Messages.csproj" />
         <ProjectReference Include="..\OutermindUI.Messages\OutermindUI.Messages.csproj" />

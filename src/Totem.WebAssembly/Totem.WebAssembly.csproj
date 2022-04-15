@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Totem.HttpClient\Totem.HttpClient.csproj" />
       <ProjectReference Include="..\Totem.Runtime\Totem.Runtime.csproj" />
     </ItemGroup>
 
