@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using Microsoft.Extensions.DependencyInjection;
-using Totem.Core;
 
 namespace Totem.Http;
 
@@ -11,13 +10,9 @@ public class HttpQueryDispatcherMiddleware : IHttpQueryMiddleware
 
     readonly ConcurrentDictionary<Type, ContextHandler> _handlersByContextType = new();
     readonly IServiceProvider _services;
-    readonly IQueryReportClient _reportClient;
 
-    public HttpQueryDispatcherMiddleware(IServiceProvider services, IQueryReportClient reportClient)
-    {
+    public HttpQueryDispatcherMiddleware(IServiceProvider services) =>
         _services = services ?? throw new ArgumentNullException(nameof(services));
-        _reportClient = reportClient ?? throw new ArgumentNullException(nameof(reportClient));
-    }
 
     public async Task InvokeAsync(IHttpQueryContext<IHttpQuery> context, Func<Task> next, CancellationToken cancellationToken)
     {
@@ -27,20 +22,15 @@ public class HttpQueryDispatcherMiddleware : IHttpQueryMiddleware
         if(next is null)
             throw new ArgumentNullException(nameof(next));
 
-        if(context.Info.Result.IsReport)
-        {
-            await _reportClient.LoadResultAsync(context, cancellationToken);
-        }
-        else if(!context.QueryType.Contexts.TryGet(context.InterfaceType, out var queryContext) || !queryContext.HasHandler)
+        if(!context.QueryType.Contexts.TryGet(context.InterfaceType, out var queryContext))
         {
             context.AddError(RuntimeErrors.QueryNotHandled);
+            return;
         }
-        else
-        {
-            var handler = _handlersByContextType.GetOrAdd(context.InterfaceType, _ => CompileHandler(context));
 
-            await handler(context, cancellationToken);
-        }
+        var handler = _handlersByContextType.GetOrAdd(context.InterfaceType, _ => CompileHandler(context));
+
+        await handler(context, cancellationToken);
 
         if(!context.HasErrors)
         {

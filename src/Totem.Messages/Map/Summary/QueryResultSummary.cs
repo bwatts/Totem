@@ -2,18 +2,16 @@ namespace Totem.Map.Summary;
 
 public class QueryResultSummary
 {
-    internal QueryResultSummary(Id typeId, bool isReport, bool isSingleRow, bool isManyRows, Id? rowTypeId)
+    internal QueryResultSummary(Id typeId, Id? reportRowTypeId, bool isSingleRow, bool isManyRows)
     {
         TypeId = typeId;
-        IsReport = isReport;
+        ReportRowTypeId = reportRowTypeId;
         IsSingleRow = isSingleRow;
         IsManyRows = isManyRows;
-        RowTypeId = rowTypeId;
     }
 
     public Id TypeId { get; }
-    public bool IsReport { get; }
+    public Id? ReportRowTypeId { get; }
     public bool IsSingleRow { get; }
     public bool IsManyRows { get; }
-    public Id? RowTypeId { get; }
 }

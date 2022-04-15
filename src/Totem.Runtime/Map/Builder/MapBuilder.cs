@@ -20,8 +20,7 @@ internal class MapBuilder
             TryAdd(
                 type,
                 TryAddEventHandler,
-                TryAddHttpQueryHandler,
-                TryAddLocalQueryHandler,
+                type => _map.TryAddQueryHandler(type),
                 type => _map.TryAddReport(type),
                 type => _map.TryAddTopic(type),
                 type => _map.TryAddWorkflow(type));
@@ -58,44 +57,5 @@ internal class MapBuilder
         e.Handlers.Add(handler);
 
         return true;
-    }
-
-    bool TryAddHttpQueryHandler(Type type) =>
-        TryAddQueryHandler(type, typeof(IHttpQueryContext<>), typeof(IHttpQueryHandler<>));
-
-    bool TryAddLocalQueryHandler(Type type) =>
-        TryAddQueryHandler(type, typeof(ILocalQueryContext<>), typeof(ILocalQueryHandler<>));
-
-    bool TryAddQueryHandler(Type type, Type contextInterface, Type handlerInterface)
-    {
-        var queryType = type.GetImplementedInterfaceGenericArguments(handlerInterface).FirstOrDefault();
-
-        if(queryType is null)
-        {
-            return false;
-        }
-
-        var query = _map.GetOrAddQuery(queryType);
-        var contextType = contextInterface.MakeGenericType(queryType);
-
-        if(query.Contexts.TryGet(contextType, out var context))
-        {
-            if(!_map.QueryHandlers.TryGet(type, out var handler))
-            {
-                handler = new QueryHandlerType(type, query);
-
-                _map.QueryHandlers.Add(handler);
-            }
-
-            var serviceType = handlerInterface.MakeGenericType(queryType);
-
-            context.Handler = handler;
-            context.HandlerServiceType = serviceType;
-
-            handler.AddServiceType(serviceType);
-            return true;
-        }
-
-        return false;
     }
 }

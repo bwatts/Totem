@@ -137,7 +137,7 @@ internal static class ReportReflection
 
         var rowType = baseType.GetGenericArguments().Single();
 
-        if(map.ReportRows.TryGet(rowType, out var existingRow))
+        if(map.ReportRows.Contains(rowType))
         {
             return new(declaredType, $"row to be exclusive to this report");
         }

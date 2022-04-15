@@ -15,9 +15,8 @@ public class QueryContext : ITypeKeyed
     public Type ContextType { get; }
     public QueryInfo Info { get; }
     [MemberNotNullWhen(true, nameof(Handler), nameof(HandlerServiceType))]
-    public bool HasHandler => Handler is not null;
-    public QueryHandlerType? Handler { get; internal set; }
-    public Type? HandlerServiceType { get; internal set; }
+    public QueryHandlerType Handler { get; internal set; } = null!;
+    public Type HandlerServiceType { get; internal set; } = null!;
 
     Type ITypeKeyed.TypeKey => ContextType;
 

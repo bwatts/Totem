@@ -101,16 +101,6 @@ public class RuntimeMap : IReadOnlyCollection<MapType>
             query = new QueryType(declaredType);
 
             Queries.Add(query);
-
-            if(HttpQueryInfo.TryFrom(declaredType, out var httpInfo))
-            {
-                query.Contexts.Add(new QueryContext(typeof(IHttpQueryContext<>).MakeGenericType(declaredType), httpInfo));
-            }
-
-            if(LocalQueryInfo.TryFrom(declaredType, out var localInfo))
-            {
-                query.Contexts.Add(new QueryContext(typeof(ILocalQueryContext<>).MakeGenericType(declaredType), localInfo));
-            }
         }
 
         return query;

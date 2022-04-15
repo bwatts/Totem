@@ -140,8 +140,6 @@ public static class TotemBuilderExtensions
                 return pipelineBuilder.Build();
             });
 
-        builder.Services.TryAddSingleton<IQueryReportClient, QueryReportClient>();
-
         foreach(var handler in builder.Services.GetRuntimeMap().QueryHandlers)
         {
             foreach(var serviceType in handler.ServiceTypes)
@@ -201,7 +199,6 @@ public static class TotemBuilderExtensions
             });
 
         builder.Services.TryAddSingleton<ILocalClient, LocalClient>();
-        builder.Services.TryAddSingleton<IQueryReportClient, QueryReportClient>();
 
         return builder;
     }

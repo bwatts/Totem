@@ -195,10 +195,9 @@ internal class MapSummaryBuilder
 
     QueryResultSummary BuildQueryResult(QueryResult result) =>
         new(GetTypeId(result.DeclaredType),
-            result.IsReport,
+            result.ReportRowType is null ? null : GetTypeId(result.ReportRowType),
             result.IsSingleRow,
-            result.IsManyRows,
-            result.RowType is null ? null : GetTypeId(result.RowType));
+            result.IsManyRows);
 
     Id GetTypeId(Type type)
     {
